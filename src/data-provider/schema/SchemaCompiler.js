@@ -126,7 +126,19 @@ export const SchemaCompiler = {
   installArtifact(provider) {
     const parts = this.compileAll(provider);
     if (provider === 'supabase') {
-      return { kind: 'sql', schemaVersion: SCHEMA_VERSION, text: parts.map((p) => p.sql).join('\n\n') };
+      const ddl = parts.map((p) => p.sql).join('\n\n');
+      const grants = [
+        '-- Grant permissions to anon and authenticated roles',
+        'GRANT USAGE ON SCHEMA public TO anon;',
+        'GRANT USAGE ON SCHEMA public TO authenticated;',
+        '',
+        'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO anon;',
+        'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO authenticated;',
+        '',
+        'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO anon;',
+        'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO authenticated;',
+      ].join('\n');
+      return { kind: 'sql', schemaVersion: SCHEMA_VERSION, text: [ddl, grants].join('\n\n') };
     }
     if (provider === 'firebase') {
       return {

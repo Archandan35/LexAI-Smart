@@ -33,10 +33,10 @@ export const databaseInstaller = {
       if (!exists && s.core) coreMissing = true;
     }
 
-    console.log('[LexAI detect] present:', present, 'missing:', missing, 'coreMissing:', coreMissing, 'authError:', authError);
+    console.log('[LexAI detect] present:', present.length, 'missing:', missing.length, 'coreMissing:', coreMissing, 'authError:', authError);
 
     if (authError) {
-      console.warn('[LexAI detect] Supabase auth denied — check VITE_SUPABASE_ANON_KEY');
+      console.warn('[LexAI detect] Supabase auth denied');
       return {
         provider: providerName,
         installed: false,
@@ -45,9 +45,13 @@ export const databaseInstaller = {
         present,
         missing,
         needsSetup: true,
+        partialInstall: false,
         authError,
       };
     }
+
+    // Tables exist but schema_meta has no version row → partial install
+    const partialInstall = present.length > 0 && !coreMissing && version === 0;
 
     return {
       provider: providerName,
@@ -57,11 +61,14 @@ export const databaseInstaller = {
       present,
       missing,
       needsSetup: version === 0 || coreMissing,
+      partialInstall,
     };
   },
 
   artifact() { return SchemaCompiler.installArtifact(this.provider()); },
 
+  // Install with per-step progress reporting.
+  // onProgress({ step, total, label, status })
   async installSchema(onProgress) {
     const name = this.provider();
     const provider = getDatabaseProvider();
@@ -77,6 +84,39 @@ export const databaseInstaller = {
       report('Detect Provider');
 
       if (name === 'supabase') {
+        // Check current state — are tables already created?
+        const current = await this.detect();
+
+        if (current.partialInstall) {
+          console.log('[LexAI install] Supabase tables exist — skipping CREATE phase');
+          // Tables exist but no schema_meta row → structural install is done
+          // Return success so caller proceeds to seed phase
+          for (const s of coreSchemas) {
+            report(`Create ${s.collection}`, 'done');
+          }
+          return {
+            ok: true,
+            success: true,
+            provider: 'supabase',
+            needsManual: false,
+            currentStep: 'Tables ready',
+            completedSteps: coreSchemas.length,
+            totalSteps,
+          };
+        }
+
+        if (current.installed) {
+          console.log('[LexAI install] Supabase already fully installed');
+          return {
+            ok: true,
+            success: true,
+            provider: 'supabase',
+            needsManual: false,
+          };
+        }
+
+        // No tables — surface SQL (now includes GRANTs)
+        console.log('[LexAI install] Supabase — returning install SQL');
         const artifact = SchemaCompiler.installArtifact('supabase');
         return {
           ok: false,
@@ -89,6 +129,7 @@ export const databaseInstaller = {
         };
       }
 
+      // local / firebase / mongodb — install each core collection
       for (const s of coreSchemas) {
         report(`Create ${s.collection}`);
         const r = await provider.ensureCollection(s.collection, s);
@@ -116,6 +157,7 @@ export const databaseInstaller = {
         needsManual: false,
       };
     } catch (e) {
+      console.error('[LexAI install] installer error:', e);
       return {
         success: false,
         currentStep: `Create ${name}`,

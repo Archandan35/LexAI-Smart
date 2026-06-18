@@ -36,6 +36,11 @@ export default function DatabaseSetup({ detectError: propDetectError }) {
       if (d.authError) {
         setError(`Auth error: ${d.authError}. Verify VITE_SUPABASE_ANON_KEY in your Railway environment variables.`);
       }
+      if (d.partialInstall) {
+        // Tables exist but not seeded — clear SQL so user sees "Complete Installation"
+        setSql('');
+        setResult(null);
+      }
     } else {
       setError(res.error || 'Detection failed.');
     }
@@ -219,6 +224,14 @@ export default function DatabaseSetup({ detectError: propDetectError }) {
           </div>
         )}
 
+        {/* --- Partial install banner --- */}
+        {detect?.partialInstall && !busy && !sql && (
+          <div className="alert alert--info dm-mt">
+            <Icon name="check" size={16} />
+            <span>Tables are created. Click "Complete Installation" to seed roles, permissions, and stamp the schema version.</span>
+          </div>
+        )}
+
         {/* --- SQL display (Supabase) --- */}
         {sql && (
           <div className="dm-mt">
@@ -248,6 +261,10 @@ export default function DatabaseSetup({ detectError: propDetectError }) {
           ) : sql ? (
             <Button variant="primary" className="btn--block" icon="refresh" onClick={refresh}>
               I've run it — Re-check
+            </Button>
+          ) : detect?.partialInstall ? (
+            <Button variant="primary" className="btn--block" icon="bolt" loading={busy} onClick={install}>
+              Complete Installation
             </Button>
           ) : result && !result.installed ? (
             <Button variant="primary" className="btn--block" icon="refresh" onClick={handleRetry}>

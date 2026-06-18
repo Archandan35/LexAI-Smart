@@ -1,3 +1,4 @@
+import { getDatabaseProvider } from '@/providers/database/index.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { databaseHealthService } from '@/services/databaseHealthService.js';
 import { authLogic } from './authLogic.js';
@@ -73,21 +74,49 @@ export const databaseManagerLogic = {
   // ---- install (Setup Wizard "Install Database") ----
   async install(user, onProgress) {
     try {
+      console.log('[LexAI install] INSTALL STEP 1/5 — CREATE TABLES');
       const struct = await databaseAdminService.installSchemaStructures(onProgress);
+      console.log('[LexAI install] installSchemaStructures result:', JSON.stringify(struct));
+
       if (!struct || struct.needsManual) {
+        console.log('[LexAI install] needsManual=true — returning SQL to user');
         return ok({ installed: false, needsManual: true, sql: struct?.sql, reason: struct?.reason });
       }
       if (!struct.success) {
+        console.log('[LexAI install] structural install failed');
         return ok({ installed: false, needsManual: false, error: struct.error || 'Install failed', failedStep: struct.failedStep, completedSteps: struct.completedSteps });
       }
-      // Seed system data: roles + super-admin (authLogic = single source) +
-      // the permission catalog. Demo data is offered separately.
+
+      console.log('[LexAI install] INSTALL STEP 2/5 — INSERT SCHEMA_META (via stamp in seed)');
+      console.log('[LexAI install] INSTALL STEP 3/5 — INSERT ROLES');
       await authLogic.ensureSeeded();
+      console.log('[LexAI install] INSTALL STEP 4/5 — INSERT PERMISSIONS');
       await databaseAdminService.seedPermissions();
+      console.log('[LexAI install] INSTALL STEP 5/5 — INSERT SETTINGS (stamp)');
       await databaseAdminService.stampInstalled();
+
+      // Final verification
+      try {
+        const version = await databaseAdminService.getVersion();
+        const db = getDatabaseProvider();
+        const roleCount = await db.count('roles').catch(() => -1);
+        const permCount = await db.count('permissions').catch(() => -1);
+        console.log('[LexAI install] VERIFY — schema_meta version:', version, 'roles:', roleCount, 'permissions:', permCount);
+        if (version === 0) throw new Error('Schema stamp failed — schema_meta version is 0');
+        if (roleCount === 0) throw new Error('Role seed failed — 0 roles');
+        if (permCount === 0) throw new Error('Permission seed failed — 0 permissions');
+      } catch (verifyErr) {
+        console.error('[LexAI install] Verification failed:', verifyErr.message);
+        return ok({ installed: false, needsManual: false, error: verifyErr.message, failedStep: 'verify', completedSteps: 5 });
+      }
+
       await audit('db.install', user, `provider=${databaseAdminService.providerName()}`);
+      console.log('[LexAI install] INSTALL COMPLETE');
       return ok({ installed: true, struct });
-    } catch (e) { return fail(e); }
+    } catch (e) {
+      console.error('[LexAI install] Install failed:', e);
+      return fail(e);
+    }
   },
 
   // ---- schema ops ----
