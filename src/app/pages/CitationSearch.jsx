@@ -8,12 +8,13 @@ import EmptyState from '@/components/EmptyState.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import { ACTS } from '@/constants/acts.js';
-import { COURTS } from '@/constants/courts.js';
 import { citationLogic } from '@/logic/citationLogic.js';
 import { MESSAGES } from '@/constants/messages.js';
+import { useCourts } from '@/hooks/useCourts.js';
 
 // Citation Search — implements Facts→Issue→Search→Retrieve→Verify→Rank→Display.
 export default function CitationSearch() {
+  const { courtNames } = useCourts();
   const [q, setQ] = useState({ facts: '', issue: '', keywords: '', act: '', section: '', court: '' });
   const [state, setState] = useState({ loading: false, results: null, issues: [], message: null });
 
@@ -50,7 +51,7 @@ export default function CitationSearch() {
           <Field label="Court">
             <Select value={q.court} onChange={(e) => setQ({ ...q, court: e.target.value })}>
               <option value="">Any Court</option>
-              {COURTS.map((c) => <option key={c} value={c}>{c}</option>)}
+              {courtNames.map((c) => <option key={c} value={c}>{c}</option>)}
             </Select>
           </Field>
           <Button icon="search" loading={state.loading} onClick={onSearch} className="btn--block">Search Authorities</Button>

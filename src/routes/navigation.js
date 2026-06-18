@@ -49,6 +49,8 @@ export const NAV_GROUPS = [
       { to: '/admin/storage', label: 'Storage & Sync', icon: 'database', module: 'storage' },
       { to: '/admin/env-api', label: 'Environment & API', icon: 'gear', module: 'env' },
       { to: '/admin/audit', label: 'Audit Logs', icon: 'history', module: 'audit' },
+      { to: '/admin/case-types', label: 'Case Types', icon: 'folder', module: 'caseTypes' },
+      { to: '/admin/court-types', label: 'Court Types', icon: 'folder', module: 'courtTypes' },
       { to: '/admin/security', label: 'Security Settings', icon: 'lock', module: 'settings' },
       { to: '/admin/settings', label: 'System Settings', icon: 'gear', module: 'settings' },
     ],

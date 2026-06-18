@@ -79,7 +79,7 @@ export default function CaseDetail() {
       <Button variant="ghost" size="sm" icon="arrow" onClick={() => nav('/cases')} style={{ marginBottom: 14, transform: 'scaleX(-1)' }} />
       <PageHeader
         icon="vault"
-        title={c.caseNumber}
+        title={c.case_display_number || c.caseNumber}
         subtitle={`${c.title} · ${combinedCourt(c)}`}
         actions={(
           <div className="row-actions" style={{ alignItems: 'center', gap: 8 }}>
@@ -112,12 +112,14 @@ export default function CaseDetail() {
         <>
           <div className="grid-2">
             <Card title="Case Particulars">
-              <Row label="Case Number" value={c.caseNumber} />
-              <Row label="Case Type" value={c.caseType} />
+              <Row label="Case Number" value={c.case_display_number || c.caseNumber} />
+              <Row label="Case Type" value={c.case_type || (c.parties ? '—' : '—')} />
               <Row label="Court" value={c.court} />
               <Row label="Court Name" value={c.courtName} />
               <Row label="Combined Court" value={combinedCourt(c)} />
               <Row label="Judge" value={c.judge} />
+              <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
+              <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
               <Row label="Filing Date" value={formatDate(c.filingDate)} />
               <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
               <Row label="Next Hearing Date" value={formatDate(c.nextHearing)} />

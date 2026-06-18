@@ -1,24 +1,11 @@
 import { caseStageService } from '@/services/caseStageService.js';
-import { CASE_STAGES } from '@/constants/courts.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO } from '@/utils/id.js';
 
 // caseStageLogic — dynamic case-stage management (Stage Manager).
 export const caseStageLogic = {
-  // Seed default stages on an empty install; idempotent.
-  async ensureSeeded() {
-    const rows = await caseStageService.list();
-    if (rows.length) return rows;
-    let order = 0;
-    for (const name of CASE_STAGES) {
-      // eslint-disable-next-line no-await-in-loop
-      await caseStageService.create({ name, order: order++ });
-    }
-    return caseStageService.list();
-  },
-
   async list() {
-    const rows = await this.ensureSeeded();
+    const rows = await caseStageService.list();
     return [...rows].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   },
 

@@ -89,8 +89,8 @@ export default function CaseManage() {
               <Detail label="Case Number" value={theCase.caseNumber} />
               <Detail label="Parties" value={theCase.title} />
               <Detail label="Court" value={theCase.court} />
-              <Detail label="Plaintiff" value={theCase.parties?.plaintiff} />
-              <Detail label="Defendant" value={theCase.parties?.defendant} />
+              <Detail label="Plaintiff" value={theCase.plaintiff || theCase.parties?.plaintiff} />
+              <Detail label="Defendant" value={theCase.defendant || theCase.parties?.defendant} />
               <Detail label="Stage" value={theCase.stage} badge />
               <Detail label="Next Hearing" value={formatDate(theCase.nextHearing)} />
               <Detail label="Status" value={theCase.status} badge />

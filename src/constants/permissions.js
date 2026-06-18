@@ -48,6 +48,8 @@ export const MODULES = [
   { key: 'casevault', label: 'Case Vault', icon: 'vault', route: '/cases' },
   { key: 'causeList', label: 'Cause List', icon: 'calendar', route: '/cause-list' },
   { key: 'caseManage', label: 'Case Manager', icon: 'folder', route: '/case-manage' },
+  { key: 'caseTypes', label: 'Case Types', icon: 'folder', route: '/admin/case-types', admin: true },
+  { key: 'courtTypes', label: 'Court Types', icon: 'folder', route: '/admin/court-types', admin: true },
   // Administration modules
   { key: 'users', label: 'User Management', icon: 'users', route: '/admin/users', admin: true },
   { key: 'roles', label: 'Role Management', icon: 'badge', route: '/admin/roles', admin: true },

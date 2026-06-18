@@ -24,6 +24,8 @@ import { RemindersSchema } from './reminders.schema.js';
 import { EnvVarsSchema } from './envVars.schema.js';
 import { ConfigHistorySchema } from './configHistory.schema.js';
 import { SchemaMetaSchema } from './schemaMeta.schema.js';
+import { CaseTypesSchema } from './caseTypes.schema.js';
+import { CourtsSchema } from './courts.schema.js';
 
 // Order matters for installation: parents (referenced collections) first so that
 // relations are satisfiable on backends that enforce them.
@@ -48,11 +50,13 @@ export const schemas = {
   envVars: EnvVarsSchema,
   configHistory: ConfigHistorySchema,
   settings: SettingsSchema,
+  caseTypes: CaseTypesSchema,
+  courts: CourtsSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 16;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

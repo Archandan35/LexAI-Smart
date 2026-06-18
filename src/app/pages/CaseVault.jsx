@@ -15,12 +15,13 @@ import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useCourts } from '@/hooks/useCourts.js';
+import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { preferencesService } from '@/services/preferencesService.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate } from '@/utils/format.js';
-import { COURTS } from '@/constants/courts.js';
-import { useCaseStages } from '@/hooks/useCaseStages.js';
+const STATUSES = ['Active', 'Disposed', 'Stayed', 'Appeal'];
 
 export default function CaseVault() {
   const nav = useNavigate();
@@ -29,6 +30,7 @@ export default function CaseVault() {
   const { refreshCases } = useAppData();
   const { can } = usePermissions();
   const { user } = useAuth();
+  const { courtNames } = useCourts();
   const { names: stageNames } = useCaseStages();
 
   const [open, setOpen] = useState(false);
@@ -79,7 +81,6 @@ export default function CaseVault() {
       const q = query.toLowerCase();
       rows = rows.filter((c) => `${c.caseNumber} ${c.title} ${combinedCourt(c)} ${c.judge || ''} ${c.advocate || ''} ${c.client || ''} ${(c.tags || []).join(' ')}`.toLowerCase().includes(q));
     }
-    // Watchlisted pinned to the top.
     return [...rows].sort((a, b) => (b.watch ? 1 : 0) - (a.watch ? 1 : 0));
   }, [cases, filters, query]);
 
@@ -102,13 +103,13 @@ export default function CaseVault() {
           <input placeholder="Search cases, judge, client, tags…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <select className="select" style={{ maxWidth: 180 }} value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
-          <option value="">All courts</option>{COURTS.map((c) => <option key={c}>{c}</option>)}
+          <option value="">All courts</option>{courtNames.map((c) => <option key={c}>{c}</option>)}
         </select>
         <select className="select" style={{ maxWidth: 170 }} value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
           <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
         </select>
         <select className="select" style={{ maxWidth: 150 }} value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
-          <option value="">All status</option>{['Active', 'Disposed', 'Stayed', 'Appeal'].map((s) => <option key={s}>{s}</option>)}
+          <option value="">All status</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
         {savedFilters.length > 0 && (
           <select className="select" style={{ maxWidth: 170 }} value="" onChange={(e) => { if (e.target.value) applyFilter(e.target.value); }}>
@@ -157,7 +158,7 @@ export default function CaseVault() {
                         <Icon name="star" size={15} className={c.watch ? 'star--on' : ''} fill={c.watch} />
                       </button>
                     </td>
-                    <td style={{ fontWeight: 650, cursor: 'pointer' }} onClick={() => nav(`/cases/${c.id}`)}>{c.caseNumber}</td>
+                    <td style={{ fontWeight: 650, cursor: 'pointer' }} onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
                     <td style={{ cursor: 'pointer' }} onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
                     <td>{combinedCourt(c)}</td>
                     <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>

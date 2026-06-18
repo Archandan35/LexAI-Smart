@@ -14,7 +14,15 @@ export const caseLogic = {
   get: (id) => caseService.getCase(id),
 
   async create(data, user) {
-    const row = await caseService.createCase({ ...data, archived: false, watch: false, stageHistory: [], createdAt: nowISO() });
+    const enriched = { ...data };
+    if (!enriched.case_display_number && enriched.case_type && enriched.case_number && enriched.case_year) {
+      enriched.case_display_number = `${enriched.case_type} No. ${enriched.case_number} of ${enriched.case_year}`;
+    }
+    if (!enriched.caseNumber) enriched.caseNumber = enriched.case_display_number || '';
+    if (!enriched.title && (enriched.plaintiff || enriched.defendant)) {
+      enriched.title = [enriched.plaintiff, enriched.defendant].filter(Boolean).join(' vs ');
+    }
+    const row = await caseService.createCase({ ...enriched, archived: false, watch: false, stageHistory: [], createdAt: nowISO() });
     await caseFolderLogic.ensureForCase(row.id);
     await caseActivityService.record(row.id, 'case.create', `Case created: ${row.caseNumber}`, user);
     return row;
@@ -22,17 +30,32 @@ export const caseLogic = {
 
   async update(id, patch, user) {
     const before = await caseService.getCase(id);
-    // Track stage changes into stageHistory.
-    if (patch.stage && before && patch.stage !== before.stage) {
+    const enriched = { ...patch };
+    if (enriched.case_type || enriched.case_number !== undefined || enriched.case_year !== undefined) {
+      const ct = enriched.case_type || before?.case_type || '';
+      const cn = enriched.case_number ?? before?.case_number;
+      const cy = enriched.case_year ?? before?.case_year;
+      if (ct && cn != null && cy) {
+        enriched.case_display_number = `${ct} No. ${cn} of ${cy}`;
+        if (!enriched.caseNumber) enriched.caseNumber = enriched.case_display_number;
+      }
+    }
+    if (enriched.plaintiff !== undefined || enriched.defendant !== undefined) {
+      const pl = enriched.plaintiff ?? before?.plaintiff ?? '';
+      const df = enriched.defendant ?? before?.defendant ?? '';
+      if (pl || df) enriched.title = [pl, df].filter(Boolean).join(' vs ');
+    }
+    if (enriched.stage && before && enriched.stage !== before.stage) {
       const entry = {
-        id: uid('sh'), from: before.stage || '—', to: patch.stage,
-        by: user?.name || 'system', at: nowISO(), remarks: patch.stageRemarks || '',
+        id: uid('sh'), from: before.stage || '—', to: enriched.stage,
+        by: user?.name || 'system', at: nowISO(), remarks: enriched.stageRemarks || '',
       };
-      patch = { ...patch, stageHistory: [entry, ...(before.stageHistory || [])] };
+      enriched.stageHistory = [entry, ...(before.stageHistory || [])];
+      delete enriched.stageRemarks;
       await caseActivityService.record(id, 'stage.change', `Stage: ${entry.from} → ${entry.to}`, user);
     }
-    delete patch.stageRemarks;
-    const row = await caseService.updateCase(id, patch);
+    delete enriched.stageRemarks;
+    const row = await caseService.updateCase(id, enriched);
     await caseActivityService.record(id, 'case.update', 'Case updated', user);
     return row;
   },

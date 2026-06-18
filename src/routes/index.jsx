@@ -42,6 +42,8 @@ import EnvApiManager from '@/app/pages/EnvApiManager.jsx';
 import DatabaseManager from '@/app/pages/DatabaseManager.jsx';
 import BootstrapAdmin from '@/app/pages/BootstrapAdmin.jsx';
 import SecuritySettings from '@/app/pages/SecuritySettings.jsx';
+import CaseTypes from '@/app/pages/CaseTypes.jsx';
+import CourtTypes from '@/app/pages/CourtTypes.jsx';
 
 // Guarded route helper.
 const G = (module, element) => <RequireAuth module={module}>{element}</RequireAuth>;
@@ -90,6 +92,8 @@ export default function AppRoutes() {
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
         <Route path="/admin/audit" element={G('audit', <AuditLogs />)} />
         <Route path="/admin/settings" element={G('settings', <SystemSettings />)} />
+        <Route path="/admin/case-types" element={G('caseTypes', <CaseTypes />)} />
+        <Route path="/admin/court-types" element={G('courtTypes', <CourtTypes />)} />
         <Route path="/admin/security" element={G('settings', <SecuritySettings />)} />
 
         <Route path="/404" element={<NotFound />} />
