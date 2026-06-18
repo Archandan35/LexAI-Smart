@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authLogic } from '@/logic/authLogic.js';
 import { userService } from '@/services/userService.js';
-import { useAuth } from '@/data-layer/AuthContext.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { Field, Input } from '@/components/Field.jsx';
 
 export default function BootstrapAdmin() {
   const nav = useNavigate();
-  const { refreshUser } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,9 +48,7 @@ export default function BootstrapAdmin() {
     setBusy(false);
 
     if (res.ok) {
-      // Re-read current user in the context to log them in
-      await refreshUser();
-      nav('/', { replace: true });
+      nav('/login', { replace: true });
     } else {
       setError(res.error || 'Failed to bootstrap super admin.');
     }
@@ -123,7 +119,7 @@ export default function BootstrapAdmin() {
             loading={busy}
             icon="shield"
           >
-            Create Super Admin & Login
+            Create Super Admin
           </Button>
         </form>
 

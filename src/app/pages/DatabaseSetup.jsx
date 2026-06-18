@@ -6,7 +6,7 @@ import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
 
 // DatabaseSetup — the first-run wizard shown when no schema is installed on the
 // active provider. Reuses the existing auth-shell styling (no inline/JSX CSS).
-export default function DatabaseSetup({ onComplete }) {
+export default function DatabaseSetup() {
   const [detect, setDetect] = useState(null);
   const [busy, setBusy] = useState(false);
   const [sql, setSql] = useState('');
@@ -25,16 +25,16 @@ export default function DatabaseSetup({ onComplete }) {
     setBusy(false);
     if (!res.ok) { setError(res.error || 'Install failed.'); return; }
     if (res.value.needsManual) { setSql(res.value.sql || ''); setError(res.value.reason || ''); await refresh(); return; }
-    onComplete?.();
+    window.location.href = '/bootstrap-admin';
   };
 
   return (
     <div className="auth-shell">
       <div className="auth-card fade-in">
         <div className="auth-brand">
-          <div className="sidebar__logo" style={{ width: 46, height: 46 }}>⚖</div>
+          <div className="sidebar__logo">⚖</div>
           <div>
-            <div className="sidebar__title" style={{ fontSize: 22 }}>Lex<span>AI</span></div>
+            <div className="auth-brand-title">Lex<span>AI</span></div>
             <div className="sidebar__sub">Database Setup</div>
           </div>
         </div>
@@ -44,22 +44,22 @@ export default function DatabaseSetup({ onComplete }) {
 
         {!detect ? <Spinner /> : (
           <>
-            <div className="kv"><span>Provider</span><b style={{ textTransform: 'capitalize' }}>{detect.provider}</b></div>
+            <div className="kv"><span>Provider</span><b className="dm-capitalize">{detect.provider}</b></div>
             <div className="kv"><span>Status</span><span>{detect.installed ? `Installed (v${detect.version})` : 'Not installed'}</span></div>
             <div className="kv"><span>Missing collections</span><span>{detect.missing?.length || 0} / {(detect.present?.length || 0) + (detect.missing?.length || 0)}</span></div>
           </>
         )}
 
-        {error && <div className="alert alert--warn" style={{ marginTop: 14 }}><Icon name="alert" size={16} /><span>{error}</span></div>}
+        {error && <div className="alert alert--warn dm-mt"><Icon name="alert" size={16} /><span>{error}</span></div>}
 
         {sql && (
-          <div style={{ marginTop: 12 }}>
+          <div className="dm-mt">
             <div className="auth-sub">Run this once in your provider's SQL editor, then re-check:</div>
             <pre className="code-block">{sql}</pre>
           </div>
         )}
 
-        <div style={{ marginTop: 16 }}>
+        <div className="dm-toolbar-mt">
           {sql
             ? <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={refresh}>I've run it — Re-check</Button>
             : <Button variant="primary" className="btn--block" icon="database" loading={busy} onClick={install}>Install Database</Button>}
