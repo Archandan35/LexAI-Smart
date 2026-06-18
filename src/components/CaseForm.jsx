@@ -4,6 +4,7 @@ import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
 import CaseTypeManager from './CaseTypeManager.jsx';
+import CourtTypeManager from './CourtTypeManager.jsx';
 import { CASE_TAGS } from '@/constants/caseFolders.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
@@ -25,9 +26,10 @@ function blank() {
 export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Save' }) {
   const { stages, names, refresh } = useCaseStages();
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
-  const { courtNames } = useCourts();
+  const { courts, courtNames, refresh: refreshCourts } = useCourts();
   const [stageMgr, setStageMgr] = useState(false);
   const [caseTypeMgr, setCaseTypeMgr] = useState(false);
+  const [courtTypeMgr, setCourtTypeMgr] = useState(false);
   const [form, setForm] = useState(() => {
     const base = { ...blank(), ...(initial || {}) };
     if (initial?.parties) {
@@ -119,11 +121,14 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
             {['Active', 'Disposed', 'Stayed', 'Appeal'].map((s) => <option key={s}>{s}</option>)}
           </Select>
         </Field>
-        <Field label="Court Type">
-          <Select value={form.court} onChange={(e) => set('court', e.target.value)}>
-            <option value="">Select court…</option>
-            {courtNames.map((c) => <option key={c}>{c}</option>)}
-          </Select>
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>Court Type</span>}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Select value={form.court} onChange={(e) => set('court', e.target.value)}>
+              <option value="">Select court…</option>
+              {courtNames.map((c) => <option key={c}>{c}</option>)}
+            </Select>
+            <button type="button" className="btn btn--ghost btn--sm" title="Manage court types" onClick={() => setCourtTypeMgr(true)}><Icon name="gear" size={15} /></button>
+          </div>
         </Field>
         <Field label="Court Name">
           <Input value={form.courtName} onChange={(e) => set('courtName', e.target.value)} placeholder="Athgarh" />
@@ -166,6 +171,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
 
       <StageManager open={stageMgr} stages={stages} onClose={() => setStageMgr(false)} onChanged={refresh} />
       <CaseTypeManager open={caseTypeMgr} caseTypes={caseTypes} onClose={() => setCaseTypeMgr(false)} onChanged={refreshCaseTypes} />
+      <CourtTypeManager open={courtTypeMgr} courts={courts} onClose={() => setCourtTypeMgr(false)} onChanged={refreshCourts} />
     </div>
   );
 }

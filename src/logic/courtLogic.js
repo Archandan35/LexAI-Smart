@@ -37,6 +37,14 @@ export const courtLogic = {
   async remove(id) {
     return ok(await courtService.remove(id));
   },
+
+  async reorder(orderedIds) {
+    for (let i = 0; i < orderedIds.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await courtService.update(orderedIds[i], { display_order: i });
+    }
+    return ok(true);
+  },
 };
 
 export default courtLogic;
