@@ -53,18 +53,23 @@ export const authLogic = {
         return fail('Name, email, and password are required.');
       }
 
+      // 1. Create Supabase Auth user (required for remote providers)
+      console.log('[Bootstrap] create auth user start');
       let userId = 'user_superadmin';
-      if (authService.signUp) {
-        try {
-          const authUser = await authService.signUp(email.toLowerCase(), password);
-          if (authUser && authUser.id) {
-            userId = authUser.id;
-          }
-        } catch (authErr) {
-          console.warn('[LexAI] Auth provider signup failed or skipped:', authErr);
+      try {
+        const authUser = await authService.signUp(email.toLowerCase(), password);
+        console.log('[Bootstrap] create auth user result:', !!authUser);
+        if (authUser && authUser.id) {
+          userId = authUser.id;
+          console.log('[Bootstrap] auth user id:', userId);
         }
+      } catch (authErr) {
+        console.warn('[Bootstrap] create auth user failed:', authErr.message);
+        return fail(`Failed to create auth account: ${authErr.message}. Ensure Supabase Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
       }
 
+      // 2. Create application user record
+      console.log('[Bootstrap] create application user start');
       const { salt, hash } = await hashPassword(password);
       const user = await userService.create({
         id: userId,
@@ -80,13 +85,19 @@ export const authLogic = {
         passwordHash: hash,
         createdAt: nowISO(),
       });
+      console.log('[Bootstrap] application user created:', user?.id);
 
+      // 3. Auto-login to verify credentials
+      console.log('[Bootstrap] auto login start');
       const signInResult = await this.login(email.toLowerCase(), password);
       if (!signInResult.ok) {
+        console.warn('[Bootstrap] auto login failed:', signInResult.error);
         return fail(`Bootstrap succeeded, but sign in failed: ${signInResult.error}`);
       }
+      console.log('[Bootstrap] auto login succeeded');
       return ok({ session: signInResult.data.session, user: signInResult.data.user });
     } catch (e) {
+      console.error('[Bootstrap] bootstrapAdmin error:', e);
       return fail(e);
     }
   },

@@ -6,6 +6,7 @@ import { roleService } from '@/services/roleService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
+import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
 
 const TIMEOUT_MS = 10000;
@@ -199,20 +200,18 @@ export default function BootstrapAdmin() {
             />
           </Field>
           <Field label="Password">
-            <Input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter password"
               required
             />
           </Field>
           <Field label="Confirm Password">
-            <Input
-              type="password"
+            <PasswordInput
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Confirm password"
               required
             />
           </Field>

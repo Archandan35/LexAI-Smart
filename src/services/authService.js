@@ -6,6 +6,7 @@ const auth = () => getAuthProvider();
 
 export const authService = {
   signIn: (identifier, password) => auth().signIn(identifier, password),
+  signUp: (email, password) => auth().signUp ? auth().signUp(email, password) : Promise.reject(new Error('Auth provider does not support signUp')),
   signOut: () => auth().signOut(),
   getSession: () => auth().getSession(),
   requestPasswordReset: (identifier) => auth().requestPasswordReset(identifier),

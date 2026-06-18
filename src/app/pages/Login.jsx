@@ -4,6 +4,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { userService } from '@/services/userService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
+import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
 
 export default function Login() {
@@ -79,7 +80,7 @@ export default function Login() {
             <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="e.g. admin@company.com" autoFocus />
           </Field>
           <Field label="Password">
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" />
           </Field>
           <Button type="submit" variant="primary" className="btn--block" loading={busy} icon="shield">Sign in</Button>
         </form>

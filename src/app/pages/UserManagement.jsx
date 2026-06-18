@@ -8,6 +8,7 @@ import { userLogic, isProtectedUser } from '@/logic/userLogic.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
+import PasswordInput from '@/components/PasswordInput.jsx';
 import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import Modal from '@/components/Modal.jsx';
@@ -209,7 +210,7 @@ export default function UserManagement() {
             </div>
             <div className="input-row">
               <Field label="Role"><RoleSelector roles={roles} value={form.roleCode} onChange={(v) => setForm({ ...form, roleCode: v })} /></Field>
-              <Field label="Password" hint="Required; minimum 8 characters"><Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" /></Field>
+              <Field label="Password" hint="Required; minimum 8 characters"><PasswordInput value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Enter password" /></Field>
             </div>
           </div>
         )}
