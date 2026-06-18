@@ -2,47 +2,11 @@ import { authService } from '@/services/authService.js';
 import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
 import { auditService } from '@/services/auditService.js';
-import { databaseAdminService } from '@/services/databaseAdminService.js';
-import { ROLE_TEMPLATES } from '@/constants/permissions.js';
 import { hashPassword } from '@/utils/crypto.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
 export const authLogic = {
-  // Ensure roles exist. Idempotent; safe to call on boot.
-  async ensureSeeded() {
-    try {
-      // Universal install step: make sure the active provider's collections/
-      // tables exist before we seed into them. On `local` this creates the blob
-      // arrays; on lazy backends (mongo/firebase) it's a reachability check; on
-      // supabase it surfaces any tables that still need their one-time SQL.
-      try { await databaseAdminService.ensureSchema({ coreOnly: true }); }
-      catch { /* never block boot on a migration probe */ }
-
-      const roles = await roleService.list();
-      if (!roles.length) {
-        for (const tpl of Object.values(ROLE_TEMPLATES)) {
-          if (tpl.code === 'custom') continue;
-          await roleService.create({
-            id: `role_${tpl.code}`,
-            code: tpl.code,
-            name: tpl.name,
-            description: tpl.description,
-            permissions: tpl.permissions,
-            all: !!tpl.all,
-            inheritsHierarchy: true,
-            system: true,
-            status: 'Active',
-            createdAt: nowISO(),
-          });
-        }
-      }
-      return ok({ seeded: true });
-    } catch (e) {
-      return fail(e);
-    }
-  },
-
   async bootstrapAdmin({ name, email, password }) {
     try {
       const users = await userService.list();
@@ -79,6 +43,24 @@ export const authLogic = {
           user: { id: userId, email, name },
           emailConfirmationRequired: true,
           message: 'Account created successfully. Please confirm your email before logging in.',
+        });
+      }
+
+      // 2.5. Create super_admin role if none exist (required for bootstrap)
+      const existingRoles = await roleService.list();
+      if (existingRoles.length === 0) {
+        console.log('[Bootstrap] no roles found — creating super_admin role');
+        await roleService.create({
+          id: 'role_super_admin',
+          code: 'super_admin',
+          name: 'Super Admin',
+          description: 'System super administrator',
+          permissions: [],
+          all: true,
+          inheritsHierarchy: false,
+          system: true,
+          status: 'Active',
+          createdAt: nowISO(),
         });
       }
 

@@ -19,7 +19,6 @@ export function AuthProviderCtx({ children }) {
   }, []);
 
   const boot = useCallback(async () => {
-    await authLogic.ensureSeeded();
     await loadRoles();
     const res = await authLogic.restore();
     setUser(res.ok && res.data ? res.data.user : null);

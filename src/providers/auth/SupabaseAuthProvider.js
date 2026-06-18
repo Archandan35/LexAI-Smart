@@ -81,7 +81,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
         name: data.user.email.split('@')[0],
         email: data.user.email,
         username: data.user.email.split('@')[0],
-        roleCode: isFirst ? 'super_admin' : 'advocate',
+        roleCode: '',
         status: 'Active',
         extraRoles: [],
         grants: [],

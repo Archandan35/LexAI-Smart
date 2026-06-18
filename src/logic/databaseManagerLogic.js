@@ -1,10 +1,11 @@
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { databaseHealthService } from '@/services/databaseHealthService.js';
-import { authLogic } from './authLogic.js';
+import { roleService } from '@/services/roleService.js';
 import { BackupManager } from './BackupManager.js';
 import { auditService } from '@/services/auditService.js';
 import { downloadFile } from '@/utils/exportData.js';
+import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
 // databaseManagerLogic — orchestration behind the Database Manager UI + Setup
@@ -22,6 +23,25 @@ function approxBytes(obj) {
 
 async function audit(action, user, details) {
   try { await auditService.record({ action, module: 'database', user, details }); } catch { /* never block */ }
+}
+
+async function seedSuperAdminRole() {
+  const roles = await roleService.list();
+  if (roles.length === 0) {
+    console.log('[LexAI install] creating super_admin role');
+    await roleService.create({
+      id: 'role_super_admin',
+      code: 'super_admin',
+      name: 'Super Admin',
+      description: 'System super administrator',
+      permissions: [],
+      all: true,
+      inheritsHierarchy: false,
+      system: true,
+      status: 'Active',
+      createdAt: nowISO(),
+    });
+  }
 }
 
 export const databaseManagerLogic = {
@@ -89,7 +109,7 @@ export const databaseManagerLogic = {
 
       console.log('[LexAI install] INSTALL STEP 2/5 — INSERT SCHEMA_META (via stamp in seed)');
       console.log('[LexAI install] INSTALL STEP 3/5 — INSERT ROLES');
-      await authLogic.ensureSeeded();
+      await seedSuperAdminRole();
       console.log('[LexAI install] INSTALL STEP 4/5 — INSERT PERMISSIONS');
       await databaseAdminService.seedPermissions();
       console.log('[LexAI install] INSTALL STEP 5/5 — INSERT SETTINGS (stamp)');
@@ -158,7 +178,7 @@ export const databaseManagerLogic = {
   async seedDemo(user) {
     try {
       await databaseAdminService.ensureSchema({ coreOnly: false });
-      await authLogic.ensureSeeded();
+      await seedSuperAdminRole();
       const permissions = await databaseAdminService.seedPermissions();
       const demo = await databaseAdminService.seedDemo();
       await audit('db.seed', user, 'Seeded demo data');
@@ -173,7 +193,7 @@ export const databaseManagerLogic = {
     try {
       await databaseAdminService.clearAll();
       await databaseAdminService.ensureSchema({ coreOnly: false });
-      await authLogic.ensureSeeded();
+      await seedSuperAdminRole();
       await databaseAdminService.seedPermissions();
       await databaseAdminService.seedDemo();
       await databaseAdminService.stampInstalled();

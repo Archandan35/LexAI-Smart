@@ -1,8 +1,7 @@
 import { roleService } from '@/services/roleService.js';
 import { userService } from '@/services/userService.js';
 import { auditService } from '@/services/auditService.js';
-import { ROLE_TEMPLATES } from '@/constants/permissions.js';
-import { nowISO } from '@/utils/id.js';
+import { uid, nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
 function slugCode(name) {
@@ -33,12 +32,12 @@ export const roleLogic = {
       const code = (data.code && data.code.trim()) || slugCode(name);
       const existing = await this.byCode(code);
       if (existing) return fail(`A role with code "${code}" already exists.`);
-      const tpl = ROLE_TEMPLATES[data.template] || ROLE_TEMPLATES.custom;
       const row = await roleService.create({
+        id: uid('role'),
         code,
         name,
-        description: data.description || tpl.description || '',
-        permissions: data.permissions || tpl.permissions || [],
+        description: data.description || '',
+        permissions: data.permissions || [],
         all: !!data.all,
         inheritsHierarchy: data.inheritsHierarchy !== false,
         system: false,

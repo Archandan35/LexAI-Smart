@@ -37,26 +37,27 @@ export async function runIntegrationTest() {
 
     // 5. Create Custom Role
     const roleRes = await roleLogic.create({
-      name: 'Advocate Intern',
-      code: 'advocate_intern',
-      description: 'An intern role with limited access',
+      name: 'Test Role',
+      code: 'test_role',
+      description: 'A test role',
       permissions: ['cases.view', 'drafting.view', 'citations.view'],
     }, adminUser);
     if (!roleRes.ok) throw new Error(roleRes.error);
-    log('Create Custom Role', true, 'Created new custom role "advocate_intern".');
+    log('Create Custom Role', true, `Created new custom role "${roleRes.data.code}".`);
 
     // 6. Create User
+    const testRoleCode = roleRes.data.code || 'test_role';
     const userRes = await userLogic.create({
       name: 'Jane Intern',
       email: 'jane@lexai.local',
       username: 'janeintern',
-      roleCode: 'advocate_intern',
+      roleCode: testRoleCode,
       password: 'InternPassword@123',
       status: 'Active',
     }, adminUser);
     if (!userRes.ok) throw new Error(userRes.error);
     const internUser = userRes.data;
-    log('Create User', true, `Created user record linked to "advocate_intern" role: ${internUser.email}`);
+    log('Create User', true, `Created user record linked to "${testRoleCode}" role: ${internUser.email}`);
 
     // 7. Logout
     await authLogic.logout(adminUser);
@@ -69,8 +70,8 @@ export async function runIntegrationTest() {
     log('Login As User', true, `Logged in successfully as ${activeUser.name}.`);
 
     // Verify role assignment is active
-    if (activeUser.roleCode !== 'advocate_intern') throw new Error('Role assignment verification failed.');
-    log('Role Assignment Verification', true, `Confirmed roleCode matches "advocate_intern".`);
+    if (activeUser.roleCode !== testRoleCode) throw new Error('Role assignment verification failed.');
+    log('Role Assignment Verification', true, `Confirmed roleCode matches "${testRoleCode}".`);
 
     // Clean up
     await authLogic.logout(activeUser);

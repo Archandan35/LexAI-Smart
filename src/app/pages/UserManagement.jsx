@@ -19,7 +19,7 @@ import { Field, Input } from '@/components/Field.jsx';
 import { exportCsv } from '@/utils/exportData.js';
 import { formatDate, fromNow } from '@/utils/format.js';
 
-const BLANK = { name: '', email: '', username: '', roleCode: 'advocate', password: '', status: 'Active' };
+const BLANK = { name: '', email: '', username: '', roleCode: '', password: '', status: 'Active' };
 
 export default function UserManagement() {
   const { users, loading, refresh } = useUsers();

@@ -17,7 +17,7 @@ import Toggle from '@/components/Toggle.jsx';
 import RoleForm from '@/components/RoleForm.jsx';
 import PermissionMatrix from '@/components/PermissionMatrix.jsx';
 import { Field, Select } from '@/components/Field.jsx';
-import { ROLE_TEMPLATES, ROLE_HIERARCHY } from '@/constants/permissions.js';
+import { ROLE_HIERARCHY } from '@/constants/permissions.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDateTime } from '@/utils/format.js';
 
@@ -82,7 +82,7 @@ export default function RoleDetails() {
 
   const openAssign = async () => { setUsers(await userLogic.list()); setAssignOpen(true); };
   const assignUser = async (u, attach) => {
-    await userLogic.update(u.id, { roleCode: attach ? role.code : 'advocate' }, user);
+    await userLogic.update(u.id, { roleCode: attach ? role.code : '' }, user);
     setUsers(await userLogic.list());
     toast.push(attach ? `Assigned ${u.name}.` : `Unassigned ${u.name}.`, 'success');
   };
@@ -130,7 +130,7 @@ export default function RoleDetails() {
                 onChange={async (v) => { await roleLogic.update(role.id, { inheritsHierarchy: v }, user); await load(); await loadRoles(); }}
               />
               <div style={{ marginTop: 10, fontSize: 12.5, color: 'var(--text-soft)' }}>
-                {inheritedFrom.length ? <>Inherits from: {inheritedFrom.map((c) => <Badge key={c} tone="grey">{ROLE_TEMPLATES[c]?.name || c}</Badge>)}</> : 'No lower roles in chain.'}
+                {inheritedFrom.length ? <>Inherits from: {inheritedFrom.map((c) => <Badge key={c} tone="grey">{allRoles.find((r) => r.code === c)?.name || c}</Badge>)}</> : 'No lower roles in chain.'}
               </div>
             </>
           )}
