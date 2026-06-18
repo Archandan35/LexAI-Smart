@@ -13,19 +13,24 @@ export default function SetupGate({ children }) {
   const check = async () => {
     try {
       const res = await databaseManagerLogic.detect();
-      if (res.ok && res.value.needsSetup) {
+      if (!res.ok || res.value.needsSetup) {
+        // Detection failed OR schema not fully installed — show setup wizard.
+        // DO NOT fall through to userService.list() — it will 404 on an empty
+        // database (fresh Supabase has no tables, so /rest/v1/users returns 404).
         setState('setup');
         return;
       }
-      // Schema is installed — check if any users exist
-      const users = await userService.list();
+      // Schema is confirmed installed — check if any users exist
+      const users = await userService.list().catch(() => []);
       if (!users || users.length === 0) {
         setState('bootstrap');
         return;
       }
       setState('ready');
     } catch {
-      setState('ready');
+      // Any error during detection — show setup wizard rather than rendering
+      // the auth-guarded app on an empty database (which causes 404 cascades).
+      setState('setup');
     }
   };
 

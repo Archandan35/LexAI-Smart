@@ -45,19 +45,21 @@ export const databaseInstaller = {
     const version = await schemaVersionManager.getVersion();
     const present = [];
     const missing = [];
+    let coreMissing = false;
     for (const s of listSchemas()) {
       // eslint-disable-next-line no-await-in-loop
       const exists = await provider.collectionExists(s.collection).catch(() => false);
       (exists ? present : missing).push(s.collection);
+      if (!exists && s.core) coreMissing = true;
     }
     return {
       provider: this.provider(),
-      installed: version > 0,
+      installed: version > 0 && !coreMissing,
       version,
       targetVersion: schemaVersionManager.targetVersion(),
       present,
       missing,
-      needsSetup: version === 0,
+      needsSetup: version === 0 || coreMissing,
     };
   },
 
