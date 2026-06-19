@@ -1,5 +1,5 @@
 export const CaseTypesSchema = {
-  collection: 'caseTypes',
+  collection: 'case_types',
   label: 'Case Types',
   primaryKey: 'id',
   core: false,

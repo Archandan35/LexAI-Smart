@@ -38,12 +38,9 @@ export const PermissionEngine = {
   canManageMappings(roleCode) { return this.can(roleCode, 'manage_mappings'); },
   canManageProviders(roleCode) { return this.can(roleCode, 'manage_providers'); },
 
-  // Database role mapping: Supabase anon/authenticated → LexAI PostgreSQL role
+  // Database role mapping: application role → role code (used by current_user_role())
   mapToDatabaseRole(roleCode) {
-    const role = this.getRole(roleCode);
-    if (role.level >= 100) return 'lexai_admin';
-    if (role.level >= 50) return 'lexai_manager';
-    return 'lexai_user';
+    return roleCode;
   },
 
   // Page-level access: control which pages a role can access

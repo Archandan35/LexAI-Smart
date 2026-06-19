@@ -1,6 +1,6 @@
 // Universal schema — causeListTemplates (cause-list rendering definitions).
 export const CauseListTemplatesSchema = {
-  collection: 'causeListTemplates',
+  collection: 'cause_list_templates',
   label: 'Cause List Templates',
   primaryKey: 'id',
   core: false,

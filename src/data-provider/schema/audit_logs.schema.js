@@ -1,6 +1,6 @@
 // Universal schema — auditLogs. Append-only security/event trail.
 export const AuditLogsSchema = {
-  collection: 'auditLogs',
+  collection: 'audit_logs',
   label: 'Audit Logs',
   primaryKey: 'id',
   core: true,

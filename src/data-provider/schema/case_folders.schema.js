@@ -1,6 +1,6 @@
 // Universal schema — caseFolders (per-case document folder tree).
 export const CaseFoldersSchema = {
-  collection: 'caseFolders',
+  collection: 'case_folders',
   label: 'Case Folders',
   primaryKey: 'id',
   core: false,

@@ -1,6 +1,6 @@
 // Universal schema — caseActivity (per-case activity feed).
 export const CaseActivitySchema = {
-  collection: 'caseActivity',
+  collection: 'case_activity',
   label: 'Case Activity',
   primaryKey: 'id',
   core: false,

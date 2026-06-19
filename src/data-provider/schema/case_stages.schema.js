@@ -1,6 +1,6 @@
 // Universal schema — caseStages (stage definitions / ordering).
 export const CaseStagesSchema = {
-  collection: 'caseStages',
+  collection: 'case_stages',
   label: 'Case Stages',
   primaryKey: 'id',
   core: false,

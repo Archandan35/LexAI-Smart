@@ -1,19 +1,7 @@
-// Step 002 — RBAC roles + exec_sql + safe_ddl + safe_create_fk
+// Step 002 — exec_sql + safe_ddl + safe_create_fk (RBAC roles removed — Supabase-first via current_user_role())
 export const version = 2;
-export const description = 'Create RBAC roles, exec_sql, safe_ddl, safe_create_fk functions';
+export const description = 'Create exec_sql, safe_ddl, safe_create_fk functions';
 export const sql = `
-do $$ begin
-  if not exists (select from pg_roles where rolname = 'lexai_admin') then
-    create role lexai_admin;
-  end if;
-  if not exists (select from pg_roles where rolname = 'lexai_manager') then
-    create role lexai_manager;
-  end if;
-  if not exists (select from pg_roles where rolname = 'lexai_user') then
-    create role lexai_user;
-  end if;
-end $$;
-
 create or replace function exec_sql(sql text)
 returns void
 language plpgsql
@@ -95,9 +83,7 @@ end;
 $$;
 
 grant execute on function exec_sql(text) to authenticated;
-grant execute on function exec_sql(text) to lexai_admin;
 grant execute on function safe_ddl(text) to authenticated;
-grant execute on function safe_ddl(text) to lexai_manager;
 
 create or replace function safe_create_fk(
   p_source_table text,

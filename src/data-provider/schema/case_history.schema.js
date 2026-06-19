@@ -1,6 +1,6 @@
 // Universal schema — caseHistory (per-case stage/proceeding timeline).
 export const CaseHistorySchema = {
-  collection: 'caseHistory',
+  collection: 'case_history',
   label: 'Case History',
   primaryKey: 'id',
   core: false,

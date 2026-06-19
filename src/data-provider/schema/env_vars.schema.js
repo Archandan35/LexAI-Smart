@@ -1,6 +1,6 @@
 // Universal schema — envVars (managed environment-variable overrides).
 export const EnvVarsSchema = {
-  collection: 'envVars',
+  collection: 'env_vars',
   label: 'Environment Variables',
   primaryKey: 'id',
   core: false,

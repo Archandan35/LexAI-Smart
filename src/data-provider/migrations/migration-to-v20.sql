@@ -123,9 +123,7 @@ end;
 $$;
 
 grant execute on function exec_sql(text) to authenticated;
-grant execute on function exec_sql(text) to lexai_admin;
 grant execute on function safe_ddl(text) to authenticated;
-grant execute on function safe_ddl(text) to lexai_manager;
 
 -- ============================================================
 -- 4. P5: Add current_user_role() for Supabase auth compatibility
@@ -135,11 +133,11 @@ returns text
 language plpgsql
 security definer
 stable
+set search_path = 'public'
 as $$
 declare
   v_role text;
 begin
-  if current_setting('role', true) = 'lexai_admin' then return 'admin'; end if;
   begin
     if auth.uid() is null then
       if current_user = 'anon' then return 'anon'; end if;

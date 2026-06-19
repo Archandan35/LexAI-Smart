@@ -12,7 +12,7 @@ import { EntityRegistry } from '@/core/EntityRegistry.js';
 import { UsersSchema } from './users.schema.js';
 import { RolesSchema } from './roles.schema.js';
 import { PermissionsSchema } from './permissions.schema.js';
-import { AuditLogsSchema } from './auditLogs.schema.js';
+import { AuditLogsSchema } from './audit_logs.schema.js';
 import { CasesSchema } from './cases.schema.js';
 import { DocumentsSchema } from './documents.schema.js';
 import { SettingsSchema } from './settings.schema.js';
@@ -20,16 +20,16 @@ import { DraftsSchema } from './drafts.schema.js';
 import { HearingsSchema } from './hearings.schema.js';
 import { NotesSchema } from './notes.schema.js';
 import { JudgmentsSchema } from './judgments.schema.js';
-import { CauseListTemplatesSchema } from './causeListTemplates.schema.js';
-import { CaseFoldersSchema } from './caseFolders.schema.js';
-import { CaseHistorySchema } from './caseHistory.schema.js';
-import { CaseActivitySchema } from './caseActivity.schema.js';
-import { CaseStagesSchema } from './caseStages.schema.js';
+import { CauseListTemplatesSchema } from './cause_list_templates.schema.js';
+import { CaseFoldersSchema } from './case_folders.schema.js';
+import { CaseHistorySchema } from './case_history.schema.js';
+import { CaseActivitySchema } from './case_activity.schema.js';
+import { CaseStagesSchema } from './case_stages.schema.js';
 import { RemindersSchema } from './reminders.schema.js';
-import { EnvVarsSchema } from './envVars.schema.js';
-import { ConfigHistorySchema } from './configHistory.schema.js';
-import { SchemaMetaSchema } from './schemaMeta.schema.js';
-import { CaseTypesSchema } from './caseTypes.schema.js';
+import { EnvVarsSchema } from './env_vars.schema.js';
+import { ConfigHistorySchema } from './config_history.schema.js';
+import { SchemaMetaSchema } from './schema_meta.schema.js';
+import { CaseTypesSchema } from './case_types.schema.js';
 import { CourtsSchema } from './courts.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
@@ -49,17 +49,17 @@ export const schemas = {
   hearings: HearingsSchema,
   notes: NotesSchema,
   judgments: JudgmentsSchema,
-  causeListTemplates: CauseListTemplatesSchema,
-  caseFolders: CaseFoldersSchema,
-  caseHistory: CaseHistorySchema,
-  caseActivity: CaseActivitySchema,
-  caseStages: CaseStagesSchema,
+  cause_list_templates: CauseListTemplatesSchema,
+  case_folders: CaseFoldersSchema,
+  case_history: CaseHistorySchema,
+  case_activity: CaseActivitySchema,
+  case_stages: CaseStagesSchema,
   reminders: RemindersSchema,
-  auditLogs: AuditLogsSchema,
-  envVars: EnvVarsSchema,
-  configHistory: ConfigHistorySchema,
+  audit_logs: AuditLogsSchema,
+  env_vars: EnvVarsSchema,
+  config_history: ConfigHistorySchema,
   settings: SettingsSchema,
-  caseTypes: CaseTypesSchema,
+  case_types: CaseTypesSchema,
   courts: CourtsSchema,
 };
 
@@ -76,7 +76,9 @@ export const coreCollections = Object.values(schemas)
   .map((s) => s.collection);
 
 export function getSchema(collection) {
-  return schemas[collection] || null;
+  return schemas[collection]
+    || Object.values(schemas).find(s => s.collection === collection)
+    || null;
 }
 
 export function listSchemas() {

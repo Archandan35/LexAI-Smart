@@ -1,6 +1,6 @@
 // Universal schema — configHistory (masked configuration-change log).
 export const ConfigHistorySchema = {
-  collection: 'configHistory',
+  collection: 'config_history',
   label: 'Config History',
   primaryKey: 'id',
   core: false,
