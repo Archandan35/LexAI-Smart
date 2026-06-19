@@ -285,13 +285,6 @@ function systemSqlExecSql() {
     "    return query select '{\"ok\":true}'::jsonb;",
     'end;',
     '$$;',
-    '  if exists (select 1 from pg_tables where tablename = \'migration_registry\') then',
-    "    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)",
-    "    values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);",
-    '  end if;',
-    '  execute sql;',
-    'end;',
-    '$$;',
   ].join('\n');
 }
 
