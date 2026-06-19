@@ -12,7 +12,7 @@ export const databaseInstaller = {
     return artifact?.text?.length > 0;
   },
 
-  async detect() {
+  async detect(onProgress) {
     const provider = getDatabaseProvider();
     const providerName = this.provider();
 
@@ -22,13 +22,20 @@ export const databaseInstaller = {
     const missing = [];
     let coreMissing = false;
     let authError = null;
+    let timeout = false;
 
-    for (const s of listSchemas()) {
+    const schemas = listSchemas();
+    const controller = new AbortController();
+    const timer = setTimeout(() => { controller.abort(); timeout = true; }, 30000);
+
+    for (const [i, s] of schemas.entries()) {
+      if (timeout) break;
+      if (onProgress) onProgress({ step: i + 1, total: schemas.length, label: `Checking ${s.collection}...`, status: 'working' });
       let exists = false;
       try {
         exists = await provider.collectionExists(s.collection);
       } catch (e) {
-        if (e.message && e.message.includes('auth denied')) {
+        if (e.message && (e.message.includes('auth denied') || e.message.includes('Auth denied'))) {
           authError = authError || e.message;
         }
         exists = false;
@@ -36,6 +43,7 @@ export const databaseInstaller = {
       (exists ? present : missing).push(s.collection);
       if (!exists && s.core) coreMissing = true;
     }
+    clearTimeout(timer);
 
     if (authError) {
       return {
@@ -48,6 +56,21 @@ export const databaseInstaller = {
         needsSetup: true,
         partialInstall: false,
         authError,
+      };
+    }
+
+    if (timeout) {
+      return {
+        provider: providerName,
+        installed: present.length > 0 && !coreMissing,
+        version,
+        targetVersion: schemaVersionManager.targetVersion(),
+        present,
+        missing,
+        needsSetup: true,
+        partialInstall: present.length > 0 && !coreMissing && version === 0,
+        timeout: true,
+        error: `Detection timed out after 30s. ${present.length} of ${schemas.length} collections checked.`,
       };
     }
 

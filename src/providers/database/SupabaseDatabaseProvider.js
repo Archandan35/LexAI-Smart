@@ -90,11 +90,20 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
   // Throws on auth errors (401/403) so callers can distinguish "no table" from
   // "can't check."
   async collectionExists(name) {
-    const res = await fetch(`${this.#endpoint(name)}?limit=1`, { headers: this.#headers() });
-    if (res.status === 401 || res.status === 403) {
-      throw new Error(`Supabase auth denied (${res.status}) for ${name}`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    try {
+      const res = await fetch(`${this.#endpoint(name)}?limit=1`, { headers: this.#headers(), signal: controller.signal });
+      clearTimeout(timer);
+      if (res.status === 401 || res.status === 403) {
+        throw new Error(`Auth denied (${res.status}) for ${name}`);
+      }
+      return res.ok;
+    } catch (e) {
+      clearTimeout(timer);
+      if (e?.name === 'AbortError') throw new Error(`Timeout probing ${name}`);
+      throw e;
     }
-    return res.ok;
   }
 
   // Efficient Postgres count via PostgREST range header.

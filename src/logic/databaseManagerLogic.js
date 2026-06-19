@@ -24,8 +24,8 @@ async function audit(action, user, details) {
 
 export const databaseManagerLogic = {
   // ---- detection (Setup Wizard) ----
-  async detect() {
-    try { return ok(await databaseAdminService.detect()); }
+  async detect(onProgress) {
+    try { return ok(await databaseAdminService.detect(onProgress)); }
     catch (e) { return fail(e); }
   },
 

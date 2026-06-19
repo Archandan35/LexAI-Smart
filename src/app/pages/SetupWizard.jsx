@@ -107,18 +107,22 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
   const refresh = useCallback(async () => {
     setError('');
-    const res = await databaseManagerLogic.detect();
+    setProgress({ step: 2, total: 7, label: 'Detecting schema...', status: 'working' });
+    const res = await databaseManagerLogic.detect((p) => {
+      setProgress({ step: 2 + (p.step / p.total) * 0.9, total: 7, label: p.label, status: 'working' });
+    });
     if (res.ok) {
       const d = res.data;
       setDetect(d);
       if (d.authError) setError(`Auth error: ${d.authError}.`);
       if (d.partialInstall) setSql('');
+      setProgress({ step: 3, total: 7, label: 'Schema detected', status: 'done' });
     } else {
       setError(res.error || 'Detection failed.');
+      setProgress(null);
     }
+    return res;
   }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
 
   const goToStep = (s) => { setStep(s); setError(''); };
 
@@ -139,33 +143,40 @@ export default function SetupWizard({ detectError: propDetectError }) {
   // --- SIMPLE SETUP ---
   const handleSimpleConnect = async () => {
     if (!projectUrl || !anonKey) { setError('Project URL and Anon Key are required.'); return; }
-    setBusy(true); setError('');
+    setBusy(true); setError(''); setProgress(null);
     const res = await ConnectionTester.testBackend(projectUrl, anonKey);
     setBusy(false);
     if (!res.ok) { setError(res.error || 'Connection failed.'); return; }
     goToStep(2);
 
     setBusy(true);
-    const ctx = await refresh();
-    const detectRes = await databaseManagerLogic.detect();
+    setProgress({ step: 2, total: 7, label: 'Detecting schema...', status: 'working' });
+    const detectRes = await databaseManagerLogic.detect((p) => {
+      setProgress({ step: 2 + (p.step / p.total) * 0.9, total: 7, label: p.label, status: 'working' });
+    });
     setBusy(false);
 
     if (detectRes.ok) {
       setDetect(detectRes.data);
+      setProgress({ step: 3, total: 7, label: 'Schema detected', status: 'done' });
       goToStep(3);
+      setProgress({ step: 3, total: 7, label: 'Generating installation plan...', status: 'working' });
       const p = await InstallationPlanner.plan(detectRes.data);
       setPlan(p);
+      setProgress({ step: 4, total: 7, label: 'Plan ready', status: 'done' });
       goToStep(4);
       if (p.needsManual && p.sql) {
         setSql(p.sql);
         const provider = getDatabaseProvider();
         setExecSqlSupported(typeof provider.execSql === 'function' && p.sql.length > 0);
+        setProgress(null);
         goToStep(5);
       } else {
         handleAutoInstall(p);
       }
     } else {
       setError(detectRes.error || 'Detection failed.');
+      setProgress(null);
     }
   };
 
@@ -581,14 +592,15 @@ export default function SetupWizard({ detectError: propDetectError }) {
             )}
 
             {/* --- PROGRESS --- */}
-            {progress && (
+            {(progress || busy) && (
               <div className="wizard-progress dm-mt">
                 <div className="wizard-progress__bar">
                   <div className="wizard-progress__fill" style={{ width: `${progressPct}%` }} />
                 </div>
                 <div className="wizard-progress__label">
-                  {progress.label || 'Working...'}
-                  <span className="wizard-progress__pct"> ({progressPct}%)</span>
+                  {progress?.status === 'done' ? <Icon name="check" size={14} /> : busy ? <Spinner /> : null}
+                  <span>{progress?.label || (busy ? 'Working...' : '')}</span>
+                  {progress && <span className="wizard-progress__pct"> ({progressPct}%)</span>}
                 </div>
               </div>
             )}

@@ -19,13 +19,18 @@ export const ConnectionTester = {
     }
   },
 
-  async testBackend(url, key) {
+  async testBackend(url, key, timeout = 8000) {
     try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
       const res = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/`, {
         headers: { apikey: key, Authorization: `Bearer ${key}` },
+        signal: controller.signal,
       });
+      clearTimeout(timer);
       return { ok: res.ok || res.status < 500, status: res.status };
     } catch (e) {
+      if (e?.name === 'AbortError') return { ok: false, error: 'Connection timed out — check your Project URL.' };
       return { ok: false, error: e?.message || 'Connection refused' };
     }
   },

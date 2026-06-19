@@ -37,7 +37,7 @@ export const databaseAdminService = {
   installSql() { return migrationEngine.installSql(); },
 
   // ---- installer (auto schema install + detection) ----
-  detect() { return databaseInstaller.detect(); },
+  detect(onProgress) { return databaseInstaller.detect(onProgress); },
   installSchemaStructures(onProgress) { return databaseInstaller.installSchema(onProgress); },
   installArtifact() { return databaseInstaller.artifact(); },
   stampInstalled() { return databaseInstaller.stampInstalled(); },
