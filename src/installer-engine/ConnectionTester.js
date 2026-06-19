@@ -1,5 +1,6 @@
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { config } from '@/config/config.js';
+import { BackendGateway } from '@/backend/BackendGateway.js';
 
 export const ConnectionTester = {
   async testProvider() {
@@ -12,10 +13,7 @@ export const ConnectionTester = {
       const msg = e?.message || String(e);
       const authDenied = msg.includes('auth denied') || msg.includes('Auth error') || msg.includes('401') || msg.includes('403');
       return {
-        ok: false,
-        provider: name,
-        connected: false,
-        authDenied,
+        ok: false, provider: name, connected: false, authDenied,
         error: authDenied ? 'Authentication denied — check API key and project URL.' : msg,
       };
     }
@@ -32,19 +30,19 @@ export const ConnectionTester = {
     }
   },
 
+  // Direct database connection test — routes through the backend gateway.
+  // The frontend NEVER connects to a database directly; all privileged
+  // operations happen server-side via the configured backend API.
   async testDirect(host, port, database, username, password) {
-    const payload = { host, port, database, username, password };
-    try {
-      const res = await fetch('/api/database/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      return { ok: res.ok, ...data };
-    } catch {
-      return { ok: false, error: 'Backend API unavailable — direct connection requires a server-side API.' };
+    if (!BackendGateway.configured) {
+      return {
+        ok: false,
+        error: 'Backend not configured. Set VITE_BACKEND_URL to point to your API server, or use Simple Setup / Copy-Paste Setup instead.',
+        needsBackend: true,
+      };
     }
+    const payload = { host, port, database, username, password };
+    return BackendGateway.testDatabase(payload);
   },
 };
 

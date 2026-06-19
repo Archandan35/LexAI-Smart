@@ -9,6 +9,8 @@ import { InstallationExecutor } from '@/installer-engine/InstallationExecutor.js
 import { ConnectionTester } from '@/installer-engine/ConnectionTester.js';
 import { ValidationEngine } from '@/installer-engine/ValidationEngine.js';
 import { UploadAnalyzer } from '@/installer-engine/UploadAnalyzer.js';
+import BackendStatusPanel from '@/components/BackendStatusPanel.jsx';
+import { backendConfig } from '@/config/backend.js';
 
 const METHODS = [
   { id: 'simple', icon: 'bolt', label: 'Simple Setup', desc: 'Project URL + API key — ideal for Supabase' },
@@ -319,6 +321,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
           <>
             <h1 className="auth-title">Install Database</h1>
             <p className="auth-sub">Choose your installation method</p>
+            <BackendStatusPanel />
             <div className="wizard-methods">
               {METHODS.map((m) => (
                 <MethodCard key={m.id} method={m} selected={method === m.id} onSelect={handleMethodSelect} />
@@ -365,6 +368,13 @@ export default function SetupWizard({ detectError: propDetectError }) {
             {/* --- ADVANCED SETUP FORM --- */}
             {method === 'advanced' && step === 1 && (
               <div className="dm-mt">
+                <BackendStatusPanel />
+                {!backendConfig.configured && (
+                  <div className="alert alert--info dm-mt" style={{ marginBottom: 16 }}>
+                    <Icon name="info" size={16} />
+                    <span>Advanced Setup requires a backend API server. Set <b>VITE_BACKEND_URL</b> in your environment to connect, or use <b>Simple Setup</b> or <b>Copy-Paste Setup</b> instead.</span>
+                  </div>
+                )}
                 <p className="auth-sub--sm">Enter direct database connection details</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
                   <Field label="Host">
