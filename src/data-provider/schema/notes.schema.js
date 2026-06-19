@@ -6,16 +6,16 @@ export const NotesSchema = {
   core: false,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     title: 'string',
     body: 'string',
-    createdAt: 'datetime',
-    updatedAt: 'datetime',
+    created_at: 'datetime',
+    updated_at: 'datetime',
   },
-  required: ['caseId'],
+  required: ['case_id'],
   defaults: { body: '' },
-  relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId'],
+  relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
+  indexes: ['case_id'],
 };
 
 export default NotesSchema;

@@ -6,18 +6,18 @@ export const DraftsSchema = {
   core: false,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     type: 'string',
     title: 'string',
     content: 'string',
     versions: 'array',
-    createdAt: 'datetime',
-    updatedAt: 'datetime',
+    created_at: 'datetime',
+    updated_at: 'datetime',
   },
   required: ['title'],
   defaults: { versions: [] },
-  relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId', 'type'],
+  relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
+  indexes: ['case_id', 'type'],
 };
 
 export default DraftsSchema;

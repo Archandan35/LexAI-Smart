@@ -6,20 +6,20 @@ export const RemindersSchema = {
   core: false,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     type: 'string',
     title: 'string',
     date: 'datetime',
-    dueAt: 'datetime',
+    due_at: 'datetime',
     done: 'boolean',
     status: 'string',
-    createdAt: 'datetime',
-    updatedAt: 'datetime',
+    created_at: 'datetime',
+    updated_at: 'datetime',
   },
-  required: ['caseId'],
+  required: ['case_id'],
   defaults: { type: 'Hearing Date', done: false, status: 'pending' },
-  relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId', 'dueAt', 'status'],
+  relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
+  indexes: ['case_id', 'due_at', 'status'],
 };
 
 export default RemindersSchema;

@@ -9,7 +9,7 @@ export const CaseStagesSchema = {
     name: 'string',
     order: 'number',
     category: 'string',
-    createdAt: 'datetime',
+    created_at: 'datetime',
   },
   required: ['name'],
   defaults: { order: 0 },

@@ -10,9 +10,9 @@ export const SchemaMetaSchema = {
     id: 'string',
     version: 'number',
     provider: 'string',
-    appVersion: 'string',
-    installedAt: 'datetime',
-    updatedAt: 'datetime',
+    app_version: 'string',
+    installed_at: 'datetime',
+    updated_at: 'datetime',
     history: 'array', // [{ version, action: 'install'|'upgrade'|'rollback', at }]
   },
   required: ['version'],

@@ -20,6 +20,11 @@ language plpgsql
 security definer
 as $$
 begin
+  if exists (select 1 from pg_proc where proname = 'current_user_role') then
+    if current_user_role() != 'admin' then
+      raise exception 'exec_sql: only admin can execute arbitrary SQL';
+    end if;
+  end if;
   if exists (select 1 from pg_tables where tablename = 'migration_registry') then
     insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)
     values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);
@@ -36,6 +41,11 @@ as $$
 declare
   v_upper text;
 begin
+  if exists (select 1 from pg_proc where proname = 'current_user_role') then
+    if current_user_role() NOT IN ('admin', 'manager') then
+      raise exception 'safe_ddl: only admin or manager can execute DDL';
+    end if;
+  end if;
   v_upper := upper(sql);
   if v_upper ~ '^\\s*DROP\\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then
     raise exception 'safe_ddl: DROP is not permitted';
@@ -84,7 +94,9 @@ begin
 end;
 $$;
 
+grant execute on function exec_sql(text) to authenticated;
 grant execute on function exec_sql(text) to lexai_admin;
+grant execute on function safe_ddl(text) to authenticated;
 grant execute on function safe_ddl(text) to lexai_manager;
 
 create or replace function safe_create_fk(
@@ -99,7 +111,12 @@ language plpgsql
 as $safe_fk$
 declare
   v_exists boolean;
+  v_upper_on_delete text;
 begin
+  v_upper_on_delete := upper(p_on_delete);
+  if v_upper_on_delete not in ('CASCADE', 'SET NULL', 'RESTRICT', 'NO ACTION', 'SET DEFAULT') then
+    raise exception 'safe_create_fk: invalid ON DELETE action: % (must be CASCADE, SET NULL, RESTRICT, NO ACTION, or SET DEFAULT)', p_on_delete;
+  end if;
   select exists (
     select 1 from pg_constraint c
     join pg_class t on t.oid = c.conrelid
@@ -119,7 +136,7 @@ begin
   execute format($fmt$
     alter table %I add constraint %I
     foreign key (%I) references %I (%I) on delete %s
-  $fmt$, p_source_table, p_constraint_name, p_source_column, p_target_table, p_target_column, upper(p_on_delete));
+  $fmt$, p_source_table, p_constraint_name, p_source_column, p_target_table, p_target_column, v_upper_on_delete);
 end;
 $safe_fk$;
 `;

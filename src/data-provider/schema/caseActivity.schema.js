@@ -6,16 +6,16 @@ export const CaseActivitySchema = {
   core: false,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     action: 'string',
     message: 'string',
     by: 'string',
     at: 'datetime',
   },
-  required: ['caseId', 'action'],
+  required: ['case_id', 'action'],
   defaults: {},
-  relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId', 'at'],
+  relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
+  indexes: ['case_id', 'at'],
 };
 
 export default CaseActivitySchema;

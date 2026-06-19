@@ -8,8 +8,8 @@ export const AuditLogsSchema = {
     id: 'string',
     action: 'string',
     module: 'string',
-    userId: 'string',
-    userName: 'string',
+    user_id: 'string',
+    user_name: 'string',
     ip: 'string',
     at: 'datetime',
     details: 'string',
@@ -18,9 +18,9 @@ export const AuditLogsSchema = {
   required: ['action'],
   defaults: { ip: 'client' },
   relations: [
-    { field: 'userId', references: 'users', on: 'id' },
+    { field: 'user_id', references: 'users', on: 'id' },
   ],
-  indexes: ['module', 'action', 'userId', 'at'],
+  indexes: ['module', 'action', 'user_id', 'at'],
 };
 
 export default AuditLogsSchema;

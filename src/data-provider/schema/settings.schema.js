@@ -10,8 +10,8 @@ export const SettingsSchema = {
     id: 'string',
     key: 'string', // e.g. "backup", "ui", "sync"
     value: 'object',
-    updatedAt: 'datetime',
-    updatedBy: 'string',
+    updated_at: 'datetime',
+    updated_by: 'string',
   },
   required: ['key'],
   defaults: { value: {} },

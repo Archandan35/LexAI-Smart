@@ -11,28 +11,28 @@ export const UsersSchema = {
     name: 'string',
     email: 'string',
     username: 'string',
-    roleCode: 'string',
-    extraRoles: 'array',
+    role_code: 'string',
+    extra_roles: 'array',
     grants: 'array',
     denies: 'array',
     status: 'string',
     salt: 'string',
-    passwordHash: 'string',
-    createdAt: 'datetime',
-    updatedAt: 'datetime',
-    lastLoginAt: 'datetime',
+    password_hash: 'string',
+    created_at: 'datetime',
+    updated_at: 'datetime',
+    last_login_at: 'datetime',
   },
-  required: ['name', 'roleCode'],
+  required: ['name', 'role_code'],
   defaults: {
-    extraRoles: [],
+    extra_roles: [],
     grants: [],
     denies: [],
     status: 'Active', // matches the app's existing convention (capitalised)
   },
   relations: [
-    { field: 'roleCode', references: 'roles', on: 'code' },
+    { field: 'role_code', references: 'roles', on: 'code' },
   ],
-  indexes: ['email', 'username', 'roleCode', 'status'],
+  indexes: ['email', 'username', 'role_code', 'status'],
 };
 
 export default UsersSchema;

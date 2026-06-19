@@ -6,18 +6,18 @@ export const HearingsSchema = {
   core: false,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     date: 'datetime',
     status: 'string',
     purpose: 'string',
     notes: 'string',
-    createdAt: 'datetime',
-    updatedAt: 'datetime',
+    created_at: 'datetime',
+    updated_at: 'datetime',
   },
-  required: ['caseId'],
+  required: ['case_id'],
   defaults: { status: 'Scheduled', notes: '' },
-  relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId', 'date', 'status'],
+  relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
+  indexes: ['case_id', 'date', 'status'],
 };
 
 export default HearingsSchema;

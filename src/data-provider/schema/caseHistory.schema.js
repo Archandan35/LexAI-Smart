@@ -6,18 +6,18 @@ export const CaseHistorySchema = {
   core: false,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     date: 'datetime',
     stage: 'string',
     purpose: 'string',
     status: 'string',
     remarks: 'string',
-    createdAt: 'datetime',
+    created_at: 'datetime',
   },
-  required: ['caseId'],
+  required: ['case_id'],
   defaults: {},
-  relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId', 'date'],
+  relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
+  indexes: ['case_id', 'date'],
 };
 
 export default CaseHistorySchema;

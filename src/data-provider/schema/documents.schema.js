@@ -6,24 +6,24 @@ export const DocumentsSchema = {
   core: true,
   fields: {
     id: 'string',
-    caseId: 'string',
+    case_id: 'string',
     name: 'string',
     folder: 'string',
     mime: 'string',
     size: 'number',
     text: 'string',
     version: 'number',
-    syncStatus: 'string',
-    syncMessage: 'string',
-    lastSyncAt: 'datetime',
-    uploadedAt: 'datetime',
+    sync_status: 'string',
+    sync_message: 'string',
+    last_sync_at: 'datetime',
+    uploaded_at: 'datetime',
   },
   required: ['name'],
-  defaults: { version: 1, syncStatus: 'local' },
+  defaults: { version: 1, sync_status: 'local' },
   relations: [
-    { field: 'caseId', references: 'cases', on: 'id' },
+    { field: 'case_id', references: 'cases', on: 'id' },
   ],
-  indexes: ['caseId', 'folder', 'syncStatus'],
+  indexes: ['case_id', 'folder', 'sync_status'],
 };
 
 export default DocumentsSchema;

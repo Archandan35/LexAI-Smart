@@ -17,69 +17,69 @@ alter table if exists entity_prefix_registry enable row level security;
 alter table if exists id_registry enable row level security;
 alter table if exists foreign_key_registry enable row level security;
 
--- Named RLS policies (P3: {table}_{role}_{operation})
-create policy schema_registry_admin_all on schema_registry for all to lexai_admin using (true) with check (true);
-create policy schema_registry_manager_select on schema_registry for select to lexai_manager using (true);
-create policy schema_registry_user_select on schema_registry for select to lexai_user using (true);
+-- Named RLS policies (P2: TO authenticated + current_user_role(); P3: {table}_{role}_{operation})
+create policy schema_registry_admin_all on schema_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy schema_registry_manager_select on schema_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy schema_registry_user_select on schema_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-create policy entity_registry_admin_all on entity_registry for all to lexai_admin using (true) with check (true);
-create policy entity_registry_manager_select on entity_registry for select to lexai_manager using (true);
-create policy entity_registry_manager_insert on entity_registry for insert to lexai_manager with check (true);
-create policy entity_registry_manager_update on entity_registry for update to lexai_manager using (true);
-create policy entity_registry_user_select on entity_registry for select to lexai_user using (true);
+create policy entity_registry_admin_all on entity_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy entity_registry_manager_select on entity_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_registry_manager_insert on entity_registry for insert to authenticated with check (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_registry_manager_update on entity_registry for update to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_registry_user_select on entity_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-create policy field_registry_admin_all on field_registry for all to lexai_admin using (true) with check (true);
-create policy field_registry_manager_select on field_registry for select to lexai_manager using (true);
-create policy field_registry_manager_insert on field_registry for insert to lexai_manager with check (true);
-create policy field_registry_user_select on field_registry for select to lexai_user using (true);
+create policy field_registry_admin_all on field_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy field_registry_manager_select on field_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy field_registry_manager_insert on field_registry for insert to authenticated with check (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy field_registry_user_select on field_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-create policy provider_registry_admin_all on provider_registry for all to lexai_admin using (true) with check (true);
-create policy provider_registry_manager_select on provider_registry for select to lexai_manager using (true);
+create policy provider_registry_admin_all on provider_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy provider_registry_manager_select on provider_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy migration_registry_admin_all on migration_registry for all to lexai_admin using (true) with check (true);
-create policy migration_registry_manager_select on migration_registry for select to lexai_manager using (true);
+create policy migration_registry_admin_all on migration_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy migration_registry_manager_select on migration_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy installer_state_admin_all on installer_state for all to lexai_admin using (true) with check (true);
-create policy installer_state_manager_select on installer_state for select to lexai_manager using (true);
-create policy installer_state_user_select on installer_state for select to lexai_user using (true);
+create policy installer_state_admin_all on installer_state for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy installer_state_manager_select on installer_state for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy installer_state_user_select on installer_state for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-create policy provider_adapter_admin_all on provider_adapter_registry for all to lexai_admin using (true) with check (true);
-create policy provider_adapter_manager_select on provider_adapter_registry for select to lexai_manager using (true);
+create policy provider_adapter_admin_all on provider_adapter_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy provider_adapter_manager_select on provider_adapter_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy schema_mapping_admin_all on schema_mapping for all to lexai_admin using (true) with check (true);
-create policy schema_mapping_manager_select on schema_mapping for select to lexai_manager using (true);
-create policy schema_mapping_manager_insert on schema_mapping for insert to lexai_manager with check (true);
-create policy schema_mapping_manager_update on schema_mapping for update to lexai_manager using (true);
+create policy schema_mapping_admin_all on schema_mapping for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy schema_mapping_manager_select on schema_mapping for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy schema_mapping_manager_insert on schema_mapping for insert to authenticated with check (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy schema_mapping_manager_update on schema_mapping for update to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy mapping_history_admin_all on mapping_history for all to lexai_admin using (true) with check (true);
-create policy mapping_history_manager_select on mapping_history for select to lexai_manager using (true);
+create policy mapping_history_admin_all on mapping_history for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy mapping_history_manager_select on mapping_history for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy mapping_versions_admin_all on mapping_versions for all to lexai_admin using (true) with check (true);
-create policy mapping_versions_manager_select on mapping_versions for select to lexai_manager using (true);
+create policy mapping_versions_admin_all on mapping_versions for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy mapping_versions_manager_select on mapping_versions for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy provider_capabilities_admin_all on provider_capabilities for all to lexai_admin using (true) with check (true);
-create policy provider_capabilities_manager_select on provider_capabilities for select to lexai_manager using (true);
-create policy provider_capabilities_user_select on provider_capabilities for select to lexai_user using (true);
+create policy provider_capabilities_admin_all on provider_capabilities for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy provider_capabilities_manager_select on provider_capabilities for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy provider_capabilities_user_select on provider_capabilities for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-create policy entity_prefix_admin_all on entity_prefix_registry for all to lexai_admin using (true) with check (true);
-create policy entity_prefix_manager_select on entity_prefix_registry for select to lexai_manager using (true);
-create policy entity_prefix_user_select on entity_prefix_registry for select to lexai_user using (true);
+create policy entity_prefix_admin_all on entity_prefix_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy entity_prefix_manager_select on entity_prefix_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_prefix_user_select on entity_prefix_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-create policy id_registry_admin_all on id_registry for all to lexai_admin using (true) with check (true);
-create policy id_registry_manager_select on id_registry for select to lexai_manager using (true);
+create policy id_registry_admin_all on id_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy id_registry_manager_select on id_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-create policy foreign_key_registry_admin_all on foreign_key_registry for all to lexai_admin using (true) with check (true);
-create policy foreign_key_registry_manager_select on foreign_key_registry for select to lexai_manager using (true);
+create policy foreign_key_registry_admin_all on foreign_key_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy foreign_key_registry_manager_select on foreign_key_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
--- Grants
-grant usage on schema public to lexai_manager;
-grant select, insert, update, delete on all tables in schema public to lexai_manager;
-grant usage on all sequences in schema public to lexai_manager;
-grant usage on schema public to lexai_user;
-grant select on all tables in schema public to lexai_user;
-alter default privileges in schema public grant select, insert, update, delete on tables to lexai_manager;
-alter default privileges in schema public grant select on tables to lexai_user;
-alter default privileges in schema public grant usage on sequences to lexai_manager;
+-- Grants (P2: TO authenticated)
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant usage on all sequences in schema public to authenticated;
+grant usage on schema public to anon;
+grant select on all tables in schema public to anon;
+alter default privileges in schema public grant select, insert, update, delete on tables to authenticated;
+alter default privileges in schema public grant select on tables to anon;
+alter default privileges in schema public grant usage on sequences to authenticated;
 
 -- Indexes
 create index if not exists idx_schema_registry_version on schema_registry (version);

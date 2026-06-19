@@ -42,6 +42,11 @@ language plpgsql
 security definer
 as $$
 begin
+  if exists (select 1 from pg_proc where proname = 'current_user_role') then
+    if current_user_role() != 'admin' then
+      raise exception 'exec_sql: only admin can execute arbitrary SQL';
+    end if;
+  end if;
   if exists (select 1 from pg_tables where tablename = 'migration_registry') then
     insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)
     values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);
@@ -61,6 +66,11 @@ as $$
 declare
   v_upper text;
 begin
+  if exists (select 1 from pg_proc where proname = 'current_user_role') then
+    if current_user_role() NOT IN ('admin', 'manager') then
+      raise exception 'safe_ddl: only admin or manager can execute DDL';
+    end if;
+  end if;
   v_upper := upper(sql);
   -- Blocklist — P2: all \s patterns correctly escaped
   if v_upper ~ '^\s*DROP\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then
@@ -112,7 +122,9 @@ begin
 end;
 $$;
 
+grant execute on function exec_sql(text) to authenticated;
 grant execute on function exec_sql(text) to lexai_admin;
+grant execute on function safe_ddl(text) to authenticated;
 grant execute on function safe_ddl(text) to lexai_manager;
 
 -- ============================================================
@@ -145,125 +157,108 @@ end;
 $$;
 
 -- ============================================================
--- 5. P3: Drop old duplicate policy names, create unique names
+-- 5. P2+P3: Drop old policies, create Supabase-compatible policies
 -- ============================================================
+-- Drop all old-style policies (TO lexai_admin/manager/user)
 do $$ begin drop policy if exists manager_read on entity_registry; end $$;
 do $$ begin drop policy if exists manager_write on entity_registry; end $$;
 do $$ begin drop policy if exists entity_registry_manager_rw on entity_registry; end $$;
+do $$ begin drop policy if exists manager_select on entity_registry; end $$;
+do $$ begin drop policy if exists manager_insert on entity_registry; end $$;
+do $$ begin drop policy if exists manager_update on entity_registry; end $$;
+do $$ begin drop policy if exists user_select on entity_registry; end $$;
 do $$ begin drop policy if exists manager_write on field_registry; end $$;
 do $$ begin drop policy if exists field_registry_manager_rw on field_registry; end $$;
-do $$ begin drop policy if exists manager_write on schema_mapping; end $$;
+do $$ begin drop policy if exists manager_select on field_registry; end $$;
+do $$ begin drop policy if exists manager_insert on field_registry; end $$;
+do $$ begin drop policy if exists user_select on field_registry; end $$;
 do $$ begin drop policy if exists schema_mapping_manager_rw on schema_mapping; end $$;
+do $$ begin drop policy if exists manager_select on schema_mapping; end $$;
+do $$ begin drop policy if exists manager_insert on schema_mapping; end $$;
+do $$ begin drop policy if exists manager_update on schema_mapping; end $$;
+do $$ begin drop policy if exists manager_ro on schema_registry; end $$;
+do $$ begin drop policy if exists manager_ro on entity_registry; end $$;
+do $$ begin drop policy if exists manager_ro on field_registry; end $$;
+do $$ begin drop policy if exists manager_ro on provider_registry; end $$;
+do $$ begin drop policy if exists manager_ro on migration_registry; end $$;
+do $$ begin drop policy if exists manager_ro on installer_state; end $$;
+do $$ begin drop policy if exists manager_ro on schema_mapping; end $$;
+do $$ begin drop policy if exists manager_ro on entity_prefix_registry; end $$;
+do $$ begin drop policy if exists manager_ro on provider_capabilities; end $$;
+do $$ begin drop policy if exists user_ro on entity_registry; end $$;
+do $$ begin drop policy if exists user_ro on field_registry; end $$;
+do $$ begin drop policy if exists user_ro on schema_registry; end $$;
+do $$ begin drop policy if exists user_ro on installer_state; end $$;
+do $$ begin drop policy if exists user_ro on provider_capabilities; end $$;
+do $$ begin drop policy if exists user_ro on entity_prefix_registry; end $$;
+do $$ begin drop policy if exists admin_all on schema_registry; end $$;
+do $$ begin drop policy if exists admin_all on entity_registry; end $$;
+do $$ begin drop policy if exists admin_all on field_registry; end $$;
+do $$ begin drop policy if exists admin_all on provider_registry; end $$;
+do $$ begin drop policy if exists admin_all on migration_registry; end $$;
+do $$ begin drop policy if exists admin_all on installer_state; end $$;
+do $$ begin drop policy if exists admin_all on provider_adapter_registry; end $$;
+do $$ begin drop policy if exists admin_all on schema_mapping; end $$;
+do $$ begin drop policy if exists admin_all on mapping_history; end $$;
+do $$ begin drop policy if exists admin_all on mapping_versions; end $$;
+do $$ begin drop policy if exists admin_all on provider_capabilities; end $$;
+do $$ begin drop policy if exists admin_all on entity_prefix_registry; end $$;
+do $$ begin drop policy if exists admin_all on id_registry; end $$;
+do $$ begin drop policy if exists admin_all on foreign_key_registry; end $$;
 
--- Create unique-named policies (P3: {table}_{role}_{operation})
--- entity_registry
-create policy entity_registry_manager_insert on entity_registry for insert to lexai_manager with check (true);
-create policy entity_registry_manager_update on entity_registry for update to lexai_manager using (true);
-create policy entity_registry_user_select on entity_registry for select to lexai_user using (true);
+-- Create Supabase-compatible policies (P2: TO authenticated + current_user_role(); P3: unique names)
+create policy schema_registry_admin_all on schema_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy schema_registry_manager_select on schema_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy schema_registry_user_select on schema_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
--- field_registry
-create policy field_registry_manager_insert on field_registry for insert to lexai_manager with check (true);
-create policy field_registry_user_select on field_registry for select to lexai_user using (true);
+create policy entity_registry_admin_all on entity_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy entity_registry_manager_select on entity_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_registry_manager_insert on entity_registry for insert to authenticated with check (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_registry_manager_update on entity_registry for update to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_registry_user_select on entity_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
--- schema_mapping
-create policy schema_mapping_manager_insert on schema_mapping for insert to lexai_manager with check (true);
-create policy schema_mapping_manager_update on schema_mapping for update to lexai_manager using (true);
+create policy field_registry_admin_all on field_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy field_registry_manager_select on field_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy field_registry_manager_insert on field_registry for insert to authenticated with check (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy field_registry_user_select on field_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
--- Add missing user_select policies
-create policy schema_registry_user_select on schema_registry for select to lexai_user using (true);
-create policy installer_state_user_select on installer_state for select to lexai_user using (true);
-create policy provider_adapter_manager_select on provider_adapter_registry for select to lexai_manager using (true);
-create policy provider_capabilities_user_select on provider_capabilities for select to lexai_user using (true);
-create policy entity_prefix_user_select on entity_prefix_registry for select to lexai_user using (true);
-create policy mapping_history_manager_select on mapping_history for select to lexai_manager using (true);
-create policy mapping_versions_manager_select on mapping_versions for select to lexai_manager using (true);
-create policy id_registry_manager_select on id_registry for select to lexai_manager using (true);
-create policy foreign_key_registry_manager_select on foreign_key_registry for select to lexai_manager using (true);
+create policy provider_registry_admin_all on provider_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy provider_registry_manager_select on provider_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
--- Rename existing manager_ro → manager_select, user_ro → user_select (drop and recreate where needed)
-do $$ begin
-  drop policy if exists schema_registry_manager_ro on schema_registry;
-  create policy schema_registry_manager_select on schema_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy migration_registry_admin_all on migration_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy migration_registry_manager_select on migration_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-do $$ begin
-  drop policy if exists entity_registry_manager_ro on entity_registry;
-  create policy entity_registry_manager_select on entity_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy installer_state_admin_all on installer_state for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy installer_state_manager_select on installer_state for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy installer_state_user_select on installer_state for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-do $$ begin
-  drop policy if exists field_registry_manager_ro on field_registry;
-  create policy field_registry_manager_select on field_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy provider_adapter_admin_all on provider_adapter_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy provider_adapter_manager_select on provider_adapter_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-do $$ begin
-  drop policy if exists provider_registry_manager_ro on provider_registry;
-  create policy provider_registry_manager_select on provider_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy schema_mapping_admin_all on schema_mapping for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy schema_mapping_manager_select on schema_mapping for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy schema_mapping_manager_insert on schema_mapping for insert to authenticated with check (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy schema_mapping_manager_update on schema_mapping for update to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-do $$ begin
-  drop policy if exists migration_registry_manager_ro on migration_registry;
-  create policy migration_registry_manager_select on migration_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy mapping_history_admin_all on mapping_history for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy mapping_history_manager_select on mapping_history for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-do $$ begin
-  drop policy if exists installer_state_manager_ro on installer_state;
-  create policy installer_state_manager_select on installer_state for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy mapping_versions_admin_all on mapping_versions for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy mapping_versions_manager_select on mapping_versions for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-do $$ begin
-  drop policy if exists schema_mapping_manager_ro on schema_mapping;
-  create policy schema_mapping_manager_select on schema_mapping for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy provider_capabilities_admin_all on provider_capabilities for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy provider_capabilities_manager_select on provider_capabilities for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy provider_capabilities_user_select on provider_capabilities for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-do $$ begin
-  drop policy if exists entity_prefix_manager_ro on entity_prefix_registry;
-  create policy entity_prefix_manager_select on entity_prefix_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy entity_prefix_admin_all on entity_prefix_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy entity_prefix_manager_select on entity_prefix_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
+create policy entity_prefix_user_select on entity_prefix_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));
 
-do $$ begin
-  drop policy if exists provider_capabilities_manager_ro on provider_capabilities;
-  create policy provider_capabilities_manager_select on provider_capabilities for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy id_registry_admin_all on id_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy id_registry_manager_select on id_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
-do $$ begin
-  drop policy if exists entity_registry_user_ro on entity_registry;
-  create policy entity_registry_user_select on entity_registry for select to lexai_user using (true);
-exception when others then null; end $$;
-
-do $$ begin
-  drop policy if exists field_registry_user_ro on field_registry;
-  create policy field_registry_user_select on field_registry for select to lexai_user using (true);
-exception when others then null; end $$;
-
-do $$ begin
-  drop policy if exists schema_registry_user_ro on schema_registry;
-  create policy schema_registry_user_select on schema_registry for select to lexai_user using (true);
-exception when others then null; end $$;
-
-do $$ begin
-  drop policy if exists installer_state_user_ro on installer_state;
-  create policy installer_state_user_select on installer_state for select to lexai_user using (true);
-exception when others then null; end $$;
-
-do $$ begin
-  drop policy if exists provider_capabilities_user_ro on provider_capabilities;
-  create policy provider_capabilities_user_select on provider_capabilities for select to lexai_user using (true);
-exception when others then null; end $$;
-
-do $$ begin
-  drop policy if exists entity_prefix_user_ro on entity_prefix_registry;
-  create policy entity_prefix_user_select on entity_prefix_registry for select to lexai_user using (true);
-exception when others then null; end $$;
-
--- Ensure provider_adapter_registry has its policies
-do $$ begin
-  create policy provider_adapter_admin_all on provider_adapter_registry for all to lexai_admin using (true) with check (true);
-exception when others then null; end $$;
-
-do $$ begin
-  create policy provider_adapter_manager_select on provider_adapter_registry for select to lexai_manager using (true);
-exception when others then null; end $$;
+create policy foreign_key_registry_admin_all on foreign_key_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');
+create policy foreign_key_registry_manager_select on foreign_key_registry for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));
 
 -- ============================================================
 -- 6. Ensure FK registry and RLS on provider_adapter_registry
@@ -293,4 +288,4 @@ create index if not exists idx_provider_adapter_active on provider_adapter_regis
 -- ============================================================
 insert into schema_registry (id, version, description, applied_at)
 values ('schema_version', 20, 'Schema v20 — fixed regex, unique policies, Supabase auth, modular migrations', now())
-on conflict (id) do update set version = 20, description = excluded.description, applied_at = now();
+on conflict (id) do update set version = excluded.version, description = excluded.description, applied_at = now();

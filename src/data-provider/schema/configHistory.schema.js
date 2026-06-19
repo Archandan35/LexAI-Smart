@@ -9,7 +9,7 @@ export const ConfigHistorySchema = {
     name: 'string',
     oldValue: 'string', // masked
     newValue: 'string', // masked
-    changedBy: 'string',
+    changed_by: 'string',
     at: 'datetime',
   },
   required: ['name'],

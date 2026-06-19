@@ -8,8 +8,8 @@ export const CourtsSchema = {
     name: 'string',
     display_order: 'number',
     status: 'string',
-    createdAt: 'datetime',
-    updatedAt: 'datetime',
+    created_at: 'datetime',
+    updated_at: 'datetime',
   },
   required: ['name'],
   defaults: {
