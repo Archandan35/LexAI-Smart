@@ -5,14 +5,20 @@ import { InstallerStateService } from '@/services/installerStateService.js';
 import { ProviderCapabilitiesService } from '@/services/providerCapabilitiesService.js';
 import { SchemaMappingService } from '@/services/schemaMappingService.js';
 
+const withTimeout = (promise, ms) => Promise.race([
+  promise,
+  new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms)),
+]);
+
 export const InstallationPlanner = {
   async plan(detect) {
     const provider = config.providers.database || 'local';
     const allSchemas = listSchemas();
     const steps = [];
 
-    // Check installer state for quick status
-    const state = await InstallerStateService.getState();
+    // Best-effort state check with timeout (fresh install may not have tables)
+    let state = { install_status: 'none', schema_version: 0, installer_version: 0 };
+    try { state = await withTimeout(InstallerStateService.getState(), 5000); } catch { /* ignore */ }
 
     if (!detect || detect.needsSetup) {
       steps.push({ id: 'detect', label: 'Detect Provider', type: 'detect' });
@@ -83,6 +89,12 @@ export const InstallationPlanner = {
       });
     }
 
+    // Best-effort capabilities and mappings with timeouts (may not exist in fresh install)
+    let capabilities = {};
+    try { capabilities = await withTimeout(ProviderCapabilitiesService.getCapabilities(), 5000); } catch { /* ignore */ }
+    let mappings = [];
+    try { mappings = await withTimeout(SchemaMappingService.getMappings(), 5000); } catch { /* ignore */ }
+
     steps.push({ id: 'verify', label: 'Verify installation', type: 'verify' });
 
     const artifact = SchemaCompiler.installArtifact(provider);
@@ -99,6 +111,7 @@ export const InstallationPlanner = {
       sql: hasSql ? artifact.text : null,
       state,
       capabilities,
+      mappings,
     };
   },
 

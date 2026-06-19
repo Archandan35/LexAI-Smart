@@ -144,75 +144,88 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const handleSimpleConnect = async () => {
     if (!projectUrl || !anonKey) { setError('Project URL and Anon Key are required.'); return; }
     setBusy(true); setError(''); setProgress(null);
-    const res = await ConnectionTester.testBackend(projectUrl, anonKey);
-    setBusy(false);
-    if (!res.ok) { setError(res.error || 'Connection failed.'); return; }
-    goToStep(2);
+    try {
+      const res = await ConnectionTester.testBackend(projectUrl, anonKey);
+      if (!res.ok) { setError(res.error || 'Connection failed.'); setBusy(false); return; }
+      goToStep(2);
 
-    setBusy(true);
-    setProgress({ step: 2, total: 7, label: 'Detecting schema...', status: 'working' });
-    const detectRes = await databaseManagerLogic.detect((p) => {
-      setProgress({ step: 2 + (p.step / p.total) * 0.9, total: 7, label: p.label, status: 'working' });
-    });
-    setBusy(false);
+      setProgress({ step: 2, total: 7, label: 'Detecting schema...', status: 'working' });
+      const detectRes = await databaseManagerLogic.detect((p) => {
+        setProgress({ step: 2 + (p.step / p.total) * 0.9, total: 7, label: p.label, status: 'working' });
+      });
 
-    if (detectRes.ok) {
-      setDetect(detectRes.data);
-      setProgress({ step: 3, total: 7, label: 'Schema detected', status: 'done' });
-      goToStep(3);
-      setProgress({ step: 3, total: 7, label: 'Generating installation plan...', status: 'working' });
-      const p = await InstallationPlanner.plan(detectRes.data);
-      setPlan(p);
-      setProgress({ step: 4, total: 7, label: 'Plan ready', status: 'done' });
-      goToStep(4);
-      if (p.needsManual && p.sql) {
-        setSql(p.sql);
-        const provider = getDatabaseProvider();
-        setExecSqlSupported(typeof provider.execSql === 'function' && p.sql.length > 0);
-        setProgress(null);
-        goToStep(5);
+      if (detectRes.ok) {
+        setDetect(detectRes.data);
+        setProgress({ step: 3, total: 7, label: 'Schema detected', status: 'done' });
+        goToStep(3);
+        setProgress({ step: 3, total: 7, label: 'Generating installation plan...', status: 'working' });
+        const planPromise = InstallationPlanner.plan(detectRes.data);
+        const timeout = new Promise((_, r) => setTimeout(() => r(new Error('Plan generation timed out')), 15000));
+        const p = await Promise.race([planPromise, timeout]);
+        setPlan(p);
+        setProgress({ step: 4, total: 7, label: 'Plan ready', status: 'done' });
+        goToStep(4);
+        if (p.needsManual && p.sql) {
+          setSql(p.sql);
+          const provider = getDatabaseProvider();
+          setExecSqlSupported(typeof provider.execSql === 'function' && p.sql.length > 0);
+          setProgress(null);
+          goToStep(5);
+        } else {
+          handleAutoInstall(p);
+        }
       } else {
-        handleAutoInstall(p);
+        setError(detectRes.error || 'Detection failed.');
+        setProgress(null);
       }
-    } else {
-      setError(detectRes.error || 'Detection failed.');
+    } catch (e) {
+      setError(e?.message || 'Simple Setup failed unexpectedly.');
       setProgress(null);
     }
+    setBusy(false);
   };
 
   const handleAutoInstall = async (p) => {
     setBusy(true); setError(''); setResult(null);
-    const plan = p || plan;
-    if (!plan) { setError('No installation plan.'); setBusy(false); return; }
-    const res = await InstallationExecutor.executePlan(plan, setProgress);
-    setBusy(false);
-    if (res.success) {
-      setInstallResult(res);
-      goToStep(6);
-      const v = await ValidationEngine.validateInstallation();
-      setValidateResult(v);
-      if (v.valid) goToStep(7);
-      else { setError(`${v.issueCount} issue${v.issueCount !== 1 ? 's' : ''} found.`); goToStep(6); }
-    } else {
-      setError(res.error || 'Installation failed.');
-      setInstallResult(res);
+    try {
+      const planToRun = p || plan;
+      if (!planToRun) { setError('No installation plan.'); setBusy(false); return; }
+      const res = await InstallationExecutor.executePlan(planToRun, setProgress);
+      if (res.success) {
+        setInstallResult(res);
+        goToStep(6);
+        const v = await ValidationEngine.validateInstallation();
+        setValidateResult(v);
+        if (v.valid) goToStep(7);
+        else { setError(`${v.issueCount} issue${v.issueCount !== 1 ? 's' : ''} found.`); goToStep(6); }
+      } else {
+        setError(res.error || 'Installation failed.');
+        setInstallResult(res);
+      }
+    } catch (e) {
+      setError(e?.message || 'Auto-install failed unexpectedly.');
     }
+    setBusy(false);
   };
 
   // --- ADVANCED SETUP ---
   const handleAdvancedConnect = async () => {
     if (!advHost || !advPort || !advDb || !advUser) { setError('All fields except password are required.'); return; }
     setBusy(true); setError('');
-    const res = await ConnectionTester.testDirect(advHost, advPort, advDb, advUser, advPassword);
-    setBusy(false);
-    if (!res.ok) { setError(res.error || 'Connection failed. Backend API may be unavailable.'); return; }
-    goToStep(3);
-    setBusy(true);
-    const p = await InstallationPlanner.plan({ needsSetup: true });
-    setPlan(p);
-    setBusy(false);
-    goToStep(4);
-    handleAutoInstall(p);
+    try {
+      const res = await ConnectionTester.testDirect(advHost, advPort, advDb, advUser, advPassword);
+      if (!res.ok) { setError(res.error || 'Connection failed. Backend API may be unavailable.'); setBusy(false); return; }
+      goToStep(3);
+      setBusy(true);
+      const p = await InstallationPlanner.plan({ needsSetup: true });
+      setPlan(p);
+      setBusy(false);
+      goToStep(4);
+      handleAutoInstall(p);
+    } catch (e) {
+      setError(e?.message || 'Advanced Setup failed unexpectedly.');
+      setBusy(false);
+    }
   };
 
   // --- COPY-PASTE SETUP ---
