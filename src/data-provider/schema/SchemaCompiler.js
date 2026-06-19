@@ -122,12 +122,17 @@ function systemSqlSupabaseAuth() {
     '      if current_user = \'service_role\' then return \'admin\'; end if;',
     '      return \'anon\';',
     '    end if;',
-    '    -- Authenticated: look up application role from users table',
-    '    select role_code into strict v_role from users where id = auth.uid()::text;',
+    '    -- Prefer lightweight user_role_registry (avoids full users table scan + RLS recursion)',
+    '    if exists (select 1 from pg_class where relname = \'user_role_registry\') then',
+    "      select role_code into v_role from user_role_registry where user_id = auth.uid()::text;",
+    '      if found then return v_role; end if;',
+    '    end if;',
+    '    -- Fallback to users table',
+    "    select role_code into strict v_role from users where id = auth.uid()::text;",
     '    return v_role;',
     '  exception',
     '    when others then',
-    '      -- If users table not accessible, fall back to role name',
+    '      -- If neither table is accessible, fall back to role name',
     '      if current_user = \'authenticated\' then return \'user\'; end if;',
     '      return \'anon\';',
     '  end;',
@@ -160,10 +165,10 @@ function systemSqlVerifyInstallation() {
     '  v_ready boolean;',
     'begin',
     '  -- Schema/registry tables',
-    '  select count(*) = 12 into v_schema from pg_class where relname in (',
-    "    'migration_registry', 'schema_registry', 'entity_registry', 'field_registry',",
+    '  select count(*) = 13 into v_schema from pg_class where relname in (',
+    '    \'migration_registry\', \'schema_registry\', \'entity_registry\', \'field_registry\',',
     "    'provider_registry', 'provider_adapter_registry', 'installer_state',",
-    "    'entity_prefix_registry', 'id_registry', 'foreign_key_registry', 'schema_mapping', 'mapping_versions'",
+    "    'entity_prefix_registry', 'id_registry', 'foreign_key_registry', 'schema_mapping', 'mapping_versions', 'user_role_registry'",
     '  ) and relkind = \'r\';',
     '',
     '  -- Mapping tables',
@@ -177,8 +182,9 @@ function systemSqlVerifyInstallation() {
     '  ) and relkind = \'r\';',
     '',
     '  -- Required functions',
-    '  select count(*) = 5 into v_functions from pg_proc where proname in (',
-    "    'exec_sql', 'safe_ddl', 'safe_create_fk', 'next_lx_id', 'current_user_role'",
+    '  select count(*) = 7 into v_functions from pg_proc where proname in (',
+    "    'exec_sql', 'safe_ddl', 'safe_create_fk', 'next_lx_id', 'current_user_role',",
+    "    'resolve_entity_table', 'sync_user_role_registry'",
     '  );',
     '',
     '  -- Foreign keys — compare foreign_key_registry entries against actual constraints',
@@ -198,7 +204,7 @@ function systemSqlVerifyInstallation() {
     '',
     '  -- Security: RLS enabled, policies exist, functions granted',
     '  select',
-    '    count(*) >= 12 and',
+    '    count(*) >= 13 and',
     "    exists (select 1 from pg_policy) and",
     "    exists (select 1 from pg_proc where proname = 'current_user_role')",
     '  into v_security',
@@ -402,6 +408,11 @@ function systemSqlSafeCreateFk() {
     '  if v_upper_on_delete not in (\'CASCADE\', \'SET NULL\', \'RESTRICT\', \'NO ACTION\', \'SET DEFAULT\') then',
     "    raise exception 'safe_create_fk: invalid ON DELETE action: % (must be CASCADE, SET NULL, RESTRICT, NO ACTION, or SET DEFAULT)', p_on_delete;",
     '  end if;',
+    '  -- Resolve entity names → provider table names via schema_mapping',
+    '  if exists (select 1 from pg_proc where proname = \'resolve_entity_table\') then',
+    '    p_source_table := resolve_entity_table(p_source_table);',
+    '    p_target_table := resolve_entity_table(p_target_table);',
+    '  end if;',
     '  select exists (',
     '    select 1 from pg_constraint c',
     '    join pg_class t on t.oid = c.conrelid',
@@ -431,6 +442,92 @@ function systemSqlSafeCreateFk() {
     '  $fmt$, p_source_table, p_constraint_name, p_source_column, p_target_table, p_target_column, v_upper_on_delete);',
     'end;',
     '$safe_fk$;',
+  ].join('\n');
+}
+
+// resolve_entity_table — looks up schema_mapping to resolve LexAI entity name → provider table name
+// Falls back to the entity name itself when no mapping exists or table is not yet created.
+// Used by safe_create_fk so FK definitions can use entity names instead of hardcoded table names.
+function systemSqlResolveEntity() {
+  return [
+    '-- ============================================================',
+    '-- 5a. ENTITY RESOLUTION (entity_registry + schema_mapping lookup)',
+    '-- ============================================================',
+    'create or replace function resolve_entity_table(p_entity text)',
+    'returns text',
+    'language plpgsql',
+    'stable',
+    'as $$',
+    'declare',
+    '  v_table text;',
+    'begin',
+    "  if exists (select 1 from pg_class where relname = 'schema_mapping') then",
+    "    select provider_table into v_table from schema_mapping",
+    "    where entity_name = p_entity and active = true",
+    '    limit 1;',
+    '    if found then return v_table; end if;',
+    '  end if;',
+    '  return p_entity;',
+    'end;',
+    '$$;',
+    '',
+    'grant execute on function resolve_entity_table(text) to authenticated;',
+  ].join('\n');
+}
+
+// user_role_registry — lightweight role lookup table to avoid querying full users table
+// Kept in sync via trigger (created post-DDL). current_user_role() queries this first.
+function systemSqlUserRoleRegistry() {
+  return [
+    '-- ============================================================',
+    '-- 5b. USER ROLE REGISTRY (lightweight role lookup, avoids RLS recursion on users)',
+    '-- ============================================================',
+    'create table if not exists user_role_registry (',
+    '  user_id text primary key,',
+    '  role_code text not null,',
+    '  updated_at timestamptz default now()',
+    ');',
+    'alter table user_role_registry enable row level security;',
+    '',
+    '-- Admin-only policy on user_role_registry (lookup is via security-definer function)',
+    "create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');",
+  ].join('\n');
+}
+
+// user_role_registry sync trigger — created post-DDL after users table exists
+function systemSqlUserRoleTrigger() {
+  return [
+    '-- ============================================================',
+    '-- 5b-sync. USER ROLE REGISTRY SYNC TRIGGER (post-DDL, depends on users table)',
+    '-- ============================================================',
+    "create or replace function sync_user_role_registry()",
+    'returns trigger',
+    'language plpgsql',
+    'security definer',
+    'as $$',
+    'begin',
+    "  if exists (select 1 from pg_class where relname = 'user_role_registry') then",
+    '    if tg_op = \'DELETE\' then',
+    '      delete from user_role_registry where user_id = old.id;',
+    '      return old;',
+    '    end if;',
+    "    insert into user_role_registry (user_id, role_code, updated_at)",
+    "    values (new.id, new.role_code, now())",
+    "    on conflict (user_id) do update set role_code = excluded.role_code, updated_at = now();",
+    '  end if;',
+    '  return new;',
+    'end;',
+    '$$;',
+    '',
+    'drop trigger if exists trg_user_role_registry_sync on users;',
+    'create trigger trg_user_role_registry_sync',
+    'after insert or update or delete on users',
+    'for each row execute function sync_user_role_registry();',
+    '',
+    '-- Seed existing roles into user_role_registry',
+    "insert into user_role_registry (user_id, role_code, updated_at)",
+    "select id, role_code, now() from users",
+    "on conflict (user_id) do nothing;",
   ].join('\n');
 }
 
@@ -880,13 +977,16 @@ function systemSqlPolicies() {
 function systemSqlGrants() {
   return [
     '-- ============================================================',
-    '-- 13. SUPABASE-STYLE GRANTS (P2 — authenticated must have table access for RLS to apply)',
+    '-- 13. SUPABASE-STYLE GRANTS (authenticated must have table access for RLS to apply)',
     '-- ============================================================',
     '-- Standard Supabase pattern: GRANT ON ALL TABLES + RLS on every table.',
-    '-- The global grant allows authenticated users to *reach* the RLS check;',
+    '-- The blanket grant allows authenticated users to *reach* the RLS check;',
     '-- RLS policies on every table filter what each role can actually do.',
     '-- Without this grant, RLS policies are never evaluated.',
     '--',
+    '-- For non-Supabase providers (MySQL, SQLite, etc.), the adapter layer should',
+    '-- replace this with targeted per-tier grants (public read, internal CRUD,',
+    '-- restricted admin-only) at the adapter level — not in the SQL schema.',
     'grant usage on schema public to authenticated;',
     'grant select, insert, update, delete on all tables in schema public to authenticated;',
     'grant usage on all sequences in schema public to authenticated;',
@@ -993,9 +1093,11 @@ export const SchemaCompiler = {
       systemSqlExecSql(),
       systemSqlSafeDdl(),
       systemSqlSafeCreateFk(),
+      systemSqlResolveEntity(),
       systemSqlRegistryTables(),
       systemSqlMappingTables(),
       systemSqlProviderTables(),
+      systemSqlUserRoleRegistry(),
       systemSqlIdEngine(),
       systemSqlSupabaseAuth(),
       systemSqlVerifyInstallation(),
@@ -1003,12 +1105,13 @@ export const SchemaCompiler = {
     return sections.join('\n\n');
   },
 
-  // P4: FK + RLS + Policies + Grants + Indexes (emitted after application DDL)
+  // P4: FK + RLS + Policies + Grants + Indexes + triggers (emitted after application DDL)
   systemSqlPostDdl() {
     return [
       systemSqlForeignKeys(),
       systemSqlRls(),
       systemSqlPolicies(),
+      systemSqlUserRoleTrigger(),
       systemSqlGrants(),
       systemSqlIndexes(),
       systemSqlSchemaVersion(),
