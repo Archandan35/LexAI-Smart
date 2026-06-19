@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import DatabaseSetup from '@/app/pages/DatabaseSetup.jsx';
+import SetupWizard from '@/app/pages/SetupWizard.jsx';
 import Spinner from './Spinner.jsx';
 import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
 import { userService } from '@/services/userService.js';
@@ -36,7 +36,7 @@ export default function SetupGate({ children }) {
   useEffect(() => { check(); }, []);
 
   if (state === 'checking') return <div className="auth-shell"><Spinner /></div>;
-  if (state === 'setup') return <DatabaseSetup detectError={detectError} />;
+  if (state === 'setup') return <SetupWizard detectError={detectError} />;
   if (state === 'bootstrap') {
     if (location.pathname === '/bootstrap-admin') {
       // Already at the target — render children so the route matches
