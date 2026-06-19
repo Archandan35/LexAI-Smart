@@ -2,7 +2,7 @@ import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { caseService } from '@/services/caseService.js';
 import { ok, fail } from '@/utils/result.js';
-import { nowISO } from '@/utils/id.js';
+import { DateEngine } from '@/core/index.js';
 
 // caseHistoryLogic — the case's legal-proceedings history. Entries hold the full
 // untruncated text; importable directly from the cause list (hearings).
@@ -10,7 +10,7 @@ export const caseHistoryLogic = {
   async list(caseId, { order = 'desc' } = {}) {
     const rows = await caseHistoryService.list(caseId);
     return [...rows].sort((a, b) => {
-      const d = new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt);
+      const d = DateEngine.compare(a.date || a.createdAt, b.date || b.createdAt);
       return order === 'asc' ? d : -d;
     });
   },
@@ -18,7 +18,7 @@ export const caseHistoryLogic = {
   async add(caseId, { date, status, text }, user) {
     if (!text?.trim()) return fail('History text is required.');
     const row = await caseHistoryService.create({
-      caseId, date: date || nowISO().slice(0, 10), status: status || '', text: text.trim(), source: 'manual', createdAt: nowISO(),
+        caseId, date: date || DateEngine.today(), status: status || '', text: text.trim(), source: 'manual', createdAt: DateEngine.now(),
     });
     await caseActivityService.record(caseId, 'history.add', 'Added case history entry', user);
     return ok(row);
@@ -45,7 +45,7 @@ export const caseHistoryLogic = {
         // eslint-disable-next-line no-await-in-loop
         await caseHistoryService.create({
           caseId, hearingId: h.id, date: h.date, status: h.status || '',
-          text: parts || h.purpose || 'Hearing', source: 'cause-list', createdAt: nowISO(),
+          text: parts || h.purpose || 'Hearing', source: 'cause-list', createdAt: DateEngine.now(),
         });
         count += 1;
       }

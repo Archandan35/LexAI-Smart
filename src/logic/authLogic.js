@@ -3,8 +3,8 @@ import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
 import { auditService } from '@/services/auditService.js';
 import { hashPassword } from '@/utils/crypto.js';
-import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
+import { DateEngine } from '@/core/index.js';
 
 export const authLogic = {
   async bootstrapAdmin({ name, email, password }) {
@@ -33,7 +33,7 @@ export const authLogic = {
         }
       } catch (authErr) {
         console.warn('[Bootstrap] create auth user failed:', authErr.message);
-        return fail(`Failed to create auth account: ${authErr.message}. Ensure Supabase Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
+        return fail(`Failed to create auth account: ${authErr.message}. Ensure Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
       }
 
       // 2. If email confirmation is required, don't attempt auto-login
@@ -60,7 +60,7 @@ export const authLogic = {
           inheritsHierarchy: false,
           system: true,
           status: 'Active',
-          createdAt: nowISO(),
+          createdAt: DateEngine.now(),
         });
       }
 
@@ -79,7 +79,7 @@ export const authLogic = {
         denies: [],
         salt,
         passwordHash: hash,
-        createdAt: nowISO(),
+        createdAt: DateEngine.now(),
       });
       console.log('[Bootstrap] application user created:', user?.id);
 

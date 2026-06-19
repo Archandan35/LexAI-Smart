@@ -1,15 +1,14 @@
 import { caseActivityRepository } from '@/data-layer/repositories/caseActivityRepository.js';
-import { nowISO } from '@/utils/id.js';
+import { DateEngine } from '@/core/index.js';
 
 // caseActivityService — per-case timeline of system events (the Case Timeline /
 // audit trail). Distinct from caseHistory (legal proceedings).
-// A row: { id, caseId, type, text, userName, at }
 export const caseActivityService = {
   list: (caseId) => caseActivityRepository.getAll(caseId ? { caseId } : {}),
-  async record(caseId, type, text, user) {
+  async record(caseId, action, message, user) {
     try {
       return await caseActivityRepository.create({
-        caseId, type, text, userName: user?.name || user?.email || 'system', at: nowISO(),
+        caseId, action, message: message || action, by: user?.name || user?.email || 'system', at: DateEngine.now(),
       });
     } catch { return null; }
   },

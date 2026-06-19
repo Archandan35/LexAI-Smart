@@ -8,14 +8,17 @@ export const CaseFoldersSchema = {
     id: 'string',
     caseId: 'string',
     name: 'string',
+    kind: 'string',
+    order: 'number',
+    system: 'boolean',
     parentId: 'string',
     createdAt: 'datetime',
     updatedAt: 'datetime',
   },
   required: ['caseId', 'name'],
-  defaults: { parentId: null },
+  defaults: { parentId: null, kind: 'document', order: 0, system: false },
   relations: [{ field: 'caseId', references: 'cases', on: 'id' }],
-  indexes: ['caseId', 'parentId'],
+  indexes: ['caseId', 'parentId', 'kind'],
 };
 
 export default CaseFoldersSchema;

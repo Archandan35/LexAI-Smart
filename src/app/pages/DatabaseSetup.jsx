@@ -34,7 +34,7 @@ export default function DatabaseSetup({ detectError: propDetectError }) {
       const d = res.data;
       setDetect(d);
       if (d.authError) {
-        setError(`Auth error: ${d.authError}. Verify VITE_SUPABASE_ANON_KEY in your Railway environment variables.`);
+        setError(`Auth error: ${d.authError}. Check the provider API key in your environment variables.`);
       }
       if (d.partialInstall) {
         // Tables exist but not seeded — clear SQL so user sees "Complete Installation"
@@ -245,8 +245,8 @@ export default function DatabaseSetup({ detectError: propDetectError }) {
                 Download schema.sql
               </Button>
               <Button variant="ghost" icon="external-link" size="sm"
-                onClick={() => window.open('https://supabase.com/dashboard/project/_/sql/new', '_blank', 'noopener')}>
-                Open SQL Editor
+                onClick={() => window.open('https://console.supabase.com/project/_/sql/new', '_blank', 'noopener')}>
+                Open Provider SQL Editor
               </Button>
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function DatabaseSetup({ detectError: propDetectError }) {
         </div>
 
         <div className="auth-note">
-          Local installs automatically. Firebase / MongoDB create collections on first write. Supabase needs its SQL run once.
+          Schemas are automatically created on first write. Some providers may need initial SQL setup — the installer generates the exact script.
         </div>
       </div>
     </div>

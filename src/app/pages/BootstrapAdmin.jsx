@@ -41,7 +41,7 @@ export default function BootstrapAdmin() {
       timedOutRef.current = true;
       console.warn('[Bootstrap] TIMEOUT — 10s elapsed');
       setTimedOut(true);
-      setError('Request timed out. Check that the database provider is reachable and VITE_SUPABASE_ANON_KEY is correct.');
+      setError('Request timed out. Check that the database provider is reachable and API credentials are correct.');
     }, TIMEOUT_MS);
 
     let shouldNavigate = false;
@@ -185,7 +185,7 @@ export default function BootstrapAdmin() {
               Account created successfully. Please confirm your email before logging in.
             </p>
             <p className="auth-sub" style={{ marginTop: 8 }}>
-              Check <strong>{email}</strong> for a confirmation link from Supabase.
+              Check <strong>{email}</strong> for a confirmation link from your auth provider.
             </p>
             <div className="dm-toolbar-mt">
               <Button variant="primary" className="btn--block" onClick={() => nav('/login', { replace: true })}>

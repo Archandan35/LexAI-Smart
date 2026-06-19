@@ -1,6 +1,7 @@
 import { caseService } from '@/services/caseService.js';
-import { databaseService } from '@/services/databaseService.js';
+import { causeListTemplatesRepository } from '@/data-layer/repositories/causeListTemplatesRepository.js';
 import { ok, fail } from '@/utils/result.js';
+import { DateEngine } from '@/core/index.js';
 
 // causeListLogic — daily/period cause list + per-case hearing history rendered
 // through a user-chosen template. Templates are CRUD-managed by the user.
@@ -14,7 +15,7 @@ export const causeListLogic = {
       const caseMap = Object.fromEntries(cases.map((c) => [c.id, c]));
       const rows = hearings
         .filter((h) => inRange(h.date, from, to))
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .sort((a, b) => DateEngine.compare(a.date, b.date))
         .map((h) => ({
           ...h,
           case: caseMap[h.caseId] || null,
@@ -36,7 +37,7 @@ export const causeListLogic = {
         caseService.getCase(caseId),
         caseService.listHearings(caseId),
       ]);
-      const sorted = [...hearings].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const sorted = [...hearings].sort((a, b) => DateEngine.compare(a.date, b.date));
       const format = template?.historyFormat || '{date} — {stage} — {purpose} — {status}';
       const lines = sorted.map((h) =>
         format
@@ -60,17 +61,17 @@ export const causeListLogic = {
   deleteHearing: (id) => caseService.deleteHearing(id),
 
   // Template CRUD
-  listTemplates: () => databaseService.list('causeListTemplates'),
-  addTemplate: (data) => databaseService.create('causeListTemplates', data),
-  updateTemplate: (id, patch) => databaseService.update('causeListTemplates', id, patch),
-  deleteTemplate: (id) => databaseService.remove('causeListTemplates', id),
+  listTemplates: () => causeListTemplatesRepository.getAll(),
+  addTemplate: (data) => causeListTemplatesRepository.create(data),
+  updateTemplate: (id, patch) => causeListTemplatesRepository.update(id, patch),
+  deleteTemplate: (id) => causeListTemplatesRepository.delete(id),
 };
 
 function inRange(date, from, to) {
   if (!from && !to) return true;
-  const t = new Date(date).getTime();
-  if (from && t < new Date(from).getTime()) return false;
-  if (to && t > new Date(to).getTime()) return false;
+  const t = DateEngine.timestamp(date);
+  if (from && t < DateEngine.timestamp(from)) return false;
+  if (to && t > DateEngine.timestamp(to)) return false;
   return true;
 }
 

@@ -14,7 +14,7 @@ export default function SetupGate({ children }) {
     try {
       const res = await databaseManagerLogic.detect();
       if (res.data?.authError) {
-        setDetectError(`Auth error: ${res.data.authError}. Check that VITE_SUPABASE_ANON_KEY is correct and has access to the project.`);
+        setDetectError(`Auth error: ${res.data.authError}. Check the provider API key and ensure it has access to the project.`);
       }
       if (!res.ok || res.data.needsSetup) {
         setState('setup');

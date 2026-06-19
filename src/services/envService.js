@@ -3,8 +3,9 @@ import { configHistoryRepository } from '@/data-layer/repositories/configHistory
 import { auditService } from './auditService.js';
 import { config } from '@/config/config.js';
 import { ENV_CATEGORIES, API_CATALOG } from '@/constants/envCatalog.js';
-import { nowISO, uid } from '@/utils/id.js';
+import { uid } from '@/utils/id.js';
 import { randomHex } from '@/utils/crypto.js';
+import { DateEngine } from '@/core/index.js';
 
 // envService — centralised environment-variable & API configuration manager.
 // Provider-agnostic and client-side: actual secrets live only in environment
@@ -24,8 +25,8 @@ function snapshot() {
     ANTHROPIC_API_KEY: c.credentials.anthropicApiKey,
     GEMINI_API_KEY: c.credentials.geminiApiKey,
     OLLAMA_BASE_URL: c.credentials.ollamaBaseUrl,
-    SUPABASE_URL: c.credentials.supabaseUrl,
-    SUPABASE_ANON_KEY: c.credentials.supabaseAnonKey,
+    DATABASE_URL: c.credentials.supabaseUrl || c.credentials.databaseUrl || '',
+    DATABASE_ANON_KEY: c.credentials.supabaseAnonKey || c.credentials.databaseKey || '',
     INDIANKANOON_API_KEY: c.credentials.indianKanoonApiKey,
     STORAGE_ROOT_FOLDER: c.storage?.rootFolder,
     GOOGLE_DRIVE_CLIENT_ID: c.storage?.googleDrive?.clientId,
@@ -96,11 +97,11 @@ export const envService = {
     const existing = (await envVarsRepository.getAll()).find((o) => o.name === name);
     const patch = {
       name, value: value ?? existing?.value ?? '', status: status || existing?.status || 'enabled',
-      category: meta.category, secret: meta.secret, updatedAt: nowISO(), updatedBy: user?.name || 'admin',
+      category: meta.category, secret: meta.secret, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin',
     };
     let row;
     if (existing) row = await envVarsRepository.update(existing.id, patch);
-    else row = await envVarsRepository.create({ id: uid('env'), createdAt: nowISO(), ...patch });
+    else row = await envVarsRepository.create({ id: uid('env'), createdAt: DateEngine.now(), ...patch });
 
     await this.recordHistory(name, existing?.value, patch.value, meta.secret, user);
     await auditService.record({ action: existing ? 'env.update' : 'env.create', module: 'env', user, details: name });
@@ -115,7 +116,7 @@ export const envService = {
 
   async setStatus(name, status, user) {
     const existing = (await envVarsRepository.getAll()).find((o) => o.name === name);
-    if (existing) await envVarsRepository.update(existing.id, { status, updatedAt: nowISO(), updatedBy: user?.name || 'admin' });
+    if (existing) await envVarsRepository.update(existing.id, { status, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin' });
     else await this.upsert({ name, status }, user);
     await auditService.record({ action: status === 'enabled' ? 'env.enable' : 'env.disable', module: 'env', user, details: name });
   },
@@ -133,14 +134,14 @@ export const envService = {
       await configHistoryRepository.create({
         id: uid('cfg'), name,
         oldValue: maskValue(oldValue, secret), newValue: maskValue(newValue, secret),
-        changedBy: user?.name || 'admin', at: nowISO(),
+        changedBy: user?.name || 'admin', at: DateEngine.now(),
       });
     } catch { /* never break the action */ }
   },
 
   async history() {
     const rows = await configHistoryRepository.getAll();
-    return [...rows].sort((a, b) => new Date(b.at) - new Date(a.at));
+    return DateEngine.sortByDate(rows, 'at', 'desc');
   },
 
   // API Manager: derive connection state from whether the configuring var is set.

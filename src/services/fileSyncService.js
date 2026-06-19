@@ -1,7 +1,7 @@
 import { cloudProviderService } from './cloudProviderService.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { config } from '@/config/config.js';
-import { nowISO } from '@/utils/id.js';
+import { DateEngine } from '@/core/index.js';
 
 // fileSyncService — orchestrates cloud sync for case/draft files only (NOT the
 // database backup module, which is separate). Cloud-first: after a DB write, we
@@ -14,7 +14,7 @@ export const fileSyncService = {
     // Local provider: the DB write IS the durable copy — mark synced.
     if (!cloudProviderService.isCloud()) {
       if (record?.id && action !== 'delete') {
-        return documentsRepository.update(record.id, { syncStatus: 'synced', lastSyncAt: nowISO() });
+        return documentsRepository.update(record.id, { syncStatus: 'synced', lastSyncAt: DateEngine.now() });
       }
       return record;
     }
@@ -26,7 +26,7 @@ export const fileSyncService = {
       const res = await cloudProviderService.push(action, record);
       if (record?.id && action !== 'delete') {
         return documentsRepository.update(record.id, {
-          syncStatus: res?.ok ? 'synced' : 'error', lastSyncAt: nowISO(), syncMessage: res?.reason || '',
+          syncStatus: res?.ok ? 'synced' : 'error', lastSyncAt: DateEngine.now(), syncMessage: res?.reason || '',
         });
       }
       return record;

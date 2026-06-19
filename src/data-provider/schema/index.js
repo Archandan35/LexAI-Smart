@@ -3,6 +3,11 @@
 // engine reads this to create/validate tables & collections; the repository
 // layer reads it for defaults/validation; the .udb exporter reads it to know
 // which collections exist and how they relate.
+//
+// Every schema is automatically registered in the EntityRegistry at import
+// time so the core engine knows about all entities.
+
+import { EntityRegistry } from '@/core/EntityRegistry.js';
 
 import { UsersSchema } from './users.schema.js';
 import { RolesSchema } from './roles.schema.js';
@@ -56,7 +61,7 @@ export const schemas = {
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 16;
+export const SCHEMA_VERSION = 17;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);
@@ -100,5 +105,9 @@ export function validateRecord(collection, record = {}) {
   });
   return { valid: missing.length === 0, missing };
 }
+
+// Auto-register every schema in the EntityRegistry so core engines know
+// about all entities without additional imports.
+EntityRegistry.registerAll(schemas);
 
 export default schemas;

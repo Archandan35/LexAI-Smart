@@ -7,10 +7,7 @@ import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
-import { SchemaDiffEngine } from '@/data-provider/schema/SchemaDiffEngine.js';
-import { listSchemas, SCHEMA_VERSION } from '@/data-provider/schema/index.js';
-import { getDatabaseProvider } from '@/providers/database/index.js';
-import { databaseHealthEngine } from '@/data-provider/health/DatabaseHealthEngine.js';
+import { schemaService } from '@/services/schemaService.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
 function statusIcon(action) {
@@ -32,14 +29,15 @@ export default function SchemaManager() {
   const [showSql, setShowSql] = useState(false);
   const [sql, setSql] = useState('');
   const [tab, setTab] = useState('diff');
-  const [exportFormat, setExportFormat] = useState('sql');
+  const schemas = schemaService.listSchemas();
+  const schemaVersion = schemaService.schemaVersion();
 
   const scan = useCallback(async () => {
     setScanning(true);
     try {
       const [diffRes, healthRes] = await Promise.all([
-        SchemaDiffEngine.diff(),
-        databaseHealthEngine.scan(),
+        schemaService.diffSchema(),
+        schemaService.scanHealth(),
       ]);
       setDiff(diffRes);
       setHealth(healthRes);
@@ -55,7 +53,7 @@ export default function SchemaManager() {
   const runRepair = async () => {
     setRepairing(true);
     try {
-      const result = await databaseHealthEngine.repair();
+      const result = await schemaService.repairHealth();
       toast.push(`Repair completed: ${result.actions.length} action(s).`, 'success');
       await scan();
     } catch (e) {
@@ -66,7 +64,7 @@ export default function SchemaManager() {
 
   const generateSql = () => {
     if (!diff) return;
-    const sqlText = SchemaDiffEngine.toSQL(diff);
+    const sqlText = schemaService.toSQL(diff);
     setSql(sqlText);
     setShowSql(true);
   };
@@ -76,9 +74,8 @@ export default function SchemaManager() {
   };
 
   const exportSchema = () => {
-    const schemas = listSchemas();
     const payload = {
-      version: SCHEMA_VERSION,
+      version: schemaVersion,
       exportedAt: new Date().toISOString(),
       schemas: schemas.map((s) => ({
         collection: s.collection,
@@ -93,7 +90,7 @@ export default function SchemaManager() {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `lexai-schema-v${SCHEMA_VERSION}.json`; a.click();
+    a.href = url; a.download = `lexai-schema-v${schemaVersion}.json`; a.click();
     URL.revokeObjectURL(url);
     toast.push('Schema exported.', 'success');
   };
@@ -120,7 +117,7 @@ export default function SchemaManager() {
 
   if (loading) return <div className="page page--center"><Spinner label="Scanning schemas…" /></div>;
 
-  const totalTables = diff ? listSchemas().length : 0;
+  const totalTables = schemas.length;
   const missingTables = diff?.missingTables?.length || 0;
   const missingCols = diff?.missingColumns?.length || 0;
   const healthScore = health?.score ?? 0;
@@ -130,7 +127,7 @@ export default function SchemaManager() {
       <PageHeader
         icon="database"
         title="Schema Manager"
-        subtitle={`Software v${SCHEMA_VERSION} · Provider: ${health?.provider || '—'} · Health score: ${healthScore}/100`}
+        subtitle={`Software v${schemaVersion} · Provider: ${health?.provider || '—'} · Health score: ${healthScore}/100`}
         actions={
           <div className="row-actions">
             <Button size="sm" variant="ghost" icon="search" loading={scanning} onClick={scan}>Rescan</Button>
@@ -175,7 +172,6 @@ export default function SchemaManager() {
       {/* Tab: Schema Diff */}
       {tab === 'diff' && (
         <>
-          {/* Missing Tables */}
           {diff?.missingTables?.length > 0 && (
             <Card title={`Missing Tables (${diff.missingTables.length})`} tone="amber" style={{ marginBottom: 16 }}>
               <table className="table">
@@ -193,7 +189,6 @@ export default function SchemaManager() {
             </Card>
           )}
 
-          {/* Missing Columns */}
           {diff?.missingColumns?.length > 0 && (
             <Card title={`Missing Columns (${diff.missingColumns.length})`} tone="navy" style={{ marginBottom: 16 }}>
               <table className="table">
@@ -212,7 +207,6 @@ export default function SchemaManager() {
             </Card>
           )}
 
-          {/* Wrong Types */}
           {diff?.wrongTypes?.length > 0 && (
             <Card title={`Type Mismatches (${diff.wrongTypes.length})`} tone="red" style={{ marginBottom: 16 }}>
               <table className="table">
@@ -232,7 +226,6 @@ export default function SchemaManager() {
             </Card>
           )}
 
-          {/* Missing Indexes */}
           {diff?.missingIndexes?.length > 0 && (
             <Card title={`Missing Indexes (${diff.missingIndexes.length})`} tone="green" style={{ marginBottom: 16 }}>
               <table className="table">
@@ -250,14 +243,12 @@ export default function SchemaManager() {
             </Card>
           )}
 
-          {/* Healthy state */}
           {diff?.healthy && (
             <Card title="Schema Status">
               <EmptyState icon="check" title="All schemas are in sync." hint={`${totalTables} tables match the software schema.`} />
             </Card>
           )}
 
-          {/* Repair actions */}
           {diff?.repairPlan?.length > 0 && (
             <div className="form__actions" style={{ marginTop: 16 }}>
               <Button icon="check" variant="primary" loading={repairing} onClick={runRepair}>
@@ -273,12 +264,12 @@ export default function SchemaManager() {
 
       {/* Tab: Tables */}
       {tab === 'tables' && (
-        <Card title={`All Tables (${listSchemas().length})`}>
+        <Card title={`All Tables (${schemas.length})`}>
           <div className="table-scroll">
             <table className="table">
               <thead><tr><th>Collection</th><th>Label</th><th>Fields</th><th>Required</th><th>Core</th><th>Status</th></tr></thead>
               <tbody>
-                {listSchemas().map((s) => {
+                {schemas.map((s) => {
                   const missing = diff?.missingTables?.find((t) => t.collection === s.collection);
                   const fieldCount = Object.keys(s.fields || {}).length;
                   return (

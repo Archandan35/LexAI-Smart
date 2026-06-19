@@ -1,4 +1,3 @@
-import { getDatabaseProvider } from '@/providers/database/index.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { databaseHealthService } from '@/services/databaseHealthService.js';
 import { BackupManager } from './BackupManager.js';
@@ -93,8 +92,8 @@ export const databaseManagerLogic = {
       // Final verification
       try {
         const version = await databaseAdminService.getVersion();
-        const db = getDatabaseProvider();
-        const roleCount = await db.count('roles').catch(() => -1);
+        const snapshot = await databaseAdminService.snapshot(['roles']);
+        const roleCount = snapshot?.roles?.length ?? -1;
         console.log('[LexAI install] VERIFY — schema_meta version:', version, 'roles:', roleCount);
         if (version === 0) throw new Error('Schema stamp failed — schema_meta version is 0');
       } catch (verifyErr) {

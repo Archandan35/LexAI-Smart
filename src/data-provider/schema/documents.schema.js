@@ -14,6 +14,7 @@ export const DocumentsSchema = {
     text: 'string',
     version: 'number',
     syncStatus: 'string',
+    syncMessage: 'string',
     lastSyncAt: 'datetime',
     uploadedAt: 'datetime',
   },

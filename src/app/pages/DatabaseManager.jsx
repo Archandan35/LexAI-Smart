@@ -99,7 +99,7 @@ export default function DatabaseManager() {
   const healthTone = !health ? 'grey' : health.healthy ? 'green' : (health.summary.critical ? 'red' : 'amber');
   const healthLabel = !health ? '—' : `${health.score}/100`;
   const schedule = databaseManagerLogic.backupSchedule();
-  const needsManualInstall = data.provider === 'supabase' && !validation.valid && sql;
+  const needsManualInstall = !validation.valid && sql;
 
   return (
     <div className="fade-in">
@@ -109,12 +109,12 @@ export default function DatabaseManager() {
         subtitle="Provider, schema, health, migration, statistics and universal .udb import/export."
       />
 
-      {/* One-click install banner for Supabase when schema is missing */}
+      {/* One-click install banner when schema is missing */}
       {needsManualInstall && (
         <div className="dm-install-banner">
           <Icon name="alert" size={18} />
           <div className="dm-install-banner__body">
-            <b>Schema not installed.</b> Run the SQL below in your Supabase SQL Editor, or add an
+            <b>Schema not installed.</b> Run the SQL below in your database provider's SQL editor, or add an
             <code>exec_sql</code> RPC for one-click installation.
           </div>
           <div className="dm-install-banner__actions">
@@ -141,14 +141,10 @@ export default function DatabaseManager() {
 
       {/* Expandable SQL block */}
       {needsManualInstall && showSql && (
-        <Card title="Install SQL" sub="Paste this once into your Supabase SQL Editor." className="dm-section">
+        <Card title="Install SQL" sub="Paste this once into your database provider's SQL editor." className="dm-section">
           <pre className="code-block">{sql}</pre>
           <div className="toolbar-row">
             <Button variant="ghost" icon="copy" onClick={onCopySql}>{sqlCopied ? 'Copied!' : 'Copy SQL'}</Button>
-            <Button variant="ghost" icon="external-link"
-              onClick={() => window.open('https://supabase.com/dashboard/project/_/sql/new', '_blank', 'noopener')}>
-              Open SQL Editor
-            </Button>
           </div>
         </Card>
       )}

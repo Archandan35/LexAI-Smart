@@ -1,52 +1,50 @@
-// baseRepository — the per-entity data-access factory. Every repository is a
-// thin, uniform wrapper over the active DatabaseProvider, so the service layer
-// gets the SAME API for every collection regardless of which backend is live.
+// baseRepository — the per-entity data-access factory.
 //
-// Layering: repositories sit BELOW services and ABOVE providers. They import
-// only the provider FACTORY (never an SDK) and the universal schema (for
-// defaults/validation). Services import repositories; repositories never import
-// services. This keeps the dependency arrow pointing down and honours R4/R5.
+// ALL entity data access flows through this factory. Pages, services, and
+// logic NEVER call a provider directly. Every repository is a thin wrapper
+// that applies schema defaults, validates records, provisions missing tables/
+// columns on the fly, and translates between LexAI canonical fields and
+// provider-specific column names via the FieldMapper.
 //
-// Auto‑provisioning: on ANY failure (read or write) the repository checks
-// whether the missing table exists — if not it calls ensureCollection then
-// retries. This means unused collections never hit the database at all; the
-// first access auto-creates the table. It also detects unknown fields in write
-// payloads and calls ensureColumn so the schema stays in sync without manual
-// migration steps.
+// The layering is:
+//   Pages → Components → Logic → Services → Repositories → Providers
+//
+// Nothing above the repository layer knows about the active provider.
+
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { applyDefaults, validateRecord, getSchema } from '@/data-provider/schema/index.js';
-import { nowISO } from '@/utils/id.js';
+import { EntityRegistry, FieldMapper, IDEngine, DateEngine } from '@/core/index.js';
 
 async function ensureCollectionExists(db, collection) {
-  const exists = await db.collectionExists(collection).catch(() => false);
+  const providerName = EntityRegistry.providerTable(collection);
+  const exists = await db.collectionExists(providerName).catch(() => false);
   if (!exists) {
     const schema = getSchema(collection);
-    await db.ensureCollection(collection, schema || {}).catch(() => {});
+    await db.ensureCollection(providerName, schema || {}).catch(() => {});
   }
   return exists;
 }
 
 async function ensureRecordColumns(db, collection, record) {
+  const providerName = EntityRegistry.providerTable(collection);
   const schema = getSchema(collection);
   if (!schema || typeof db.listColumns !== 'function') return;
-  const liveColumns = await db.listColumns(collection).catch(() => null);
+  const liveColumns = await db.listColumns(providerName).catch(() => null);
   if (!liveColumns) return;
   const liveNames = new Set(liveColumns.map((c) => c.name.toLowerCase()));
-  const PG_TYPE_MAP = { string: 'text', number: 'numeric', boolean: 'boolean', datetime: 'timestamptz', array: 'jsonb', object: 'jsonb', json: 'jsonb' };
 
   for (const [field, val] of Object.entries(record)) {
     if (field === 'id') continue;
     if (!liveNames.has(field.toLowerCase())) {
       const fieldType = schema.fields?.[field] || (typeof val === 'number' ? 'numeric' : 'text');
-      const canonicalType = PG_TYPE_MAP[fieldType] || fieldType;
+      const canonicalType = EntityRegistry.pgType(fieldType);
       // eslint-disable-next-line no-await-in-loop
-      await db.ensureColumn(collection, field, canonicalType).catch(() => {});
+      await db.ensureColumn(providerName, field, canonicalType).catch(() => {});
       liveNames.add(field.toLowerCase());
     }
   }
 }
 
-// Retry a provider operation once after provisioning the collection if it fails.
 async function withProvisioning(provider, collection, fn) {
   try {
     return await fn();
@@ -57,62 +55,86 @@ async function withProvisioning(provider, collection, fn) {
 }
 
 export function createRepository(collection) {
-  const provider = () => getDatabaseProvider();
+  const entityName = collection;
+  const providerName = () => EntityRegistry.providerTable(entityName);
+  const p = () => getDatabaseProvider();
 
   return {
-    collection,
+    collection: entityName,
 
-    // ---- reads with auto‑provisioning ----
-    getAll: (query = {}) => withProvisioning(provider(), collection, () => provider().list(collection, query)),
-    getById: (id) => withProvisioning(provider(), collection, () => provider().get(collection, id)),
-    query: (query = {}) => withProvisioning(provider(), collection, () => provider().list(collection, query)),
-    count: (query = {}) => withProvisioning(provider(), collection, () => provider().count(collection, query)),
+    // ---- reads (LexAI field names in, provider translated out) ----
+    getAll: (query = {}) => withProvisioning(p(), entityName,
+      () => p().list(providerName(), FieldMapper.filterToProvider(entityName, query))),
+    getById: (id) => withProvisioning(p(), entityName,
+      () => p().get(providerName(), id)),
+    query: (query = {}) => withProvisioning(p(), entityName,
+      () => p().list(providerName(), FieldMapper.filterToProvider(entityName, query))),
+    count: (query = {}) => withProvisioning(p(), entityName,
+      () => p().count(providerName(), FieldMapper.filterToProvider(entityName, query))),
 
     // ---- writes with auto‑provisioning ----
     async create(record = {}) {
-      const p = provider();
-      const enriched = applyDefaults(collection, record);
+      const provider = p();
+      const enriched = applyDefaults(entityName, record);
+      // Generate LexAI business ID if not provided
+      if (!enriched.id) {
+        enriched.id = await IDEngine.generate(entityName);
+      }
+      const providerRecord = FieldMapper.toProvider(entityName, enriched);
       try {
-        return await p.create(collection, enriched);
+        const result = await provider.create(providerName(), providerRecord);
+        return FieldMapper.toLexAI(entityName, result);
       } catch (err) {
-        await ensureCollectionExists(p, collection);
-        await ensureRecordColumns(p, collection, enriched);
-        return p.create(collection, enriched);
+        await ensureCollectionExists(provider, entityName);
+        await ensureRecordColumns(provider, entityName, providerRecord);
+        const result = await provider.create(providerName(), providerRecord);
+        return FieldMapper.toLexAI(entityName, result);
       }
     },
 
     async update(id, patch = {}) {
-      const p = provider();
-      const stamped = { ...patch, updatedAt: nowISO() };
+      const provider = p();
+      const stamped = { ...patch, updatedAt: DateEngine.now() };
+      const providerPatch = FieldMapper.toProvider(entityName, stamped);
       try {
-        return await p.update(collection, id, stamped);
+        const result = await provider.update(providerName(), id, providerPatch);
+        return FieldMapper.toLexAI(entityName, result);
       } catch (err) {
-        await ensureCollectionExists(p, collection);
-        await ensureRecordColumns(p, collection, stamped);
-        return p.update(collection, id, stamped);
+        await ensureCollectionExists(provider, entityName);
+        await ensureRecordColumns(provider, entityName, providerPatch);
+        const result = await provider.update(providerName(), id, providerPatch);
+        return FieldMapper.toLexAI(entityName, result);
       }
     },
 
-    delete: (id) => provider().remove(collection, id),
+    delete: (id) => p().remove(providerName(), id),
 
     // ---- bulk ----
     async bulkCreate(records = []) {
-      const p = provider();
-      const enriched = records.map((r) => applyDefaults(collection, r));
+      const provider = p();
+      const enriched = records.map((r) => applyDefaults(entityName, r));
+      // Generate LexAI business IDs
+      const withIds = await Promise.all(enriched.map(async (r) => {
+        if (!r.id) r.id = await IDEngine.generate(entityName);
+        return r;
+      }));
+      const providerRecords = withIds.map((r) => FieldMapper.toProvider(entityName, r));
       try {
-        return await p.bulkCreate(collection, enriched);
+        const results = await provider.bulkCreate(providerName(), providerRecords);
+        return (results || []).map((r) => FieldMapper.toLexAI(entityName, r));
       } catch (err) {
-        await ensureCollectionExists(p, collection);
-        await ensureRecordColumns(p, collection, enriched[0] || {});
-        return p.bulkCreate(collection, enriched);
+        await ensureCollectionExists(provider, entityName);
+        await ensureRecordColumns(provider, entityName, providerRecords[0] || {});
+        const results = await provider.bulkCreate(providerName(), providerRecords);
+        return (results || []).map((r) => FieldMapper.toLexAI(entityName, r));
       }
     },
 
-    bulkDelete: (ids = []) => provider().bulkRemove(collection, ids),
-    clear: () => provider().clear(collection),
+    bulkDelete: (ids = []) => p().bulkRemove(providerName(), ids),
+    clear: () => p().clear(providerName()),
 
     // ---- helpers ----
-    validate: (record = {}) => validateRecord(collection, record),
+    validate: (record = {}) => validateRecord(entityName, record),
   };
 }
 
