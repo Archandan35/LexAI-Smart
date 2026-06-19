@@ -10,6 +10,7 @@ import { FieldMapper } from '@/core/FieldMapper.js';
 const MAPPING_TABLE = 'schema_mapping';
 const HISTORY_TABLE = 'mapping_history';
 const VERSIONS_TABLE = 'mapping_versions';
+const FK_REGISTRY = 'foreign_key_registry';
 
 export const SchemaMappingService = {
   // Load all active mappings from DB into the in-memory FieldMapper
@@ -196,6 +197,105 @@ export const SchemaMappingService = {
       }
     }
     return { ok: true, results };
+  },
+
+  // Alias for listMappings (used by VerificationEngine and other services)
+  async getMappings() {
+    return this.listMappings();
+  },
+
+  // Upsert mapping (for ProviderSwitcher)
+  async upsertMapping({ entity_name, provider_table, description, active }) {
+    const existing = await this.getMapping(entity_name);
+    if (existing) {
+      const provider = getDatabaseProvider();
+      await provider.update(MAPPING_TABLE, existing.id, {
+        provider_table,
+        description: description || existing.description,
+        active: active !== undefined ? active : existing.active,
+        version: (existing.version || 1) + 1,
+        updated_at: new Date().toISOString(),
+      });
+    } else {
+      const provider = getDatabaseProvider();
+      await provider.create(MAPPING_TABLE, {
+        entity_name,
+        provider_table,
+        description: description || '',
+        active: active !== undefined ? active : true,
+        version: 1,
+      });
+    }
+    FieldMapper.setTableMapping(entity_name, provider_table);
+    return { ok: true };
+  },
+
+  // Validate a specific entity mapping
+  async validateMapping(collection) {
+    const s = getSchema(collection);
+    if (!s) return { valid: false, error: `Unknown entity: ${collection}` };
+    const mapping = await this.getMapping(collection);
+    return {
+      valid: true,
+      entity: collection,
+      mappedTable: mapping?.provider_table || collection,
+      fields: Object.keys(s.fields),
+    };
+  },
+
+  // Rollback mappings to a specific version snapshot
+  async rollbackToVersion(versionId) {
+    const provider = getDatabaseProvider();
+    try {
+      const version = await provider.get(VERSIONS_TABLE, versionId);
+      if (!version) return { ok: false, error: 'Version not found' };
+      const snapshot = typeof version.snapshot === 'string' ? JSON.parse(version.snapshot) : version.snapshot;
+      for (const m of snapshot) {
+        if (m.active !== false) {
+          await this.setMapping(m.entity_name || m.entity, m.provider_table || m.table, `Rollback to version ${versionId}`);
+        }
+      }
+      return { ok: true, version: versionId };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  },
+
+  // List relationships (from foreign_key_registry)
+  async listRelationships() {
+    const provider = getDatabaseProvider();
+    try {
+      const rows = await provider.list(FK_REGISTRY, {});
+      return rows.map((r) => ({
+        id: r.id,
+        fromEntity: r.from_entity,
+        fromField: r.from_field,
+        toEntity: r.to_entity,
+        toField: r.to_field,
+        cascadeDelete: r.cascade_delete,
+        enabled: r.enabled,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  // Create a relationship mapping
+  async createRelationship({ fromEntity, fromField, toEntity, toField, cascadeDelete }) {
+    const provider = getDatabaseProvider();
+    try {
+      await provider.create(FK_REGISTRY, {
+        from_entity: fromEntity,
+        from_field: fromField,
+        to_entity: toEntity,
+        to_field: toField || 'id',
+        cascade_delete: cascadeDelete || false,
+        enabled: true,
+      });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
   },
 };
 

@@ -1,101 +1,32 @@
+import { VerificationEngine } from '@/installer-engine/VerificationEngine.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
-import { databaseHealthService } from '@/services/databaseHealthService.js';
-import { udbEngine } from '@/data-provider/udb/udbEngine.js';
-import { InstallationPlanner } from './InstallationPlanner.js';
+import { MigrationRunner } from '@/installer-engine/MigrationRunner.js';
 import { InstallerStateService } from '@/services/installerStateService.js';
 import { SchemaMappingService } from '@/services/schemaMappingService.js';
 import { ProviderCapabilitiesService } from '@/services/providerCapabilitiesService.js';
 
 export const ValidationEngine = {
   async validateInstallation() {
-    const [version, health, diff, state, mappings, caps] = await Promise.all([
-      databaseAdminService.getVersion().catch(() => 0),
-      databaseHealthService.scan().catch(() => null),
-      databaseAdminService.diffSchema().catch(() => null),
-      InstallerStateService.getState().catch(() => null),
-      SchemaMappingService.listMappings().catch(() => []),
-      ProviderCapabilitiesService.getCapabilities().catch(() => ({})),
-    ]);
-
-    const issues = [];
-    if (version === 0) issues.push({ type: 'error', message: 'Schema version is 0 — installation incomplete.' });
-
-    // Check installer state
-    if (state && state.install_status !== 'completed') {
-      issues.push({ type: 'error', message: `Installer state is "${state.install_status}" — installation not completed.` });
-    }
-
-    // Check registries
-    if (state && state.installer_version === 0) {
-      issues.push({ type: 'warning', message: 'Installer version is 0 — registries may not be populated.' });
-    }
-
-    if (health && !health.healthy) {
-      for (const issue of (health.issues || [])) {
-        issues.push({ type: issue.severity === 'critical' ? 'error' : 'warning', message: issue.message || issue.label });
-      }
-    }
-
-    if (diff) {
-      if (diff.missingTables?.length > 0) {
-        issues.push({ type: 'error', message: `Missing tables: ${diff.missingTables.join(', ')}` });
-      }
-      if (diff.missingColumns?.length > 0) {
-        issues.push({ type: 'warning', message: `Missing columns: ${diff.missingColumns.map((c) => c.table ? `${c.table}.${c.column}` : c.column).join(', ')}` });
-      }
-    }
-
-    // Check schema mappings
-    const conflicts = await SchemaMappingService.detectConflicts();
-    if (conflicts.length > 0) {
-      issues.push({ type: 'error', message: `Mapping conflicts: ${conflicts.map((c) => `${c.table} (${c.entities.join(', ')})`).join('; ')}` });
-    }
-
-    // Check capabilities
-    const providerName = databaseAdminService.providerName();
-    const providerCaps = caps[providerName];
-    if (providerCaps) {
-      const missing = Object.entries(providerCaps).filter(([, v]) => !v).map(([k]) => k);
-      if (missing.length > 0) {
-        issues.push({ type: 'info', message: `Unsupported features: ${missing.join(', ')}` });
-      }
-    }
-
-    return {
-      valid: issues.filter((i) => i.type === 'error').length === 0,
-      version,
-      targetVersion: databaseAdminService.targetVersion(),
-      health: health ? { score: health.score, healthy: health.healthy, summary: health.summary } : null,
-      diff,
-      state,
-      mappings: { count: mappings.length, conflicts: conflicts.length },
-      issues,
-      issueCount: issues.length,
-    };
+    // Delegate to the comprehensive VerificationEngine
+    return VerificationEngine.verifyAll();
   },
 
-  async validateUpload(udb) {
-    const parsed = await udbEngine.parse(typeof udb === 'string' ? udb : JSON.stringify(udb));
-    if (!parsed.ok) return { valid: false, errors: [parsed.reason] };
+  async validateMapping(collection) {
+    return SchemaMappingService.validateMapping(collection);
+  },
 
-    const versionOk = parsed.versionOk !== false;
-    const checksumOk = parsed.checksumOk !== false;
-    const errors = [];
-    if (!versionOk) errors.push('UDB schema version is newer than current app version.');
-    if (!checksumOk) errors.push('Checksum mismatch — data may be corrupted.');
+  async validateCapabilities() {
+    return ProviderCapabilitiesService.getCapabilities();
+  },
 
-    const schema = udb.schema;
-    const schemaDiff = schema ? InstallationPlanner.diffSchemas(schema) : null;
+  async validateMigration() {
+    const needs = await MigrationRunner.needsMigration();
+    const installed = await MigrationRunner.getInstalledVersion();
+    return { needsMigration: needs, installedVersion: installed, targetVersion: MigrationRunner.targetVersion };
+  },
 
-    return {
-      valid: errors.length === 0,
-      errors,
-      versionOk,
-      checksumOk,
-      counts: parsed.counts,
-      schemaDiff,
-      repaired: parsed.repaired,
-    };
+  async validateState() {
+    return InstallerStateService.getState();
   },
 };
 

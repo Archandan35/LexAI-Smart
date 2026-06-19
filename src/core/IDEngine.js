@@ -72,15 +72,15 @@ function pad(num, len = 5) {
 
 export const IDEngine = {
   // Generate a new LexAI business ID for the given entity.
-  // Tries the database next_lx_id() function first, falls back to client-side.
+  // Tries the database next_lx_id RPC first, falls back to client-side.
   async generate(entityName) {
     const provider = getDatabaseProvider();
 
-    // Try database-side next_lx_id if available
-    if (typeof provider.execSql === 'function') {
+    // Try database-side next_lx_id if provider supports RPC calls
+    if (typeof provider.rpc === 'function') {
       try {
-        const res = await provider.execSql(`SELECT next_lx_id('${entityName}') AS id`);
-        if (res && res.ok && res.id) return res.id;
+        const res = await provider.rpc('next_lx_id', { p_entity: entityName });
+        if (res && res.ok !== false && res.data) return res.data;
       } catch {
         // Fall through to client-side generation
       }

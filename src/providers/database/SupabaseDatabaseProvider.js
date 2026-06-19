@@ -69,21 +69,34 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return rows[0] || null;
   }
 
-  // Run DDL via an `exec_sql` Postgres function exposed as a PostgREST RPC.
-  // This is the standard way to let a browser client install schema: create
-  //   create function exec_sql(sql text) returns void language plpgsql as $$
-  //   begin execute sql; end; $$;
-  // (secure it to service-role / an admin policy). If absent, the installer
-  // falls back to surfacing the SQL for the SQL editor.
+  // Execute arbitrary SQL via the exec_sql RPC (requires custom function in Supabase).
   async execSql(sql) {
-    const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-      method: 'POST', headers: this.#headers(), body: JSON.stringify({ sql }),
-    });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(`exec_sql ${res.status} ${detail}`.trim());
+    try {
+      const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+        method: 'POST',
+        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sql }),
+      });
+      return res.ok ? { ok: true } : { ok: false, error: await res.text().catch(() => 'Unknown error') };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    return true;
+  }
+
+  // Call a Postgres function via Supabase RPC
+  async rpc(functionName, params = {}) {
+    try {
+      const res = await fetch(`${this.url}/rest/v1/rpc/${functionName}`, {
+        method: 'POST',
+        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!res.ok) return { ok: false, error: `RPC ${functionName} failed: ${res.status}` };
+      const data = await res.json();
+      return { ok: true, data };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
   }
 
   // Probe whether a table exists & is reachable under the current key/RLS.
@@ -175,7 +188,7 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
         const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
           method: 'POST',
           headers: { ...this.#headers(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: sql }),
+          body: JSON.stringify({ sql }),
         });
         if (res.ok) return { created: true, ok: true };
         return { created: false, ok: false, needsManual: true, sql };
@@ -197,26 +210,12 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
         method: 'POST',
         headers: { ...this.#headers(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: sql }),
+        body: JSON.stringify({ sql }),
       });
       if (res.ok) return { created: true, ok: true, sql };
       return { created: false, ok: false, sql, needsManual: true };
     } catch {
       return { created: false, ok: false, sql, needsManual: true };
-    }
-  }
-
-  // Execute arbitrary SQL via the exec_sql RPC (requires custom function in Supabase).
-  async execSql(query) {
-    try {
-      const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-        method: 'POST',
-        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
-      return res.ok ? { ok: true } : { ok: false, error: await res.text().catch(() => 'Unknown error') };
-    } catch (e) {
-      return { ok: false, error: e.message };
     }
   }
 

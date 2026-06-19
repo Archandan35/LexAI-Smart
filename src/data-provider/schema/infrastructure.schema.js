@@ -110,6 +110,14 @@ const INFRA_TABLES = [
     fields: { id: 'string', from_entity: 'string', from_field: 'string', to_entity: 'string', to_field: 'string', cascade_delete: 'boolean', enabled: 'boolean', created_at: 'datetime' },
     indexes: ['from_entity', 'to_entity'],
   },
+  {
+    collection: 'provider_adapter_registry',
+    label: 'Provider Adapter Registry',
+    primaryKey: 'id',
+    core: false,
+    fields: { id: 'string', provider: 'string', adapter_name: 'string', adapter_version: 'string', migration_engine: 'string', capabilities: 'json', active: 'boolean', config: 'json', created_at: 'datetime', updated_at: 'datetime' },
+    indexes: ['active'],
+  },
 ];
 
 INFRA_TABLES.forEach((t) => EntityRegistry.register(t));

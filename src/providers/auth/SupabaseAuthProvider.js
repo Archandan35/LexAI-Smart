@@ -161,7 +161,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
           this.#persistSession(newSession);
 
           const db = getDatabaseProvider();
-          const dbUser = await db.get('users', newSession.userId);
+          const dbUser = await db.get(USERS_TABLE(), newSession.userId);
           if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
             this.#clearSession();
             return null;

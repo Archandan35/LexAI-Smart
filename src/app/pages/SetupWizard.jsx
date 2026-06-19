@@ -620,14 +620,29 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
             {/* --- VALIDATION RESULT --- */}
             {validateResult && step >= 6 && (
-              <div className={`alert ${validateResult.valid ? 'alert--success' : 'alert--warn'} dm-mt`}>
-                <Icon name={validateResult.valid ? 'check' : 'alert'} size={16} />
-                <span>
-                  {validateResult.valid
-                    ? `Installation verified (v${validateResult.version}). Ready to proceed.`
-                    : `${validateResult.issueCount} issue${validateResult.issueCount !== 1 ? 's' : ''} found.`}
-                </span>
-              </div>
+              <>
+                <div className={`alert ${validateResult.valid ? 'alert--success' : 'alert--warn'} dm-mt`}>
+                  <Icon name={validateResult.valid ? 'check' : 'alert'} size={16} />
+                  <span>
+                    {validateResult.valid
+                      ? `Installation verified (v${validateResult.version}). Ready to proceed.`
+                      : `${validateResult.issueCount} issue${validateResult.issueCount !== 1 ? 's' : ''} found.`}
+                  </span>
+                </div>
+                {validateResult.checks && (
+                  <div className="dm-mt" style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
+                    {validateResult.checks.map((c) => (
+                      <div key={c.name} style={{ display: 'flex', gap: 8 }}>
+                        <span style={{ color: c.status === 'ok' ? 'var(--success)' : c.status === 'warn' ? 'var(--warning)' : 'var(--error)', width: 32 }}>
+                          {c.status === 'ok' ? 'OK' : c.status === 'warn' ? 'WARN' : 'FAIL'}
+                        </span>
+                        <span style={{ width: 100, color: 'var(--text-muted)' }}>{c.name}</span>
+                        <span>{c.details || ''}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {/* --- READY / FINISH --- */}
