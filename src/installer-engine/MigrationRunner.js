@@ -1,20 +1,21 @@
-// MigrationRunner — detects installed version, runs pending migrations, tracks
-// history in migration_registry, verifies success, and rolls back on failure.
+// MigrationRunner — detects installed version, runs pending migration steps,
+// tracks history in migration_registry, verifies success, and rolls back on failure.
 //
-// Migration files live in src/data-provider/migrations/ and follow the naming
-// convention: migration-to-v{N}.sql (e.g., migration-to-v18.sql).
-// Each file is re-runnable (uses IF NOT EXISTS, ON CONFLICT DO NOTHING, etc.).
+// P7: Modular migration steps from src/data-provider/migrations/steps/.
+// Each step is a JS module exporting { version, description, sql }.
+// Steps run sequentially in dependency order.
 
 import { config } from '@/config/config.js';
 import { listSchemas, SCHEMA_VERSION } from '@/data-provider/schema/index.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { AllowlistEngine } from '@/core/AllowlistEngine.js';
+import { migrationSteps, TOTAL_STEPS } from '@/data-provider/migrations/steps/index.js';
 
 const MIGRATION_TABLE = 'migration_registry';
-const STATE_TABLE = 'installer_state';
 const SCHEMA_REGISTRY = 'schema_registry';
 
 export const MigrationRunner = {
+  // Returns the highest migration step version recorded in schema_registry
   async getInstalledVersion() {
     const provider = getDatabaseProvider();
     try {
@@ -25,27 +26,24 @@ export const MigrationRunner = {
     }
   },
 
+  // Returns un-applied steps sorted by version
   async getPendingMigrations() {
     const installed = await this.getInstalledVersion();
-    const allMigrations = this.listMigrationFiles();
-    return allMigrations.filter((m) => m.version > installed).sort((a, b) => a.version - b.version);
+    return migrationSteps.filter((m) => m.version > installed).sort((a, b) => a.version - b.version);
   },
 
-  listMigrationFiles() {
-    // Migration files are numbered: migration-to-v18.sql => version 18
-    const migrations = [
-      { version: 18, file: 'migration-to-v18.sql', description: 'System infrastructure + RBAC + registry tables + RLS + FK + LX-ID' },
-    ];
-    return migrations;
+  listMigrationSteps() {
+    return [...migrationSteps];
   },
 
+  // Execute all pending steps, recording each in migration_registry
   async runPendingMigrations(onProgress) {
     const provider = getDatabaseProvider();
     const pending = await this.getPendingMigrations();
     const results = [];
 
-    for (const [i, migration] of pending.entries()) {
-      const label = `Migration v${migration.version}: ${migration.description}`;
+    for (const [i, step] of pending.entries()) {
+      const label = `Step ${step.version}/${TOTAL_STEPS}: ${step.description}`;
       if (onProgress) onProgress({ step: i + 1, total: pending.length, label, status: 'working' });
 
       const startTime = Date.now();
@@ -53,60 +51,47 @@ export const MigrationRunner = {
       let errorMsg = null;
 
       try {
-        // Read and validate migration SQL
-        const sql = await this.loadMigrationSql(migration.file);
-        if (!sql) {
-          throw new Error(`Migration file ${migration.file} not found or empty`);
-        }
-
-        const validation = AllowlistEngine.validate(sql);
+        const validation = AllowlistEngine.validate(step.sql);
         if (!validation.valid) {
-          throw new Error(`Migration SQL validation failed: ${validation.errors.map((e) => `[stmt ${e.statement}] ${e.reason}: ${e.sql}`).join('; ')}`);
+          throw new Error(`Validation failed: ${validation.errors.map((e) => `[stmt ${e.statement}] ${e.reason}`).join('; ')}`);
         }
 
-        // Execute the migration
         if (typeof provider.execSql === 'function') {
-          await provider.execSql(sql);
+          await provider.execSql(step.sql);
         } else if (typeof provider.executeRaw === 'function') {
-          await provider.executeRaw(sql);
+          await provider.executeRaw(step.sql);
         } else {
-          throw new Error(`Provider ${config.providers.database} does not support SQL execution for migrations`);
+          throw new Error(`Provider ${config.providers.database} does not support SQL execution`);
         }
 
-        // Record in migration_registry
-        const hash = this.simpleHash(sql);
+        const hash = this.simpleHash(step.sql);
         await this.recordMigration({
-          version: migration.version,
-          description: migration.description,
+          version: step.version,
+          description: step.description,
           sqlHash: hash,
           durationMs: Date.now() - startTime,
           success: true,
         });
 
-        // Update schema_registry version
-        await this.updateSchemaVersion(migration.version);
+        await this.updateSchemaVersion(step.version);
 
         success = true;
         if (onProgress) onProgress({ step: i + 1, total: pending.length, label, status: 'done' });
       } catch (e) {
         errorMsg = e.message || String(e);
-        // Record failure
         await this.recordMigration({
-          version: migration.version,
-          description: migration.description,
+          version: step.version,
+          description: step.description,
           sqlHash: '',
           durationMs: Date.now() - startTime,
           success: false,
           error: errorMsg,
         });
-
-        // Attempt rollback
-        await this.rollbackMigration(migration.version, errorMsg);
-
-        if (onProgress) onProgress({ step: i + 1, total: pending.length, label: `Migration v${migration.version} FAILED`, status: 'error' });
+        await this.rollbackMigration(step.version, errorMsg);
+        if (onProgress) onProgress({ step: i + 1, total: pending.length, label: `Step ${step.version} FAILED`, status: 'error' });
       }
 
-      results.push({ version: migration.version, success, error: errorMsg, duration: Date.now() - startTime });
+      results.push({ version: step.version, success, error: errorMsg, duration: Date.now() - startTime });
     }
 
     return { success: results.every((r) => r.success), results, pending: pending.length };
@@ -118,7 +103,7 @@ export const MigrationRunner = {
       await provider.create(MIGRATION_TABLE, {
         id: `MIG-${version}-${Date.now()}`,
         version,
-        description: description || `Migration to v${version}`,
+        description: description || `Migration step ${version}`,
         sql_hash: sqlHash || '',
         applied_at: new Date().toISOString(),
         duration_ms: durationMs || 0,
@@ -142,11 +127,10 @@ export const MigrationRunner = {
   async rollbackMigration(version, errorMsg) {
     const provider = getDatabaseProvider();
     try {
-      // Record rollback attempt
       await provider.create(MIGRATION_TABLE, {
         id: `ROLLBACK-${version}-${Date.now()}`,
         version,
-        description: `Rollback of v${version} due to: ${errorMsg}`,
+        description: `Rollback of step ${version} due to: ${errorMsg}`,
         sql_hash: '',
         applied_at: new Date().toISOString(),
         duration_ms: 0,
@@ -161,7 +145,7 @@ export const MigrationRunner = {
 
   async needsMigration() {
     const installed = await this.getInstalledVersion();
-    return installed < SCHEMA_VERSION;
+    return installed < TOTAL_STEPS;
   },
 
   async getMigrationHistory(limit = 50) {
@@ -174,10 +158,8 @@ export const MigrationRunner = {
     }
   },
 
+  // SQL is provided by the modular steps directly — no file loading needed
   async loadMigrationSql(filename) {
-    // Migration SQL is generated by SchemaCompiler.systemSql().
-    // For custom SQL files, they would need to be pre-loaded as text.
-    // Default: return empty (migration handled by SchemaCompiler artifact).
     return '';
   },
 

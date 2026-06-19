@@ -65,7 +65,7 @@ export const schemas = {
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

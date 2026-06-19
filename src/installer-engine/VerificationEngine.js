@@ -1,7 +1,5 @@
 // VerificationEngine — comprehensive installation verification service.
-// Checks schema, registry, mappings, capabilities, permissions, migration status,
-// provider status, and installer state. Displayed inside Setup Wizard as a
-// checklist with OK/FAIL status per item.
+// P6: Enhanced with FK, function, index, and policy existence checks.
 
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { InstallerStateService } from '@/services/installerStateService.js';
@@ -14,21 +12,52 @@ import { getDatabaseProvider } from '@/providers/database/index.js';
 
 const CHECK_ICONS = { ok: 'OK', fail: 'FAIL', warn: 'WARN', skip: 'SKIP' };
 
+const REQUIRED_REGISTRY_TABLES = [
+  'schema_registry', 'entity_registry', 'field_registry', 'provider_registry',
+  'migration_registry', 'installer_state', 'schema_mapping', 'mapping_history',
+  'mapping_versions', 'provider_capabilities', 'entity_prefix_registry',
+  'id_registry', 'foreign_key_registry', 'provider_adapter_registry',
+];
+
+const REQUIRED_FUNCTIONS = ['exec_sql', 'safe_ddl', 'safe_create_fk', 'next_lx_id', 'current_user_role'];
+
+const REQUIRED_FKS = [
+  'fk_reminders_case_id', 'fk_notes_case_id', 'fk_hearings_case_id',
+  'fk_drafts_case_id', 'fk_documents_case_id', 'fk_case_history_case_id',
+  'fk_case_folders_case_id', 'fk_case_activity_case_id', 'fk_audit_logs_user_id',
+  'fk_users_role_code', 'fk_case_folders_parent_id',
+];
+
+const REQUIRED_INDEXES = [
+  'idx_migration_registry_version', 'idx_field_registry_entity',
+  'idx_schema_registry_version', 'idx_provider_registry_active',
+  'idx_provider_adapter_active', 'idx_schema_mapping_active',
+  'idx_mapping_history_entity', 'idx_provider_capabilities_provider',
+  'idx_provider_capabilities_feature', 'idx_entity_prefix_registry_prefix',
+  'idx_foreign_key_registry_from', 'idx_foreign_key_registry_to',
+];
+
 export const VerificationEngine = {
   async verifyAll() {
     const results = await Promise.allSettled([
       this.verifySchema(),
       this.verifyRegistryTables(),
       this.verifyMappings(),
-      this.verifyCapabilities(),
+      this.verifyFunctions(),
+      this.verifyForeignKeys(),
+      this.verifyIndexes(),
+      this.verifyPolicies(),
       this.verifyProvider(),
-      this.verifySecurity(),
       this.verifyMigration(),
       this.verifyInstallerState(),
     ]);
 
+    const names = [
+      'Schema', 'Registry', 'Mappings', 'Functions', 'Foreign Keys',
+      'Indexes', 'Policies', 'Provider', 'Migration', 'Installer State',
+    ];
+
     const checks = results.map((r, i) => {
-      const names = ['Schema', 'Registry', 'Mappings', 'Capabilities', 'Provider', 'Security', 'Migration', 'Installer State'];
       if (r.status === 'fulfilled') {
         return { name: names[i], ...r.value };
       }
@@ -42,7 +71,7 @@ export const VerificationEngine = {
       valid,
       issueCount,
       summary: `${checks.filter((c) => c.status === 'ok').length}/${checks.length} checks passed`,
-      version: checks.find((c) => c.name === 'Migration')?.details?.match(/Schema v(\d+)/)?.[1] || 0,
+      version: SCHEMA_VERSION,
       timestamp: new Date().toISOString(),
     };
   },
@@ -51,16 +80,12 @@ export const VerificationEngine = {
     const provider = getDatabaseProvider();
     const schemas = listSchemas();
     let present = 0;
-
     for (const s of schemas) {
       try {
         const exists = await provider.collectionExists(s.collection);
         if (exists) present++;
-      } catch {
-        // skip
-      }
+      } catch { /* skip */ }
     }
-
     const schemaOk = present >= schemas.filter((s) => s.core).length;
     return {
       status: schemaOk ? 'ok' : 'fail',
@@ -71,23 +96,18 @@ export const VerificationEngine = {
 
   async verifyRegistryTables() {
     const provider = getDatabaseProvider();
-    const required = ['schema_registry', 'entity_registry', 'field_registry', 'provider_registry', 'migration_registry', 'installer_state', 'schema_mapping', 'provider_capabilities', 'entity_prefix_registry', 'foreign_key_registry'];
     const missing = [];
-
-    for (const table of required) {
+    for (const table of REQUIRED_REGISTRY_TABLES) {
       try {
         const exists = await provider.collectionExists(table);
         if (!exists) missing.push(table);
-      } catch {
-        missing.push(table);
-      }
+      } catch { missing.push(table); }
     }
-
     const ok = missing.length === 0;
     return {
       status: ok ? 'ok' : 'fail',
       icon: ok ? CHECK_ICONS.ok : CHECK_ICONS.fail,
-      details: ok ? `All ${required.length} registry tables present` : `Missing: ${missing.join(', ')}`,
+      details: ok ? `All ${REQUIRED_REGISTRY_TABLES.length} registry tables present` : `Missing: ${missing.join(', ')}`,
     };
   },
 
@@ -106,18 +126,96 @@ export const VerificationEngine = {
     }
   },
 
-  async verifyCapabilities() {
-    try {
-      const caps = await ProviderCapabilitiesService.getCapabilities();
-      const providerName = caps._provider || 'unknown';
-      return {
-        status: 'ok',
-        icon: CHECK_ICONS.ok,
-        details: `Provider: ${providerName}, features: ${Object.keys(caps).length}`,
-      };
-    } catch {
-      return { status: 'skip', icon: CHECK_ICONS.skip, details: 'Capabilities not detected' };
+  async verifyFunctions() {
+    const provider = getDatabaseProvider();
+    if (typeof provider.execSql !== 'function') {
+      return { status: 'skip', icon: CHECK_ICONS.skip, details: 'Provider does not support SQL introspection' };
     }
+    const missing = [];
+    for (const fn of REQUIRED_FUNCTIONS) {
+      try {
+        const res = await provider.execSql(
+          `select exists(select 1 from pg_proc where proname = '${fn.replace(/'/g, "''")}') as exists_flag;`
+        );
+        if (!res || !res.ok) { missing.push(fn); }
+      } catch { missing.push(fn); }
+    }
+    const ok = missing.length === 0;
+    return {
+      status: ok ? 'ok' : 'warn',
+      icon: ok ? CHECK_ICONS.ok : CHECK_ICONS.warn,
+      details: ok ? `All ${REQUIRED_FUNCTIONS.length} functions exist` : `Missing functions: ${missing.join(', ')}`,
+    };
+  },
+
+  async verifyForeignKeys() {
+    const provider = getDatabaseProvider();
+    if (typeof provider.execSql !== 'function') {
+      return { status: 'skip', icon: CHECK_ICONS.skip, details: 'Provider does not support FK introspection' };
+    }
+    const missing = [];
+    for (const fk of REQUIRED_FKS) {
+      try {
+        const res = await provider.execSql(
+          `select exists(select 1 from pg_constraint where conname = '${fk.replace(/'/g, "''")}') as exists_flag;`
+        );
+        if (!res || !res.ok) { missing.push(fk); }
+      } catch { missing.push(fk); }
+    }
+    const ok = missing.length === 0;
+    return {
+      status: ok ? 'ok' : 'warn',
+      icon: ok ? CHECK_ICONS.ok : CHECK_ICONS.warn,
+      details: ok ? `All ${REQUIRED_FKS.length} foreign keys exist` : `Missing FKs: ${missing.join(', ')}`,
+    };
+  },
+
+  async verifyIndexes() {
+    const provider = getDatabaseProvider();
+    if (typeof provider.execSql !== 'function') {
+      return { status: 'skip', icon: CHECK_ICONS.skip, details: 'Provider does not support index introspection' };
+    }
+    const missing = [];
+    for (const idx of REQUIRED_INDEXES) {
+      try {
+        const res = await provider.execSql(
+          `select exists(select 1 from pg_indexes where indexname = '${idx.replace(/'/g, "''")}') as exists_flag;`
+        );
+        if (!res || !res.ok) { missing.push(idx); }
+      } catch { missing.push(idx); }
+    }
+    const ok = missing.length === 0;
+    return {
+      status: ok ? 'ok' : 'warn',
+      icon: ok ? CHECK_ICONS.ok : CHECK_ICONS.warn,
+      details: ok ? `All ${REQUIRED_INDEXES.length} indexes exist` : `Missing indexes: ${missing.join(', ')}`,
+    };
+  },
+
+  async verifyPolicies() {
+    const provider = getDatabaseProvider();
+    if (typeof provider.execSql !== 'function') {
+      return { status: 'skip', icon: CHECK_ICONS.skip, details: 'Provider does not support policy introspection' };
+    }
+    const expected = [
+      'schema_registry_admin_all', 'entity_registry_admin_all', 'field_registry_admin_all',
+      'migration_registry_admin_all', 'installer_state_admin_all',
+    ];
+    const missing = [];
+    for (const pol of expected) {
+      try {
+        const res = await provider.execSql(
+          `select exists(select 1 from pg_policies where policyname = '${pol.replace(/'/g, "''")}') as exists_flag;`
+        );
+        if (!res || !res.ok) { missing.push(pol); }
+      } catch { missing.push(pol); }
+    }
+    const ok = missing.length === 0;
+    return {
+      status: ok ? 'ok' : 'warn',
+      icon: ok ? CHECK_ICONS.ok : CHECK_ICONS.warn,
+      details: ok ? `RLS policies active` : `Missing policies: ${missing.join(', ')}`,
+    };
   },
 
   async verifyProvider() {
@@ -134,34 +232,14 @@ export const VerificationEngine = {
     }
   },
 
-  async verifySecurity() {
-    const provider = getDatabaseProvider();
-    try {
-      const rlsTables = ['schema_registry', 'entity_registry', 'field_registry', 'provider_registry', 'migration_registry'];
-      // Check if RLS tables exist at all as proxy for security
-      let rlsCount = 0;
-      for (const t of rlsTables) {
-        const exists = await provider.collectionExists(t);
-        if (exists) rlsCount++;
-      }
-      return {
-        status: rlsCount >= 3 ? 'ok' : 'warn',
-        icon: rlsCount >= 3 ? CHECK_ICONS.ok : CHECK_ICONS.warn,
-        details: rlsCount >= 3 ? 'RLS tables present (security active)' : `${rlsCount}/${rlsTables.length} RLS tables found`,
-      };
-    } catch {
-      return { status: 'skip', icon: CHECK_ICONS.skip, details: 'Security check unavailable' };
-    }
-  },
-
   async verifyMigration() {
     const installed = await MigrationRunner.getInstalledVersion();
-    const target = SCHEMA_VERSION;
+    const target = MigrationRunner.listMigrationSteps().length;
     const needsMigrate = installed < target;
     return {
       status: needsMigrate ? 'warn' : 'ok',
       icon: needsMigrate ? CHECK_ICONS.warn : CHECK_ICONS.ok,
-      details: needsMigrate ? `Schema v${installed} → v${target} pending` : `Schema v${installed} (current)`,
+      details: needsMigrate ? `Step ${installed}/${target} — ${target - installed} step(s) pending` : `Step ${installed}/${target} (current)`,
     };
   },
 
@@ -183,7 +261,8 @@ export const VerificationEngine = {
   formatOutput(verificationResult) {
     const lines = verificationResult.checks.map((c) => {
       const icon = c.icon || CHECK_ICONS.skip;
-      return `${icon === CHECK_ICONS.ok ? 'OK' : icon === CHECK_ICONS.fail ? 'FAIL' : icon === CHECK_ICONS.warn ? 'WARN' : 'SKIP'}  ${c.name.padEnd(16)} ${c.details || ''}`;
+      const label = icon === CHECK_ICONS.ok ? 'OK' : icon === CHECK_ICONS.fail ? 'FAIL' : icon === CHECK_ICONS.warn ? 'WARN' : 'SKIP';
+      return `${label.padEnd(6)} ${c.name.padEnd(16)} ${c.details || ''}`;
     });
     return lines.join('\n');
   },

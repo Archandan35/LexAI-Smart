@@ -1,14 +1,5 @@
-// SchemaCompiler — turns the universal schema descriptors into provider-specific
-// artifacts. This is the SINGLE SOURCE OF TRUTH for "what a table/collection looks
-// like" on each backend; no schema shape is duplicated anywhere else (the
-// migration strategies and the installer both consume this).
-//
-// It imports NO database SDK and runs in the browser: it EMITS artifacts (SQL
-// text, rule strings, mongoose-definition source, index specs). Executing those
-// artifacts is the installer's job, using each provider's browser-reachable API.
 import { listSchemas, getSchema, SCHEMA_VERSION } from './index.js';
 
-// ---- type maps ------------------------------------------------------------
 const PG = { string: 'text', number: 'numeric', boolean: 'boolean', datetime: 'timestamptz', array: 'jsonb', object: 'jsonb', json: 'jsonb' };
 const MONGOOSE = { string: 'String', number: 'Number', boolean: 'Boolean', datetime: 'Date', array: 'Array', object: 'Object', json: 'Object' };
 const BSON = { string: 'string', number: 'number', boolean: 'bool', datetime: 'date', array: 'array', object: 'object', json: 'object' };
@@ -16,7 +7,6 @@ const FS = { string: 'string', number: 'number', boolean: 'bool', datetime: 'tim
 
 const q = (id) => `"${id}"`;
 
-// ---- Supabase / Postgres --------------------------------------------------
 function toSupabase(schema) {
   const cols = Object.entries(schema.fields).map(([name, type]) => {
     if (name === schema.primaryKey) return `  ${q(name)} text primary key`;
@@ -26,7 +16,6 @@ function toSupabase(schema) {
   const createIndexes = (schema.indexes || []).map(
     (f) => `create index if not exists ${`idx_${schema.collection}_${f}`} on ${q(schema.collection)} (${q(f)});`
   );
-  // Additive column diff against columns that already exist on the backend.
   const alterTable = (existingColumns = []) =>
     Object.entries(schema.fields)
       .filter(([name]) => !existingColumns.includes(name))
@@ -34,9 +23,7 @@ function toSupabase(schema) {
   return { provider: 'supabase', collection: schema.collection, createTable, createIndexes, alterTable, sql: [createTable, ...createIndexes].join('\n') };
 }
 
-// ---- Firebase / Firestore -------------------------------------------------
 function toFirebase(schema) {
-  // Firestore is schemaless; we emit a validation-rule block and index defs.
   const checks = Object.entries(schema.fields)
     .filter(([name]) => name !== schema.primaryKey)
     .map(([name, type]) => {
@@ -67,10 +54,7 @@ function toFirebase(schema) {
   };
 }
 
-// ---- MongoDB --------------------------------------------------------------
 function toMongo(schema) {
-  // mongoose is Node-only — we emit DEFINITION SOURCE (a string) plus a portable
-  // $jsonSchema validator and index specs the Atlas Data API/back-end can apply.
   const defLines = Object.entries(schema.fields).map(([name, type]) => {
     const mt = MONGOOSE[type] || 'String';
     const idx = (schema.indexes || []).includes(name) ? ', index: true' : '';
@@ -97,7 +81,6 @@ function toMongo(schema) {
   return { provider: 'mongodb', collection: schema.collection, mongooseDefinition, jsonSchema, indexes };
 }
 
-// ---- Local ----------------------------------------------------------------
 function toLocal(schema) {
   return {
     provider: 'local',
@@ -106,40 +89,108 @@ function toLocal(schema) {
   };
 }
 
-// ---- System infrastructure SQL (emitted before user DDL) ------------------
-function systemSql(provider) {
-  if (provider !== 'supabase') return null;
+// P5: Supabase compatibility — resolves auth.uid() to application role via users.roleCode
+function systemSqlSupabaseAuth() {
   return [
     '-- ============================================================',
-    '-- SYSTEM INFRASTRUCTURE + SECURITY',
+    '-- 5a. SUPABASE AUTH COMPATIBILITY (P5)',
     '-- ============================================================',
+    '-- Maps auth.uid() → users.roleCode for RLS policies without relying on',
+    '-- browser users becoming PostgreSQL roles directly.',
+    '--',
+    '-- Usage in RLS policies:',
+    '--   USING (current_user_role() = ANY(ARRAY[\'admin\', \'manager\']))',
+    '--',
+    '-- Falls back to \'anon\' when the calling user is not authenticated',
+    '-- (auth.uid() IS NULL) or when the users table is not yet accessible.',
     '',
+    'create or replace function current_user_role()',
+    'returns text',
+    'language plpgsql',
+    'security definer',
+    'stable',
+    'as $$',
+    'declare',
+    '  v_role text;',
+    'begin',
+    '  -- When called outside Supabase auth context, use PostgreSQL current_role',
+    '  if current_setting(\'role\', true) = \'lexai_admin\' then return \'admin\'; end if;',
+    '  -- Try Supabase auth.uid()',
+    '  begin',
+    '    if auth.uid() is null then',
+    '      -- Not authenticated via Supabase — check pg role',
+    '      if current_user = \'anon\' then return \'anon\'; end if;',
+    '      if current_user = \'service_role\' then return \'admin\'; end if;',
+    '      return \'anon\';',
+    '    end if;',
+    '    -- Authenticated: look up application role from users table',
+    '    select role_code into strict v_role from users where id = auth.uid()::text;',
+    '    return v_role;',
+    '  exception',
+    '    when others then',
+    '      -- If users table not accessible, fall back to role name',
+    '      if current_user = \'authenticated\' then return \'user\'; end if;',
+    '      return \'anon\';',
+    '  end;',
+    'end;',
+    '$$;',
+  ].join('\n');
+}
+
+// ---- System infrastructure SQL sections (emitted in dependency order) -----
+// P1: migration_registry created FIRST so exec_sql/safe_ddl can audit into it
+// P4: FK creation extracted to separate method, called AFTER all tables exist
+
+function systemSqlRoles() {
+  return [
     '-- ============================================================',
     '-- 1. ROLE-BASED ACCESS CONTROL',
     '-- ============================================================',
     '',
-    '-- lexai_admin — full DDL + DML + grant authority',
-    '-- lexai_manager — DML (CRUD) on all tables, execute functions',
-    '-- lexai_user  — read-only + execute specific functions',
-    '',
     'do $$ begin',
-    '  if not exists (select from pg_roles where rolname = \'lexai_admin\') then',
+    "  if not exists (select from pg_roles where rolname = 'lexai_admin') then",
     '    create role lexai_admin;',
     '  end if;',
-    '  if not exists (select from pg_roles where rolname = \'lexai_manager\') then',
+    "  if not exists (select from pg_roles where rolname = 'lexai_manager') then",
     '    create role lexai_manager;',
     '  end if;',
-    '  if not exists (select from pg_roles where rolname = \'lexai_user\') then',
+    "  if not exists (select from pg_roles where rolname = 'lexai_user') then",
     '    create role lexai_user;',
     '  end if;',
     'end $$;',
+  ].join('\n');
+}
+
+function systemSqlMigrationRegistry() {
+  return [
+    '-- ============================================================',
+    '-- 2. migration_registry — audit log of all schema migrations',
+    '-- Created FIRST so exec_sql/safe_ddl can write audit entries.',
+    '-- ============================================================',
+    'create table if not exists migration_registry (',
+    '  id text primary key default gen_random_uuid()::text,',
+    '  version integer not null,',
+    '  description text,',
+    '  sql_hash text,',
+    '  applied_at timestamptz default now(),',
+    '  duration_ms integer default 0,',
+    '  success boolean default true,',
+    '  error text,',
+    "  action text default 'migrate'",
+    ');',
     '',
+    "create index if not exists idx_migration_registry_version on migration_registry (version);",
+    "create index if not exists idx_migration_registry_applied_at on migration_registry (applied_at);",
+  ].join('\n');
+}
+
+function systemSqlExecSql() {
+  return [
     '-- ============================================================',
-    '-- 2. exec_sql — hardened DDL execution (ADMIN ONLY)',
+    '-- 3. exec_sql — hardened DDL execution (ADMIN ONLY)',
     '-- ============================================================',
-    '-- exec_sql — unrestricted DDL execution for lexai_admin only.',
-    '-- Never granted to anon or authenticated roles.',
-    '-- Audits every action via migration_registry.',
+    '-- Audits every action via migration_registry (must exist before calling).',
+    '-- Uses IF EXISTS guard on INSERT so it works even if registry is absent.',
     '',
     'create or replace function exec_sql(sql text)',
     'returns void',
@@ -147,25 +198,33 @@ function systemSql(provider) {
     'security definer',
     'as $$',
     'begin',
-    '  -- Audit: record the DDL action',
-    '  insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)',
-    '  values (gen_random_uuid()::text, 0, \'exec_sql\', md5(sql), now(), 0, true);',
+    '  if exists (select 1 from pg_tables where tablename = \'migration_registry\') then',
+    "    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)",
+    "    values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);",
+    '  end if;',
     '  execute sql;',
     'end;',
     '$$;',
+  ].join('\n');
+}
+
+// P2: All regex patterns use correct \\s for whitespace in PostgreSQL regex
+function systemSqlSafeDdl() {
+  return [
+    '-- ============================================================',
+    '-- 4. safe_ddl — allowlisted DDL execution for lexai_manager',
+    '-- ============================================================',
+    '-- Blocklist: DROP, TRUNCATE, ALTER TABLE DROP, GRANT/REVOKE, DML,',
+    '--            CREATE DATABASE/SCHEMA/ROLE/USER/EXTENSION,',
+    '--            ALTER DATABASE/SCHEMA/ROLE/USER, REINDEX, CLUSTER, VACUUM, ANALYZE',
+    '-- Allowlist: CREATE TABLE IF NOT EXISTS, CREATE INDEX IF NOT EXISTS,',
+    '--            ALTER TABLE ADD COLUMN IF NOT EXISTS, ALTER TABLE ADD CONSTRAINT,',
+    '--            CREATE OR REPLACE FUNCTION, ALTER TABLE IF EXISTS,',
+    '--            ALTER TABLE ... ENABLE/DISABLE ROW LEVEL SECURITY,',
+    '--            CREATE/ALTER/DROP POLICY, COMMENT ON, DO $$ blocks',
+    '-- P2: All \\s patterns correctly escaped for PostgreSQL POSIX regex.',
+    '-- Uses IF EXISTS guard on migration_registry INSERT.',
     '',
-    '-- safe_ddl — allowlisted DDL execution for lexai_manager',
-    '-- Uses the AllowlistEngine-compatible pattern:',
-    '--   CREATE TABLE IF NOT EXISTS',
-    '--   ALTER TABLE ADD COLUMN IF NOT EXISTS / ADD CONSTRAINT',
-    '--   CREATE INDEX IF NOT EXISTS',
-    '--   CREATE OR REPLACE FUNCTION',
-    '--   CREATE POLICY / ALTER POLICY / DROP POLICY IF EXISTS',
-    '--   ALTER TABLE IF EXISTS',
-    '--   ALTER TABLE ... ENABLE/DISABLE ROW LEVEL SECURITY',
-    '--   COMMENT ON',
-    '--   DO $$ blocks',
-    '-- Blocks everything else with a descriptive error.',
     'create or replace function safe_ddl(sql text)',
     'returns void',
     'language plpgsql',
@@ -173,62 +232,70 @@ function systemSql(provider) {
     'as $$',
     'declare',
     '  v_upper text;',
-    '  v_blocked text;',
     'begin',
     '  v_upper := upper(sql);',
+    '',
     '  -- Blocklist (checked before allowlist)',
-    '  if v_upper ~ \'^\\\\s*DROP\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)\' then',
-    '    raise exception \'safe_ddl: DROP is not permitted\';',
+    "  if v_upper ~ '^\\s*DROP\\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then",
+    "    raise exception 'safe_ddl: DROP is not permitted';",
     '  end if;',
-    '  if v_upper ~ \'^\\\\s*TRUNCATE\' then',
-    '    raise exception \'safe_ddl: TRUNCATE is not permitted\';',
+    "  if v_upper ~ '^\\s*TRUNCATE' then",
+    "    raise exception 'safe_ddl: TRUNCATE is not permitted';",
     '  end if;',
-    '  if v_upper ~ \'ALTER\s+TABLE.*DROP\s+(COLUMN|CONSTRAINT)\' then',
-    '    raise exception \'safe_ddl: ALTER TABLE DROP is not permitted\';',
+    "  if v_upper ~ 'ALTER\\s+TABLE.*DROP\\s+(COLUMN|CONSTRAINT)' then",
+    "    raise exception 'safe_ddl: ALTER TABLE DROP is not permitted';",
     '  end if;',
-    '  if v_upper ~ \'^\\\\s*(GRANT|REVOKE)\' then',
-    '    raise exception \'safe_ddl: GRANT/REVOKE is not permitted\';',
+    "  if v_upper ~ '^\\s*(GRANT|REVOKE)' then",
+    "    raise exception 'safe_ddl: GRANT/REVOKE is not permitted';",
     '  end if;',
-    '  if v_upper ~ \'^\\\\s*(DELETE|UPDATE|INSERT|TRUNCATE)\s\' then',
-    '    raise exception \'safe_ddl: DML statements are not permitted; use CRUD APIs\';',
+    "  if v_upper ~ '^\\s*(DELETE|UPDATE|INSERT|TRUNCATE)\\s' then",
+    "    raise exception 'safe_ddl: DML statements are not permitted; use CRUD APIs';",
     '  end if;',
-    '  if v_upper ~ \'^\\\\s*CREATE\s+(DATABASE|SCHEMA|ROLE|USER|EXTENSION)\s\' then',
-    '    raise exception \'safe_ddl: CREATE DATABASE/SCHEMA/ROLE/USER/EXTENSION is not permitted\';',
+    "  if v_upper ~ '^\\s*CREATE\\s+(DATABASE|SCHEMA|ROLE|USER|EXTENSION)\\s' then",
+    "    raise exception 'safe_ddl: CREATE DATABASE/SCHEMA/ROLE/USER/EXTENSION is not permitted';",
     '  end if;',
-    '  if v_upper ~ \'^\\\\s*ALTER\s+(DATABASE|SCHEMA|ROLE|USER)\s\' then',
-    '    raise exception \'safe_ddl: ALTER DATABASE/SCHEMA/ROLE/USER is not permitted\';',
+    "  if v_upper ~ '^\\s*ALTER\\s+(DATABASE|SCHEMA|ROLE|USER)\\s' then",
+    "    raise exception 'safe_ddl: ALTER DATABASE/SCHEMA/ROLE/USER is not permitted';",
     '  end if;',
-    '  -- Allowlist check: if not blocked, verify against allowed patterns',
+    '',
+    '  -- Allowlist',
     '  if not (',
-    '    v_upper ~ \'^\\\\s*CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s\' or',
-    '    v_upper ~ \'^\\\\s*CREATE\s+INDEX\s+IF\s+NOT\s+EXISTS\s\' or',
-    '    v_upper ~ \'ALTER\s+TABLE.*ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\' or',
-    '    v_upper ~ \'ALTER\s+TABLE.*ADD\s+CONSTRAINT\' or',
-    '    v_upper ~ \'^\\\\s*CREATE\s+OR\s+REPLACE\s+FUNCTION\s\' or',
-    '    v_upper ~ \'^\\\\s*ALTER\s+TABLE\s+IF\s+EXISTS\s\' or',
-    '    v_upper ~ \'ALTER\s+TABLE.*ENABLE\s+ROW\s+LEVEL\s+SECURITY\' or',
-    '    v_upper ~ \'ALTER\s+TABLE.*DISABLE\s+ROW\s+LEVEL\s+SECURITY\' or',
-    '    v_upper ~ \'^\\\\s*CREATE\s+POLICY\s\' or',
-    '    v_upper ~ \'^\\\\s*ALTER\s+POLICY\s\' or',
-    '    v_upper ~ \'^\\\\s*DROP\s+POLICY\s+IF\s+EXISTS\s\' or',
-    '    v_upper ~ \'^\\\\s*COMMENT\s+ON\s\' or',
-    '    v_upper ~ \'^\\\\s*DO\s+\$\$\' or',
-    '    v_upper ~ \'^\\\\s*--\'',
+    "    v_upper ~ '^\\s*CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s' or",
+    "    v_upper ~ '^\\s*CREATE\\s+INDEX\\s+IF\\s+NOT\\s+EXISTS\\s' or",
+    "    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+COLUMN\\s+IF\\s+NOT\\s+EXISTS' or",
+    "    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+CONSTRAINT' or",
+    "    v_upper ~ '^\\s*CREATE\\s+OR\\s+REPLACE\\s+FUNCTION\\s' or",
+    "    v_upper ~ '^\\s*ALTER\\s+TABLE\\s+IF\\s+EXISTS\\s' or",
+    "    v_upper ~ 'ALTER\\s+TABLE.*ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or",
+    "    v_upper ~ 'ALTER\\s+TABLE.*DISABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or",
+    "    v_upper ~ '^\\s*CREATE\\s+POLICY\\s' or",
+    "    v_upper ~ '^\\s*ALTER\\s+POLICY\\s' or",
+    "    v_upper ~ '^\\s*DROP\\s+POLICY\\s+IF\\s+EXISTS\\s' or",
+    "    v_upper ~ '^\\s*COMMENT\\s+ON\\s' or",
+    "    v_upper ~ '^\\s*DO\\s+\\$\\$' or",
+    "    v_upper ~ '^\\s*--'",
     '  ) then',
-    '    raise exception \'safe_ddl: Statement does not match any allowed pattern: %\', substr(sql, 1, 80);',
+    "    raise exception 'safe_ddl: Statement does not match any allowed pattern: %', substr(sql, 1, 80);",
     '  end if;',
-    '  -- Audit: record the DDL action',
-    '  insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)',
-    '  values (gen_random_uuid()::text, 0, \'safe_ddl\', md5(sql), now(), 0, true);',
+    '',
+    '  -- Audit (with IF EXISTS guard so migration_registry need not exist yet)',
+    '  if exists (select 1 from pg_tables where tablename = \'migration_registry\') then',
+    "    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)",
+    "    values (gen_random_uuid()::text, 0, 'safe_ddl', md5(sql), now(), 0, true);",
+    '  end if;',
     '  execute sql;',
     'end;',
     '$$;',
     '',
     'grant execute on function exec_sql(text) to lexai_admin;',
     'grant execute on function safe_ddl(text) to lexai_manager;',
-    '',
+  ].join('\n');
+}
+
+function systemSqlSafeCreateFk() {
+  return [
     '-- ============================================================',
-    '-- 3. SAFE FOREIGN KEY HELPER',
+    '-- 5. SAFE FOREIGN KEY HELPER',
     '-- ============================================================',
     '-- safe_create_fk — creates a foreign key only if the referenced table,',
     '-- referenced column, and source column all exist and the FK does not',
@@ -240,7 +307,7 @@ function systemSql(provider) {
     '  p_target_table text,',
     '  p_target_column text,',
     '  p_constraint_name text,',
-    '  p_on_delete text default \'CASCADE\'',
+    "  p_on_delete text default 'CASCADE'",
     ') returns void',
     'language plpgsql',
     'as $safe_fk$',
@@ -276,9 +343,35 @@ function systemSql(provider) {
     '  $fmt$, p_source_table, p_constraint_name, p_source_column, p_target_table, p_target_column, upper(p_on_delete));',
     'end;',
     '$safe_fk$;',
-    '',
+  ].join('\n');
+}
+
+// P4: FK creation calls extracted — emitted AFTER all application tables exist
+function systemSqlForeignKeys() {
+  return [
     '-- ============================================================',
-    '-- 4. REGISTRY TABLES',
+    '-- 6. FOREIGN KEY INSTALLATION (P4 — after all tables exist)',
+    '-- ============================================================',
+    '-- All safe_create_fk calls run after registry tables AND application',
+    '-- tables are created, so referenced tables/columns are guaranteed to exist.',
+    "select safe_create_fk('reminders', 'caseId', 'cases', 'id', 'fk_reminders_case_id', 'CASCADE');",
+    "select safe_create_fk('notes', 'caseId', 'cases', 'id', 'fk_notes_case_id', 'CASCADE');",
+    "select safe_create_fk('hearings', 'caseId', 'cases', 'id', 'fk_hearings_case_id', 'CASCADE');",
+    "select safe_create_fk('drafts', 'caseId', 'cases', 'id', 'fk_drafts_case_id', 'CASCADE');",
+    "select safe_create_fk('documents', 'caseId', 'cases', 'id', 'fk_documents_case_id', 'CASCADE');",
+    "select safe_create_fk('caseHistory', 'caseId', 'cases', 'id', 'fk_case_history_case_id', 'CASCADE');",
+    "select safe_create_fk('caseFolders', 'caseId', 'cases', 'id', 'fk_case_folders_case_id', 'CASCADE');",
+    "select safe_create_fk('caseActivity', 'caseId', 'cases', 'id', 'fk_case_activity_case_id', 'CASCADE');",
+    "select safe_create_fk('auditLogs', 'userId', 'users', 'id', 'fk_audit_logs_user_id', 'SET NULL');",
+    "select safe_create_fk('users', 'roleCode', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');",
+    "select safe_create_fk('caseFolders', 'parentId', 'caseFolders', 'id', 'fk_case_folders_parent_id', 'CASCADE');",
+  ].join('\n');
+}
+
+function systemSqlRegistryTables() {
+  return [
+    '-- ============================================================',
+    '-- 7. REGISTRY TABLES',
     '-- ============================================================',
     '',
     '-- schema_registry — tracks schema versions & migrations applied',
@@ -287,8 +380,8 @@ function systemSql(provider) {
     '  version integer not null default 0,',
     '  description text,',
     '  checksum text,',
-    '  applied_at timestamptz default now(),',
-    '  applied_by text default current_user',
+    "  applied_at timestamptz default now(),",
+    "  applied_by text default current_user",
     ');',
     '',
     '-- entity_registry — registered entity definitions',
@@ -297,12 +390,12 @@ function systemSql(provider) {
     '  name text not null unique,',
     '  label text,',
     '  table_name text not null,',
-    '  primary_key text default \'id\',',
+    "  primary_key text default 'id',",
     '  core boolean default false,',
-    '  fields jsonb default \'{}\'::jsonb,',
-    '  indexes jsonb default \'{}\'::jsonb,',
-    '  created_at timestamptz default now(),',
-    '  updated_at timestamptz default now()',
+    "  fields jsonb default '{}'::jsonb,",
+    "  indexes jsonb default '{}'::jsonb,",
+    "  created_at timestamptz default now(),",
+    "  updated_at timestamptz default now()",
     ');',
     '',
     '-- field_registry — field-level metadata per entity',
@@ -314,7 +407,7 @@ function systemSql(provider) {
     '  required boolean default false,',
     '  unique_field boolean default false,',
     '  default_value text,',
-    '  created_at timestamptz default now()',
+    "  created_at timestamptz default now()",
     ');',
     '',
     '-- provider_registry — database provider configuration',
@@ -322,55 +415,32 @@ function systemSql(provider) {
     '  id text primary key default gen_random_uuid()::text,',
     '  provider_type text not null,',
     '  label text,',
-    '  config jsonb default \'{}\'::jsonb,',
+    "  config jsonb default '{}'::jsonb,",
     '  active boolean default true,',
     '  connected_at timestamptz,',
-    '  created_at timestamptz default now(),',
-    '  updated_at timestamptz default now()',
-    ');',
-    '',
-    '-- migration_registry — audit log of all schema migrations',
-    'create table if not exists migration_registry (',
-    '  id text primary key default gen_random_uuid()::text,',
-    '  version integer not null,',
-    '  description text,',
-    '  sql_hash text,',
-    '  applied_at timestamptz default now(),',
-    '  duration_ms integer default 0,',
-    '  success boolean default true,',
-    '  error text,',
-    '  action text default \'migrate\'',
+    "  created_at timestamptz default now(),",
+    "  updated_at timestamptz default now()",
     ');',
     '',
     '-- installer_state — instantaneous installation tracking',
     'create table if not exists installer_state (',
-    '  id text primary key default \'default\',',
-    '  install_status text not null default \'none\' check (install_status in (\'none\', \'in_progress\', \'completed\', \'failed\')),',
+    "  id text primary key default 'default',",
+    "  install_status text not null default 'none' check (install_status in ('none', 'in_progress', 'completed', 'failed')),",
     '  schema_version integer not null default 0,',
     '  installer_version integer not null default 1,',
     '  provider text,',
     '  database_type text,',
     '  verified_at timestamptz,',
     '  installed_at timestamptz,',
-    '  updated_at timestamptz default now()',
+    "  updated_at timestamptz default now()",
     ');',
-    '',
-    '-- provider_adapter_registry — dynamic adapter loading (Priority 6)',
-    'create table if not exists provider_adapter_registry (',
-    '  id text primary key default gen_random_uuid()::text,',
-    '  provider text not null unique,',
-    '  adapter_name text not null,',
-    '  adapter_version text not null default \'1.0.0\',',
-    '  migration_engine text default \'sql\',',
-    '  capabilities jsonb default \'{}\'::jsonb,',
-    '  active boolean default true,',
-    '  config jsonb default \'{}\'::jsonb,',
-    '  created_at timestamptz default now(),',
-    '  updated_at timestamptz default now()',
-    ');',
-    '',
+  ].join('\n');
+}
+
+function systemSqlMappingTables() {
+  return [
     '-- ============================================================',
-    '-- 5. SCHEMA MAPPING',
+    '-- 8. SCHEMA MAPPING TABLES',
     '-- ============================================================',
     '',
     '-- schema_mapping — LexAI entity name ↔ provider table name',
@@ -381,8 +451,8 @@ function systemSql(provider) {
     '  description text,',
     '  active boolean default true,',
     '  version integer not null default 1,',
-    '  created_at timestamptz default now(),',
-    '  updated_at timestamptz default now()',
+    "  created_at timestamptz default now(),",
+    "  updated_at timestamptz default now()",
     ');',
     '',
     '-- mapping_history — audit log of mapping changes',
@@ -393,7 +463,7 @@ function systemSql(provider) {
     '  new_table text not null,',
     '  changed_by text,',
     '  change_reason text,',
-    '  created_at timestamptz default now()',
+    "  created_at timestamptz default now()",
     ');',
     '',
     '-- mapping_versions — versioned snapshots of the entire mapping set',
@@ -402,7 +472,7 @@ function systemSql(provider) {
     '  version integer not null,',
     '  snapshot jsonb not null,',
     '  description text,',
-    '  created_at timestamptz default now()',
+    "  created_at timestamptz default now()",
     ');',
     '',
     '-- provider_capabilities — feature detection per provider',
@@ -411,8 +481,30 @@ function systemSql(provider) {
     '  provider text not null,',
     '  feature text not null,',
     '  supported boolean not null default false,',
-    '  metadata jsonb default \'{}\'::jsonb,',
-    '  detected_at timestamptz default now()',
+    "  metadata jsonb default '{}'::jsonb,",
+    "  detected_at timestamptz default now()",
+    ');',
+  ].join('\n');
+}
+
+function systemSqlProviderTables() {
+  return [
+    '-- ============================================================',
+    '-- 9. PROVIDER ADAPTER + ENTITY PREFIX TABLES',
+    '-- ============================================================',
+    '',
+    '-- provider_adapter_registry — dynamic adapter loading',
+    'create table if not exists provider_adapter_registry (',
+    '  id text primary key default gen_random_uuid()::text,',
+    '  provider text not null unique,',
+    '  adapter_name text not null,',
+    "  adapter_version text not null default '1.0.0',",
+    "  migration_engine text default 'sql',",
+    "  capabilities jsonb default '{}'::jsonb,",
+    '  active boolean default true,',
+    "  config jsonb default '{}'::jsonb,",
+    "  created_at timestamptz default now(),",
+    "  updated_at timestamptz default now()",
     ');',
     '',
     '-- entity_prefix_registry — LX-ID prefix management',
@@ -422,15 +514,39 @@ function systemSql(provider) {
     '  label text,',
     '  padding integer not null default 5,',
     '  current_sequence integer not null default 0,',
-    '  created_at timestamptz default now(),',
-    '  updated_at timestamptz default now()',
+    "  created_at timestamptz default now(),",
+    "  updated_at timestamptz default now()",
     ');',
     '',
+    '-- id_registry — backward-compatible ID tracking',
+    'create table if not exists id_registry (',
+    '  entity text primary key,',
+    '  prefix text not null,',
+    '  sequence integer not null default 0,',
+    "  created_at timestamptz default now(),",
+    "  updated_at timestamptz default now()",
+    ');',
+    '',
+    '-- foreign_key_registry — tracks FK relationships across entities',
+    'create table if not exists foreign_key_registry (',
+    '  id text primary key default gen_random_uuid()::text,',
+    '  from_entity text not null,',
+    '  from_field text not null,',
+    '  to_entity text not null,',
+    "  to_field text not null default 'id',",
+    '  cascade_delete boolean default false,',
+    '  enabled boolean default true,',
+    "  created_at timestamptz default now()",
+    ');',
+  ].join('\n');
+}
+
+function systemSqlIdEngine() {
+  return [
     '-- ============================================================',
-    '-- 6. LX-ID SEQUENCE MANAGER',
+    '-- 10. LX-ID SEQUENCE MANAGER',
     '-- ============================================================',
     '-- Generates LX-{PREFIX}-{SEQUENCE} using the entity_prefix_registry',
-    '-- Example: LX-USR-00001, LX-CASE-00042, LX-DOC-00007',
     '',
     'create or replace function next_lx_id(p_entity text)',
     'returns text',
@@ -442,64 +558,26 @@ function systemSql(provider) {
     '  v_seq int;',
     '  v_id text;',
     'begin',
-    '  -- Ensure prefix entry exists (fallback to uppercase entity)',
-    '  insert into entity_prefix_registry (entity, prefix, label, padding, current_sequence)',
-    '  values (p_entity, upper(substr(p_entity, 1, 5)), p_entity, 5, 0)',
+    "  insert into entity_prefix_registry (entity, prefix, label, padding, current_sequence)",
+    "  values (p_entity, upper(substr(p_entity, 1, 5)), p_entity, 5, 0)",
     '  on conflict (entity) do nothing;',
-    '  -- Fetch prefix + padding',
     '  select prefix, padding into strict v_prefix, v_pad from entity_prefix_registry where entity = p_entity;',
-    '  -- Increment sequence',
     '  update entity_prefix_registry',
     '  set current_sequence = current_sequence + 1,',
     '      updated_at = now()',
     '  where entity = p_entity',
     '  returning current_sequence into v_seq;',
-    '  -- Build LX-PREFIX-SEQ',
-    '  v_id := \'LX-\' || v_prefix || \'-\' || lpad(v_seq::text, v_pad, \'0\');',
+    "  v_id := 'LX-' || v_prefix || '-' || lpad(v_seq::text, v_pad, '0');",
     '  return v_id;',
     'end;',
     '$$;',
-    '',
-    '-- Also keep id_registry for backward compatibility',
-    'create table if not exists id_registry (',
-    '  entity text primary key,',
-    '  prefix text not null,',
-    '  sequence integer not null default 0,',
-    '  created_at timestamptz default now(),',
-    '  updated_at timestamptz default now()',
-    ');',
-    '',
+  ].join('\n');
+}
+
+function systemSqlRls() {
+  return [
     '-- ============================================================',
-    '-- 7. FOREIGN KEY INSTALLATION (Priority 2 — Safe FK)',
-    '-- ============================================================',
-    '',
-    '-- foreign_key_registry — tracks FK relationships across entities',
-    'create table if not exists foreign_key_registry (',
-    '  id text primary key default gen_random_uuid()::text,',
-    '  from_entity text not null,',
-    '  from_field text not null,',
-    '  to_entity text not null,',
-    '  to_field text not null default \'id\',',
-    '  cascade_delete boolean default false,',
-    '  enabled boolean default true,',
-    '  created_at timestamptz default now()',
-    ');',
-    '',
-    '-- Safe FK creation using helper (never fails on missing references)',
-    'select safe_create_fk(\'reminders\', \'caseId\', \'cases\', \'id\', \'fk_reminders_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'notes\', \'caseId\', \'cases\', \'id\', \'fk_notes_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'hearings\', \'caseId\', \'cases\', \'id\', \'fk_hearings_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'drafts\', \'caseId\', \'cases\', \'id\', \'fk_drafts_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'documents\', \'caseId\', \'cases\', \'id\', \'fk_documents_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'caseHistory\', \'caseId\', \'cases\', \'id\', \'fk_case_history_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'caseFolders\', \'caseId\', \'cases\', \'id\', \'fk_case_folders_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'caseActivity\', \'caseId\', \'cases\', \'id\', \'fk_case_activity_case_id\', \'CASCADE\');',
-    'select safe_create_fk(\'auditLogs\', \'userId\', \'users\', \'id\', \'fk_audit_logs_user_id\', \'SET NULL\');',
-    'select safe_create_fk(\'users\', \'roleCode\', \'roles\', \'code\', \'fk_users_role_code\', \'RESTRICT\');',
-    'select safe_create_fk(\'caseFolders\', \'parentId\', \'caseFolders\', \'id\', \'fk_case_folders_parent_id\', \'CASCADE\');',
-    '',
-    '-- ============================================================',
-    '-- 8. ROW LEVEL SECURITY',
+    '-- 11. ROW LEVEL SECURITY',
     '-- ============================================================',
     '-- Enable RLS on all registry tables',
     'alter table if exists schema_registry enable row level security;',
@@ -516,90 +594,112 @@ function systemSql(provider) {
     'alter table if exists entity_prefix_registry enable row level security;',
     'alter table if exists id_registry enable row level security;',
     'alter table if exists foreign_key_registry enable row level security;',
-    '',
+  ].join('\n');
+}
+
+// P3: All policy names follow {table}_{role}_{operation} convention — NO collisions
+// Each policy on each table has a UNIQUE name by including the operation (select/insert/update/delete)
+function systemSqlPolicies() {
+  return [
     '-- ============================================================',
-    '-- 9. RLS POLICIES (Priority 3 — Named per table)',
+    '-- 12. RLS POLICIES (P3 — Unique names per {table}_{role}_{operation})',
     '-- ============================================================',
-    '-- Conventions: {table}_{role}_{operation}',
-    '--   admin_all  → full access for lexai_admin',
-    '--   manager_ro → read-only for lexai_manager',
-    '--   manager_rw → read-write for lexai_manager',
-    '--   user_ro    → read-only for lexai_user',
     '',
     '-- schema_registry',
     'create policy schema_registry_admin_all on schema_registry for all to lexai_admin using (true) with check (true);',
-    'create policy schema_registry_manager_ro on schema_registry for select to lexai_manager using (true);',
-    'create policy schema_registry_user_ro on schema_registry for select to lexai_user using (true);',
+    'create policy schema_registry_manager_select on schema_registry for select to lexai_manager using (true);',
+    'create policy schema_registry_user_select on schema_registry for select to lexai_user using (true);',
     '',
     '-- entity_registry',
     'create policy entity_registry_admin_all on entity_registry for all to lexai_admin using (true) with check (true);',
-    'create policy entity_registry_manager_ro on entity_registry for select to lexai_manager using (true);',
-    'create policy entity_registry_manager_rw on entity_registry for insert to lexai_manager with check (true);',
-    'create policy entity_registry_manager_rw on entity_registry for update to lexai_manager using (true);',
-    'create policy entity_registry_user_ro on entity_registry for select to lexai_user using (true);',
+    'create policy entity_registry_manager_select on entity_registry for select to lexai_manager using (true);',
+    'create policy entity_registry_manager_insert on entity_registry for insert to lexai_manager with check (true);',
+    'create policy entity_registry_manager_update on entity_registry for update to lexai_manager using (true);',
+    'create policy entity_registry_user_select on entity_registry for select to lexai_user using (true);',
     '',
     '-- field_registry',
     'create policy field_registry_admin_all on field_registry for all to lexai_admin using (true) with check (true);',
-    'create policy field_registry_manager_ro on field_registry for select to lexai_manager using (true);',
-    'create policy field_registry_manager_rw on field_registry for insert to lexai_manager with check (true);',
-    'create policy field_registry_user_ro on field_registry for select to lexai_user using (true);',
+    'create policy field_registry_manager_select on field_registry for select to lexai_manager using (true);',
+    'create policy field_registry_manager_insert on field_registry for insert to lexai_manager with check (true);',
+    'create policy field_registry_user_select on field_registry for select to lexai_user using (true);',
     '',
     '-- provider_registry',
     'create policy provider_registry_admin_all on provider_registry for all to lexai_admin using (true) with check (true);',
-    'create policy provider_registry_manager_ro on provider_registry for select to lexai_manager using (true);',
+    'create policy provider_registry_manager_select on provider_registry for select to lexai_manager using (true);',
     '',
     '-- migration_registry',
     'create policy migration_registry_admin_all on migration_registry for all to lexai_admin using (true) with check (true);',
-    'create policy migration_registry_manager_ro on migration_registry for select to lexai_manager using (true);',
+    'create policy migration_registry_manager_select on migration_registry for select to lexai_manager using (true);',
     '',
     '-- installer_state',
     'create policy installer_state_admin_all on installer_state for all to lexai_admin using (true) with check (true);',
-    'create policy installer_state_manager_ro on installer_state for select to lexai_manager using (true);',
-    'create policy installer_state_user_ro on installer_state for select to lexai_user using (true);',
+    'create policy installer_state_manager_select on installer_state for select to lexai_manager using (true);',
+    'create policy installer_state_user_select on installer_state for select to lexai_user using (true);',
     '',
     '-- provider_adapter_registry',
     'create policy provider_adapter_admin_all on provider_adapter_registry for all to lexai_admin using (true) with check (true);',
-    'create policy provider_adapter_manager_ro on provider_adapter_registry for select to lexai_manager using (true);',
+    'create policy provider_adapter_manager_select on provider_adapter_registry for select to lexai_manager using (true);',
     '',
     '-- schema_mapping',
     'create policy schema_mapping_admin_all on schema_mapping for all to lexai_admin using (true) with check (true);',
-    'create policy schema_mapping_manager_ro on schema_mapping for select to lexai_manager using (true);',
-    'create policy schema_mapping_manager_rw on schema_mapping for insert to lexai_manager with check (true);',
-    'create policy schema_mapping_manager_rw on schema_mapping for update to lexai_manager using (true);',
+    'create policy schema_mapping_manager_select on schema_mapping for select to lexai_manager using (true);',
+    'create policy schema_mapping_manager_insert on schema_mapping for insert to lexai_manager with check (true);',
+    'create policy schema_mapping_manager_update on schema_mapping for update to lexai_manager using (true);',
     '',
     '-- mapping_history',
     'create policy mapping_history_admin_all on mapping_history for all to lexai_admin using (true) with check (true);',
-    'create policy mapping_history_manager_ro on mapping_history for select to lexai_manager using (true);',
+    'create policy mapping_history_manager_select on mapping_history for select to lexai_manager using (true);',
     '',
     '-- mapping_versions',
     'create policy mapping_versions_admin_all on mapping_versions for all to lexai_admin using (true) with check (true);',
-    'create policy mapping_versions_manager_ro on mapping_versions for select to lexai_manager using (true);',
+    'create policy mapping_versions_manager_select on mapping_versions for select to lexai_manager using (true);',
     '',
     '-- provider_capabilities',
     'create policy provider_capabilities_admin_all on provider_capabilities for all to lexai_admin using (true) with check (true);',
-    'create policy provider_capabilities_manager_ro on provider_capabilities for select to lexai_manager using (true);',
-    'create policy provider_capabilities_user_ro on provider_capabilities for select to lexai_user using (true);',
+    'create policy provider_capabilities_manager_select on provider_capabilities for select to lexai_manager using (true);',
+    'create policy provider_capabilities_user_select on provider_capabilities for select to lexai_user using (true);',
     '',
     '-- entity_prefix_registry',
     'create policy entity_prefix_admin_all on entity_prefix_registry for all to lexai_admin using (true) with check (true);',
-    'create policy entity_prefix_manager_ro on entity_prefix_registry for select to lexai_manager using (true);',
-    'create policy entity_prefix_user_ro on entity_prefix_registry for select to lexai_user using (true);',
+    'create policy entity_prefix_manager_select on entity_prefix_registry for select to lexai_manager using (true);',
+    'create policy entity_prefix_user_select on entity_prefix_registry for select to lexai_user using (true);',
     '',
     '-- id_registry',
     'create policy id_registry_admin_all on id_registry for all to lexai_admin using (true) with check (true);',
-    'create policy id_registry_manager_ro on id_registry for select to lexai_manager using (true);',
+    'create policy id_registry_manager_select on id_registry for select to lexai_manager using (true);',
     '',
     '-- foreign_key_registry',
     'create policy foreign_key_registry_admin_all on foreign_key_registry for all to lexai_admin using (true) with check (true);',
-    'create policy foreign_key_registry_manager_ro on foreign_key_registry for select to lexai_manager using (true);',
+    'create policy foreign_key_registry_manager_select on foreign_key_registry for select to lexai_manager using (true);',
+  ].join('\n');
+}
+
+function systemSqlGrants() {
+  return [
+    '-- ============================================================',
+    '-- 13. LEAST-PRIVILEGE GRANTS',
+    '-- ============================================================',
     '',
+    'grant usage on schema public to lexai_manager;',
+    'grant select, insert, update, delete on all tables in schema public to lexai_manager;',
+    'grant usage on all sequences in schema public to lexai_manager;',
+    '',
+    'grant usage on schema public to lexai_user;',
+    'grant select on all tables in schema public to lexai_user;',
+    '',
+    'alter default privileges in schema public grant select, insert, update, delete on tables to lexai_manager;',
+    'alter default privileges in schema public grant select on tables to lexai_user;',
+    'alter default privileges in schema public grant usage on sequences to lexai_manager;',
+  ].join('\n');
+}
+
+function systemSqlIndexes() {
+  return [
     '-- ============================================================',
-    '-- 10. INDEXES',
+    '-- 14. INDEXES',
     '-- ============================================================',
-    'create index if not exists idx_field_registry_entity on field_registry (entity);',
     'create index if not exists idx_schema_registry_version on schema_registry (version);',
-    'create index if not exists idx_migration_registry_version on migration_registry (version);',
-    'create index if not exists idx_migration_registry_applied_at on migration_registry (applied_at);',
+    'create index if not exists idx_field_registry_entity on field_registry (entity);',
     'create index if not exists idx_provider_registry_active on provider_registry (active);',
     'create index if not exists idx_provider_adapter_active on provider_adapter_registry (active);',
     'create index if not exists idx_schema_mapping_active on schema_mapping (active);',
@@ -612,10 +712,33 @@ function systemSql(provider) {
   ].join('\n');
 }
 
+function systemSqlSchemaVersion() {
+  const version = SCHEMA_VERSION;
+  return [
+    '-- ============================================================',
+    '-- 15. SCHEMA VERSION STAMP',
+    '-- ============================================================',
+    `insert into schema_registry (id, version, description, applied_at)`,
+    `values ('schema_version', ${version}, 'Schema v${version} — system infrastructure', now())`,
+    "on conflict (id) do update set version = ${version}, description = excluded.description, applied_at = now();",
+  ].join('\n');
+}
+
+function systemSqlSeedAdapters() {
+  return [
+    '-- ============================================================',
+    '-- 16. SEED DEFAULT PROVIDER ADAPTERS',
+    '-- ============================================================',
+    "insert into provider_adapter_registry (id, provider, adapter_name, adapter_version, migration_engine, capabilities, active)",
+    "values",
+    "  ('ADP-supabase', 'supabase', 'SupabaseAdapter', '1.0.0', 'sql', '{\"exec_sql\":true,\"safe_ddl\":true,\"rls\":true,\"fk\":true,\"transactions\":true,\"json_support\":true}'::jsonb, true)",
+    "on conflict (provider) do nothing;",
+  ].join('\n');
+}
+
 const COMPILERS = { supabase: toSupabase, firebase: toFirebase, mongodb: toMongo, local: toLocal };
 
 export const SchemaCompiler = {
-  // Compile one schema (by name or descriptor) for a provider.
   compile(provider, schemaOrName) {
     const schema = typeof schemaOrName === 'string' ? getSchema(schemaOrName) : schemaOrName;
     if (!schema) throw new Error(`Unknown schema: ${schemaOrName}`);
@@ -623,39 +746,17 @@ export const SchemaCompiler = {
     return fn(schema);
   },
 
-  // Compile every schema for a provider.
   compileAll(provider) {
     return listSchemas().map((s) => this.compile(provider, s));
   },
 
-  // A single install script/bundle for a provider.
   installArtifact(provider) {
     const parts = this.compileAll(provider);
     if (provider === 'supabase') {
-      const infra = systemSql(provider);
+      const preDdl = this.systemSqlSections();
       const ddl = parts.map((p) => p.sql).join('\n\n');
-      const grants = [
-        '-- ============================================================',
-        '-- 10. LEAST-PRIVILEGE GRANTS',
-        '-- ============================================================',
-        '-- lexai_admin inherits from the built-in superuser-like role;',
-        '-- it owns all objects. No explicit grants needed — admin bypasses RLS.',
-        '',
-        '-- lexai_manager: schema usage + CRUD on user tables',
-        'GRANT USAGE ON SCHEMA public TO lexai_manager;',
-        'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lexai_manager;',
-        'GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO lexai_manager;',
-        '',
-        '-- lexai_user: read-only on user tables',
-        'GRANT USAGE ON SCHEMA public TO lexai_user;',
-        'GRANT SELECT ON ALL TABLES IN SCHEMA public TO lexai_user;',
-        '',
-        '-- future tables inherit grants automatically',
-        'ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO lexai_manager;',
-        'ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO lexai_user;',
-        'ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO lexai_manager;',
-      ].join('\n');
-      return { kind: 'sql', schemaVersion: SCHEMA_VERSION, text: [infra, ddl, grants].join('\n\n') };
+      const postDdl = this.systemSqlPostDdl();
+      return { kind: 'sql', schemaVersion: SCHEMA_VERSION, text: [preDdl, ddl, postDdl].join('\n\n') };
     }
     if (provider === 'firebase') {
       return {
@@ -675,6 +776,37 @@ export const SchemaCompiler = {
       };
     }
     return { kind: 'local', schemaVersion: SCHEMA_VERSION, collections: parts.map((p) => p.init) };
+  },
+
+  // P1: System SQL emitted in correct dependency order
+  // P4: FK creation emitted AFTER all application DDL
+  systemSqlSections() {
+    const sections = [
+      systemSqlRoles(),
+      systemSqlMigrationRegistry(),
+      systemSqlExecSql(),
+      systemSqlSafeDdl(),
+      systemSqlSafeCreateFk(),
+      systemSqlRegistryTables(),
+      systemSqlMappingTables(),
+      systemSqlProviderTables(),
+      systemSqlIdEngine(),
+      systemSqlSupabaseAuth(),
+    ];
+    return sections.join('\n\n');
+  },
+
+  // P4: FK + RLS + Policies + Grants + Indexes (emitted after application DDL)
+  systemSqlPostDdl() {
+    return [
+      systemSqlForeignKeys(),
+      systemSqlRls(),
+      systemSqlPolicies(),
+      systemSqlGrants(),
+      systemSqlIndexes(),
+      systemSqlSchemaVersion(),
+      systemSqlSeedAdapters(),
+    ].join('\n\n');
   },
 };
 
