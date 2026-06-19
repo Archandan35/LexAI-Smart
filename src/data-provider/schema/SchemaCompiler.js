@@ -225,7 +225,7 @@ function systemSqlVerifyInstallation() {
     'end;',
     '$$;',
     '',
-    'grant execute on function verify_installation() to authenticated;',
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then grant execute on function verify_installation() to authenticated; end if; end $$;",
   ].join('\n');
 }
 
@@ -371,8 +371,8 @@ function systemSqlSafeDdl() {
     'end;',
     '$$;',
     '',
-    'grant execute on function exec_sql(text) to authenticated;',
-    'grant execute on function safe_ddl(text) to authenticated;',
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then grant execute on function exec_sql(text) to authenticated; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then grant execute on function safe_ddl(text) to authenticated; end if; end $$;",
   ].join('\n');
 }
 
@@ -471,7 +471,7 @@ function systemSqlResolveEntity() {
     'end;',
     '$$;',
     '',
-    'grant execute on function resolve_entity_table(text) to authenticated;',
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then grant execute on function resolve_entity_table(text) to authenticated; end if; end $$;",
   ].join('\n');
 }
 
@@ -519,7 +519,13 @@ function systemSqlUserRoleTrigger() {
     'end;',
     '$$;',
     '',
-    'drop trigger if exists trg_user_role_registry_sync on users;',
+    'do $$ begin',
+    "  if exists (select 1 from pg_class where relname = 'users' and relkind = 'r') then",
+    '    drop trigger if exists trg_user_role_registry_sync on users;',
+    '  end if;',
+    'end;',
+    '$$;',
+    '',
     'create trigger trg_user_role_registry_sync',
     'after insert or update or delete on users',
     'for each row execute function sync_user_role_registry();',
@@ -987,16 +993,19 @@ function systemSqlGrants() {
     '-- For non-Supabase providers (MySQL, SQLite, etc.), the adapter layer should',
     '-- replace this with targeted per-tier grants (public read, internal CRUD,',
     '-- restricted admin-only) at the adapter level — not in the SQL schema.',
-    'grant usage on schema public to authenticated;',
-    'grant select, insert, update, delete on all tables in schema public to authenticated;',
-    'grant usage on all sequences in schema public to authenticated;',
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then",
+    '  grant usage on schema public to authenticated;',
+    '  grant select, insert, update, delete on all tables in schema public to authenticated;',
+    '  grant usage on all sequences in schema public to authenticated;',
+    '  alter default privileges in schema public grant select, insert, update, delete on tables to authenticated;',
+    '  alter default privileges in schema public grant usage on sequences to authenticated;',
+    'end if; end $$;',
     '',
-    'grant usage on schema public to anon;',
-    'grant select on all tables in schema public to anon;',
-    '',
-    'alter default privileges in schema public grant select, insert, update, delete on tables to authenticated;',
-    'alter default privileges in schema public grant select on tables to anon;',
-    'alter default privileges in schema public grant usage on sequences to authenticated;',
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
+    '  grant usage on schema public to anon;',
+    '  grant select on all tables in schema public to anon;',
+    '  alter default privileges in schema public grant select on tables to anon;',
+    'end if; end $$;',
   ].join('\n');
 }
 
@@ -1097,9 +1106,9 @@ export const SchemaCompiler = {
       systemSqlRegistryTables(),
       systemSqlMappingTables(),
       systemSqlProviderTables(),
-      systemSqlUserRoleRegistry(),
       systemSqlIdEngine(),
       systemSqlSupabaseAuth(),
+      systemSqlUserRoleRegistry(),
       systemSqlVerifyInstallation(),
     ];
     return sections.join('\n\n');
