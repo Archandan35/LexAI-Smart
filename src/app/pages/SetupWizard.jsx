@@ -158,6 +158,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
       goToStep(4);
       if (p.needsManual && p.sql) {
         setSql(p.sql);
+        const provider = getDatabaseProvider();
+        setExecSqlSupported(typeof provider.execSql === 'function' && p.sql.length > 0);
         goToStep(5);
       } else {
         handleAutoInstall(p);
@@ -638,9 +640,33 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     SQL Editor
                   </Button>
                 </div>
-                <Button variant="primary" className="btn--block dm-mt" icon="refresh" loading={busy} onClick={handleVerifySql}>
-                  I've run it — Verify
-                </Button>
+
+                {execSqlSupported && (
+                  <div className="dm-toolbar-mt">
+                    {execSqlError && (
+                      <div className="alert alert--warn" style={{ marginBottom: 10 }}>
+                        <Icon name="alert" size={16} />
+                        <span>{execSqlError}. You can still run the SQL manually.</span>
+                      </div>
+                    )}
+                    {execSqlDone ? (
+                      <div className="alert alert--success" style={{ marginBottom: 10 }}>
+                        <Icon name="check" size={16} />
+                        <span>SQL executed successfully via exec_sql RPC.</span>
+                      </div>
+                    ) : (
+                      <Button variant="primary" className="btn--block" icon="bolt" loading={execSqlBusy} onClick={handleExecuteSql}>
+                        Execute SQL Directly
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {!execSqlBusy && (
+                  <Button variant="primary" className="btn--block dm-mt" icon="refresh" loading={busy} onClick={handleVerifySql}>
+                    I've run it — Verify
+                  </Button>
+                )}
               </div>
             )}
 
