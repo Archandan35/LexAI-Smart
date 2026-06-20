@@ -33,7 +33,7 @@ export default function SetupGate({ children }) {
     }
   };
 
-  useEffect(() => { check(); }, []);
+  useEffect(() => { check(); }, [location.pathname]);
 
   if (state === 'checking') return <div className="auth-shell"><Spinner /></div>;
   if (state === 'setup') return <SetupWizard detectError={detectError} />;
