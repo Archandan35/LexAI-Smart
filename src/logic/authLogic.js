@@ -80,6 +80,7 @@ export const authLogic = {
         denies: [],
         salt,
         passwordHash: hash,
+        lastLoginAt: DateEngine.now(),
         createdAt: DateEngine.now(),
       };
       let user;

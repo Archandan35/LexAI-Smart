@@ -94,8 +94,10 @@ export default class SupabaseAuthProvider extends AuthProvider {
       if (dbUser.status && dbUser.status !== 'Active') {
         throw new Error('This account is disabled. Contact an administrator.');
       }
-      // Update last login
-      await db.update(USERS_TABLE(), userId, FieldMapper.toProvider('users', { lastLoginAt: new Date().toISOString() }));
+      // Update last login (best-effort — non-critical for login to succeed)
+      try {
+        await db.update(USERS_TABLE(), userId, FieldMapper.toProvider('users', { lastLoginAt: new Date().toISOString() }));
+      } catch { /* ignore — RLS may block anon UPDATE */ }
     }
 
     const session = { token: data.access_token, refreshToken: data.refresh_token, userId };

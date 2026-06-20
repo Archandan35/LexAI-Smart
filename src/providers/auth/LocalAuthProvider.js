@@ -28,7 +28,10 @@ export default class LocalAuthProvider extends AuthProvider {
     const valid = await verifyPassword(password, user.salt, user.passwordHash);
     if (!valid) throw new Error('Incorrect password.');
 
-    await this.#db().update(USERS_TABLE(), user.id, FieldMapper.toProvider('users', { lastLoginAt: nowISO() }));
+    // Update last login (best-effort)
+    try {
+      await this.#db().update(USERS_TABLE(), user.id, FieldMapper.toProvider('users', { lastLoginAt: nowISO() }));
+    } catch { /* ignore — RLS may block anon UPDATE */ }
     const token = randomHex(24);
     const session = { token, userId: user.id, issuedAt: nowISO() };
     this.#persistSession(session);
