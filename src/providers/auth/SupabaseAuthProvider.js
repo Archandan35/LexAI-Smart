@@ -1,7 +1,7 @@
 import AuthProvider from './AuthProvider.js';
 import { config } from '@/config/config.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
-import { EntityRegistry } from '@/core/EntityRegistry.js';
+import { EntityRegistry, FieldMapper } from '@/core/index.js';
 
 const SESSION_KEY = 'lexai.auth.session.v1';
 const USERS_TABLE = () => EntityRegistry.providerTable('users');
@@ -89,13 +89,13 @@ export default class SupabaseAuthProvider extends AuthProvider {
         denies: [],
         createdAt: new Date().toISOString(),
       };
-      await db.create(USERS_TABLE(), dbUser);
+      await db.create(USERS_TABLE(), FieldMapper.toProvider('users', dbUser));
     } else {
       if (dbUser.status && dbUser.status !== 'Active') {
         throw new Error('This account is disabled. Contact an administrator.');
       }
       // Update last login
-      await db.update(USERS_TABLE(), userId, { lastLoginAt: new Date().toISOString() });
+      await db.update(USERS_TABLE(), userId, FieldMapper.toProvider('users', { lastLoginAt: new Date().toISOString() }));
     }
 
     const session = { token: data.access_token, refreshToken: data.refresh_token, userId };

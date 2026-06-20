@@ -2,7 +2,7 @@ import AuthProvider from './AuthProvider.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { hashPassword, verifyPassword, randomHex } from '@/utils/crypto.js';
 import { nowISO } from '@/utils/id.js';
-import { EntityRegistry } from '@/core/EntityRegistry.js';
+import { EntityRegistry, FieldMapper } from '@/core/index.js';
 
 const SESSION_KEY = 'lexai.session.v1';
 const USERS_TABLE = () => EntityRegistry.providerTable('users');
@@ -28,7 +28,7 @@ export default class LocalAuthProvider extends AuthProvider {
     const valid = await verifyPassword(password, user.salt, user.passwordHash);
     if (!valid) throw new Error('Incorrect password.');
 
-    await this.#db().update(USERS_TABLE(), user.id, { lastLoginAt: nowISO() });
+    await this.#db().update(USERS_TABLE(), user.id, FieldMapper.toProvider('users', { lastLoginAt: nowISO() }));
     const token = randomHex(24);
     const session = { token, userId: user.id, issuedAt: nowISO() };
     this.#persistSession(session);
@@ -61,7 +61,7 @@ export default class LocalAuthProvider extends AuthProvider {
 
   async changePassword(userId, newPassword) {
     const { salt, hash } = await hashPassword(newPassword);
-    await this.#db().update(USERS_TABLE(), userId, { salt, passwordHash: hash, passwordUpdatedAt: nowISO() });
+    await this.#db().update(USERS_TABLE(), userId, FieldMapper.toProvider('users', { salt, passwordHash: hash, passwordUpdatedAt: nowISO() }));
     return true;
   }
 
