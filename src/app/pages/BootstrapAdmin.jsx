@@ -48,9 +48,6 @@ export default function BootstrapAdmin() {
       setError('Request timed out. Check that the database provider is reachable and API credentials are correct.');
     }, TIMEOUT_MS);
 
-    let shouldNavigate = false;
-    let navTarget = '';
-
     try {
       console.log('[Bootstrap] initialize start');
 
@@ -59,9 +56,11 @@ export default function BootstrapAdmin() {
       console.log('[Bootstrap] users count:', users.length);
 
       if (users.length > 0) {
-        console.log('[Bootstrap] users exist — redirecting to login');
-        shouldNavigate = true;
-        navTarget = '/login';
+        console.log('[Bootstrap] users exist — redirecting');
+        clearTimeout(timer);
+        if (mountedRef.current) setLoading(false);
+        const session = await authLogic.restore();
+        nav(session?.ok && session.data ? '/' : '/login', { replace: true });
         return;
       }
 
@@ -72,6 +71,8 @@ export default function BootstrapAdmin() {
       if (!roles || roles.length === 0) {
         console.warn('[Bootstrap] NO ROLES FOUND');
         setError('No roles found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
+        clearTimeout(timer);
+        if (mountedRef.current) setLoading(false);
         return;
       }
 
@@ -82,6 +83,8 @@ export default function BootstrapAdmin() {
       if (!hasSuperAdmin) {
         console.warn('[Bootstrap] Admin role missing');
         setError('Admin role not found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
+        clearTimeout(timer);
+        if (mountedRef.current) setLoading(false);
         return;
       }
 
@@ -93,8 +96,6 @@ export default function BootstrapAdmin() {
       clearTimeout(timer);
       if (mountedRef.current) setLoading(false);
     }
-
-    if (shouldNavigate) nav(navTarget, { replace: true });
   }, [nav]);
 
   useEffect(() => { initialize(); }, [initialize]);
