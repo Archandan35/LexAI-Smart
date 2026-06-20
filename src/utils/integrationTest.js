@@ -20,18 +20,18 @@ export async function runIntegrationTest() {
     if (!installRes.ok) throw new Error(installRes.error);
     log('Install Schema', true, 'Installed schema structures and seeded initial system roles.');
 
-    // 3. Create Super Admin (Bootstrap)
+    // 3. Create Admin (Bootstrap)
     const bootstrapRes = await authLogic.bootstrapAdmin({
-      name: 'Super Administrator',
-      email: 'superadmin@lexai.local',
-      password: 'SuperAdminPassword@123',
+      name: 'Administrator',
+      email: 'admin@lexai.local',
+      password: 'AdminPassword@123',
     });
     if (!bootstrapRes.ok) throw new Error(bootstrapRes.error);
     const adminUser = bootstrapRes.data.user;
-    log('Create First Super Admin', true, `Successfully bootstrapped super admin: ${adminUser.email}`);
+    log('Create First Admin', true, `Successfully bootstrapped admin: ${adminUser.email}`);
 
     // 4. Login
-    const loginRes = await authLogic.login('superadmin@lexai.local', 'SuperAdminPassword@123');
+    const loginRes = await authLogic.login('admin@lexai.local', 'AdminPassword@123');
     if (!loginRes.ok) throw new Error(loginRes.error);
     log('Login Admin', true, 'Admin logged in successfully.');
 

@@ -21,7 +21,7 @@ export const authLogic = {
       console.log('[Bootstrap] create auth user start');
       console.log('[Bootstrap] signup email:', email);
       console.log('[Bootstrap] signup password length:', password.length);
-      let userId = 'user_superadmin';
+      let userId = 'user_admin';
       let emailConfirmed = false;
       try {
         const authUser = await authService.signUp(email.toLowerCase(), password);
@@ -46,15 +46,15 @@ export const authLogic = {
         });
       }
 
-      // 2.5. Create super_admin role if none exist (required for bootstrap)
+      // 2.5. Create Admin role if none exist (required for bootstrap)
       const existingRoles = await roleService.list();
       if (existingRoles.length === 0) {
         console.log('[Bootstrap] no roles found — creating initial role');
         await roleService.create({
-          id: 'role_super_admin',
-          code: 'super_admin',
-          name: `${name.split('@')[0]}'s Role`,
-          description: 'Initial administrator role',
+          id: 'role_admin',
+          code: 'Admin',
+          name: 'Administrator',
+          description: 'Full system administration role',
           permissions: [],
           all: true,
           inheritsHierarchy: false,
@@ -72,7 +72,7 @@ export const authLogic = {
         name,
         email: email.toLowerCase(),
         username: email.split('@')[0].toLowerCase(),
-        roleCode: 'super_admin',
+        roleCode: 'Admin',
         status: 'Active',
         extraRoles: [],
         grants: [],

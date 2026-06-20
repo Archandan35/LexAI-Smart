@@ -23,7 +23,7 @@ export default function SecuritySettings() {
     const checkSuperAdmin = async () => {
       try {
         const users = await userService.list();
-        const admin = users.find((u) => u.roleCode === 'super_admin');
+        const admin = users.find((u) => u.roleCode === 'Admin');
         if (admin) {
           setHasSuperAdmin(true);
           setSuperAdminUser(admin);
@@ -32,7 +32,7 @@ export default function SecuritySettings() {
           setSuperAdminUser(null);
         }
       } catch (err) {
-        console.error('Error verifying super admin:', err);
+        console.error('Error verifying admin:', err);
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ export default function SecuritySettings() {
       />
 
       <div className="grid-2 dm-section">
-        <Card title="Bootstrap Admin Status" sub="First super administrator account details.">
+        <Card title="Admin Status" sub="First administrator account details.">
           {loading ? (
             <div className="loading-block"><span className="spinner" /> Querying status…</div>
           ) : hasSuperAdmin ? (

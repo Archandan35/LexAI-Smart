@@ -71,13 +71,13 @@ export default function BootstrapAdmin() {
         return;
       }
 
-      console.log('[Bootstrap] checking super_admin role');
-      const hasSuperAdmin = roles.some((r) => r.code === 'super_admin');
-      console.log('[Bootstrap] super_admin role found:', hasSuperAdmin);
+      console.log('[Bootstrap] checking Admin role');
+      const hasSuperAdmin = roles.some((r) => r.code === 'Admin');
+      console.log('[Bootstrap] Admin role found:', hasSuperAdmin);
 
       if (!hasSuperAdmin) {
-        console.warn('[Bootstrap] super_admin role missing');
-        setError('super_admin role not found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
+        console.warn('[Bootstrap] Admin role missing');
+        setError('Admin role not found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
         return;
       }
 
@@ -210,7 +210,7 @@ export default function BootstrapAdmin() {
         </div>
 
         <h1 className="auth-title">Bootstrap System</h1>
-        <p className="auth-sub">Create the first Super Administrator account to begin setup.</p>
+        <p className="auth-sub">Create the first Administrator account to begin setup.</p>
 
         {error && (
           <div className="alert alert--danger alert--mb">
@@ -261,7 +261,7 @@ export default function BootstrapAdmin() {
             loading={busy}
             icon="shield"
           >
-            Create Super Admin
+            Create Admin
           </Button>
         </form>
 

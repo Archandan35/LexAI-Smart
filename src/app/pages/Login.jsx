@@ -64,7 +64,7 @@ export default function Login() {
           <div className="alert alert--warn alert--mb">
             <Icon name="alert" size={16} />
             <span>
-              No super administrator account exists. You must bootstrap the system before you can log in.
+              No administrator account exists. You must bootstrap the system before you can log in.
               <br />
               <Link to="/bootstrap-admin" style={{ fontWeight: 'bold', textDecoration: 'underline', marginTop: 6, display: 'inline-block' }}>
                 Bootstrap First Super Admin →

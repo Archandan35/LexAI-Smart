@@ -15,9 +15,9 @@ function stripSecrets(u) {
 
 // The Super Admin account is protected from deletion everywhere. Identify it by
 // role (and the seeded id) so the guard holds even if the id scheme changes.
-export const PROTECTED_ROLE = 'super_admin';
+export const PROTECTED_ROLE = 'Admin';
 export function isProtectedUser(u) {
-  return !!u && (u.roleCode === PROTECTED_ROLE || u.id === 'user_superadmin');
+  return !!u && (u.roleCode === PROTECTED_ROLE || u.id === 'user_admin');
 }
 
 export const userLogic = {

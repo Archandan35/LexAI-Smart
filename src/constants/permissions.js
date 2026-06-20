@@ -73,8 +73,7 @@ export function permKey(module, action) {
 
 // ---- Role hierarchy (highest → lowest). Higher roles inherit lower perms. ----
 export const ROLE_HIERARCHY = [
-  'super_admin',
-  'admin',
+  'Admin',
   'senior_advocate',
   'advocate',
   'junior_advocate',
