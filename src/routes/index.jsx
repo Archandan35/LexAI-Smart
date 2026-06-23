@@ -54,6 +54,7 @@ import EnvApiManager from '@/app/pages/EnvApiManager.jsx';
 import DatabaseManager from '@/app/pages/DatabaseManager.jsx';
 import BootstrapAdmin from '@/app/pages/BootstrapAdmin.jsx';
 import SecuritySettings from '@/app/pages/SecuritySettings.jsx';
+import SystemSettings from '@/app/pages/SystemSettings.jsx';
 import CaseTypes from '@/app/pages/CaseTypes.jsx';
 import CourtTypes from '@/app/pages/CourtTypes.jsx';
 import AiAssistant from '@/app/pages/AiAssistant.jsx';

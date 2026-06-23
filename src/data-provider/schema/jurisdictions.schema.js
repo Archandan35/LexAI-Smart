@@ -2,7 +2,7 @@ export const JurisdictionsSchema = {
   collection: 'jurisdictions',
   label: 'Jurisdictions',
   primaryKey: 'id',
-  core: false,
+  core: true,
   fields: {
     id: 'string',
     name: 'string',

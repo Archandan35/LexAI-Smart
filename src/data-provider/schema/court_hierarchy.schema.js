@@ -2,7 +2,7 @@ export const CourtHierarchySchema = {
   collection: 'court_hierarchy',
   label: 'Court Hierarchy',
   primaryKey: 'id',
-  core: false,
+  core: true,
   fields: {
     id: 'string',
     name: 'string',

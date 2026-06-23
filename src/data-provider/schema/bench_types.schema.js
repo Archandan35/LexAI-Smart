@@ -2,7 +2,7 @@ export const BenchTypesSchema = {
   collection: 'bench_types',
   label: 'Bench Types',
   primaryKey: 'id',
-  core: false,
+  core: true,
   fields: {
     id: 'string',
     name: 'string',
