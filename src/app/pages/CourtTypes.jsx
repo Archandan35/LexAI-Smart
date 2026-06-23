@@ -65,7 +65,7 @@ export default function CourtTypes() {
 
   const remove = async (court) => {
     try {
-      if (!confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
+      if (!window.confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
       console.log('Removing court:', { id: court.id, name: court.name });
       await courtLogic.remove(court.id);
       toast.push('Court deleted.', 'success');
@@ -76,7 +76,7 @@ export default function CourtTypes() {
   const removeBulk = async () => {
     try {
       if (!selected.size) return;
-      if (!confirm(`Delete ${selected.size} court(s)?`)) return;
+      if (!window.confirm(`Delete ${selected.size} court(s)?`)) return;
       for (const id of selected) {
         console.log('Bulk removing court:', { id });
         // eslint-disable-next-line no-await-in-loop

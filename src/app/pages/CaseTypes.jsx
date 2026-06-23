@@ -1,22 +1,36 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
-import { uid } from '@/utils/id.js';
+import { useToast } from '@/data-layer/ToastContext.jsx';
+import PageHeader from '@/components/PageHeader.jsx';
+import Card from '@/components/Card.jsx';
+import { Input, Textarea } from '@/components/Field.jsx';
+import Icon from '@/components/Icon.jsx';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
-function CaseTypeRow({ type, onEdit, onToggle, onDelete, dragHandlers, dragRef, isDragging }) {
+function CaseTypeRow({ type, editId, editName, onStartEdit, onSaveEdit, onCancelEdit, onDelete, onToggle, onSelect, selected, search, dragHandlers, dragRef, isDragging }) {
   return (
     <tr
       className={`case-types__row ${isDragging ? 'case-types__row--dragging' : ''}`}
-      draggable
+      draggable={!search}
       onDragStart={dragHandlers.handleDragStart}
       onDragOver={dragHandlers.handleDragOver}
       onDragEnd={dragHandlers.handleDragEnd}
       ref={dragRef}
     >
-      <td className="case-types__cell case-types__cell--drag">
-        <span className="case-types__drag-handle" aria-label="Reorder">⠿</span>
+      <td className="case-types__cell case-types__cell--drag" style={{ width: 30 }}>
+        <input type="checkbox" checked={selected.has(type.id)} onChange={() => onSelect(type.id)} />
       </td>
-      <td className="case-types__cell">{type.name}</td>
+      <td className="case-types__cell case-types__cell--drag" style={{ width: 30, cursor: search ? 'default' : 'grab' }}>
+        <span className="case-types__drag-handle">⠿</span>
+      </td>
+      <td className="case-types__cell">
+        {editId === type.id ? (
+          <Input value={editName} autoFocus onChange={(e) => onStartEdit(type.id, e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSaveEdit()} />
+        ) : (
+          <span style={{ fontWeight: 600 }}>{type.name}</span>
+        )}
+      </td>
       <td className="case-types__cell">
         <code className="case-types__code">{type.short_code}</code>
       </td>
@@ -27,11 +41,22 @@ function CaseTypeRow({ type, onEdit, onToggle, onDelete, dragHandlers, dragRef, 
         </span>
       </td>
       <td className="case-types__cell case-types__cell--actions">
-        <button className="btn btn--sm btn--ghost" onClick={() => onEdit(type)} title="Edit">✎</button>
-        <button className="btn btn--sm btn--ghost" onClick={() => onToggle(type)} title="Toggle status">
-          {type.status === 'Active' ? '⏸' : '▶'}
-        </button>
-        <button className="btn btn--sm btn--ghost btn--danger" onClick={() => onDelete(type)} title="Delete">✕</button>
+        <div className="row-actions">
+          {editId === type.id ? (
+            <>
+              <button className="iconbtn" title="Save" onClick={onSaveEdit}><Icon name="check" size={15} /></button>
+              <button className="iconbtn" title="Cancel" onClick={onCancelEdit}><Icon name="close" size={15} /></button>
+            </>
+          ) : (
+            <>
+              <button className="iconbtn" title="Edit" onClick={() => { onStartEdit(type.id, type.name); }}><Icon name="edit" size={15} /></button>
+              <button className="iconbtn" title="Toggle status" onClick={() => onToggle(type)}>
+                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span style={{ fontSize: 15 }}>▶</span>}
+              </button>
+              <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => onDelete(type)}><Icon name="trash" size={15} /></button>
+            </>
+          )}
+        </div>
       </td>
     </tr>
   );
@@ -39,82 +64,114 @@ function CaseTypeRow({ type, onEdit, onToggle, onDelete, dragHandlers, dragRef, 
 
 export default function CaseTypes() {
   const { caseTypes, loading, refresh } = useCaseTypes();
+  const toast = useToast();
+  const { logs, clearLogs, copyLogs } = useLogCapture();
   const [search, setSearch] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', short_code: '' });
-  const [error, setError] = useState('');
+  const [mode, setMode] = useState('single');
+  const [newName, setNewName] = useState('');
+  const [newCode, setNewCode] = useState('');
+  const [bulkText, setBulkText] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState('');
   const [selected, setSelected] = useState(new Set());
   const [dragIdx, setDragIdx] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const dragNode = useRef(null);
+  const [lastError, setLastError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
 
   const filtered = caseTypes.filter((t) =>
     !search || t.name.toLowerCase().includes(search.toLowerCase()) ||
     t.short_code.toLowerCase().includes(search.toLowerCase())
   );
 
-  const resetForm = useCallback(() => {
-    setForm({ name: '', short_code: '' });
-    setEditing(null);
-    setShowForm(false);
-    setError('');
-  }, []);
+  const add = async () => {
+    try {
+      if (!newName.trim() || !newCode.trim()) { toast.push('Name and short code are required.', 'error'); return; }
+      console.log('Creating case type:', { name: newName, short_code: newCode });
+      const res = await caseTypeLogic.create({ name: newName, short_code: newCode });
+      console.log('Create result:', res);
+      if (res.ok) { setNewName(''); setNewCode(''); toast.push('Case type added.', 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { console.error('Create exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to create case type.', 'error'); }
+  };
 
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!form.name.trim() || !form.short_code.trim()) {
-      setError('Name and short code are required.');
-      return;
-    }
-    const res = editing
-      ? await caseTypeLogic.update(editing.id, { ...form, display_order: editing.display_order, status: editing.status })
-      : await caseTypeLogic.create(form);
-    if (!res.ok) { setError(res.error); return; }
-    resetForm();
-    await refresh();
-  }, [form, editing, refresh, resetForm]);
+  const addBulk = async () => {
+    try {
+      const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (!lines.length) { toast.push('Paste at least one case type (name, code per line).', 'error'); return; }
+      let added = 0; let skipped = 0;
+      for (const line of lines) {
+        const parts = line.split(',').map((s) => s.trim());
+        const name = parts[0];
+        const code = parts[1] || name.slice(0, 6).toUpperCase();
+        if (!name) continue;
+        console.log('Bulk creating case type:', { name, short_code: code });
+        // eslint-disable-next-line no-await-in-loop
+        const res = await caseTypeLogic.create({ name, short_code: code });
+        if (res.ok) added += 1; else skipped += 1;
+      }
+      setBulkText('');
+      toast.push(`${added} case type(s) added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
+      await refresh();
+    } catch (err) { console.error('Bulk create exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk add failed.', 'error'); }
+  };
 
-  const handleEdit = useCallback((type) => {
-    setForm({ name: type.name, short_code: type.short_code });
-    setEditing(type);
-    setShowForm(true);
-    setError('');
-  }, []);
+  const saveEdit = async () => {
+    try {
+      if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
+      const type = caseTypes.find((t) => t.id === editId);
+      if (!type) return;
+      console.log('Updating case type:', { id: editId, name: editName });
+      const res = await caseTypeLogic.update(editId, { name: editName, short_code: type.short_code, display_order: type.display_order, status: type.status });
+      console.log('Update result:', res);
+      if (res.ok) { setEditId(null); toast.push('Case type renamed.', 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { console.error('Update exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to rename case type.', 'error'); }
+  };
 
   const handleToggle = useCallback(async (type) => {
-    await caseTypeLogic.setStatus(type.id, type.status === 'Active' ? 'Inactive' : 'Active');
-    await refresh();
-  }, [refresh]);
+    try {
+      const newStatus = type.status === 'Active' ? 'Inactive' : 'Active';
+      const res = await caseTypeLogic.setStatus(type.id, newStatus);
+      if (res.ok) { toast.push(`Case type ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { console.error('Toggle exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to toggle status.', 'error'); }
+  }, [refresh, toast]);
 
   const handleDelete = useCallback(async (type) => {
-    if (!window.confirm(`Delete case type "${type.name}"?`)) return;
-    await caseTypeLogic.remove(type.id);
-    await refresh();
-  }, [refresh]);
+    try {
+      if (!window.confirm(`Delete case type "${type.name}"?`)) return;
+      await caseTypeLogic.remove(type.id);
+      toast.push('Case type deleted.', 'success');
+      await refresh();
+    } catch (err) { console.error('Delete exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to delete case type.', 'error'); }
+  }, [refresh, toast]);
 
-  const handleSelectAll = useCallback((e) => {
+  const removeBulk = async () => {
+    try {
+      if (!selected.size) return;
+      if (!window.confirm(`Delete ${selected.size} case type(s)?`)) return;
+      const res = await caseTypeLogic.bulkRemove([...selected]);
+      setSelected(new Set());
+      toast.push(`${res.data?.deleted || selected.size} case type(s) deleted.`, 'success');
+      await refresh();
+    } catch (err) { console.error('Bulk remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk delete failed.', 'error'); }
+  };
+
+  const handleSelectAll = (e) => {
     if (e.target.checked) setSelected(new Set(filtered.map((t) => t.id)));
     else setSelected(new Set());
-  }, [filtered]);
+  };
 
-  const handleSelect = useCallback((id) => {
+  const handleSelect = (id) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }, []);
-
-  const handleBulkDelete = useCallback(async () => {
-    if (selected.size === 0) return;
-    if (!window.confirm(`Delete ${selected.size} case types?`)) return;
-    await caseTypeLogic.bulkRemove([...selected]);
-    setSelected(new Set());
-    await refresh();
-  }, [selected, refresh]);
+  };
 
   const handleDragStart = useCallback((e, idx) => {
     setDragIdx(idx);
@@ -134,86 +191,100 @@ export default function CaseTypes() {
 
   const handleDragEnd = useCallback(async () => {
     if (dragIdx === null) return;
-    const items = filtered;
-    const ids = items.map((t) => t.id);
-    await caseTypeLogic.reorder(ids);
+    try {
+      const ids = filtered.map((t) => t.id);
+      const res = await caseTypeLogic.reorder(ids);
+      if (res.ok) { toast.push('Order updated.', 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { console.error('Reorder exception:', err); setLastError(err?.message || String(err)); }
     setDragIdx(null);
     setDraggingId(null);
-    await refresh();
-  }, [dragIdx, filtered, refresh]);
+  }, [dragIdx, filtered, refresh, toast]);
 
-  if (loading) return <div className="page page--center"><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
 
   return (
-    <div className="page case-types">
-      <div className="page__header">
-        <h1 className="page__title">Case Types</h1>
-        <button className="btn btn--primary" onClick={() => { resetForm(); setShowForm(true); }}>
-          + Add Case Type
-        </button>
-      </div>
-
-      <div className="page__toolbar">
-        <input
-          className="input input--search"
-          type="text"
-          placeholder="Search case types..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        {selected.size > 0 && (
-          <button className="btn btn--sm btn--danger" onClick={handleBulkDelete}>
-            Delete ({selected.size})
+    <div className="fade-in">
+      <PageHeader
+        icon="grid"
+        title="Case Types"
+        subtitle="Manage case types used in case forms and filters."
+        actions={(
+          <button className="btn btn--primary" onClick={() => { setMode('single'); setNewName(''); setNewCode(''); setBulkText(''); }}>
+            <Icon name="plus" size={15} /> Add Case Type
           </button>
+        )}
+      />
+
+      <Card title="Add Case Type" className="case-types__form">
+        {mode === 'single' ? (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+              <Input value={newName} placeholder="Name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
+            </div>
+            <div style={{ flex: '0 1 120px', minWidth: 0 }}>
+              <Input value={newCode} placeholder="Code…" onChange={(e) => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={(e) => e.key === 'Enter' && add()} />
+            </div>
+            <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
+            <button className="btn btn--ghost" onClick={() => { setMode('bulk'); setBulkText(''); }}>Bulk Add</button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Bulk Add &mdash; one per line: <code>Name, CODE</code></span>
+              <button className="btn btn--ghost btn--sm" onClick={() => setMode('single')}>Single Add</button>
+            </div>
+            <Textarea
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+              placeholder={`Civil, CIV\nCriminal, CRIM\nFamily, FAM\nWrit, WRT`}
+              rows={5}
+            />
+            <button className="btn btn--primary" style={{ marginTop: 8 }} onClick={addBulk}><Icon name="plus" size={15} /> Add All</button>
+          </div>
+        )}
+      </Card>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <div className="datatable__search" style={{ flex: 1 }}>
+          <Icon name="search" size={15} />
+          <input value={search} placeholder="Search case types…" onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        {selected.size > 0 && (
+          <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
         )}
       </div>
 
-      {showForm && (
-        <form className="card card--form case-types__form" onSubmit={handleSubmit}>
-          <h3 className="card__title">{editing ? 'Edit' : 'New'} Case Type</h3>
-          {error && <div className="form__error">{error}</div>}
-          <div className="form__grid">
-            <div className="form__group">
-              <label className="form__label">Name</label>
-              <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
-            </div>
-            <div className="form__group">
-              <label className="form__label">Short Code</label>
-              <input className="input" value={form.short_code}
-                onChange={(e) => setForm({ ...form, short_code: e.target.value.toUpperCase().slice(0, 6) })} />
-            </div>
-          </div>
-          <div className="form__actions">
-            <button className="btn btn--primary" type="submit">{editing ? 'Update' : 'Create'}</button>
-            <button className="btn btn--ghost" type="button" onClick={resetForm}>Cancel</button>
-          </div>
-        </form>
-      )}
-
-      <div className="table-wrapper">
+      <Card bodyClass="card__body--flush">
         <table className="table case-types__table">
           <thead>
             <tr>
-              <th className="case-types__cell case-types__cell--drag">
-                <input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} />
-              </th>
+              <th className="case-types__cell" style={{ width: 30 }}><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
+              <th className="case-types__cell case-types__cell--drag" style={{ width: 30 }} />
               <th className="case-types__cell">Name</th>
               <th className="case-types__cell">Code</th>
               <th className="case-types__cell">Order</th>
               <th className="case-types__cell">Status</th>
-              <th className="case-types__cell">Actions</th>
+              <th className="case-types__cell case-types__cell--actions">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td className="case-types__empty" colSpan={6}>No case types found.</td></tr>
+              <tr><td className="case-types__empty" colSpan={7}>No case types found.</td></tr>
             ) : filtered.map((type, idx) => (
               <CaseTypeRow
                 key={type.id}
                 type={type}
-                onEdit={handleEdit}
-                onToggle={handleToggle}
+                editId={editId}
+                editName={editName}
+                onStartEdit={(id, val) => { setEditId(id); setEditName(val); }}
+                onSaveEdit={saveEdit}
+                onCancelEdit={() => setEditId(null)}
                 onDelete={handleDelete}
+                onToggle={handleToggle}
+                onSelect={handleSelect}
+                selected={selected}
+                search={search}
                 dragHandlers={{
                   handleDragStart: (e) => handleDragStart(e, idx),
                   handleDragOver: (e) => handleDragOver(e, idx),
@@ -225,7 +296,10 @@ export default function CaseTypes() {
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
+      {!search && <div className="muted" style={{ marginTop: 10 }}>Drag rows to reorder. Order applies to every case form.</div>}
+
+      <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }
