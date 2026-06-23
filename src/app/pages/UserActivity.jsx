@@ -1,7 +1,7 @@
 import React from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import Badge from '@/components/Badge.jsx';
+import Icon from '@/components/Icon.jsx';
 
 export default function UserActivity() {
   return (

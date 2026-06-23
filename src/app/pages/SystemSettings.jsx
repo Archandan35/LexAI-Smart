@@ -3,6 +3,8 @@ import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 
+const labelToId = (label) => 'setting-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
 /* ── helpers ─────────────────────────────────────────────── */
 function Toggle({ value, onChange }) {
   return (
@@ -692,7 +694,7 @@ export default function SystemSettings() {
 
                   <div className="gs-fields">
                     {activeGroup.fields.map((field) => (
-                      <div key={field.key} className="gs-field-row">
+                      <div key={field.key} id={labelToId(field.label)} className="gs-field-row">
                         <div className="gs-field-label-col">
                           <span className="gs-field-label">{field.label}</span>
                           {field.description && (
@@ -737,12 +739,22 @@ export default function SystemSettings() {
           <aside className="gs-toc">
             <div className="gs-toc__title">In this section</div>
             <ul className="gs-toc__list">
-              {activeGroup.tocItems.map((item, i) => (
-                <li key={i} className={`gs-toc__item${i === 0 ? ' gs-toc__item--active' : ''}`}>
-                  {i === 0 && <span className="gs-toc__dot" />}
-                  {item}
-                </li>
-              ))}
+              {activeGroup.tocItems.map((item, i) => {
+                const targetId = labelToId(item);
+                return (
+                  <li
+                    key={i}
+                    className="gs-toc__item"
+                    onClick={() => {
+                      const el = document.getElementById(targetId);
+                      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.transition = 'box-shadow 0.3s'; el.style.boxShadow = '0 0 0 3px var(--brand-soft)'; setTimeout(() => { el.style.boxShadow = ''; }, 1500); }
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {item}
+                  </li>
+                );
+              })}
             </ul>
             <div className="gs-toc__help">
               <div className="gs-toc__help-title">Need Help?</div>

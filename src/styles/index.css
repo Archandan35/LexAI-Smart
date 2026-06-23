@@ -1594,7 +1594,7 @@ input, textarea, select { font-family: inherit; }
 .loading-page { display: grid; place-items: center; padding: 60px; }
 .search-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .search-row__input { flex: 1; }
-.spacer { flex: 1; }ign-items: center; justify-content: center; transition: all 0.15s var(--ease); }
+.spacer { flex: 1; }
 .doc-toolbar button:hover { background: var(--brand-soft); color: var(--navy-700); }
 .doc-toolbar select { height: 30px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface);
   font-size: 12.5px; color: var(--text); padding: 0 6px; cursor: pointer; }
