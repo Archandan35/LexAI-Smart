@@ -1,53 +1,74 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useCourts } from '@/hooks/useCourts.js';
 import { courtLogic } from '@/logic/courtLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import { Field } from '@/components/Field.jsx';
+import { Input, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 
 export default function CourtTypes() {
   const { courts, courtNames, loading, refresh } = useCourts();
   const toast = useToast();
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '' });
-  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [mode, setMode] = useState('single');
+  const [newName, setNewName] = useState('');
+  const [bulkText, setBulkText] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [selected, setSelected] = useState(new Set());
 
-  const resetForm = useCallback(() => {
-    setForm({ name: '' });
-    setEditing(null);
-    setShowForm(false);
-    setError('');
-  }, []);
+  const visible = courts.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!form.name.trim()) { setError('Court name is required.'); return; }
-    const res = editing
-      ? await courtLogic.update(editing.id, { name: form.name, display_order: editing.display_order, status: editing.status })
-      : await courtLogic.create(form);
-    if (!res.ok) { setError(res.error); return; }
-    toast.push(editing ? 'Court updated.' : 'Court created.', 'success');
-    resetForm();
+  const add = async () => {
+    if (!newName.trim()) { toast.push('Enter a court name.', 'error'); return; }
+    const res = await courtLogic.create({ name: newName });
+    if (res.ok) { setNewName(''); toast.push('Court added.', 'success'); await refresh(); }
+    else toast.push(res.error, 'error');
+  };
+
+  const addBulk = async () => {
+    const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) { toast.push('Paste at least one court name.', 'error'); return; }
+    let added = 0; let skipped = 0;
+    for (const name of lines) {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await courtLogic.create({ name });
+      if (res.ok) added += 1; else skipped += 1;
+    }
+    setBulkText('');
+    toast.push(`${added} court(s) added.${skipped ? ` ${skipped} skipped (already exist).` : ''}`, added ? 'success' : 'info');
     await refresh();
-  }, [form, editing, refresh, resetForm, toast]);
+  };
 
-  const handleEdit = useCallback((court) => {
-    setForm({ name: court.name });
-    setEditing(court);
-    setShowForm(true);
-    setError('');
-  }, []);
+  const saveEdit = async () => {
+    if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
+    const res = await courtLogic.update(editId, { name: editName });
+    if (res.ok) { setEditId(null); toast.push('Court renamed.', 'success'); await refresh(); }
+    else toast.push(res.error, 'error');
+  };
 
-  const handleDelete = useCallback(async (court) => {
-    if (!window.confirm(`Delete court "${court.name}"?`)) return;
+  const remove = async (court) => {
+    if (!confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
     await courtLogic.remove(court.id);
     toast.push('Court deleted.', 'success');
     await refresh();
-  }, [refresh, toast]);
+  };
+
+  const removeBulk = async () => {
+    if (!selected.size) return;
+    if (!confirm(`Delete ${selected.size} court(s)?`)) return;
+    for (const id of selected) {
+      // eslint-disable-next-line no-await-in-loop
+      await courtLogic.remove(id);
+    }
+    setSelected(new Set());
+    toast.push(`${selected.size} court(s) deleted.`, 'success');
+    await refresh();
+  };
+
+  const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const toggleAll = () => setSelected((prev) => prev.size === visible.length ? new Set() : new Set(visible.map((c) => c.id)));
 
   if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
 
@@ -58,51 +79,86 @@ export default function CourtTypes() {
         title="Court Types"
         subtitle="Manage court types used in case forms and filters."
         actions={(
-          <button className="btn btn--primary" onClick={() => { resetForm(); setShowForm(true); }}>
+          <button className="btn btn--primary" onClick={() => { setMode('single'); setNewName(''); setBulkText(''); }}>
             <Icon name="plus" size={15} /> Add Court
           </button>
         )}
       />
 
-      {showForm && (
-        <Card title={editing ? 'Edit Court' : 'New Court'} className="case-types__form">
-          <form onSubmit={handleSubmit}>
-            {error && <div className="alert alert--danger" style={{ marginBottom: 14 }}>{error}</div>}
-            <Field label="Name">
-              <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
-            </Field>
-            <div className="toolbar-row" style={{ marginTop: 16 }}>
-              <button className="btn btn--primary" type="submit">{editing ? 'Update' : 'Create'}</button>
-              <button className="btn btn--ghost" type="button" onClick={resetForm}>Cancel</button>
+      <Card title="Add Court" className="case-types__form">
+        {mode === 'single' ? (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Input
+              value={newName}
+              placeholder="New court name…"
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && add()}
+            />
+            <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
+            <button className="btn btn--ghost" onClick={() => { setMode('bulk'); setBulkText(''); }}>Bulk Add</button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>Bulk Add &mdash; one court per line</span>
+              <button className="btn btn--ghost btn--sm" onClick={() => setMode('single')}>Single Add</button>
             </div>
-          </form>
-        </Card>
-      )}
+            <Textarea
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+              placeholder={`Supreme Court of India\nHigh Court\nDistrict & Sessions Court`}
+              rows={5}
+            />
+            <button className="btn btn--primary" style={{ marginTop: 8 }} onClick={addBulk}><Icon name="plus" size={15} /> Add All</button>
+          </div>
+        )}
+      </Card>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <div className="datatable__search" style={{ flex: 1 }}>
+          <Icon name="search" size={15} />
+          <input value={search} placeholder="Search courts…" onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        {selected.size > 0 && (
+          <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
+        )}
+      </div>
 
       <Card bodyClass="card__body--flush">
         <table className="table">
           <thead>
             <tr>
+              <th style={{ width: 30 }}><input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} /></th>
               <th>Name</th>
-              <th>Order</th>
               <th style={{ width: 110 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {courts.length === 0 ? (
+            {visible.length === 0 ? (
               <tr><td className="court-types__empty" colSpan={3}>No court types found.</td></tr>
-            ) : courts.map((court) => (
+            ) : visible.map((court) => (
               <tr key={court.id}>
-                <td style={{ fontWeight: 600 }}>{court.name}</td>
-                <td style={{ color: 'var(--text-faint)' }}>{court.display_order}</td>
+                <td><input type="checkbox" checked={selected.has(court.id)} onChange={() => toggleSel(court.id)} /></td>
+                <td>
+                  {editId === court.id ? (
+                    <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
+                  ) : (
+                    <span style={{ fontWeight: 600 }}>{court.name}</span>
+                  )}
+                </td>
                 <td>
                   <div className="row-actions">
-                    <button className="iconbtn" title="Edit" onClick={() => handleEdit(court)}>
-                      <Icon name="edit" size={15} />
-                    </button>
-                    <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => handleDelete(court)}>
-                      <Icon name="trash" size={15} />
-                    </button>
+                    {editId === court.id ? (
+                      <>
+                        <button className="iconbtn" title="Save" onClick={saveEdit}><Icon name="check" size={15} /></button>
+                        <button className="iconbtn" title="Cancel" onClick={() => setEditId(null)}><Icon name="close" size={15} /></button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="iconbtn" title="Edit" onClick={() => { setEditId(court.id); setEditName(court.name); }}><Icon name="edit" size={15} /></button>
+                        <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(court)}><Icon name="trash" size={15} /></button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
