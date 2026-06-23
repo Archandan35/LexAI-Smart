@@ -31,6 +31,9 @@ import { ConfigHistorySchema } from './config_history.schema.js';
 import { SchemaMetaSchema } from './schema_meta.schema.js';
 import { CaseTypesSchema } from './case_types.schema.js';
 import { CourtsSchema } from './courts.schema.js';
+import { BenchTypesSchema } from './bench_types.schema.js';
+import { CourtHierarchySchema } from './court_hierarchy.schema.js';
+import { JurisdictionsSchema } from './jurisdictions.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -61,11 +64,14 @@ export const schemas = {
   settings: SettingsSchema,
   case_types: CaseTypesSchema,
   courts: CourtsSchema,
+  bench_types: BenchTypesSchema,
+  court_hierarchy: CourtHierarchySchema,
+  jurisdictions: JurisdictionsSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

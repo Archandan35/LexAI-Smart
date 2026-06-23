@@ -19,7 +19,7 @@ function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEdi
       onDragEnd={dragHandlers.handleDragEnd}
       ref={dragRef}
     >
-      <td className="case-types__cell case-types__cell--drag" style={{ width: 30 }}>
+      <td className="case-types__cell case-types__cell--drag case-types__cell--checkbox">
         <input type="checkbox" checked={selected.has(type.id)} onChange={() => onSelect(type.id)} />
       </td>
       <td className="case-types__cell case-types__cell--drag" style={{ width: 30, cursor: search ? 'default' : 'grab' }}>
@@ -29,7 +29,7 @@ function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEdi
         {isEditing ? (
           <Input value={editName} autoFocus onChange={(e) => onEditNameChange(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSaveEdit()} />
         ) : (
-          <span style={{ fontWeight: 600 }}>{type.name}</span>
+          <span className="case-types__name">{type.name}</span>
         )}
       </td>
       <td className="case-types__cell">
@@ -56,7 +56,7 @@ function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEdi
             <>
               <button className="iconbtn" title="Edit" onClick={() => onStartEdit(type)}><Icon name="edit" size={15} /></button>
               <button className="iconbtn" title="Toggle status" onClick={() => onToggle(type)}>
-                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span style={{ fontSize: 15 }}>▶</span>}
+                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span className="case-types__toggle-icon">▶</span>}
               </button>
               <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => onDelete(type)}><Icon name="trash" size={15} /></button>
             </>
@@ -205,7 +205,7 @@ export default function CaseTypes() {
     setDraggingId(null);
   }, [dragIdx, filtered, refresh, toast]);
 
-  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in loading-page"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in">
@@ -222,11 +222,11 @@ export default function CaseTypes() {
 
       <Card title="Add Case Type" className="case-types__form">
         {mode === 'single' ? (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+          <div className="case-types__add-row">
+            <div className="case-types__input-wrap">
               <Input value={newName} placeholder="Name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
             </div>
-            <div style={{ flex: '0 1 120px', minWidth: 0 }}>
+            <div className="case-types__code-wrap">
               <Input value={newCode} placeholder="Code…" onChange={(e) => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={(e) => e.key === 'Enter' && add()} />
             </div>
             <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
@@ -234,8 +234,8 @@ export default function CaseTypes() {
           </div>
         ) : (
           <div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>Bulk Add &mdash; one per line: <code>Name, CODE</code></span>
+            <div className="case-types__bulk-header">
+              <span className="case-types__bulk-label">Bulk Add &mdash; one per line: <code>Name, CODE</code></span>
               <button className="btn btn--ghost btn--sm" onClick={() => setMode('single')}>Single Add</button>
             </div>
             <Textarea
@@ -244,13 +244,13 @@ export default function CaseTypes() {
               placeholder={`Civil, CIV\nCriminal, CRIM\nFamily, FAM\nWrit, WRT`}
               rows={5}
             />
-            <button className="btn btn--primary" style={{ marginTop: 8 }} onClick={addBulk}><Icon name="plus" size={15} /> Add All</button>
+            <button className="btn btn--primary case-types__add-btn" onClick={addBulk}><Icon name="plus" size={15} /> Add All</button>
           </div>
         )}
       </Card>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <div className="datatable__search" style={{ flex: 1 }}>
+      <div className="search-row">
+        <div className="datatable__search search-row__input">
           <Icon name="search" size={15} />
           <input value={search} placeholder="Search case types…" onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -263,8 +263,8 @@ export default function CaseTypes() {
         <table className="table case-types__table">
           <thead>
             <tr>
-              <th className="case-types__cell" style={{ width: 30 }}><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
-              <th className="case-types__cell case-types__cell--drag" style={{ width: 30 }} />
+              <th className="case-types__cell case-types__th-checkbox"><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
+              <th className="case-types__cell case-types__cell--drag case-types__cell--checkbox" />
               <th className="case-types__cell">Name</th>
               <th className="case-types__cell">Code</th>
               <th className="case-types__cell">Order</th>
@@ -304,7 +304,7 @@ export default function CaseTypes() {
           </tbody>
         </table>
       </Card>
-      {!search && <div className="muted" style={{ marginTop: 10 }}>Drag rows to reorder. Order applies to every case form.</div>}
+      {!search && <div className="muted case-types__drag-hint">Drag rows to reorder. Order applies to every case form.</div>}
 
       <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />
     </div>

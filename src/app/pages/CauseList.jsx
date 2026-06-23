@@ -130,14 +130,14 @@ export default function CauseList() {
               <tbody>
                 {rows.map((h) => (
                   <tr key={h.id}>
-                    <td style={{ fontWeight: 650 }}>{formatDate(h.date)}</td>
+                    <td className="cause-list__cell-date">{formatDate(h.date)}</td>
                     <td>{h.caseNumber}</td>
                     <td>{h.parties}</td>
                     <td>{h.court}</td>
                     <td>{h.purpose || '—'}</td>
                     <td><Badge>{h.status}</Badge></td>
-                    <td>{h.docRef ? <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(h.docRef)}>View</Button> : <span style={{ color: 'var(--text-faint)', fontSize: 12 }}>—</span>}</td>
-                    <td style={{ display: 'flex', gap: 6 }}>
+                    <td>{h.docRef ? <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(h.docRef)}>View</Button> : <span className="cause-list__no-file">—</span>}</td>
+                    <td className="cause-list__cell-actions">
                       <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)}><Icon name="edit" size={13} /></button>
                       <button className="btn btn--danger btn--sm" onClick={() => deleteHearing(h.id)}><Icon name="trash" size={13} /></button>
                     </td>
@@ -158,7 +158,7 @@ export default function CauseList() {
                 {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </Select>
             </Field>
-            <div className="alert alert--info" style={{ fontSize: 12 }}>
+            <div className="alert alert--info cause-list__alert-sm">
               <Icon name="bolt" size={14} />
               <div>History renders using the selected template's format string.</div>
             </div>
@@ -170,7 +170,7 @@ export default function CauseList() {
               <div className="timeline">
                 {history.lines.map((line, i) => (
                   <div className="timeline-item" key={i}>
-                    <div className="timeline-item__event" style={{ fontWeight: 550 }}>{line}</div>
+                    <div className="timeline-item__event cause-list__history-event">{line}</div>
                   </div>
                 ))}
               </div>
@@ -187,10 +187,10 @@ export default function CauseList() {
               <tbody>
                 {templates.map((t) => (
                   <tr key={t.id}>
-                    <td style={{ fontWeight: 650 }}>{t.name}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{t.historyFormat}</td>
+                    <td className="cause-list__tpl-name">{t.name}</td>
+                    <td className="cause-list__tpl-format">{t.historyFormat}</td>
                     <td>{t.isDefault ? <Badge tone="green">Default</Badge> : '—'}</td>
-                    <td style={{ display: 'flex', gap: 6 }}>
+                    <td className="cause-list__cell-actions">
                       <button className="btn btn--ghost btn--sm" onClick={() => openTplEdit(t)}><Icon name="edit" size={13} /></button>
                       {!t.isDefault && <button className="btn btn--danger btn--sm" onClick={() => deleteTpl(t.id)}><Icon name="trash" size={13} /></button>}
                     </td>
@@ -199,7 +199,7 @@ export default function CauseList() {
               </tbody>
             </table>
           )}
-          <div className="alert alert--info" style={{ marginTop: 14, fontSize: 12 }}>
+          <div className="alert alert--info cause-list__alert-bottom">
             <Icon name="bolt" size={14} />
             <div>Placeholders: <code>{'{date} {caseNumber} {parties} {court} {stage} {purpose} {status} {notes}'}</code></div>
           </div>
@@ -228,9 +228,9 @@ export default function CauseList() {
         <Field label="Notes"><Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field>
         <Field label="Attach File">
           {form.docName ? (
-            <div className="list-row" style={{ background: 'var(--surface-2)' }}>
+            <div className="list-row cause-list__file-row">
               <div className="list-row__icon"><Icon name="file" size={15} /></div>
-              <div style={{ flex: 1 }}>{form.docName}</div>
+              <div className="cause-list__file-name">{form.docName}</div>
               <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(form.docRef)}>View</Button>
               <button className="btn btn--danger btn--sm" onClick={() => setForm({ ...form, docRef: null, docName: '' })}><Icon name="close" size={13} /></button>
             </div>
@@ -249,7 +249,7 @@ export default function CauseList() {
         <Field label="History Format" hint="Use placeholders to control how each hearing line renders">
           <Input value={tplForm.historyFormat} onChange={(e) => setTplForm({ ...tplForm, historyFormat: e.target.value })} />
         </Field>
-        <div className="alert alert--info" style={{ fontSize: 12 }}>
+        <div className="alert alert--info cause-list__alert-sm">
           <Icon name="bolt" size={14} />
           <div>Available: <code>{'{date} {caseNumber} {parties} {court} {stage} {purpose} {status} {notes}'}</code></div>
         </div>

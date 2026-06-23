@@ -84,7 +84,7 @@ export default function CourtTypes() {
   const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const toggleAll = () => setSelected((prev) => prev.size === visible.length ? new Set() : new Set(visible.map((c) => c.id)));
 
-  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in loading-page"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in">
@@ -101,7 +101,7 @@ export default function CourtTypes() {
 
       <Card title="Add Court" className="case-types__form">
         {mode === 'single' ? (
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="court-types__add-row">
             <Input
               value={newName}
               placeholder="New court name…"
@@ -113,8 +113,8 @@ export default function CourtTypes() {
           </div>
         ) : (
           <div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>Bulk Add &mdash; one court per line</span>
+            <div className="court-types__bulk-header">
+              <span className="court-types__bulk-label">Bulk Add &mdash; one court per line</span>
               <button className="btn btn--ghost btn--sm" onClick={() => setMode('single')}>Single Add</button>
             </div>
             <Textarea
@@ -123,13 +123,13 @@ export default function CourtTypes() {
               placeholder={`Supreme Court of India\nHigh Court\nDistrict & Sessions Court`}
               rows={5}
             />
-            <button className="btn btn--primary" style={{ marginTop: 8 }} onClick={addBulk}><Icon name="plus" size={15} /> Add All</button>
+            <button className="btn btn--primary court-types__add-btn" onClick={addBulk}><Icon name="plus" size={15} /> Add All</button>
           </div>
         )}
       </Card>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <div className="datatable__search" style={{ flex: 1 }}>
+      <div className="search-row">
+        <div className="datatable__search search-row__input">
           <Icon name="search" size={15} />
           <input value={search} placeholder="Search courts…" onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -142,9 +142,9 @@ export default function CourtTypes() {
         <table className="table">
           <thead>
             <tr>
-              <th style={{ width: 30 }}><input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} /></th>
+              <th className="court-types__th-check"><input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} /></th>
               <th>Name</th>
-              <th style={{ width: 110 }}>Actions</th>
+              <th className="court-types__th-actions">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -157,7 +157,7 @@ export default function CourtTypes() {
                   {editId === court.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
                   ) : (
-                    <span style={{ fontWeight: 600 }}>{court.name}</span>
+                    <span className="court-types__name">{court.name}</span>
                   )}
                 </td>
                 <td>
@@ -181,7 +181,7 @@ export default function CourtTypes() {
         </table>
       </Card>
 
-      <p className="muted" style={{ marginTop: 16, fontSize: 12.5 }}>
+      <p className="muted court-types__count">
         {courtNames.length} court type(s) loaded. Courts are used in case forms and filters.
       </p>
 

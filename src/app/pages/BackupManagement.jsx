@@ -71,7 +71,7 @@ export default function BackupManagement() {
         )}
       />
 
-      <div className="alert alert--info" style={{ marginBottom: 18 }}>
+      <div className="alert alert--info backup-mgmt__alert-mb">
         <Icon name="alert" size={16} />
         <span>Backups snapshot the active database provider (provider-agnostic). In this demo “compression/encryption” are simulated flags. Connect a backend destination for real off-site, encrypted backups.</span>
       </div>

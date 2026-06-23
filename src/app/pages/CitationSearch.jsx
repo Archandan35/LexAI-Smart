@@ -59,7 +59,7 @@ export default function CitationSearch() {
 
         <div>
           {state.issues.length > 0 && (
-            <div className="alert alert--info" style={{ marginBottom: 16 }}>
+            <div className="alert alert--info alert--mb">
               <strong>Extracted issues:</strong>&nbsp;{state.issues.join(' · ')}
             </div>
           )}

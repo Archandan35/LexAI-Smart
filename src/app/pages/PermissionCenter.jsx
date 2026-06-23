@@ -58,15 +58,15 @@ export default function PermissionCenter() {
       />
 
       <div className="toolbar-row">
-        <div className="datatable__search" style={{ maxWidth: 280 }}>
+        <div className="datatable__search perm-center__search">
           <Icon name="search" size={15} />
           <input value={search} placeholder="Filter permission…" onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <select className="select" style={{ maxWidth: 220 }} value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)}>
+        <select className="select perm-center__filter" value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)}>
           <option value="all">All modules</option>
           {MODULES.map((m) => <option key={m.key} value={m.key}>{m.label}</option>)}
         </select>
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
         <div className="legend"><span className="legend__dot legend__dot--on" /> Granted</div>
       </div>
 

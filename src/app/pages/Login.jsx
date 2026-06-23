@@ -68,7 +68,7 @@ export default function Login() {
             <span>
               No administrator account exists. You must bootstrap the system before you can log in.
               <br />
-              <Link to="/bootstrap-admin" style={{ fontWeight: 'bold', textDecoration: 'underline', marginTop: 6, display: 'inline-block' }}>
+              <Link to="/bootstrap-admin" className="login__bootstrap-link">
                 Bootstrap First Super Admin →
               </Link>
             </span>

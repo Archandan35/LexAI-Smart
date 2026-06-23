@@ -12,17 +12,17 @@ export default function AccessDenied() {
   const moduleLabel = state?.module ? (MODULE_MAP[state.module]?.label || state.module) : null;
 
   return (
-    <div className="fade-in" style={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}>
-      <div style={{ textAlign: 'center', maxWidth: 460 }}>
-        <div className="empty__icon" style={{ width: 72, height: 72, margin: '0 auto 18px', color: 'var(--red)', background: 'var(--red-soft)' }}>
+    <div className="fade-in access-denied__center">
+      <div className="access-denied__content">
+        <div className="empty__icon access-denied__icon">
           <Icon name="lock" size={32} />
         </div>
-        <h1 style={{ color: 'var(--navy-900)', margin: '0 0 8px' }}>Access denied</h1>
-        <p style={{ color: 'var(--text-soft)', marginBottom: 22 }}>
+        <h1 className="access-denied__title">Access denied</h1>
+        <p className="access-denied__text">
           You don’t have permission to view {moduleLabel ? <b>{moduleLabel}</b> : 'this page'}.
           Contact an administrator if you believe this is a mistake.
         </p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+        <div className="access-denied__actions">
           <Button variant="ghost" icon="arrow" onClick={() => nav(-1)}>Go back</Button>
           <Button variant="primary" icon="grid" onClick={() => nav('/')}>Dashboard</Button>
         </div>

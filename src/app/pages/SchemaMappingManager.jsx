@@ -153,15 +153,10 @@ export default function SchemaMappingManager() {
       )}
 
       {/* Tabs */}
-      <div className="tabs dm-mb" style={{ display: 'flex', gap: 0, borderBottom: '2px solid var(--border-color)', marginBottom: 16 }}>
+      <div className="schema-mapping__tabs dm-mb">
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
-            style={{
-              padding: '8px 16px', border: 'none', background: activeTab === t.id ? 'var(--bg-active)' : 'transparent',
-              color: activeTab === t.id ? 'var(--text-primary)' : 'var(--text-muted)', cursor: 'pointer',
-              borderBottom: activeTab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
-              marginBottom: -2, fontWeight: activeTab === t.id ? 600 : 400,
-            }}>
+            className={`schema-mapping__tab ${activeTab === t.id ? 'schema-mapping__tab--active' : ''}`}>
             {t.label}
           </button>
         ))}
@@ -170,7 +165,7 @@ export default function SchemaMappingManager() {
       {/* ===== TAB: Entity Mapping ===== */}
       {activeTab === 'entities' && (
         <>
-          <div className="toolbar-row dm-mb" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <div className="toolbar-row dm-mb gap-8 flex-wrap">
             <Button variant="outline" size="sm" icon="save" onClick={handleSnapshot}>Save Snapshot</Button>
             <Button variant="ghost" size="sm" icon="refresh" onClick={loadAll}>Refresh</Button>
             <Button variant="ghost" size="sm" icon="reset" onClick={handleReset}>Reset Defaults</Button>
@@ -190,17 +185,17 @@ export default function SchemaMappingManager() {
               </thead>
               <tbody>
                 {mappings.length === 0 && (
-                  <tr><td colSpan={6} className="text-muted" style={{ textAlign: 'center' }}>No mappings configured</td></tr>
+                  <tr><td colSpan={6} className="text-muted text-center">No mappings configured</td></tr>
                 )}
                 {mappings.map((m) => (
                   <tr key={m.id || m.entity_name}>
                     <td><code>{m.entity_name}</code></td>
                     <td>
                       {editing === m.entity_name ? (
-                        <div style={{ display: 'flex', gap: 4 }}>
+                        <div className="flex-row gap-4">
                           <input type="text" value={editValue} onChange={(e) => setEditValue(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSave(m.entity_name)}
-                            style={{ width: 140 }} />
+                            className="schema-mapping__input-sm" />
                           <Button size="xs" variant="primary" onClick={() => handleSave(m.entity_name)}>Save</Button>
                           <Button size="xs" variant="ghost" onClick={() => setEditing(null)}>X</Button>
                         </div>
@@ -212,7 +207,7 @@ export default function SchemaMappingManager() {
                     <td>{m.active ? <span className="badge badge--success">Active</span> : <span className="badge badge--muted">Inactive</span>}</td>
                     <td>{m.version || 1}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: 4 }}>
+                      <div className="flex-row gap-4">
                         <Button size="xs" variant="ghost" icon="edit"
                           onClick={() => { setEditing(m.entity_name); setEditValue(m.provider_table); }}>Edit</Button>
                         {m.active && (
@@ -232,7 +227,7 @@ export default function SchemaMappingManager() {
             <Card className="dm-mt">
               <h3 className="card-title">Unmapped Entities ({unmapped.length})</h3>
               <p className="auth-sub--sm">These entities use their name as the default table name.</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              <div className="schema-mapping__unmapped">
                 {unmapped.map((name) => (
                   <span key={name} className="badge badge--muted">{name}</span>
                 ))}
@@ -247,7 +242,7 @@ export default function SchemaMappingManager() {
         <Card>
           <h3 className="card-title">Field-Level Mapping</h3>
           <p className="auth-sub--sm">Validate field definitions across all entities. Fields are mapped by name — use the schema definitions as the source of truth.</p>
-          <Button variant="outline" size="sm" onClick={handleValidate} style={{ marginBottom: 12 }}>
+          <Button variant="outline" size="sm" onClick={handleValidate} className="mb-12">
             Validate All Entities
           </Button>
           {validationResult && !validationResult.loading && (
@@ -276,7 +271,7 @@ export default function SchemaMappingManager() {
           <h3 className="card-title">Relationship Mapping</h3>
           <p className="auth-sub--sm">Define foreign key relationships between entities.</p>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+          <div className="schema-mapping__rel-row">
             <select value={newRel.fromEntity} onChange={(e) => setNewRel({ ...newRel, fromEntity: e.target.value })}
               style={{ padding: '4px 8px' }}>
               <option value="">From Entity</option>
@@ -333,8 +328,8 @@ export default function SchemaMappingManager() {
             <p className="text-muted">No versions saved. Use "Save Snapshot" to create a version.</p>
           ) : (
             <>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
-                <select value={rollbackVersion} onChange={(e) => setRollbackVersion(e.target.value)} style={{ padding: '4px 8px', flex: 1 }}>
+              <div className="schema-mapping__version-row">
+                <select value={rollbackVersion} onChange={(e) => setRollbackVersion(e.target.value)} className="schema-mapping__version-select">
                   <option value="">Select version to rollback to...</option>
                   {versions.map((v) => (
                     <option key={v.id} value={v.id}>v{v.version} — {v.description || 'No description'} ({v.created_at ? new Date(v.created_at).toLocaleDateString() : ''})</option>
@@ -364,15 +359,15 @@ export default function SchemaMappingManager() {
 
       {/* ===== TAB: Import/Export ===== */}
       {activeTab === 'import' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex-col gap-16">
           <Card>
             <h3 className="card-title">Export Mapping</h3>
             <Button variant="outline" size="sm" icon="download" onClick={handleExport}>Generate Export JSON</Button>
             {exportData && (
               <>
-                <pre className="code-block" style={{ maxHeight: 300, overflow: 'auto', marginTop: 8 }}>{exportData}</pre>
+                <pre className="code-block schema-mapping__export-pre">{exportData}</pre>
                 <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(exportData); }}
-                  style={{ marginTop: 8 }}>Copy to Clipboard</Button>
+                  className="mt-8">Copy to Clipboard</Button>
               </>
             )}
           </Card>
@@ -381,14 +376,14 @@ export default function SchemaMappingManager() {
             <h3 className="card-title">Import Mapping</h3>
             <p className="auth-sub--sm">Paste JSON mapping data (format: lexai-schema-mapping-v1).</p>
             <textarea value={importText} onChange={(e) => setImportText(e.target.value)}
-              style={{ width: '100%', minHeight: 120, padding: 8, fontFamily: 'monospace', fontSize: 13 }}
+              className="schema-mapping__import-textarea"
               placeholder='{"format":"lexai-schema-mapping-v1","mappings":[{"entity":"users","table":"app_users","active":true}]}' />
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div className="schema-mapping__btn-group">
               <Button variant="primary" size="sm" icon="upload" onClick={handleImport}>Import</Button>
               <Button variant="ghost" size="sm" onClick={() => { setImportText(''); setImportResult(null); }}>Clear</Button>
             </div>
             {importResult && (
-              <div style={{ marginTop: 8 }}>
+              <div className="mt-8">
                 <p className="text-success">Import completed: {importResult.results.filter((r) => r.ok).length} succeeded, {importResult.results.filter((r) => !r.ok).length} failed</p>
               </div>
             )}

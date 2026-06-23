@@ -41,7 +41,7 @@ export default function AuditLogs() {
     { key: 'at', label: 'Date', sortable: true, width: 110, render: (l) => formatDate(l.at) },
     { key: 'time', label: 'Time', width: 100, render: (l) => timeOnly(l.at) },
     { key: 'ip', label: 'Source', width: 80, render: (l) => <span className="muted">{l.ip || 'client'}</span> },
-    { key: 'details', label: 'Details', render: (l) => <span style={{ color: 'var(--text-soft)' }}>{l.details}</span> },
+    { key: 'details', label: 'Details', render: (l) => <span className="audit-logs__detail-text">{l.details}</span> },
   ];
 
   return (
@@ -56,7 +56,7 @@ export default function AuditLogs() {
           </PermissionGate>
         )}
       />
-      <div className="alert alert--info" style={{ marginBottom: 16 }}>
+      <div className="alert alert--info alert--mb">
         Client-side log — the “Source” column shows <code>client</code> because there is no server to capture a real IP address.
       </div>
       <Card bodyClass="card__body--flush">

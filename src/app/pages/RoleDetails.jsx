@@ -113,7 +113,7 @@ export default function RoleDetails() {
         )}
       />
 
-      <div className="grid-3" style={{ marginBottom: 20 }}>
+      <div className="grid-3 mb-20">
         <Card title="Role">
           <div className="kv"><span>Code</span><b>{role.code}</b></div>
           <div className="kv"><span>Status</span><Badge tone={(role.status || 'Active') === 'Active' ? 'green' : 'grey'}>{role.status || 'Active'}</Badge></div>
@@ -129,7 +129,7 @@ export default function RoleDetails() {
                 label="Inherit lower-role permissions"
                 onChange={async (v) => { await roleLogic.update(role.id, { inheritsHierarchy: v }, user); await load(); await loadRoles(); }}
               />
-              <div style={{ marginTop: 10, fontSize: 12.5, color: 'var(--text-soft)' }}>
+              <div className="role-details__hint">
                 {inheritedFrom.length ? <>Inherits from: {inheritedFrom.map((c) => <Badge key={c} tone="grey">{allRoles.find((r) => r.code === c)?.name || c}</Badge>)}</> : 'No lower roles in chain.'}
               </div>
             </>
@@ -138,7 +138,7 @@ export default function RoleDetails() {
         <Card title="Tools">
           {can('roles.edit') && !readOnly && (
             <Field label="Clone permissions from">
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="flex-row gap-8">
                 <Select value={cloneFrom} onChange={(e) => setCloneFrom(e.target.value)}>
                   <option value="">Select role…</option>
                   {allRoles.filter((r) => r.id !== role.id).map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}
@@ -166,8 +166,8 @@ export default function RoleDetails() {
             return (
               <div key={u.id} className="assign-row">
                 <div>
-                  <div style={{ fontWeight: 600 }}>{u.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{u.email || u.username} · {u.roleName}</div>
+                  <div className="fw-600">{u.name}</div>
+                  <div className="role-details__sub">{u.email || u.username} · {u.roleName}</div>
                 </div>
                 <Toggle checked={attached} onChange={(v) => assignUser(u, v)} />
               </div>

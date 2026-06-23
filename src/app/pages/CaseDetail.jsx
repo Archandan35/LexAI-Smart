@@ -76,13 +76,13 @@ export default function CaseDetail() {
 
   return (
     <div className="fade-in">
-      <Button variant="ghost" size="sm" icon="arrow" onClick={() => nav('/cases')} style={{ marginBottom: 14, transform: 'scaleX(-1)' }} />
+      <Button variant="ghost" size="sm" icon="arrow" onClick={() => nav('/cases')} className="case-detail__back-btn" />
       <PageHeader
         icon="vault"
         title={c.case_display_number || c.caseNumber}
         subtitle={`${c.title} · ${combinedCourt(c)}`}
         actions={(
-          <div className="row-actions" style={{ alignItems: 'center', gap: 8 }}>
+          <div className="row-actions row-actions--wide">
             {c.archived && <Badge tone="amber">Archived</Badge>}
             <Badge tone="navy">{c.stage || '—'}</Badge>
             <Badge>{c.status}</Badge>
@@ -130,7 +130,7 @@ export default function CaseDetail() {
               <Row label="Client" value={c.client} />
             </Card>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="case-detail__right-column">
               <Card title="Case Health" sub="At-a-glance status">
                 <div className="health-grid">
                   <Health label="Total Documents" value={vault.documents.length} icon="file" />
@@ -143,13 +143,13 @@ export default function CaseDetail() {
               </Card>
 
               <Card title="Description & Tags">
-                <p style={{ fontSize: 13.5, lineHeight: 1.7, color: 'var(--text-soft)', whiteSpace: 'pre-wrap' }}>{c.description || '—'}</p>
-                {(c.tags || []).length > 0 && <div style={{ marginTop: 12 }}>{c.tags.map((t) => <span key={t} className="tag tag--key">{t}</span>)}</div>}
+                <p className="case-detail__description">{c.description || '—'}</p>
+                {(c.tags || []).length > 0 && <div className="case-detail__tags">{c.tags.map((t) => <span key={t} className="tag tag--key">{t}</span>)}</div>}
               </Card>
             </div>
           </div>
 
-          <div className="grid-2" style={{ marginTop: 16 }}>
+          <div className="grid-2 case-detail__grid-mt">
             <RemindersPanel caseId={id} onChanged={load} />
             <Card title="Stage History" sub="Every stage change is tracked permanently">
               {(c.stageHistory || []).length === 0 ? <EmptyState icon="target" title="No stage changes yet." /> : (
@@ -177,7 +177,7 @@ export default function CaseDetail() {
           {vault.drafts.length === 0 ? <EmptyState icon="pen" title="No drafts for this case." /> : vault.drafts.map((d) => (
             <div className="list-row" key={d.id} onClick={() => nav('/drafting')}>
               <div className="list-row__icon"><Icon name="doc" size={15} /></div>
-              <div style={{ flex: 1 }}><div className="list-row__title">{d.title}</div><div className="list-row__meta">{DRAFT_TYPE_MAP[d.type]?.label || d.type}{d.folder ? ` · ${d.folder}` : ''}</div></div>
+              <div className="case-detail__draft-info"><div className="list-row__title">{d.title}</div><div className="list-row__meta">{DRAFT_TYPE_MAP[d.type]?.label || d.type}{d.folder ? ` · ${d.folder}` : ''}</div></div>
               <Icon name="arrow" size={15} />
             </div>
           ))}
@@ -215,9 +215,9 @@ export default function CaseDetail() {
 
 function Row({ label, value }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid var(--border)', fontSize: 13.5, gap: 16 }}>
-      <span style={{ color: 'var(--text-faint)' }}>{label}</span>
-      <span style={{ fontWeight: 600, textAlign: 'right' }}>{value || '—'}</span>
+    <div className="case-detail__row">
+      <span className="case-detail__row-label">{label}</span>
+      <span className="case-detail__row-value">{value || '—'}</span>
     </div>
   );
 }

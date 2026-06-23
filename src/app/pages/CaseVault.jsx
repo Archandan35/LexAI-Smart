@@ -98,21 +98,21 @@ export default function CaseVault() {
       />
 
       <div className="toolbar-row">
-        <div className="datatable__search" style={{ maxWidth: 320 }}>
+        <div className="datatable__search case-vault__search">
           <Icon name="search" size={15} />
           <input placeholder="Search cases, judge, client, tags…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
-        <select className="select" style={{ maxWidth: 180 }} value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
+        <select className="select case-vault__filter-court" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
           <option value="">All courts</option>{courtNames.map((c) => <option key={c}>{c}</option>)}
         </select>
-        <select className="select" style={{ maxWidth: 170 }} value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
+        <select className="select case-vault__filter-stage" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
           <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
         </select>
-        <select className="select" style={{ maxWidth: 150 }} value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+        <select className="select case-vault__filter-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
           <option value="">All status</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
         {savedFilters.length > 0 && (
-          <select className="select" style={{ maxWidth: 170 }} value="" onChange={(e) => { if (e.target.value) applyFilter(e.target.value); }}>
+          <select className="select case-vault__filter-stage" value="" onChange={(e) => { if (e.target.value) applyFilter(e.target.value); }}>
             <option value="">Saved filters…</option>
             {savedFilters.map((f) => <option key={f.name}>{f.name}</option>)}
           </select>
@@ -121,7 +121,7 @@ export default function CaseVault() {
         {savedFilters.length > 0 && (
           <button className="iconbtn iconbtn--danger" title="Delete a saved filter" onClick={() => { const n = prompt('Delete which saved filter? (name)'); if (n) deleteFilter(n); }}><Icon name="trash" size={15} /></button>
         )}
-        <div style={{ flex: 1 }} />
+        <div className="spacer" />
         <div className="seg">
           <button className={`seg__btn ${filters.view === 'active' ? 'active' : ''}`} onClick={() => setFilters({ ...filters, view: 'active' })}>Active</button>
           <button className={`seg__btn ${filters.view === 'archived' ? 'active' : ''}`} onClick={() => setFilters({ ...filters, view: 'archived' })}>Archived</button>
@@ -145,9 +145,9 @@ export default function CaseVault() {
           <div className="table-scroll">
             <table className="table">
               <thead><tr>
-                <th style={{ width: 36 }}>{can('casevault.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
-                <th style={{ width: 36 }} />
-                <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th style={{ width: 160 }}>Actions</th>
+                <th className="case-vault__th-check">{can('casevault.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
+                <th className="case-vault__th-check" />
+                <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="case-vault__th-actions">Actions</th>
               </tr></thead>
               <tbody>
                 {filtered.map((c) => (
@@ -158,8 +158,8 @@ export default function CaseVault() {
                         <Icon name="star" size={15} className={c.watch ? 'star--on' : ''} fill={c.watch} />
                       </button>
                     </td>
-                    <td style={{ fontWeight: 650, cursor: 'pointer' }} onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
-                    <td style={{ cursor: 'pointer' }} onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
+                    <td className="case-vault__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
+                    <td className="case-vault__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
                     <td>{combinedCourt(c)}</td>
                     <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
                     <td>{formatDate(c.nextHearing)}</td>

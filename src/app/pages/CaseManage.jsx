@@ -70,7 +70,7 @@ export default function CaseManage() {
         actions={<Button icon="upload" disabled={!caseId} onClick={() => setUploadOpen(true)}>Upload Document</Button>}
       />
 
-      <Card style={{ marginBottom: 20 }}>
+      <Card className="case-manage__card-mb">
         <Field label="Select Case Number">
           <Select value={caseId} onChange={(e) => { setCaseId(e.target.value); setActiveFolder(null); }}>
             <option value="">Select a case…</option>
@@ -84,7 +84,7 @@ export default function CaseManage() {
       ) : (
         <>
           {/* Case detail strip */}
-          <Card title="Case Details" sub={theCase.caseNumber} style={{ marginBottom: 20 }}>
+          <Card title="Case Details" sub={theCase.caseNumber} className="case-manage__card-mb">
             <div className="grid-3">
               <Detail label="Case Number" value={theCase.caseNumber} />
               <Detail label="Parties" value={theCase.title} />
@@ -107,8 +107,8 @@ export default function CaseManage() {
                   return (
                     <div key={f.id} className="folder" onClick={() => setActiveFolder(f.id)}>
                       <div className="folder__icon"><Icon name={f.icon} size={19} /></div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 650, fontSize: 14 }}>{f.id}</div>
+                      <div className="case-manage__folder-body">
+                        <div className="case-manage__folder-title">{f.id}</div>
                         <div className="folder__count">{count} document(s)</div>
                       </div>
                       <Icon name="arrow" size={15} />
@@ -122,8 +122,8 @@ export default function CaseManage() {
               title={activeFolder}
               sub={`${folderDocs(activeFolder).length} document(s)`}
               actions={
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <Button size="sm" variant="ghost" icon="arrow" onClick={() => setActiveFolder(null)} style={{ transform: 'scaleX(-1)' }} />
+                <div className="case-manage__folder-actions">
+                  <Button size="sm" variant="ghost" icon="arrow" onClick={() => setActiveFolder(null)} className="case-manage__back-btn" />
                   <Button size="sm" icon="upload" onClick={() => { setUploadFolder(activeFolder); setUploadOpen(true); }}>Upload</Button>
                 </div>
               }
@@ -136,7 +136,7 @@ export default function CaseManage() {
                   <tbody>
                     {folderDocs(activeFolder).map((d) => (
                       <tr key={d.id}>
-                        <td style={{ fontWeight: 600 }}><Icon name="file" size={14} /> {d.name}</td>
+                        <td className="case-manage__td-name"><Icon name="file" size={14} /> {d.name}</td>
                         <td><Badge tone="grey">{(d.mime || '').split('/')[1] || 'file'}</Badge></td>
                         <td>{bytes(d.size)}</td>
                         <td>{formatDate(d.uploadedAt)}</td>
@@ -174,16 +174,16 @@ export default function CaseManage() {
       >
         {viewer?.url ? (
           /image\//.test(viewer.doc.mime) ? (
-            <img src={viewer.url} alt={viewer.doc.name} style={{ width: '100%', borderRadius: 10 }} />
+            <img src={viewer.url} alt={viewer.doc.name} className="case-manage__viewer-img" />
           ) : /pdf/.test(viewer.doc.mime) ? (
-            <iframe title="doc" src={viewer.url} style={{ width: '100%', height: '60vh', border: 'none', borderRadius: 10 }} />
+            <iframe title="doc" src={viewer.url} className="case-manage__viewer-iframe" />
           ) : (
-            <div style={{ whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.7, maxHeight: '60vh', overflow: 'auto' }}>
+            <div className="case-manage__viewer-text">
               {viewer.doc.text || 'No inline preview available.'}
             </div>
           )
         ) : (
-          <div style={{ whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.7, maxHeight: '60vh', overflow: 'auto' }}>
+          <div className="case-manage__viewer-text">
             {viewer?.doc?.text || 'No preview available for this seeded document.'}
           </div>
         )}
@@ -194,9 +194,9 @@ export default function CaseManage() {
 
 function Detail({ label, value, badge }) {
   return (
-    <div style={{ padding: '10px 0' }}>
-      <div style={{ fontSize: 11.5, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
-      <div style={{ marginTop: 4, fontWeight: 600, fontSize: 14 }}>
+    <div className="case-manage__detail">
+      <div className="case-manage__detail-label">{label}</div>
+      <div className="case-manage__detail-value">
         {badge ? <Badge tone="navy">{value}</Badge> : (value || '—')}
       </div>
     </div>

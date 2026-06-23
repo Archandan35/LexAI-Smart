@@ -427,13 +427,13 @@ export default function SetupWizard({ detectError: propDetectError }) {
               <div className="dm-mt">
                 <BackendStatusPanel />
                 {!backendConfig.configured && (
-                  <div className="alert alert--info dm-mt" style={{ marginBottom: 16 }}>
+                  <div className="alert alert--info dm-mt mb-16">
                     <Icon name="info" size={16} />
                     <span>Advanced Setup requires a backend API server. Set <b>VITE_BACKEND_URL</b> in your environment to connect, or use <b>Simple Setup</b> or <b>Copy-Paste Setup</b> instead.</span>
                   </div>
                 )}
                 <p className="auth-sub--sm">Enter direct database connection details</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                <div className="setup-wizard__host-grid">
                   <Field label="Host">
                     <Input type="text" placeholder="db.example.com" value={advHost} onChange={(e) => setAdvHost(e.target.value)} />
                   </Field>
@@ -632,13 +632,13 @@ export default function SetupWizard({ detectError: propDetectError }) {
                   </span>
                 </div>
                 {validateResult.checks && (
-                  <div className="dm-mt" style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
+                  <div className="dm-mt setup-wizard__checks">
                     {validateResult.checks.map((c) => (
-                      <div key={c.name} style={{ display: 'flex', gap: 8 }}>
-                        <span style={{ color: c.status === 'ok' ? 'var(--success)' : c.status === 'warn' ? 'var(--warning)' : 'var(--error)', width: 32 }}>
+                      <div key={c.name} className="flex-row gap-8">
+                        <span className="setup-wizard__check-status" style={{ color: c.status === 'ok' ? 'var(--success)' : c.status === 'warn' ? 'var(--warning)' : 'var(--error)' }}>
                           {c.status === 'ok' ? 'OK' : c.status === 'warn' ? 'WARN' : 'FAIL'}
                         </span>
-                        <span style={{ width: 100, color: 'var(--text-muted)' }}>{c.name}</span>
+                        <span className="setup-wizard__check-name">{c.name}</span>
                         <span>{c.details || ''}</span>
                       </div>
                     ))}

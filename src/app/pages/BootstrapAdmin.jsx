@@ -190,7 +190,7 @@ export default function BootstrapAdmin() {
             <p className="auth-sub">
               Account created successfully. Please confirm your email before logging in.
             </p>
-            <p className="auth-sub" style={{ marginTop: 8 }}>
+            <p className="auth-sub bootstrap-admin__sub-mt">
               Check <strong>{email}</strong> for a confirmation link from your auth provider.
             </p>
             <div className="dm-toolbar-mt">

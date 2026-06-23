@@ -54,11 +54,11 @@ export default function RoleManagement() {
   const columns = [
     { key: 'name', label: 'Role Name', sortable: true, render: (r) => (
       <div>
-        <div style={{ fontWeight: 650, color: 'var(--navy-900)' }}>{r.name}{r.system && <Badge tone="grey">system</Badge>}</div>
-        <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{r.code}</div>
+        <div className="role-mgmt__name">{r.name}{r.system && <Badge tone="grey">system</Badge>}</div>
+        <div className="role-mgmt__code">{r.code}</div>
       </div>
     ) },
-    { key: 'description', label: 'Description', render: (r) => <span style={{ color: 'var(--text-soft)' }}>{r.description || '—'}</span> },
+    { key: 'description', label: 'Description', render: (r) => <span className="text-soft">{r.description || '—'}</span> },
     { key: 'userCount', label: 'Users', sortable: true, width: 80, render: (r) => <Badge tone="navy">{r.userCount}</Badge> },
     { key: 'permissionCount', label: 'Permissions', sortable: true, width: 110, render: (r) => (r.all || r.permissionCount === Infinity ? <Badge tone="green">All</Badge> : r.permissionCount) },
     { key: 'createdAt', label: 'Created', sortable: true, width: 110, render: (r) => formatDate(r.createdAt) },
@@ -103,7 +103,7 @@ export default function RoleManagement() {
             <button key={s} className={`seg__btn ${statusFilter === s ? 'active' : ''}`} onClick={() => setStatusFilter(s)}>{s === 'all' ? 'All' : s}</button>
           ))}
         </div>
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
         <Button variant="ghost" icon="lock" onClick={() => nav('/admin/permissions')}>Permission Center</Button>
       </div>
 

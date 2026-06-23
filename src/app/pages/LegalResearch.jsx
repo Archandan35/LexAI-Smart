@@ -33,7 +33,7 @@ export default function LegalResearch() {
       />
       <GuardrailBanner text="Research uses retrieval, not AI memory. Statutory positions must always be confirmed against the bare Act." />
 
-      <div className="grid-3" style={{ marginBottom: 20 }}>
+      <div className="grid-3 mb-20">
         {ACTS.map((a) => (
           <div
             key={a.id}
@@ -43,7 +43,7 @@ export default function LegalResearch() {
           >
             <div className="folder__icon"><Icon name="book" size={18} /></div>
             <div>
-              <div style={{ fontWeight: 650, fontSize: 13.5 }}>{a.short}</div>
+              <div className="legal-research__folder-title">{a.short}</div>
               <div className="folder__count">{a.label}</div>
             </div>
           </div>
@@ -51,11 +51,11 @@ export default function LegalResearch() {
       </div>
 
       <Card title="Research Query" sub="Authorities under the selected statute">
-        <div className="input-row" style={{ alignItems: 'flex-end' }}>
+        <div className="input-row items-end">
           <Field label="Search within statute & case-law">
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g. rejection of plaint, condonation, basic structure…" />
           </Field>
-          <Button icon="search" loading={state.loading} onClick={run} style={{ marginBottom: 15 }}>Research</Button>
+          <Button icon="search" loading={state.loading} onClick={run} className="mb-15">Research</Button>
         </div>
 
         {state.loading && <Spinner label="Retrieving authorities…" />}
@@ -63,7 +63,7 @@ export default function LegalResearch() {
           <div className="alert alert--warn"><strong>{state.message}</strong>&nbsp;No verified precedent retrieved for this query.</div>
         )}
         {!state.loading && state.data && !state.message && (
-          <div style={{ marginTop: 8 }}>
+          <div className="mt-8">
             {state.data.results.map((r, i) => <CitationCard key={r.id} item={r} rank={i + 1} />)}
           </div>
         )}

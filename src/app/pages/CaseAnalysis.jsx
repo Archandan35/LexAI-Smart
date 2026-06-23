@@ -58,7 +58,7 @@ export default function CaseAnalysis() {
       />
 
       <div className="grid-sidebar">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="case-analysis__column">
           <Card title="Document">
             <Field label="Document Type">
               <Select value={type} onChange={(e) => setType(e.target.value)}>
@@ -67,7 +67,7 @@ export default function CaseAnalysis() {
             </Field>
             <FileDrop onFile={onFile} hint="Upload to auto-extract, or paste below" />
             <Field label="Text" hint="Edit extracted text or paste directly">
-              <Textarea value={text} onChange={(e) => setText(e.target.value)} style={{ minHeight: 200 }} placeholder="Paste the document text…" />
+              <Textarea value={text} onChange={(e) => setText(e.target.value)} className="case-analysis__textarea" placeholder="Paste the document text…" />
             </Field>
             <Button icon="scan" loading={busy} onClick={analyze} className="btn--block">Analyze Document</Button>
           </Card>
@@ -79,7 +79,7 @@ export default function CaseAnalysis() {
           {!busy && result && (
             <>
               {result.aiSummary && (
-                <div className="alert alert--info" style={{ marginBottom: 16 }}>
+                <div className="alert alert--info alert--mb">
                   <Icon name="bolt" size={16} /><div>{result.aiSummary}</div>
                 </div>
               )}
@@ -87,24 +87,24 @@ export default function CaseAnalysis() {
                 <Card title="Contradiction Detection" sub={`${result.contradictions.length} potential internal contradiction(s)`} className="card--hover" >
                   {result.contradictions.map((c, i) => (
                     <div key={i} className="qa-card">
-                      <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 6 }}>On: <strong>{c.on}</strong></div>
-                      <div style={{ fontSize: 13 }}><Icon name="arrow" size={12} /> {c.a}</div>
-                      <div style={{ fontSize: 13, marginTop: 4, color: 'var(--red)' }}><Icon name="arrow" size={12} /> {c.b}</div>
+                      <div className="case-analysis__contra-meta">On: <strong>{c.on}</strong></div>
+                      <div className="case-analysis__contra-text"><Icon name="arrow" size={12} /> {c.a}</div>
+                      <div className="case-analysis__contra-text-b"><Icon name="arrow" size={12} /> {c.b}</div>
                     </div>
                   ))}
                 </Card>
               )}
-              <div className="grid-2" style={{ marginTop: 16 }}>
+              <div className="grid-2 case-analysis__grid-mt">
                 {SECTIONS.filter((s) => s.key !== 'contradictions').map((s) => {
                   const items = result[s.key] || [];
                   return (
                     <Card key={s.key} title={s.label} sub={`${items.length} finding(s)`} className="card--hover">
                       {items.length === 0 ? (
-                        <div style={{ fontSize: 13, color: 'var(--green)', display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <div className="case-analysis__none-detected">
                           <Icon name="check" size={15} /> None detected.
                         </div>
                       ) : (
-                        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.7 }}>
+                        <ul className="case-analysis__findings-list">
                           {items.map((it, i) => <li key={i}>{it}</li>)}
                         </ul>
                       )}

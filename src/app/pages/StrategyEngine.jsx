@@ -36,7 +36,7 @@ export default function StrategyEngine() {
       <div className="grid-sidebar">
         <Card title="Case / Pleadings Text">
           <Field label="Paste pleadings, facts or the opposing case">
-            <Textarea value={text} onChange={(e) => setText(e.target.value)} style={{ minHeight: 260 }} placeholder="Paste the case material to assess threshold defences…" />
+            <Textarea value={text} onChange={(e) => setText(e.target.value)} className="strategy-engine__textarea" placeholder="Paste the case material to assess threshold defences…" />
           </Field>
           <Button icon="target" loading={busy} onClick={run} className="btn--block">Run Strategy Analysis</Button>
         </Card>
@@ -46,22 +46,22 @@ export default function StrategyEngine() {
           {!busy && !result && <Card><EmptyState icon="target" title="No analysis yet." hint="Paste case text to identify defences & defects." /></Card>}
           {!busy && result && (
             <>
-              <div className="alert alert--info" style={{ marginBottom: 16 }}>
+              <div className="alert alert--info mb-16">
                 <Icon name="bolt" size={16} />
                 <div><strong>{result.triggeredCount}</strong> threshold issue(s) flagged.</div>
               </div>
               {result.flags.map((f) => (
                 <div key={f.id} className="card" style={{ marginBottom: 12, borderLeft: `4px solid ${f.triggered ? 'var(--red)' : 'var(--green)'}` }}>
-                  <div className="card__body" style={{ padding: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <strong style={{ fontSize: 14 }}>{f.label}</strong>
+                  <div className="card__body strategy-engine__card-body">
+                    <div className="flex-row items-center gap-10">
+                      <strong className="fs-14">{f.label}</strong>
                       <Badge tone={f.triggered ? 'red' : 'green'} dot>{f.triggered ? 'Flagged' : 'Clear'}</Badge>
                     </div>
-                    <div style={{ fontSize: 13, color: 'var(--text-soft)', marginTop: 7 }}>{f.note}</div>
+                    <div className="strategy-engine__flag-note">{f.note}</div>
                     {f.evidence.length > 0 && (
-                      <div style={{ marginTop: 10, borderTop: '1px dashed var(--border)', paddingTop: 10 }}>
+                      <div className="strategy-engine__evidence">
                         {f.evidence.map((e, i) => (
-                          <div key={i} style={{ fontSize: 12.5, color: 'var(--text-faint)', marginBottom: 4 }}>“{e}”</div>
+                          <div key={i} className="strategy-engine__evidence-text">“{e}”</div>
                         ))}
                       </div>
                     )}
@@ -69,7 +69,7 @@ export default function StrategyEngine() {
                 </div>
               ))}
               <Card title="Recommended Strategy" className="card--hover">
-                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.8 }}>
+                <ul className="strategy-engine__recommendations">
                   {result.recommendations.map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
               </Card>

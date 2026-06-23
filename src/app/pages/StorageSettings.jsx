@@ -48,15 +48,15 @@ export default function StorageSettings() {
         subtitle="Cloud storage for Case Vault documents and draft files. The database Backup & Recovery module is separate and unchanged."
       />
 
-      <div className="grid-2" style={{ marginBottom: 16 }}>
+      <div className="grid-2 mb-16">
         <Card title="Connected Provider" sub="Provider is selected via environment variables (provider-agnostic).">
-          <div className="kv"><span>Current Provider</span><b style={{ textTransform: 'capitalize' }}>{summary.provider.replace('_', ' ')}</b></div>
+          <div className="kv"><span>Current Provider</span><b className="dm-capitalize">{summary.provider.replace('_', ' ')}</b></div>
           <div className="kv"><span>Connection Status</span><Badge tone={summary.connected ? 'green' : 'amber'}>{summary.connected ? 'Connected' : 'Disconnected'}</Badge></div>
           <div className="kv"><span>Sync Health</span><Badge tone={health.tone}>{health.label}</Badge></div>
           <div className="kv"><span>Auto Sync</span><Badge tone={summary.autoSync ? 'green' : 'grey'}>{summary.autoSync ? 'Enabled' : 'Disabled'}</Badge></div>
           <div className="kv"><span>Root Folder</span><span>{summary.rootFolder}</span></div>
           <div className="kv"><span>Last Sync Time</span><span>{summary.lastSync ? formatDateTime(summary.lastSync) : '—'}</span></div>
-          {summary.statusMessage && <div className="alert alert--info" style={{ marginTop: 10 }}><Icon name="bolt" size={15} /><span>{summary.statusMessage}</span></div>}
+          {summary.statusMessage && <div className="alert alert--info storage-settings__status-message"><Icon name="bolt" size={15} /><span>{summary.statusMessage}</span></div>}
         </Card>
 
         <Card title="Storage Dashboard">
@@ -72,13 +72,13 @@ export default function StorageSettings() {
       </div>
 
       <Card title="Sync Actions">
-        <div className="toolbar-row" style={{ flexWrap: 'wrap' }}>
+        <div className="toolbar-row flex-wrap">
           <PermissionGate perm="storage.test"><Button variant="ghost" icon="bolt" loading={busy === 'test'} onClick={testConnection}>Test Connection</Button></PermissionGate>
           <PermissionGate perm="storage.sync"><Button icon="refresh" loading={busy === 'sync'} onClick={syncNow}>Sync Now</Button></PermissionGate>
           <PermissionGate perm="storage.sync"><Button variant="ghost" icon="layers" loading={busy === 'rebuild'} onClick={rebuildIndex}>Rebuild Index</Button></PermissionGate>
           <PermissionGate perm="storage.sync"><Button variant="ghost" icon="shield" loading={busy === 'verify'} onClick={verify}>Verify Storage</Button></PermissionGate>
         </div>
-        <div className="alert alert--warn" style={{ marginTop: 14 }}>
+        <div className="alert alert--warn mt-14">
           <Icon name="alert" size={16} />
           <span>
             <b>Change Provider:</b> set <code>VITE_STORAGE_PROVIDER</code> in the environment, then reconnect. Future providers:{' '}

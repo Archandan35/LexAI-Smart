@@ -92,7 +92,7 @@ export default function PermissionManager() {
         subtitle="Assign permissions by role, or override them per individual user."
       />
 
-      <div className="seg" style={{ marginBottom: 18 }}>
+      <div className="seg mb-18">
         <button className={`seg__btn ${mode === 'role' ? 'active' : ''}`} onClick={() => setMode('role')}><Icon name="badge" size={14} /> Role-based</button>
         <button className={`seg__btn ${mode === 'user' ? 'active' : ''}`} onClick={() => setMode('user')}><Icon name="users" size={14} /> User-specific</button>
       </div>
@@ -100,14 +100,14 @@ export default function PermissionManager() {
       {mode === 'role' ? (
         <>
           <Card>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div className="perm-mgr__form-row">
               <Field label="Select role" hint="Edit the permissions granted to every user with this role.">
-                <Select value={roleCode} onChange={(e) => setRoleCode(e.target.value)} style={{ minWidth: 240 }}>
+                <Select value={roleCode} onChange={(e) => setRoleCode(e.target.value)} className="perm-mgr__min-w">
                   <option value="">Select role…</option>
                   {roles.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}
                 </Select>
               </Field>
-              <div style={{ flex: 1 }} />
+              <div className="flex-1" />
               {selectedRole && can('permissions.edit') && !selectedRole.all && (
                 <Button variant="primary" icon="save" disabled={!dirty} loading={saving} onClick={saveRole}>Save changes</Button>
               )}
@@ -126,7 +126,7 @@ export default function PermissionManager() {
         <>
           <Card>
             <Field label="Select user" hint="Permissions inherited from the user’s role, plus any custom overrides.">
-              <Select value={userId} onChange={(e) => setUserId(e.target.value)} style={{ minWidth: 280 }}>
+              <Select value={userId} onChange={(e) => setUserId(e.target.value)} className="perm-mgr__user-min-w">
                 <option value="">Select user…</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.name} — {u.roleName}</option>)}
               </Select>

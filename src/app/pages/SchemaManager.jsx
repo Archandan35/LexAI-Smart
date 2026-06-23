@@ -138,7 +138,7 @@ export default function SchemaManager() {
       />
 
       {/* Health summary */}
-      <div className="grid-4" style={{ marginBottom: 20 }}>
+      <div className="grid-4 mb-20">
         <Card>
           <div className="health-cell"><span className="health-cell__value">{totalTables}</span><span className="health-cell__label">Software Tables</span></div>
         </Card>
@@ -163,7 +163,7 @@ export default function SchemaManager() {
       </div>
 
       {/* Tabs */}
-      <div className="tabs" style={{ marginBottom: 16 }}>
+      <div className="tabs mb-16">
         <div className={`tab ${tab === 'diff' ? 'active' : ''}`} onClick={() => setTab('diff')}>Schema Diff</div>
         <div className={`tab ${tab === 'tables' ? 'active' : ''}`} onClick={() => setTab('tables')}>Tables</div>
         <div className={`tab ${tab === 'issues' ? 'active' : ''}`} onClick={() => setTab('issues')}>Health Issues {health?.summary?.total ? `(${health.summary.total})` : ''}</div>
@@ -173,13 +173,13 @@ export default function SchemaManager() {
       {tab === 'diff' && (
         <>
           {diff?.missingTables?.length > 0 && (
-            <Card title={`Missing Tables (${diff.missingTables.length})`} tone="amber" style={{ marginBottom: 16 }}>
+            <Card title={`Missing Tables (${diff.missingTables.length})`} tone="amber" className="mb-16">
               <table className="table">
                 <thead><tr><th>Table</th><th>Reason</th><th>Action</th></tr></thead>
                 <tbody>
                   {diff.missingTables.map((t) => (
                     <tr key={t.collection}>
-                      <td style={{ fontWeight: 600 }}>{t.collection}</td>
+                      <td className="fw-600">{t.collection}</td>
                       <td style={{ color: 'var(--text-soft)', fontSize: 12.5 }}>{t.reason}</td>
                       <td><Badge tone="amber">Missing</Badge></td>
                     </tr>
@@ -190,13 +190,13 @@ export default function SchemaManager() {
           )}
 
           {diff?.missingColumns?.length > 0 && (
-            <Card title={`Missing Columns (${diff.missingColumns.length})`} tone="navy" style={{ marginBottom: 16 }}>
+            <Card title={`Missing Columns (${diff.missingColumns.length})`} tone="navy" className="mb-16">
               <table className="table">
                 <thead><tr><th>Table</th><th>Column</th><th>Expected Type</th><th>Action</th></tr></thead>
                 <tbody>
                   {diff.missingColumns.map((c) => (
                     <tr key={`${c.collection}.${c.column}`}>
-                      <td style={{ fontWeight: 600 }}>{c.collection}</td>
+                      <td className="fw-600">{c.collection}</td>
                       <td><code>{c.column}</code></td>
                       <td><Badge tone="grey">{c.expectedType}</Badge></td>
                       <td><Badge tone="navy">Add Column</Badge></td>
@@ -208,13 +208,13 @@ export default function SchemaManager() {
           )}
 
           {diff?.wrongTypes?.length > 0 && (
-            <Card title={`Type Mismatches (${diff.wrongTypes.length})`} tone="red" style={{ marginBottom: 16 }}>
+            <Card title={`Type Mismatches (${diff.wrongTypes.length})`} tone="red" className="mb-16">
               <table className="table">
                 <thead><tr><th>Table</th><th>Column</th><th>Expected</th><th>Actual</th><th>Action</th></tr></thead>
                 <tbody>
                   {diff.wrongTypes.map((t) => (
                     <tr key={`${t.collection}.${t.column}`}>
-                      <td style={{ fontWeight: 600 }}>{t.collection}</td>
+                      <td className="fw-600">{t.collection}</td>
                       <td><code>{t.column}</code></td>
                       <td><Badge tone="green">{t.expected}</Badge></td>
                       <td><Badge tone="red">{t.actual}</Badge></td>
@@ -227,13 +227,13 @@ export default function SchemaManager() {
           )}
 
           {diff?.missingIndexes?.length > 0 && (
-            <Card title={`Missing Indexes (${diff.missingIndexes.length})`} tone="green" style={{ marginBottom: 16 }}>
+            <Card title={`Missing Indexes (${diff.missingIndexes.length})`} tone="green" className="mb-16">
               <table className="table">
                 <thead><tr><th>Table</th><th>Column</th><th>Action</th></tr></thead>
                 <tbody>
                   {diff.missingIndexes.map((ix) => (
                     <tr key={`${ix.collection}.${ix.column}`}>
-                      <td style={{ fontWeight: 600 }}>{ix.collection}</td>
+                      <td className="fw-600">{ix.collection}</td>
                       <td><code>{ix.column}</code></td>
                       <td><Badge tone="green">Create Index</Badge></td>
                     </tr>
@@ -250,7 +250,7 @@ export default function SchemaManager() {
           )}
 
           {diff?.repairPlan?.length > 0 && (
-            <div className="form__actions" style={{ marginTop: 16 }}>
+            <div className="form__actions mt-16">
               <Button icon="check" variant="primary" loading={repairing} onClick={runRepair}>
                 Sync Missing Tables ({diff.repairPlan.filter((a) => a.action === 'createTable').length})
               </Button>
@@ -274,7 +274,7 @@ export default function SchemaManager() {
                   const fieldCount = Object.keys(s.fields || {}).length;
                   return (
                     <tr key={s.collection}>
-                      <td style={{ fontWeight: 600 }}>{s.collection}</td>
+                      <td className="fw-600">{s.collection}</td>
                       <td>{s.label || '—'}</td>
                       <td>{fieldCount}</td>
                       <td>{(s.required || []).length}</td>
@@ -301,12 +301,12 @@ export default function SchemaManager() {
               <thead><tr><th>Severity</th><th>Type</th><th>Collection</th><th>Detail</th></tr></thead>
               <tbody>
                 {health.issues.map((iss, i) => (
-                  <tr key={i}>
-                    <td><Badge tone={iss.severity === 'critical' ? 'red' : iss.severity === 'warn' ? 'amber' : 'grey'}>
-                      {iss.severity}
-                    </Badge></td>
-                    <td><code>{iss.type}</code></td>
-                    <td style={{ fontWeight: 600 }}>{iss.collection}</td>
+                    <tr key={i}>
+                      <td><Badge tone={iss.severity === 'critical' ? 'red' : iss.severity === 'warn' ? 'amber' : 'grey'}>
+                        {iss.severity}
+                      </Badge></td>
+                      <td><code>{iss.type}</code></td>
+                      <td className="fw-600">{iss.collection}</td>
                     <td style={{ fontSize: 12.5, color: 'var(--text-soft)' }}>{iss.detail}</td>
                   </tr>
                 ))}

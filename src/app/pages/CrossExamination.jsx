@@ -55,7 +55,7 @@ export default function CrossExamination() {
         <Card title="Witness Statement">
           <Field label="Witness Name"><Input value={witnessName} onChange={(e) => setWitnessName(e.target.value)} placeholder="e.g. PW-1 Ramesh Kumar" /></Field>
           <Field label="Statement / Examination-in-Chief">
-            <Textarea value={statement} onChange={(e) => setStatement(e.target.value)} style={{ minHeight: 240 }} placeholder="Paste the witness's chief examination or affidavit…" />
+            <Textarea value={statement} onChange={(e) => setStatement(e.target.value)} className="cross-exam__statement" placeholder="Paste the witness's chief examination or affidavit…" />
           </Field>
           <Button icon="mic" loading={busy} onClick={run} className="btn--block">Generate Question Banks</Button>
         </Card>
@@ -76,12 +76,12 @@ export default function CrossExamination() {
                 <EmptyState icon="mic" title="No questions in this bank." hint="The statement lacked triggers for this category." />
               ) : result.banks[tab].map((q, i) => (
                 <div key={i} className="qa-card">
-                  <div className="qa-card__q"><span style={{ color: 'var(--navy-700)', fontWeight: 800 }}>Q{i + 1}.</span> {q.q}</div>
+                  <div className="qa-card__q"><span className="cross-exam__q-num">Q{i + 1}.</span> {q.q}</div>
                   <div className="qa-card__p"><Icon name="target" size={12} /> {q.purpose}{q.anchor ? ` · ${q.anchor}` : ''}</div>
                 </div>
               ))}
               {result.aiHints && (
-                <div className="alert alert--info" style={{ marginTop: 14 }}>
+                <div className="alert alert--info cross-exam__hints">
                   <Icon name="bolt" size={16} /><div><strong>Themes:</strong> {result.aiHints}</div>
                 </div>
               )}

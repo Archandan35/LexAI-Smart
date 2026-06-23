@@ -47,11 +47,11 @@ export default function CitationVerify() {
           </Field>
           <Button icon="shield" loading={busy} onClick={onVerify} className="btn--block">Verify</Button>
 
-          <div style={{ marginTop: 18 }}>
+          <div className="citation-verify__checks">
             {CHECKS.map((c) => {
               const passed = result?.checks?.[c.key];
               return (
-                <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
+                <div key={c.key} className="citation-verify__check-row">
                   <span style={{
                     width: 22, height: 22, borderRadius: 6, display: 'grid', placeItems: 'center',
                     background: result ? (passed ? 'var(--green-soft)' : 'var(--red-soft)') : 'var(--surface-2)',
@@ -59,7 +59,7 @@ export default function CitationVerify() {
                   }}>
                     <Icon name={result ? (passed ? 'check' : 'close') : 'alert'} size={13} />
                   </span>
-                  <span style={{ fontSize: 13.5 }}>{c.label}</span>
+                  <span className="citation-verify__check-label">{c.label}</span>
                 </div>
               );
             })}
@@ -72,11 +72,11 @@ export default function CitationVerify() {
           )}
           {result && (
             <>
-              <div className={`alert ${verified ? 'alert--success' : 'alert--danger'}`} style={{ marginBottom: 16 }}>
+              <div className={`alert ${verified ? 'alert--success' : 'alert--danger'} alert--mb`}>
                 <Icon name={verified ? 'check' : 'alert'} size={18} />
                 <div>
                   <strong>{verified ? 'Verified authority' : MESSAGES.noPrecedent}</strong>
-                  <div style={{ fontSize: 12.5, marginTop: 2 }}>
+                  <div className="citation-verify__result-sub">
                     {verified
                       ? 'This judgment exists in the authoritative index and is safe to rely on.'
                       : 'No matching judgment was found. Do not cite this — it may be fabricated or mis-stated.'}

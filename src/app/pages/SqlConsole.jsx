@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -10,21 +10,7 @@ import PermissionGate from '@/components/PermissionGate.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { databaseDdlService } from '@/services/databaseDdlService.js';
 import { AllowlistEngine } from '@/core/AllowlistEngine.js';
-
-const STORAGE_KEY = 'lexai_sql_history';
-
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-}
-
-function saveHistory(entry) {
-  try {
-    const h = loadHistory();
-    h.unshift({ ...entry, ts: Date.now() });
-    if (h.length > 50) h.length = 50;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
-  } catch { /* skip */ }
-}
+import { settingsLogic } from '@/logic/settingsLogic.js';
 
 export default function SqlConsole() {
   const toast = useToast();
@@ -32,8 +18,15 @@ export default function SqlConsole() {
   const [validation, setValidation] = useState(null);
   const [results, setResults] = useState(null);
   const [busy, setBusy] = useState('');
-  const [history, setHistory] = useState(loadHistory());
+  const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const res = await settingsLogic.loadHistory();
+      if (res.ok) setHistory(res.data);
+    })();
+  }, []);
 
   const onValidate = () => {
     if (!sql.trim()) { setValidation(null); return; }
@@ -52,13 +45,13 @@ export default function SqlConsole() {
     setBusy('');
     if (res.ok) {
       setResults(res.data);
-      saveHistory({ sql: sql.substring(0, 500), ok: true, count: res.data.statementCount });
-      setHistory(loadHistory());
+      const updated = await settingsLogic.saveHistory({ sql: sql.substring(0, 500), ok: true, count: res.data.statementCount });
+      if (updated.ok) setHistory(updated.data);
       toast.push(`${res.data.statementCount} statement(s) executed.`, 'success');
     } else {
       setResults({ error: res.error });
-      saveHistory({ sql: sql.substring(0, 500), ok: false, error: res.error });
-      setHistory(loadHistory());
+      const updated = await settingsLogic.saveHistory({ sql: sql.substring(0, 500), ok: false, error: res.error });
+      if (updated.ok) setHistory(updated.data);
       toast.push(res.error, 'error');
     }
   };
@@ -108,7 +101,7 @@ export default function SqlConsole() {
             onChange={(e) => { setSql(e.target.value); setValidation(null); }}
             placeholder={`-- Enter safe DDL statements here\nCREATE TABLE IF NOT EXISTS "my_table" (\n  "id" uuid PRIMARY KEY,\n  "name" text\n);\n\n-- Or validate first, then execute`}
             rows={12}
-            style={{ fontFamily: "'Consolas', 'Monaco', monospace", fontSize: 12.5, lineHeight: 1.6, minHeight: 240 }}
+            className="sql-console__textarea"
           />
         </Field>
 
@@ -123,7 +116,7 @@ export default function SqlConsole() {
 
       {validation && !validation.valid && (
         <Card title="Validation Errors" tone="amber" className="sc-card">
-          <div style={{ marginBottom: 10 }}>
+          <div className="mb-10">
             <Badge tone="red">{validation.errors.length} error(s)</Badge>
             {' '}<Badge tone="green">{validCount} valid</Badge>
             {' '}<Badge tone="grey">{validation.statementCount} statement(s)</Badge>
@@ -157,7 +150,7 @@ export default function SqlConsole() {
             <div className="alert alert--danger"><Icon name="alert" size={15} /><span>{results.error}</span></div>
           ) : (
             <div>
-              <div style={{ marginBottom: 10 }}>
+              <div className="mb-10">
                 <Badge tone="green">{results.allOk ? 'All passed' : 'Some failed'}</Badge>
                 {' '}<Badge tone="grey">{results.results.length}/{results.statementCount} executed</Badge>
               </div>
@@ -182,11 +175,11 @@ export default function SqlConsole() {
       )}
 
       {showHistory && (
-        <Card title="SQL History" sub="Last 50 executed statements (stored locally)" className="sc-card">
+        <Card title="SQL History" sub="Last 50 executed statements (stored in database)" className="sc-card">
           {history.length === 0 ? (
             <EmptyState icon="history" title="No history yet" hint="Executed SQL statements will appear here." />
           ) : (
-            <div className="table-scroll" style={{ maxHeight: 300, overflowY: 'auto' }}>
+            <div className="table-scroll sql-console__history-scroll">
               <table className="table">
                 <thead><tr><th>Status</th><th>SQL</th><th>Time</th><th></th></tr></thead>
                 <tbody>

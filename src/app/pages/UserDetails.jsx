@@ -67,7 +67,7 @@ export default function UserDetails() {
       />
 
       <div className="grid-sidebar">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="user-details__col">
           <Card title="Account">
             <Field label="Full name"><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} disabled={!can('users.edit')} /></Field>
             <Field label="Email"><Input value={edit.email} onChange={(e) => setEdit({ ...edit, email: e.target.value })} disabled={!can('users.edit')} /></Field>

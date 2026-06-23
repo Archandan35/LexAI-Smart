@@ -62,7 +62,7 @@ export default function TimelineBuilder() {
       />
 
       <div className="grid-sidebar">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex-col gap-16">
           <Card title="From Case Vault">
             <Field label="Build from a case's documents"><CaseSelect value={caseId} onChange={setCaseId} /></Field>
             <Button icon="folder" loading={busy} onClick={fromCase} className="btn--block">Build from Case</Button>
@@ -70,7 +70,7 @@ export default function TimelineBuilder() {
           <Card title="From Upload"><FileDrop onFile={fromFile} hint="OCR-driven date extraction" /></Card>
           <Card title="From Text">
             <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste a narrative with dates…" />
-            <Button variant="ghost" icon="clock" onClick={fromText} className="btn--block" style={{ marginTop: 10 }}>Build from Text</Button>
+            <Button variant="ghost" icon="clock" onClick={fromText} className="btn--block mt-10">Build from Text</Button>
           </Card>
         </div>
 

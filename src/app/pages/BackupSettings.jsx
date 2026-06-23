@@ -48,7 +48,7 @@ export default function BackupSettings() {
             </Select>
           </Field>
           <div className="kv"><span>Auto cleanup</span><Toggle checked={s.autoCleanup} disabled={readOnly} onChange={(v) => set({ autoCleanup: v })} /></div>
-          <div className="kv"><span>Protected backups</span><span style={{ color: 'var(--text-soft)' }}>Never auto-deleted</span></div>
+          <div className="kv"><span>Protected backups</span><span className="backup-settings__soft-text">Never auto-deleted</span></div>
           <Field label="Storage limit (MB)" hint="Soft limit shown on the dashboard.">
             <Input type="number" min="1" value={s.storageLimitMb} disabled={readOnly} onChange={(e) => set({ storageLimitMb: Number(e.target.value) })} />
           </Field>
@@ -68,14 +68,14 @@ export default function BackupSettings() {
           <div className="kv"><span>Compression <span className="muted">(simulated)</span></span><Toggle checked={s.compression} disabled={readOnly} onChange={(v) => set({ compression: v })} /></div>
           <div className="kv"><span>Encryption <span className="muted">(simulated)</span></span><Toggle checked={s.encryption} disabled={readOnly} onChange={(v) => set({ encryption: v })} /></div>
           <div className="kv"><span>Notifications</span><Toggle checked={s.notifications} disabled={readOnly} onChange={(v) => set({ notifications: v })} /></div>
-          <div className="alert alert--warn" style={{ marginTop: 12, fontSize: 12 }}>
+          <div className="alert alert--warn backup-settings__warn-alert">
             Scheduling is configured here but, with no backend, automated runs require the app to be open. Compression/encryption are flags only in this demo.
           </div>
         </Card>
       </div>
 
       {!readOnly && (
-        <div style={{ marginTop: 18, display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="backup-settings__actions">
           <Button variant="primary" icon="save" loading={busy} onClick={save}>Save settings</Button>
         </div>
       )}
