@@ -62,6 +62,7 @@ async function grantCollectionAccess(db, collection) {
     drop policy if exists "${table}_anon_all" on "${table}";
     create policy "${table}_anon_all" on "${table}" for all to anon using (true) with check (true);
     grant insert, select, update, delete on table "${table}" to anon;
+    create table if not exists "_sequences" (id text primary key, entity text, current numeric default 0, "createdAt" timestamptz, "updatedAt" timestamptz);
     alter table if exists "_sequences" enable row level security;
     drop policy if exists "_sequences_anon_all" on "_sequences";
     create policy "_sequences_anon_all" on "_sequences" for all to anon using (true) with check (true);

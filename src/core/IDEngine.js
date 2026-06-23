@@ -70,6 +70,14 @@ function pad(num, len = 5) {
   return String(num).padStart(len, '0');
 }
 
+// Client-side fallback counter per entity — used when _sequences is unavailable
+let _fallbackSeq = {};
+
+function nextFallback(entityName) {
+  _fallbackSeq[entityName] = (_fallbackSeq[entityName] || 0) + 1;
+  return _fallbackSeq[entityName];
+}
+
 export const IDEngine = {
   // Generate a new LexAI business ID for the given entity.
   // Tries the database next_lx_id RPC first, falls back to client-side.
@@ -95,7 +103,7 @@ export const IDEngine = {
       seq = null;
       await ensurePrefixRegistry(provider);
     }
-    const nextVal = seq ? (seq.current || 0) + 1 : 1;
+    const nextVal = seq ? (seq.current || 0) + 1 : nextFallback(entityName);
     try {
       if (seq) {
         await provider.update(LEGACY_SEQUENCE_COLLECTION, entityName, { current: nextVal, updatedAt: new Date().toISOString() });
@@ -108,7 +116,7 @@ export const IDEngine = {
         });
       }
     } catch {
-      // Non-fatal
+      // Non-fatal — fallback counter keeps session-unique IDs
     }
     return `LX-${def.prefix}-${pad(nextVal)}`;
   },
