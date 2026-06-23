@@ -57,6 +57,45 @@ export const courtLogic = {
       return ok(true);
     } catch (err) { return fail(err); }
   },
+
+  async bulkCreate(records) {
+    try {
+      const existing = await courtService.list();
+      const existingNames = new Set(existing.map((c) => c.name.toLowerCase()));
+      let maxOrder = existing.reduce((m, c) => Math.max(m, c.display_order ?? 0), 0);
+
+      const pending = records.map((r) => {
+        const name = (r.name || '').trim();
+        if (!name) return null;
+        if (existingNames.has(name.toLowerCase())) return null;
+        existingNames.add(name.toLowerCase());
+        maxOrder += 1;
+        return { name, display_order: maxOrder, status: 'Active', createdAt: nowISO() };
+      }).filter(Boolean);
+
+      if (!pending.length) return ok({ count: 0, items: [] });
+
+      const created = [];
+      const batchSize = 5;
+      for (let i = 0; i < pending.length; i += batchSize) {
+        const batch = pending.slice(i, i + batchSize);
+        await Promise.all(batch.map((d) => courtService.create(d).then((item) => created.push(item)).catch(() => {})));
+      }
+      return ok({ count: created.length, items: created });
+    } catch (err) { return fail(err); }
+  },
+
+  async bulkRemove(ids) {
+    try {
+      let deleted = 0;
+      const batchSize = 5;
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batch = ids.slice(i, i + batchSize);
+        await Promise.all(batch.map((id) => courtService.remove(id).then(() => { deleted += 1; }).catch(() => {})));
+      }
+      return ok({ deleted, failed: ids.length - deleted });
+    } catch (err) { return fail(err); }
+  },
 };
 
 export default courtLogic;

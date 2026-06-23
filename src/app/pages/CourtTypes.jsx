@@ -39,16 +39,13 @@ export default function CourtTypes() {
     try {
       const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
       if (!lines.length) { toast.push('Paste at least one court name.', 'error'); return; }
-      let added = 0; let skipped = 0;
-      for (const name of lines) {
-        console.log('Bulk creating court:', { name });
-        // eslint-disable-next-line no-await-in-loop
-        const res = await courtLogic.create({ name });
-        if (res.ok) added += 1; else skipped += 1;
-      }
+      const records = lines.map((name) => ({ name }));
+      console.log('Bulk creating courts:', records);
+      const res = await courtLogic.bulkCreate(records);
+      console.log('Bulk create result:', res);
       setBulkText('');
-      toast.push(`${added} court(s) added.${skipped ? ` ${skipped} skipped (already exist).` : ''}`, added ? 'success' : 'info');
-      await refresh();
+      if (res.ok) { toast.push(`${res.data.count} court(s) added.`, 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Bulk create exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk add failed.', 'error'); }
   };
 
@@ -77,13 +74,9 @@ export default function CourtTypes() {
     try {
       if (!selected.size) return;
       if (!window.confirm(`Delete ${selected.size} court(s)?`)) return;
-      for (const id of selected) {
-        console.log('Bulk removing court:', { id });
-        // eslint-disable-next-line no-await-in-loop
-        await courtLogic.remove(id);
-      }
+      const res = await courtLogic.bulkRemove([...selected]);
       setSelected(new Set());
-      toast.push(`${selected.size} court(s) deleted.`, 'success');
+      toast.push(`${res.data?.deleted || selected.size} court(s) deleted.`, 'success');
       await refresh();
     } catch (err) { console.error('Bulk remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk delete failed.', 'error'); }
   };

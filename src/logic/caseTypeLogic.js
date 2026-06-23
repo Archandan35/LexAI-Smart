@@ -73,10 +73,27 @@ export const caseTypeLogic = {
 
   async bulkCreate(records) {
     try {
+      const existing = await caseTypeService.list();
+      const existingCodes = new Set(existing.map((t) => t.short_code.toLowerCase()));
+      let maxOrder = existing.reduce((m, t) => Math.max(m, t.display_order ?? 0), 0);
+
+      const pending = records.map((r) => {
+        const name = (r.name || '').trim();
+        const shortCode = (r.short_code || '').trim();
+        if (!name || !shortCode) return null;
+        if (existingCodes.has(shortCode.toLowerCase())) return null;
+        existingCodes.add(shortCode.toLowerCase());
+        maxOrder += 1;
+        return { name, short_code: shortCode, display_order: maxOrder, status: 'Active', createdAt: nowISO() };
+      }).filter(Boolean);
+
+      if (!pending.length) return ok({ count: 0, items: [] });
+
       const created = [];
-      for (const r of records) {
-        const res = await this.create(r);
-        if (res.ok) created.push(res.data);
+      const batchSize = 5;
+      for (let i = 0; i < pending.length; i += batchSize) {
+        const batch = pending.slice(i, i + batchSize);
+        await Promise.all(batch.map((d) => caseTypeService.create(d).then((item) => created.push(item)).catch(() => {})));
       }
       return ok({ count: created.length, items: created });
     } catch (err) { return fail(err); }
@@ -85,16 +102,12 @@ export const caseTypeLogic = {
   async bulkRemove(ids) {
     try {
       let deleted = 0;
-      let failed = 0;
-      for (const id of ids) {
-        try {
-          await caseTypeService.remove(id);
-          deleted += 1;
-        } catch {
-          failed += 1;
-        }
+      const batchSize = 5;
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batch = ids.slice(i, i + batchSize);
+        await Promise.all(batch.map((id) => caseTypeService.remove(id).then(() => { deleted += 1; }).catch(() => {})));
       }
-      return ok({ deleted, failed });
+      return ok({ deleted, failed: ids.length - deleted });
     } catch (err) { return fail(err); }
   },
 };

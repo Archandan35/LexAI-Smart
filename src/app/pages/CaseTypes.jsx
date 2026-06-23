@@ -8,7 +8,8 @@ import { Input, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
-function CaseTypeRow({ type, editId, editName, onStartEdit, onSaveEdit, onCancelEdit, onDelete, onToggle, onSelect, selected, search, dragHandlers, dragRef, isDragging }) {
+function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEditCodeChange, onSaveEdit, onCancelEdit, onDelete, onToggle, onSelect, selected, search, dragHandlers, dragRef, isDragging, onStartEdit }) {
+  const isEditing = editId === type.id;
   return (
     <tr
       className={`case-types__row ${isDragging ? 'case-types__row--dragging' : ''}`}
@@ -25,14 +26,18 @@ function CaseTypeRow({ type, editId, editName, onStartEdit, onSaveEdit, onCancel
         <span className="case-types__drag-handle">⠿</span>
       </td>
       <td className="case-types__cell">
-        {editId === type.id ? (
-          <Input value={editName} autoFocus onChange={(e) => onStartEdit(type.id, e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSaveEdit()} />
+        {isEditing ? (
+          <Input value={editName} autoFocus onChange={(e) => onEditNameChange(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSaveEdit()} />
         ) : (
           <span style={{ fontWeight: 600 }}>{type.name}</span>
         )}
       </td>
       <td className="case-types__cell">
-        <code className="case-types__code">{type.short_code}</code>
+        {isEditing ? (
+          <Input value={editCode} onChange={(e) => onEditCodeChange(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSaveEdit()} />
+        ) : (
+          <code className="case-types__code">{type.short_code}</code>
+        )}
       </td>
       <td className="case-types__cell">{type.display_order}</td>
       <td className="case-types__cell">
@@ -42,14 +47,14 @@ function CaseTypeRow({ type, editId, editName, onStartEdit, onSaveEdit, onCancel
       </td>
       <td className="case-types__cell case-types__cell--actions">
         <div className="row-actions">
-          {editId === type.id ? (
+          {isEditing ? (
             <>
               <button className="iconbtn" title="Save" onClick={onSaveEdit}><Icon name="check" size={15} /></button>
               <button className="iconbtn" title="Cancel" onClick={onCancelEdit}><Icon name="close" size={15} /></button>
             </>
           ) : (
             <>
-              <button className="iconbtn" title="Edit" onClick={() => { onStartEdit(type.id, type.name); }}><Icon name="edit" size={15} /></button>
+              <button className="iconbtn" title="Edit" onClick={() => onStartEdit(type)}><Icon name="edit" size={15} /></button>
               <button className="iconbtn" title="Toggle status" onClick={() => onToggle(type)}>
                 {type.status === 'Active' ? <Icon name="check" size={15} /> : <span style={{ fontSize: 15 }}>▶</span>}
               </button>
@@ -73,6 +78,7 @@ export default function CaseTypes() {
   const [bulkText, setBulkText] = useState('');
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState('');
+  const [editCode, setEditCode] = useState('');
   const [selected, setSelected] = useState(new Set());
   const [dragIdx, setDragIdx] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
@@ -100,34 +106,32 @@ export default function CaseTypes() {
     try {
       const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
       if (!lines.length) { toast.push('Paste at least one case type (name, code per line).', 'error'); return; }
-      let added = 0; let skipped = 0;
-      for (const line of lines) {
+      const records = lines.map((line) => {
         const parts = line.split(',').map((s) => s.trim());
         const name = parts[0];
         const code = parts[1] || name.slice(0, 6).toUpperCase();
-        if (!name) continue;
-        console.log('Bulk creating case type:', { name, short_code: code });
-        // eslint-disable-next-line no-await-in-loop
-        const res = await caseTypeLogic.create({ name, short_code: code });
-        if (res.ok) added += 1; else skipped += 1;
-      }
+        return { name, short_code: code };
+      }).filter((r) => r.name);
+      console.log('Bulk creating case types:', records);
+      const res = await caseTypeLogic.bulkCreate(records);
+      console.log('Bulk create result:', res);
       setBulkText('');
-      toast.push(`${added} case type(s) added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
-      await refresh();
+      if (res.ok) { toast.push(`${res.data.count} case type(s) added.`, 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Bulk create exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk add failed.', 'error'); }
   };
 
   const saveEdit = async () => {
     try {
-      if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
+      if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
       const type = caseTypes.find((t) => t.id === editId);
       if (!type) return;
-      console.log('Updating case type:', { id: editId, name: editName });
-      const res = await caseTypeLogic.update(editId, { name: editName, short_code: type.short_code, display_order: type.display_order, status: type.status });
+      console.log('Updating case type:', { id: editId, name: editName, short_code: editCode });
+      const res = await caseTypeLogic.update(editId, { name: editName, short_code: editCode, display_order: type.display_order, status: type.status });
       console.log('Update result:', res);
-      if (res.ok) { setEditId(null); toast.push('Case type renamed.', 'success'); await refresh(); }
+      if (res.ok) { setEditId(null); toast.push('Case type updated.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
-    } catch (err) { console.error('Update exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to rename case type.', 'error'); }
+    } catch (err) { console.error('Update exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to update case type.', 'error'); }
   };
 
   const handleToggle = useCallback(async (type) => {
@@ -277,7 +281,10 @@ export default function CaseTypes() {
                 type={type}
                 editId={editId}
                 editName={editName}
-                onStartEdit={(id, val) => { setEditId(id); setEditName(val); }}
+                editCode={editCode}
+                onEditNameChange={setEditName}
+                onEditCodeChange={setEditCode}
+                onStartEdit={(t) => { setEditId(t.id); setEditName(t.name); setEditCode(t.short_code); }}
                 onSaveEdit={saveEdit}
                 onCancelEdit={() => setEditId(null)}
                 onDelete={handleDelete}
