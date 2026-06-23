@@ -54,6 +54,14 @@ async function withProvisioning(provider, collection, fn) {
   }
 }
 
+async function grantCollectionAccess(db, collection) {
+  if (typeof db.execSql !== 'function') return false;
+  const table = EntityRegistry.providerTable(collection);
+  const sql = `GRANT ALL ON "${table}" TO anon, authenticated;`;
+  const res = await db.execSql(sql);
+  return res.ok;
+}
+
 export function createRepository(collection) {
   const entityName = collection;
   const providerName = () => EntityRegistry.providerTable(entityName);
@@ -87,6 +95,7 @@ export function createRepository(collection) {
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerRecord);
+        await grantCollectionAccess(provider, entityName);
         const result = await provider.create(providerName(), providerRecord);
         return FieldMapper.toLexAI(entityName, result);
       }
@@ -102,6 +111,7 @@ export function createRepository(collection) {
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerPatch);
+        await grantCollectionAccess(provider, entityName);
         const result = await provider.update(providerName(), id, providerPatch);
         return FieldMapper.toLexAI(entityName, result);
       }
