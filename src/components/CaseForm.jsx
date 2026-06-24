@@ -56,6 +56,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     if (initial?.wsFilingDate && !base.ws_filing_date) base.ws_filing_date = initial.wsFilingDate;
     if (initial?.judge && !base.judge) base.judge = initial.judge;
     if (initial?.presiding_officer && !base.judge) base.judge = initial.presiding_officer;
+    if (!base.court_name && initial?.court) base.court_name = initial.court;
     return base;
   });
 
@@ -76,10 +77,10 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   }, [form.court_hierarchy, form.court_name, hierarchyOptions]);
 
   useEffect(() => {
-    if (autoCourtName && !form.court_name) {
+    if (form.court_hierarchy && autoCourtName) {
       setField('court_name', autoCourtName);
     }
-  }, [autoCourtName]);
+  }, [autoCourtName, form.court_hierarchy]);
 
   const submit = () => {
     const payload = { ...form };
@@ -89,21 +90,25 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     onSubmit?.(payload);
   };
 
-  const sel = (label, value, options, onChange, placeholder) => (
-    <div className="select-with-add">
-      <select
-        className="field__input"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ flex: 1 }}
-      >
-        <option value="">{placeholder || `Select ${label.toLowerCase()}…`}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    </div>
-  );
+  const sel = (label, value, options, onChange, placeholder) => {
+    const hasValue = value && !options.some((o) => o.value === value);
+    const all = hasValue ? [{ value, label: value }, ...options] : options;
+    return (
+      <div className="select-with-add">
+        <select
+          className="select"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ flex: 1 }}
+        >
+          <option value="">{placeholder || `Select ${label.toLowerCase()}…`}</option>
+          {all.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -163,7 +168,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           </Field>
         </div>
         <Field label="Court Name">
-          <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Auto-computed from hierarchy" readOnly={!form.court_hierarchy} />
+          <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Auto-computed from hierarchy" readOnly={!!form.court_hierarchy} />
         </Field>
       </SectionCard>
 

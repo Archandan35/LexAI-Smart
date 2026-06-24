@@ -6,12 +6,12 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { contactLogic } from '@/logic/contactLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
-
-const CONTACT_TYPES = ['Advocate', 'Judge', 'Court Staff', 'Client', 'Other'];
+import { useContactTypes } from '@/hooks/useContactTypes.js';
 
 function ContactForm({ load, setShowForm }) {
   const toast = useToast();
-  const [form, setForm] = useState({ name: '', type: 'Advocate', phone: '', email: '', organization: '' });
+  const { types: contactTypes } = useContactTypes();
+  const [form, setForm] = useState({ name: '', type: contactTypes[0] || 'Advocate', phone: '', email: '', organization: '' });
   const add = async () => {
     if (!form.name?.trim()) { toast.error('Name is required.'); return; }
     const r = await contactLogic.create(form);
@@ -21,7 +21,7 @@ function ContactForm({ load, setShowForm }) {
   return (
     <div className="card card--inset">
       <Field label="Name"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
-      <Field label="Type"><select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{CONTACT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
+      <Field label="Type"><select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{contactTypes.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
       <Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
       <Field label="Email"><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
       <Field label="Organization"><Input value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} /></Field>

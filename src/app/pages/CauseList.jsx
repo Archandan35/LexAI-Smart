@@ -10,7 +10,7 @@ import CaseSelect from '@/components/CaseSelect.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
-import { HEARING_STATUS } from '@/constants/courts.js';
+import { useHearingStatuses } from '@/hooks/useHearingStatuses.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { templateLogic } from '@/logic/templateLogic.js';
@@ -21,13 +21,14 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, formatDateTime } from '@/utils/format.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
 
-const EMPTY_HEARING = { caseId: '', date: '', status: HEARING_STATUS[0], purpose: '', notes: '', docRef: null, docName: '' };
+const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', notes: '', docRef: null, docName: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
 export default function CauseList() {
   const toast = useToast();
   const { user } = useAuth();
   const { cases, ready, refreshCases } = useAppData();
+  const { statuses: hearingStatuses } = useHearingStatuses();
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState('list'); // list | history | templates | timeline
   const [open, setOpen] = useState(false);
@@ -112,6 +113,8 @@ export default function CauseList() {
         filing_date: '2015-12-09',
         next_hearing: '2026-07-09',
         status: 'Active',
+        priority: 'Normal',
+        court_name: 'Athgarh',
       }, user);
 
       const case2 = await caseLogic.create({
@@ -125,6 +128,8 @@ export default function CauseList() {
         filing_date: '2024-01-12',
         next_hearing: '2026-06-15',
         status: 'Active',
+        priority: 'Normal',
+        court_name: 'Cuttack',
       }, user);
 
       const case3 = await caseLogic.create({
@@ -138,6 +143,8 @@ export default function CauseList() {
         filing_date: '2017-03-05',
         next_hearing: '2026-06-17',
         status: 'Active',
+        priority: 'High',
+        court_name: 'Cuttack',
       }, user);
 
       const case4 = await caseLogic.create({
@@ -151,6 +158,8 @@ export default function CauseList() {
         filing_date: '2023-06-20',
         next_hearing: '2026-06-20',
         status: 'Active',
+        priority: 'Critical',
+        court_name: 'Cuttack',
       }, user);
 
       const case5 = await caseLogic.create({
@@ -164,6 +173,8 @@ export default function CauseList() {
         filing_date: '2025-01-01',
         next_hearing: '2026-06-22',
         status: 'Active',
+        priority: 'Normal',
+        court_name: 'Athgarh',
       }, user);
 
       // 2. Seed Hearings for Case 1 (CS (I) No. 392 of 2015)
@@ -525,7 +536,7 @@ export default function CauseList() {
             {/* Status dropdown */}
             <select className="cause-list__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="">All Status</option>
-              {HEARING_STATUS.map(st => (
+              {hearingStatuses.map(st => (
                 <option key={st} value={st}>{st}</option>
               ))}
             </select>
@@ -1097,7 +1108,8 @@ export default function CauseList() {
               <Field label="Status">
                 <div className="hearing-modal__status-row">
                   <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                    {HEARING_STATUS.map((s) => <option key={s}>{s}</option>)}
+                    <option value="">Select status…</option>
+                    {hearingStatuses.map((s) => <option key={s}>{s}</option>)}
                   </Select>
                   <button className="hearing-modal__gear-btn" title="Manage hearing statuses">
                     <Icon name="gear" size={15} />

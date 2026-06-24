@@ -638,6 +638,7 @@ select {
 
 .input,
 .textarea,
+.input,
 .select {
   width: 100%;
   border: 1px solid var(--border-strong);

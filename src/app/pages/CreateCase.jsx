@@ -125,12 +125,7 @@ const ENTITY_CONFIGS = {
   Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name', required: false }, { key: 'email', label: 'Email', placeholder: 'email@example.com', required: false }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210', required: false }, { key: 'address', label: 'Address', placeholder: 'Enter address', required: false }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: false }], defaults: {} },
 };
 
-const PRIORITY_OPTIONS = [
-  { key: 'Low', cls: 'priority-chip--low' },
-  { key: 'Medium', cls: 'priority-chip--medium' },
-  { key: 'High', cls: 'priority-chip--high' },
-  { key: 'Urgent', cls: 'priority-chip--urgent' },
-];
+
 
 /* ================================================================
    Main component
@@ -461,17 +456,18 @@ export default function CreateCase() {
             <div>
               <Select value={form.priority} onChange={setFieldEvent('priority')} style={{ marginBottom: 10 }}>
                 <option value="">Select priority</option>
-                {PRIORITY_OPTIONS.map((p) => <option key={p.key} value={p.key}>{p.key}</option>)}
+                {priorities.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}
               </Select>
               <div className="priority-chips">
-                {PRIORITY_OPTIONS.map((p) => (
+                {priorities.map((p) => (
                   <button
-                    key={p.key}
+                    key={p.name}
                     type="button"
-                    className={`priority-chip ${p.cls}${form.priority === p.key ? ' priority-chip--selected' : ''}`}
-                    onClick={() => setField('priority', p.key)}
+                    className={`priority-chip${form.priority === p.name ? ' priority-chip--selected' : ''}`}
+                    style={{ '--chip-color': p.color }}
+                    onClick={() => setField('priority', p.name)}
                   >
-                    {p.key}
+                    {p.name}
                   </button>
                 ))}
               </div>

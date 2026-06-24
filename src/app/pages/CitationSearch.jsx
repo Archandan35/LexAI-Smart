@@ -7,14 +7,15 @@ import GuardrailBanner from '@/components/GuardrailBanner.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
-import { ACTS } from '@/constants/acts.js';
 import { citationLogic } from '@/logic/citationLogic.js';
 import { MESSAGES } from '@/constants/messages.js';
 import { useCourts } from '@/hooks/useCourts.js';
+import { useActs } from '@/hooks/useActs.js';
 
 // Citation Search — implements Facts→Issue→Search→Retrieve→Verify→Rank→Display.
 export default function CitationSearch() {
   const { courtNames } = useCourts();
+  const { acts } = useActs();
   const [q, setQ] = useState({ facts: '', issue: '', keywords: '', act: '', section: '', court: '' });
   const [state, setState] = useState({ loading: false, results: null, issues: [], message: null });
 
@@ -43,7 +44,7 @@ export default function CitationSearch() {
             <Field label="Act">
               <Select value={q.act} onChange={(e) => setQ({ ...q, act: e.target.value })}>
                 <option value="">Any Act</option>
-                {ACTS.map((a) => <option key={a.id} value={a.id}>{a.short}</option>)}
+                {acts.map((a) => <option key={a.id} value={a.id}>{a.short_code || a.title}</option>)}
               </Select>
             </Field>
             <Field label="Section"><Input value={q.section} onChange={(e) => setQ({ ...q, section: e.target.value })} placeholder="e.g. 11" /></Field>

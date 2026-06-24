@@ -11,13 +11,14 @@ import { caseHistoryLogic } from '@/logic/caseHistoryLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
-import { HEARING_STATUS } from '@/constants/courts.js';
+import { useHearingStatuses } from '@/hooks/useHearingStatuses.js';
 
 // CaseHistory — scrollable legal-proceedings history with full untruncated text,
 // expand/collapse, search, date-range filter, asc/desc, and cause-list import.
 export default function CaseHistory({ caseId, onChanged }) {
   const toast = useToast();
   const { user } = useAuth();
+  const { statuses: hearingStatuses } = useHearingStatuses();
   const [items, setItems] = useState([]);
   const [order, setOrder] = useState('desc');
   const [search, setSearch] = useState('');
@@ -106,7 +107,7 @@ export default function CaseHistory({ caseId, onChanged }) {
         footer={<><Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button><Button icon="save" onClick={add}>Add</Button></>}>
         <div className="input-row">
           <Field label="Date"><Input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} /></Field>
-          <Field label="Status"><Select value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value })}><option value="">—</option>{HEARING_STATUS.map((s) => <option key={s}>{s}</option>)}</Select></Field>
+          <Field label="Status"><Select value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value })}><option value="">—</option>{hearingStatuses.map((s) => <option key={s}>{s}</option>)}</Select></Field>
         </div>
         <Field label="Full text" hint="Stored exactly as entered — no truncation."><Textarea value={draft.text} onChange={(e) => setDraft({ ...draft, text: e.target.value })} style={{ minHeight: 140 }} /></Field>
       </Modal>

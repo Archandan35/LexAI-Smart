@@ -20,16 +20,17 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate, formatDateTime } from '@/utils/format.js';
+import { usePriorities } from '@/hooks/usePriorities.js';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
-
-const PRIORITY_TONE = { Urgent: 'red', High: 'red', Medium: 'amber', Low: 'green' };
 
 export default function ManageCase() {
   const { id } = useParams();
   const nav = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const { priorities } = usePriorities();
+  const priorityTone = Object.fromEntries((priorities || []).map((p) => [p.name, p.color || 'grey']));
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
   const [tab, setTab] = useState('Overview');
@@ -108,7 +109,7 @@ export default function ManageCase() {
       <div className="case-detail__metrics">
         <Metric icon="target" label="Current Stage" value={c.stage || '—'} />
         <Metric icon="calendar" label="Next Hearing" value={formatDate(c.next_hearing)} />
-        <Metric icon="alert" label="Priority" value={<Badge tone={PRIORITY_TONE[c.priority] || 'grey'}>{c.priority || '—'}</Badge>} flag />
+        <Metric icon="alert" label="Priority" value={<Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority || '—'}</Badge>} flag />
         <Metric icon="file" label="Documents" value={vault.documents.length} />
         <Metric icon="list" label="Hearings" value={vault.hearings.length} />
         <Metric icon="notes" label="Notes" value={vault.notes.length} />
@@ -226,7 +227,7 @@ export default function ManageCase() {
               title="Documents"
               actions={<button className="linkbtn" onClick={() => setTab('Documents')}>View All</button>}
             >
-              {vault.documents.length === 0 ? (
+              {(vault.folders || []).filter((f) => f.kind === 'document').length === 0 && vault.documents.length === 0 ? (
                 <MiniEmpty
                   icon="folder"
                   title="No documents uploaded."
@@ -234,16 +235,19 @@ export default function ManageCase() {
                   action={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
                 />
               ) : (
-                vault.documents.slice(0, 4).map((d) => (
-                  <div className="list-row" key={d.id} onClick={() => setTab('Documents')}>
-                    <div className="list-row__icon"><Icon name="file" size={15} /></div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="list-row__title">{d.name}</div>
-                      <div className="list-row__meta">{formatDate(d.uploadedAt)}</div>
+                (vault.folders || []).filter((f) => f.kind === 'document').map((f) => {
+                  const count = vault.documents.filter((d) => d.folder === f.name).length;
+                  return (
+                    <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
+                      <div className="list-row__icon"><Icon name="folder" size={15} /></div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="list-row__title">{f.name}</div>
+                        <div className="list-row__meta">{count} document{count !== 1 ? 's' : ''}</div>
+                      </div>
+                      <Icon name="arrow" size={14} />
                     </div>
-                    <Icon name="arrow" size={14} />
-                  </div>
-                ))
+                  );
+                })
               )}
             </Card>
           </div>
@@ -276,7 +280,7 @@ export default function ManageCase() {
           <Card title="Case Tracking">
             <Row label="Current Stage" value={c.stage} />
             <Row label="Status" value={c.status} />
-            <Row label="Priority" value={c.priority ? <Badge tone={PRIORITY_TONE[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
+            <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
             <Row label="Filing Date" value={formatDate(c.filing_date)} />
             <Row label="Registration Date" value={formatDate(c.registration_date)} />
             <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />

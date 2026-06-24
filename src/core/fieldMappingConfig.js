@@ -35,6 +35,9 @@ const SCHEMAS = {
   bench_types: { ...COMMON },
   jurisdictions: { ...COMMON },
   court_hierarchy: { ...COMMON },
+  hearing_statuses: { ...COMMON },
+  acts: { ...COMMON },
+  contact_types: { ...COMMON },
 };
 
 export function configureFieldMappings() {

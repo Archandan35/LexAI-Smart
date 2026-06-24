@@ -44,6 +44,8 @@ import { PrecedentsSchema } from './precedents.schema.js';
 import { ReportsSchema } from './reports.schema.js';
 import { CaseStatusesSchema } from './case_statuses.schema.js';
 import { PrioritiesSchema } from './priorities.schema.js';
+import { HearingStatusesSchema } from './hearing_statuses.schema.js';
+import { ContactTypesSchema } from './contact_types.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -87,6 +89,8 @@ export const schemas = {
   reports: ReportsSchema,
   case_statuses: CaseStatusesSchema,
   priorities: PrioritiesSchema,
+  hearing_statuses: HearingStatusesSchema,
+  contact_types: ContactTypesSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in

@@ -6,6 +6,7 @@ export const ActsSchema = {
   fields: {
     id: 'string',
     title: 'string',
+    short_code: 'string',
     act_type: 'string',
     jurisdiction: 'string',
     year: 'number',
@@ -20,7 +21,7 @@ export const ActsSchema = {
   required: ['title'],
   defaults: { status: 'Active', sections_count: 0, amendments_count: 0, description: '' },
   relations: [],
-  indexes: ['title', 'act_type', 'jurisdiction', 'status'],
+  indexes: ['title', 'short_code', 'act_type', 'jurisdiction', 'status'],
 };
 
 export default ActsSchema;

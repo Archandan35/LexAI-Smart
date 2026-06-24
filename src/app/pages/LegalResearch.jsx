@@ -8,12 +8,13 @@ import GuardrailBanner from '@/components/GuardrailBanner.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import { Field, Input } from '@/components/Field.jsx';
-import { ACTS } from '@/constants/acts.js';
 import { researchLogic } from '@/logic/researchLogic.js';
+import { useActs } from '@/hooks/useActs.js';
 
 // Legal Research Workspace — statute-anchored, retrieval-only (never AI memory).
 export default function LegalResearch() {
-  const [actId, setActId] = useState('cpc');
+  const { acts } = useActs();
+  const [actId, setActId] = useState('');
   const [query, setQuery] = useState('');
   const [state, setState] = useState({ loading: false, data: null, message: null });
 
@@ -34,7 +35,7 @@ export default function LegalResearch() {
       <GuardrailBanner text="Research uses retrieval, not AI memory. Statutory positions must always be confirmed against the bare Act." />
 
       <div className="grid-3 mb-20">
-        {ACTS.map((a) => (
+        {acts.map((a) => (
           <div
             key={a.id}
             className={`folder ${actId === a.id ? '' : ''}`}
@@ -43,8 +44,8 @@ export default function LegalResearch() {
           >
             <div className="folder__icon"><Icon name="book" size={18} /></div>
             <div>
-              <div className="legal-research__folder-title">{a.short}</div>
-              <div className="folder__count">{a.label}</div>
+              <div className="legal-research__folder-title">{a.short_code || a.title}</div>
+              <div className="folder__count">{a.title}</div>
             </div>
           </div>
         ))}
