@@ -10724,3 +10724,134 @@ kbd.cmd__kbd {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ---------- Row-Based Vertical Timeline (Case History) ---------- */
+.cause-list__timeline-v-container {
+  position: relative;
+  margin-top: 24px;
+}
+
+.cause-list__timeline-v-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+
+.cause-list__timeline-v-row:last-child {
+  border-bottom: none;
+}
+
+.cause-list__timeline-v-node-col {
+  position: relative;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.cause-list__timeline-v-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 3;
+}
+
+.cause-list__timeline-v-circle--scheduled { border-color: #0066cc; color: #0066cc; background: #e7f5ff; }
+.cause-list__timeline-v-circle--rescheduled { border-color: #d97706; color: #d97706; background: #fff9db; }
+.cause-list__timeline-v-circle--completed { border-color: #0ca678; color: #0ca678; background: #ebfbee; }
+.cause-list__timeline-v-circle--adjourned { border-color: #e03131; color: #e03131; background: #fff5f5; }
+.cause-list__timeline-v-circle--default { border-color: var(--text-faint); color: var(--text-soft); background: var(--surface-2); }
+
+.cause-list__timeline-v-connector {
+  width: 12px;
+  height: 2px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.cause-list__timeline-v-title-col {
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.cause-list__timeline-v-event-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.cause-list__timeline-v-event-date {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+
+.cause-list__timeline-v-desc-col {
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  padding: 0 16px;
+  line-height: 1.5;
+}
+
+.cause-list__timeline-v-action-col {
+  width: 120px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.cause-list__timeline-v-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 32px;
+}
+
+.cause-list__timeline-v-btn:hover {
+  background: var(--brand-soft);
+  border-color: var(--navy-600);
+  color: var(--navy-700);
+}
+
+.cause-list__timeline-v-line-path {
+  position: absolute;
+  left: 19px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+  z-index: 1;
+}
+
+.cause-list__timeline-v-circle svg {
+  width: 14px;
+  height: 14px;
+}

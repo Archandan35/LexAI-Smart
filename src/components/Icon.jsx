@@ -55,6 +55,7 @@ const PATHS = {
   folderPlus: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 11v6M9 14h6',
   ban: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM4.93 4.93l14.14 14.14',
   info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01',
+  balance: 'M12 3v17M12 5l-8 4 8 4 8-4-8-4M2 17l4 2 4-2-4-2-4 2M14 17l4 2 4-2-4-2-4 2M6 9v8M18 9v8',
 };
 
 export default function Icon({ name, size = 18, className = '', strokeWidth = 1.9, fill = false }) {

@@ -598,101 +598,99 @@ export default function CauseList() {
 
       {/* 2. CASE HISTORY TAB */}
       {tab === 'history' && (
-        <div className="grid-sidebar">
-          {/* Left panel - Selection */}
-          <div className="flex-col gap-16">
-            <Card title="Select Case">
-              <Field label="Litigation Case">
-                <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
-              </Field>
-            </Card>
+        <div className="flex-col gap-16">
+          {/* Case Select bar inline */}
+          <div className="flex align-center gap-12" style={{ marginBottom: '16px' }}>
+            <span className="text-bold text-sm text-soft" style={{ whiteSpace: 'nowrap' }}>Select Case:</span>
+            <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
           </div>
 
-          {/* Right panel - History content */}
-          <div>
-            {!history ? (
-              <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
-            ) : (
-              <>
-                {/* Case Info Header Card */}
-                <div className="cause-list__case-info-card">
-                  <div className="cause-list__case-info-header">
-                    <div className="cause-list__case-icon-box">
-                      <Icon name="vault" size={24} />
-                    </div>
-                    <div className="cause-list__case-title-area">
-                      <h2 className="cause-list__case-title">
-                        {history.case?.caseNumber}
-                        <span className="cause-list__case-badge-active">Active</span>
-                      </h2>
-                      <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    </div>
+          {!history ? (
+            <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
+          ) : (
+            <>
+              {/* Case Info Header Card */}
+              <div className="cause-list__case-info-card">
+                <div className="cause-list__case-info-header">
+                  <div className="cause-list__case-icon-box">
+                    <Icon name="balance" size={24} />
                   </div>
-
-                  <div className="cause-list__details-grid">
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Court</span>
-                      <span className="cause-list__details-value">{history.case?.court || '—'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Filing Date</span>
-                      <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '09 Dec 2015'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Current Stage</span>
-                      <span className="cause-list__details-value">{history.case?.stage || '—'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Next Hearing</span>
-                      <span className="cause-list__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Judge</span>
-                      <span className="cause-list__details-value">{history.case?.judge || '—'}</span>
-                    </div>
+                  <div className="cause-list__case-title-area">
+                    <h2 className="cause-list__case-title">
+                      {history.case?.caseNumber}
+                      <span className="cause-list__case-badge-active">Active</span>
+                    </h2>
+                    <p className="cause-list__case-subtitle">{history.case?.title}</p>
                   </div>
                 </div>
 
-                {/* History timeline card */}
-                <Card title="History Timeline" sub="Chronological proceedings logs and order sheets">
-                  {history.hearings.length === 0 ? (
-                    <EmptyState icon="history" title="No history logs recorded." />
-                  ) : (
-                    <div className="cause-list__timeline-v">
-                      {history.hearings.map((h, i) => {
-                        const markerClass = h.status?.toLowerCase() || 'default';
-                        return (
-                          <div className="cause-list__timeline-v-item" key={h.id || i}>
-                            <div className="cause-list__timeline-v-line" />
-                            <div className={`cause-list__timeline-v-marker cause-list__timeline-v-marker--${markerClass}`} />
-                            <div className="cause-list__timeline-v-header">
-                              <div>
-                                <h3 className="cause-list__timeline-v-title">{h.purpose || 'Hearing event'}</h3>
-                                <div className="cause-list__timeline-v-date">{formatDateTime(h.date)}</div>
-                              </div>
-                              <div className="cause-list__actions-group">
-                                {h.docRef && (
-                                  <button className="cause-list__timeline-v-doc-btn" onClick={() => viewFile(h.docRef)}>
-                                    <Icon name="file" size={12} /> Document
-                                  </button>
-                                )}
-                                <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)}>
-                                  <Icon name="edit" size={13} />
-                                </button>
-                              </div>
-                            </div>
-                            <div className="cause-list__timeline-v-desc">
-                              {h.notes || 'Hearing proceedings logged.'}
+                <div className="cause-list__details-grid">
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Court</span>
+                    <span className="cause-list__details-value">{history.case?.court || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Filing Date</span>
+                    <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '09 Dec 2015'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Current Stage</span>
+                    <span className="cause-list__details-value">{history.case?.stage || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Next Hearing</span>
+                    <span className="cause-list__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Judge</span>
+                    <span className="cause-list__details-value">{history.case?.judge || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* History Timeline card */}
+              <Card title="History Timeline" sub="Chronological proceedings logs and order sheets">
+                {history.hearings.length === 0 ? (
+                  <EmptyState icon="history" title="No history logs recorded." />
+                ) : (
+                  <div className="cause-list__timeline-v-container">
+                    <div className="cause-list__timeline-v-line-path" />
+                    {history.hearings.map((h, i) => {
+                      const markerClass = h.status?.toLowerCase() || 'default';
+                      return (
+                        <div className="cause-list__timeline-v-row" key={h.id || i}>
+                          <div className="cause-list__timeline-v-node-col">
+                            <div className={`cause-list__timeline-v-circle cause-list__timeline-v-circle--${markerClass}`}>
+                              {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </Card>
-              </>
-            )}
-          </div>
+                          <div className="cause-list__timeline-v-connector" />
+                          <div className="cause-list__timeline-v-title-col">
+                            <h4 className="cause-list__timeline-v-event-title">{h.purpose || 'Hearing'}</h4>
+                            <span className="cause-list__timeline-v-event-date">{formatDate(h.date)}</span>
+                          </div>
+                          <div className="cause-list__timeline-v-desc-col">
+                            {h.notes || '—'}
+                          </div>
+                          <div className="cause-list__timeline-v-action-col">
+                            {h.docRef ? (
+                              <button className="cause-list__timeline-v-btn" onClick={() => viewFile(h.docRef)}>
+                                Document
+                              </button>
+                            ) : (
+                              <button className="cause-list__timeline-v-btn" onClick={() => openEdit(h)}>
+                                View Details
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+            </>
+          )}
         </div>
       )}
 
