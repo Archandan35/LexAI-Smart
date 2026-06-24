@@ -1047,8 +1047,10 @@ function systemSqlPolicies({ onlyCollections } = {}) {
       : line
   )
   .join('\n')
-  .replace(/execute 'create policy ([^']+)'/g,
-    "begin execute 'create policy $1'; exception when duplicate_object then null; end;");
+  .replace(/execute 'create policy ([^']+)';/g,
+    "begin execute 'create policy $1'; exception when duplicate_object then null; end;")
+  .replace(/execute \$p\$create policy (.+?)\$p\$;/g,
+    "begin execute \$p\$create policy $1\$p\$; exception when duplicate_object then null; end;");
 }
 
 function systemSqlGrants() {
