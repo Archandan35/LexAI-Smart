@@ -84,6 +84,7 @@ export default function CaseDocuments() {
   const [showFilter, setShowFilter] = useState(false);
   const [ctxMenu, setCtxMenu] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [folderProps, setFolderProps] = useState(null);
   const fileInputRef = useRef(null);
 
   // close context menu on click outside
@@ -520,6 +521,10 @@ export default function CaseDocuments() {
                   Copy
                 </button>
                 <div className="cdoc__ctx-divider" />
+                <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setFolderProps(f); setCtxMenu(null); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                  Properties
+                </button>
                 <button className="cdoc__ctx-item cdoc__ctx-item--danger" onClick={(e) => { e.stopPropagation(); deleteFolder(f); setCtxMenu(null); }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                   Delete
@@ -786,6 +791,34 @@ export default function CaseDocuments() {
             </div>
             <div className="modal__body" style={{ whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1.7 }}>
               {preview.text || preview.content || 'No preview available.'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Folder properties modal */}
+      {folderProps && (
+        <div className="modal-overlay" onClick={() => setFolderProps(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400 }}>
+            <div className="modal__head">
+              <span className="modal__title">
+                <Icon name="folder" size={16} /> {folderProps.name}
+              </span>
+              <button className="modal__close" onClick={() => setFolderProps(null)}><Icon name="close" size={18} /></button>
+            </div>
+            <div className="modal__body" style={{ fontSize: 13, lineHeight: 2 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '4px 12px' }}>
+                <span style={{ color: 'var(--text-faint)' }}>Name</span>
+                <span style={{ fontWeight: 600 }}>{folderProps.name}</span>
+                <span style={{ color: 'var(--text-faint)' }}>Kind</span>
+                <span>{folderProps.kind || 'document'}</span>
+                <span style={{ color: 'var(--text-faint)' }}>Sub-folders</span>
+                <span>{getChildren(folderProps.id).length}</span>
+                <span style={{ color: 'var(--text-faint)' }}>Documents</span>
+                <span>{docCounts[folderProps.name] || 0}</span>
+                <span style={{ color: 'var(--text-faint)' }}>Created</span>
+                <span>{folderProps.created_at ? formatDate(folderProps.created_at) : '—'}</span>
+              </div>
             </div>
           </div>
         </div>
