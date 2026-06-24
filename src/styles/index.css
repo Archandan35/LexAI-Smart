@@ -835,6 +835,12 @@ select {
   gap: 18px;
 }
 
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
 .grid-sidebar {
   display: grid;
   grid-template-columns: 360px 1fr;

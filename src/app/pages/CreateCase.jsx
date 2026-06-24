@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Field, { Input, Textarea, Select } from '@/components/Field.jsx';
+import Field, { Input, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
@@ -343,19 +343,19 @@ export default function CreateCase() {
 
       {/* ---- 1. Case Header ---- */}
       <SectionCard num="1" title="Case Header">
-        <div className="grid-3">
-          <Field label="Case Number" required>
-            <Input value={form.case_number} onChange={setFieldEvent('case_number')} placeholder="e.g., 123/2024" />
-          </Field>
-          <Field label="Case Year" required>
-            <Input value={form.case_year} onChange={setFieldEvent('case_year')} placeholder="e.g., 2024" type="text" />
-          </Field>
+        <div className="grid-4">
           <Field label="Case Type" required>
             <GearSelect
               value={form.case_type} onChange={setFieldEvent('case_type')}
               options={caseTypeOptions} placeholder="Select case type"
               entity="Case Type" onGearClick={openCrudManager}
             />
+          </Field>
+          <Field label="Case Number" required>
+            <Input value={form.case_number} onChange={setFieldEvent('case_number')} placeholder="e.g., 123/2024" />
+          </Field>
+          <Field label="Case Year" required>
+            <Input value={form.case_year} onChange={setFieldEvent('case_year')} placeholder="e.g., 2024" type="text" />
           </Field>
           <Field label="Case Stage">
             <GearSelect
@@ -454,10 +454,12 @@ export default function CreateCase() {
         <div className="grid-3">
           <Field label="Priority" required>
             <div>
-              <Select value={form.priority} onChange={setFieldEvent('priority')} style={{ marginBottom: 10 }}>
-                <option value="">Select priority</option>
-                {priorities.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}
-              </Select>
+              <GearSelect
+                value={form.priority} onChange={setFieldEvent('priority')}
+                options={priorities.map((p) => ({ value: p.name, label: p.name }))}
+                placeholder="Select priority"
+                entity="Priority" onGearClick={openCrudManager}
+              />
               <div className="priority-chips">
                 {priorities.map((p) => (
                   <button

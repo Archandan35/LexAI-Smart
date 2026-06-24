@@ -22,7 +22,7 @@ export default function CourtHierarchy() {
   const load = async () => {
     setLoading(true);
     const res = await courtHierarchyLogic.list();
-    if (res.ok) setItems(res.data);
+    if (Array.isArray(res)) setItems(res);
     setLoading(false);
   };
 

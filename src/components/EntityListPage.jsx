@@ -20,7 +20,7 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
   const load = async () => {
     setLoading(true);
     const res = await logic.list();
-    if (res.ok) setItems(res.data);
+    if (Array.isArray(res)) setItems(res);
     setLoading(false);
   };
 
