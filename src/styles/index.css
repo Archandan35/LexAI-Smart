@@ -9257,3 +9257,199 @@ kbd.cmd__kbd {
 .cc-footer__spacer {
   flex: 1;
 }
+
+/* ===== Entity Manager Modal (Manage Case Types, Court Types, etc.) ===== */
+.em-modal-subtitle {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: -4px 0 0;
+  font-weight: 400;
+}
+
+.em-op-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.em-op-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition: all 0.16s var(--ease);
+  white-space: nowrap;
+}
+
+.em-op-tab:hover {
+  color: var(--navy-700);
+  background: var(--surface);
+}
+
+.em-op-tab.active {
+  background: var(--surface);
+  color: var(--navy-700);
+  box-shadow: var(--shadow-sm);
+}
+
+.em-op-tab--danger {
+  color: var(--red);
+}
+
+.em-op-tab--danger:hover,
+.em-op-tab--danger.active {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.em-op-tab--import {
+  color: var(--navy-600);
+}
+
+.em-op-tab--import:hover,
+.em-op-tab--import.active {
+  color: var(--navy-700);
+  background: var(--brand-soft);
+}
+
+.em-op-tab-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  margin: 4px 2px;
+}
+
+.em-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.em-form-full {
+  grid-column: 1 / -1;
+}
+
+.em-field-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+
+.em-field-label .required-star {
+  color: var(--red);
+}
+
+.em-input-icon {
+  position: relative;
+}
+
+.em-input-icon .input {
+  padding-left: 38px;
+}
+
+.em-input-icon__ico {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.em-field-hint {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin-top: 5px;
+}
+
+.em-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.em-tip-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--brand-soft);
+  border: 1px solid #cdd9f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 18px;
+}
+
+.em-tip-icon {
+  width: 34px;
+  height: 34px;
+  background: var(--surface);
+  border: 1px solid #cdd9f7;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--navy-600);
+}
+
+.em-tip-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-800);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.em-tip-text span {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.em-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 22px;
+  border-top: 1px solid var(--border);
+}
+
+.em-select-wrapper {
+  position: relative;
+}
+
+.em-select-wrapper .select {
+  padding-left: 38px;
+}
+
+.em-select-status-dot {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  pointer-events: none;
+}
