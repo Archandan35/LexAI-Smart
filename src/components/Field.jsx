@@ -10,8 +10,8 @@ export function Field({ label, children, hint }) {
   );
 }
 
-export function Input(props) { return <input className="input" {...props} />; }
-export function Textarea(props) { return <textarea className="textarea" {...props} />; }
-export function Select({ children, ...props }) { return <select className="select" {...props}>{children}</select>; }
+export function Input({ className, ...props }) { return <input className={["input", className].filter(Boolean).join(" ")} {...props} />; }
+export function Textarea({ className, ...props }) { return <textarea className={["textarea", className].filter(Boolean).join(" ")} {...props} />; }
+export function Select({ children, className, ...props }) { return <select className={["select", className].filter(Boolean).join(" ")} {...props}>{children}</select>; }
 
 export default Field;

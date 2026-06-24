@@ -52,8 +52,10 @@ export default function CourtTypes() {
   const saveEdit = async () => {
     try {
       if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
-      console.log('Updating court:', { id: editId, name: editName });
-      const res = await courtLogic.update(editId, { name: editName });
+      const court = courts.find((c) => c.id === editId);
+      const payload = { name: editName, display_order: court?.display_order, status: court?.status };
+      console.log('Updating court:', { id: editId, ...payload });
+      const res = await courtLogic.update(editId, payload);
       console.log('Update result:', res);
       if (res.ok) { setEditId(null); toast.push('Court renamed.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
@@ -64,9 +66,9 @@ export default function CourtTypes() {
     try {
       if (!window.confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
       console.log('Removing court:', { id: court.id, name: court.name });
-      await courtLogic.remove(court.id);
-      toast.push('Court deleted.', 'success');
-      await refresh();
+      const res = await courtLogic.remove(court.id);
+      if (res.ok) { toast.push('Court deleted.', 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to delete court.', 'error'); }
   };
 
@@ -75,9 +77,8 @@ export default function CourtTypes() {
       if (!selected.size) return;
       if (!window.confirm(`Delete ${selected.size} court(s)?`)) return;
       const res = await courtLogic.bulkRemove([...selected]);
-      setSelected(new Set());
-      toast.push(`${res.data?.deleted || selected.size} court(s) deleted.`, 'success');
-      await refresh();
+      if (res.ok) { setSelected(new Set()); toast.push(`${res.data?.deleted || selected.size} court(s) deleted.`, 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Bulk remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk delete failed.', 'error'); }
   };
 

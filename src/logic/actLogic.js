@@ -43,6 +43,19 @@ export const actLogic = {
       return fail(e);
     }
   },
+
+  async stats() {
+    try {
+      const rows = await actService.list();
+      const total = rows.length;
+      const totalSections = rows.reduce((s, a) => s + (a.sections_count || 0), 0);
+      const totalAmendments = rows.reduce((s, a) => s + (a.amendments_count || 0), 0);
+      const dates = rows.map((a) => a.updated_at || a.created_at).filter(Boolean).sort().reverse();
+      return { totalActs: total, totalSections, totalAmendments, lastUpdated: dates[0] || '—' };
+    } catch (e) {
+      return {};
+    }
+  },
 };
 
 export default actLogic;

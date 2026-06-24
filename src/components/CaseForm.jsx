@@ -68,19 +68,13 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
 
   const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
-  const priorityOptions = priorities.map((p) => ({ value: p, label: p }));
+  const priorityOptions = priorities.map((p) => ({ value: p.name || p, label: p.name || p }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
 
   const autoCourtName = useMemo(() => {
     const h = hierarchyOptions.find((o) => o.value === form.court_hierarchy);
     return h ? h.label : form.court_name || '';
   }, [form.court_hierarchy, form.court_name, hierarchyOptions]);
-
-  useEffect(() => {
-    if (form.court_hierarchy && autoCourtName) {
-      setField('court_name', autoCourtName);
-    }
-  }, [autoCourtName, form.court_hierarchy]);
 
   const submit = () => {
     const payload = { ...form };
@@ -168,7 +162,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           </Field>
         </div>
         <Field label="Court Name">
-          <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Auto-computed from hierarchy" readOnly={!!form.court_hierarchy} />
+          <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Enter court location" />
         </Field>
       </SectionCard>
 

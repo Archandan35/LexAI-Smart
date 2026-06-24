@@ -748,12 +748,67 @@ select {
   color: var(--text-soft);
 }
 
+.badge--info {
+  background: var(--brand-soft, #eef2ff);
+  color: var(--navy-600, #4f46e5);
+}
+
+.badge--success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge--muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
 .dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   display: inline-block;
 }
+
+/* ---------- Shared page components ---------- */
+.stats-row {
+  display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+}
+
+.loading-text {
+  padding: 40px; text-align: center; color: var(--text-muted);
+}
+
+.empty-state {
+  padding: 60px 20px; text-align: center; color: var(--text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.card--inset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  background: var(--surface-1);
+}
+
+/* ---------- Utility classes ---------- */
+.text-muted { color: var(--text-muted, #6b7280) !important; }
+.text-danger { color: var(--red-600, #dc2626) !important; }
+.text-bold { font-weight: 600 !important; }
+.text-brand { color: var(--brand, #4f46e5) !important; }
+.text-xs { font-size: 12px !important; }
+.text-sm { font-size: 13px !important; }
+.font-medium { font-weight: 500 !important; }
+.align-center { align-items: center !important; }
+.mt-4 { margin-top: 4px !important; }
+.ml-10 { margin-left: 10px !important; }
+.btn-icon { background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-soft); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon:hover { background: var(--surface-2); color: var(--text); }
 
 /* ---------- Tables ---------- */
 .table {
@@ -1160,6 +1215,24 @@ select {
   background: var(--brand-soft);
   color: var(--navy-700);
   border-color: #cdd9f7;
+}
+
+.tag--navy {
+  background: var(--navy-100, #eef2ff);
+  color: var(--navy-700, #3730a3);
+  border-color: var(--navy-200, #c7d2fe);
+}
+
+.tag--green {
+  background: var(--green-100, #dcfce7);
+  color: var(--green-700, #15803d);
+  border-color: var(--green-200, #bbf7d0);
+}
+
+.tag--amber {
+  background: var(--amber-100, #fef3c7);
+  color: var(--amber-700, #a16207);
+  border-color: var(--amber-200, #fde68a);
 }
 
 /* Code block (Database Manager provider SQL, etc.) */

@@ -11,9 +11,9 @@ export function usePriorities() {
     setLoading(true);
     try {
       const data = await priorityLogic.list();
-      const names = (Array.isArray(data) ? data : []).map((p) => p.name);
-      cached = { priorities: names, raw: data };
-      setPriorities(names);
+      const list = Array.isArray(data) ? data : [];
+      cached = { priorities: list, raw: list };
+      setPriorities(list);
     } catch { setPriorities([]); }
     setLoading(false);
   }, []);

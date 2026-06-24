@@ -11,8 +11,9 @@ export function useActs() {
     setLoading(true);
     try {
       const data = await actLogic.list();
-      cached = { acts: data };
-      setActs(data);
+      const list = Array.isArray(data) ? data : [];
+      cached = { acts: list };
+      setActs(list);
     } catch { setActs([]); }
     setLoading(false);
   }, []);

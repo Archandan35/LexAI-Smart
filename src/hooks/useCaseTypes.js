@@ -11,8 +11,9 @@ export function useCaseTypes() {
     setLoading(true);
     try {
       const data = await caseTypeLogic.list();
-      cached = { caseTypes: data };
-      setCaseTypes(data);
+      const list = Array.isArray(data) ? data : [];
+      cached = { caseTypes: list };
+      setCaseTypes(list);
     } catch {
       setCaseTypes([]);
     }

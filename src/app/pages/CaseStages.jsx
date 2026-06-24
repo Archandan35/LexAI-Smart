@@ -42,9 +42,9 @@ export default function CaseStages() {
 
   const remove = async (stage) => {
     if (!window.confirm(`Delete stage "${stage.name}"?`)) return;
-    await caseStageLogic.remove(stage.id);
-    toast.push('Stage deleted.', 'success');
-    await load();
+    const res = await caseStageLogic.remove(stage.id);
+    if (res.ok) { toast.push('Stage deleted.', 'success'); await load(); }
+    else { toast.push(res.error, 'error'); }
   };
 
   return (

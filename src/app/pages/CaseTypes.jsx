@@ -39,7 +39,7 @@ function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEdi
           <code className="case-types__code">{type.short_code}</code>
         )}
       </td>
-      <td className="case-types__cell">{type.display_order}</td>
+      <td className="case-types__cell">{type.display_order ?? '—'}</td>
       <td className="case-types__cell">
         <span className={`case-types__status case-types__status--${(type.status || 'Active').toLowerCase()}`}>
           {type.status || 'Active'}
@@ -82,6 +82,7 @@ export default function CaseTypes() {
   const [selected, setSelected] = useState(new Set());
   const [dragIdx, setDragIdx] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
+  const dragOrder = useRef(null);
   const dragNode = useRef(null);
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
@@ -146,9 +147,9 @@ export default function CaseTypes() {
   const handleDelete = useCallback(async (type) => {
     try {
       if (!window.confirm(`Delete case type "${type.name}"?`)) return;
-      await caseTypeLogic.remove(type.id);
-      toast.push('Case type deleted.', 'success');
-      await refresh();
+      const res = await caseTypeLogic.remove(type.id);
+      if (res.ok) { toast.push('Case type deleted.', 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Delete exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to delete case type.', 'error'); }
   }, [refresh, toast]);
 
@@ -157,9 +158,8 @@ export default function CaseTypes() {
       if (!selected.size) return;
       if (!window.confirm(`Delete ${selected.size} case type(s)?`)) return;
       const res = await caseTypeLogic.bulkRemove([...selected]);
-      setSelected(new Set());
-      toast.push(`${res.data?.deleted || selected.size} case type(s) deleted.`, 'success');
-      await refresh();
+      if (res.ok) { setSelected(new Set()); toast.push(`${res.data?.deleted || selected.size} case type(s) deleted.`, 'success'); await refresh(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Bulk remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk delete failed.', 'error'); }
   };
 
@@ -180,30 +180,33 @@ export default function CaseTypes() {
   const handleDragStart = useCallback((e, idx) => {
     setDragIdx(idx);
     setDraggingId(filtered[idx]?.id);
+    dragOrder.current = filtered.map((t) => t.id);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', filtered[idx]?.id);
   }, [filtered]);
 
   const handleDragOver = useCallback((e, idx) => {
     e.preventDefault();
-    if (dragIdx === null || dragIdx === idx) return;
-    const items = [...filtered];
+    if (dragIdx === null || dragIdx === idx || !dragOrder.current) return;
+    const items = [...dragOrder.current];
     const [moved] = items.splice(dragIdx, 1);
     items.splice(idx, 0, moved);
+    dragOrder.current = items;
     setDragIdx(idx);
-  }, [dragIdx, filtered]);
+  }, [dragIdx]);
 
   const handleDragEnd = useCallback(async () => {
-    if (dragIdx === null) return;
+    if (dragIdx === null || !dragOrder.current) return;
     try {
-      const ids = filtered.map((t) => t.id);
+      const ids = dragOrder.current;
       const res = await caseTypeLogic.reorder(ids);
       if (res.ok) { toast.push('Order updated.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { console.error('Reorder exception:', err); setLastError(err?.message || String(err)); }
     setDragIdx(null);
     setDraggingId(null);
-  }, [dragIdx, filtered, refresh, toast]);
+    dragOrder.current = null;
+  }, [dragIdx, refresh, toast]);
 
   if (loading) return <div className="fade-in loading-page"><div className="spinner" /></div>;
 

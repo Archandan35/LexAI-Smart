@@ -37,7 +37,8 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
 
   const saveEdit = async () => {
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
-    const res = await logic.update(editId, { name: editName, short_code: editCode, description: editDesc });
+    const item = items.find((i) => i.id === editId);
+    const res = await logic.update(editId, { name: editName, short_code: editCode, description: editDesc, display_order: item?.display_order, status: item?.status });
     if (res.ok) { setEditId(null); toast.push(`${entityLabel} updated.`, 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -109,7 +110,7 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
                     <span className="muted">{item.description || '—'}</span>
                   )}
                 </td>
-                <td>{item.display_order}</td>
+                <td>{item.display_order ?? '—'}</td>
                 <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
                 <td>
                   <div className="row-actions">

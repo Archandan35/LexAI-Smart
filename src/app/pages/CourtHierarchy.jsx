@@ -30,7 +30,8 @@ export default function CourtHierarchy() {
 
   const add = async () => {
     if (!newName.trim()) { toast.push('Name is required.', 'error'); return; }
-    const res = await courtHierarchyLogic.create({ name: newName, level: Number(newLevel), parent_id: newParent || null });
+    const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
+    const res = await courtHierarchyLogic.create({ name: newName, level: Number(newLevel), parent_id: newParent || null, display_order: order });
     if (res.ok) { setNewName(''); toast.push('Hierarchy level added.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -39,7 +40,8 @@ export default function CourtHierarchy() {
 
   const saveEdit = async () => {
     if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
-    const res = await courtHierarchyLogic.update(editId, { name: editName, level: Number(editLevel), parent_id: editParent || null });
+    const item = items.find((i) => i.id === editId);
+    const res = await courtHierarchyLogic.update(editId, { name: editName, level: Number(editLevel), parent_id: editParent || null, display_order: item?.display_order, status: item?.status });
     if (res.ok) { setEditId(null); toast.push('Hierarchy level updated.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -51,8 +53,9 @@ export default function CourtHierarchy() {
     else { toast.push(res.error, 'error'); }
   };
 
-  const rootItems = items.filter((i) => !i.parent_id).sort((a, b) => a.display_order - b.display_order);
-  const getChildren = (parentId) => items.filter((i) => i.parent_id === parentId).sort((a, b) => a.display_order - b.display_order);
+  const searched = items.filter((i) => !search || i.name.toLowerCase().includes(search.toLowerCase()));
+  const rootItems = searched.filter((i) => !i.parent_id).sort((a, b) => a.display_order - b.display_order);
+  const getChildren = (parentId) => searched.filter((i) => i.parent_id === parentId).sort((a, b) => a.display_order - b.display_order);
 
   const liveOptions = (excludeId, maxLevel) => items
     .filter((i) => i.id !== excludeId && Number(i.level) < Number(maxLevel))
@@ -85,7 +88,7 @@ export default function CourtHierarchy() {
                 <span>Level {item.level}</span>
               )}
             </td>
-            <td>{item.display_order}</td>
+            <td>{item.display_order ?? '—'}</td>
             <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
             <td>
               <div className="row-actions">

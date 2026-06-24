@@ -30,7 +30,8 @@ export default function Priorities() {
 
   const add = async () => {
     if (!newName.trim()) return;
-    const res = await priorityLogic.create({ name: newName.trim(), color: newColor });
+    const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
+    const res = await priorityLogic.create({ name: newName.trim(), color: newColor, display_order: order });
     if (res.ok) { setNewName(''); setNewColor('#6b7280'); toast.push('Priority added.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -88,7 +89,7 @@ export default function Priorities() {
               <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No priorities configured.</td></tr>
             ) : items.map((item) => (
               <tr key={item.id}>
-                <td><span className="badge">{item.display_order ?? 0}</span></td>
+                <td><span className="badge">{item.display_order ?? '—'}</span></td>
                 <td>
                   {editId === item.id ? (
                     <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>

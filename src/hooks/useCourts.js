@@ -11,7 +11,8 @@ export function useCourts() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await courtLogic.list();
+      const data = await courtLogic.list();
+      const list = Array.isArray(data) ? data : [];
       cached = { courts: list, courtNames: list.map((c) => c.name) };
       setCourts(list);
       setCourtNames(list.map((c) => c.name));

@@ -26,7 +26,8 @@ export default function CaseStatuses() {
 
   const add = async () => {
     if (!newName.trim()) return;
-    const res = await caseStatusLogic.create({ name: newName.trim() });
+    const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
+    const res = await caseStatusLogic.create({ name: newName.trim(), display_order: order });
     if (res.ok) { setNewName(''); toast.push('Status added.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -70,7 +71,7 @@ export default function CaseStatuses() {
               <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No statuses configured.</td></tr>
             ) : items.map((item) => (
               <tr key={item.id}>
-                <td><span className="badge">{item.display_order ?? 0}</span></td>
+                <td><span className="badge">{item.display_order ?? '—'}</span></td>
                 <td>
                   {editId === item.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
