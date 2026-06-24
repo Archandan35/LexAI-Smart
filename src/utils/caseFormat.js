@@ -4,7 +4,7 @@
 export function combinedCourt(c) {
   if (!c) return '';
   const type = c.court || '';
-  const name = c.courtName || '';
+  const name = c.courtName || c.court_name || '';
   if (type && name) return `${type}, ${name}`;
   return type || name || '—';
 }

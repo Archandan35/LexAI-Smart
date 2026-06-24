@@ -2,6 +2,16 @@ import { caseService } from '@/services/caseService.js';
 import { causeListTemplatesRepository } from '@/data-layer/repositories/causeListTemplatesRepository.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
+import { combinedCourt } from '@/utils/caseFormat.js';
+
+function fmtCaseNumber(c) {
+  if (!c) return '—';
+  const ct = c.case_type || '';
+  const cn = c.case_number || c.caseNumber || c.case_display_number;
+  const cy = c.case_year || '';
+  if (ct && cn && cy) return `${ct} ${cn}/${cy}`;
+  return c.case_display_number || c.caseNumber || String(cn || '') || '—';
+}
 
 // causeListLogic — daily/period cause list + per-case hearing history rendered
 // through a user-chosen template. Templates are CRUD-managed by the user.
@@ -16,14 +26,17 @@ export const causeListLogic = {
       const rows = hearings
         .filter((h) => inRange(h.date, from, to))
         .sort((a, b) => DateEngine.compare(a.date, b.date))
-        .map((h) => ({
-          ...h,
-          case: caseMap[h.caseId] || null,
-          caseNumber: caseMap[h.caseId]?.caseNumber || '—',
-          parties: caseMap[h.caseId]?.title || '—',
-          court: caseMap[h.caseId]?.court || '—',
-          stage: caseMap[h.caseId]?.stage || '—',
-        }));
+        .map((h) => {
+          const c = caseMap[h.caseId] || null;
+          return {
+            ...h,
+            case: c,
+            caseNumber: c ? fmtCaseNumber(c) : '—',
+            parties: c?.title || '—',
+            court: c ? combinedCourt(c) : '—',
+            stage: c?.stage || '—',
+          };
+        });
       return ok({ rows });
     } catch (e) {
       return fail(e);
