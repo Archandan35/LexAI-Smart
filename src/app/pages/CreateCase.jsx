@@ -118,8 +118,8 @@ const ENTITY_CONFIGS = {
   Jurisdiction: { label: 'Jurisdiction', logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' }], defaults: {} },
   Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
   Priority: { label: 'Priority', logic: priorityLogic, fields: [{ key: 'name', label: 'Priority Name', placeholder: 'e.g., High' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {} },
-  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name', required: true }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual' }], defaults: {} },
-  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name', required: true }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: true }], defaults: {} },
+  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name' }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual' }], defaults: {} },
+  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password' }], defaults: {} },
 };
 
 const PRIORITY_OPTIONS = [
@@ -203,7 +203,6 @@ export default function CreateCase() {
     if (!form.case_number.trim()) { toast.error('Case number is required.'); return false; }
     if (!form.case_type) { toast.error('Case type is required.'); return false; }
     if (!form.plaintiffs.length && !form.defendants.length) { toast.error('At least one plaintiff or defendant is required.'); return false; }
-    if (!form.client) { toast.error('Client is required.'); return false; }
     return true;
   }, [form, toast]);
 
@@ -214,7 +213,6 @@ export default function CreateCase() {
     client: form.client, advocate: form.advocate,
     court_hierarchy: form.court_hierarchy, court_name: autoCourtName,
     bench_type: form.bench_type, judge: form.presiding_officer,
-    jurisdiction: form.jurisdiction,
     stage: form.stage, priority: form.priority,
     filing_date: form.filing_date, next_hearing_date: form.next_hearing_date,
     filing_number: form.filing_number, registration_number: form.registration_number,
@@ -380,14 +378,14 @@ export default function CreateCase() {
       {/* ---- 3. Assignment ---- */}
       <SectionCard num="3" title="Assignment">
         <div className="grid-2">
-          <Field label="Client" required>
+          <Field label="Client">
             <GearSelect
               value={form.client} onChange={setFieldEvent('client')}
               options={clientOptions} placeholder="Select client"
               entity="Client" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Advocate" required>
+          <Field label="Advocate">
             <GearSelect
               value={form.advocate} onChange={setFieldEvent('advocate')}
               options={userOptions} placeholder="Select advocate"
