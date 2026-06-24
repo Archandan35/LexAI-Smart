@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
-import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { Input } from '@/components/Field.jsx';
@@ -9,14 +8,59 @@ import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepo
 import { formatDate, bytes } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
+/* ── helpers ── */
+function fileExt(name = '') {
+  return (name.split('.').pop() || '').toUpperCase();
+}
+
+function FileTypeIcon({ name }) {
+  const ext = fileExt(name);
+  const map = {
+    PDF: { bg: '#fef2f2', color: '#dc2626', label: 'PDF' },
+    DOCX: { bg: '#eff6ff', color: '#2563eb', label: 'W' },
+    DOC: { bg: '#eff6ff', color: '#2563eb', label: 'W' },
+    XLSX: { bg: '#f0fdf4', color: '#16a34a', label: 'XL' },
+    XLS: { bg: '#f0fdf4', color: '#16a34a', label: 'XL' },
+  };
+  const cfg = map[ext] || { bg: 'var(--brand-soft)', color: 'var(--navy-700)', label: ext.slice(0, 2) || '?' };
+  return (
+    <span className="cdoc__type-icon" style={{ background: cfg.bg, color: cfg.color }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function ExtBadge({ name }) {
+  const ext = fileExt(name);
+  const map = { PDF: 'cdoc__badge--pdf', DOCX: 'cdoc__badge--docx', DOC: 'cdoc__badge--docx', XLSX: 'cdoc__badge--xlsx', XLS: 'cdoc__badge--xlsx' };
+  return <span className={`cdoc__badge ${map[ext] || ''}`}>{ext}</span>;
+}
+
+/* ── stat card ── */
+function StatCard({ icon, value, label, sub }) {
+  return (
+    <div className="cdoc__stat-card">
+      <div className="cdoc__stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {icon}
+        </svg>
+      </div>
+      <div className="cdoc__stat-val">{value}</div>
+      <div className="cdoc__stat-label">{label}</div>
+      {sub && <div className="cdoc__stat-sub">{sub}</div>}
+    </div>
+  );
+}
+
+/* ── main ── */
 export default function CaseDocuments() {
   const toast = useToast();
   const [docs, setDocs] = useState([]);
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [view, setView] = useState('list');
-  const [activeFolder, setActiveFolder] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'grid'
+  const [activeFolder, setActiveFolder] = useState(null); // null = All Documents
   const [expanded, setExpanded] = useState({});
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
@@ -30,6 +74,10 @@ export default function CaseDocuments() {
   const [clipboard, setClipboard] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [selectMode, setSelectMode] = useState(false);
+  const [sortBy, setSortBy] = useState('name-az');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [docMenuId, setDocMenuId] = useState(null); // context menu doc id
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,13 +92,21 @@ export default function CaseDocuments() {
 
   useEffect(() => { load(); }, [load]);
 
+  // close doc context menu on outside click
+  useEffect(() => {
+    if (!docMenuId) return;
+    const handler = () => setDocMenuId(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [docMenuId]);
+
   const rootFolders = useMemo(() =>
     folders.filter((f) => !f.parent_id).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  , [folders]);
+    , [folders]);
 
   const getChildren = useCallback((parentId) =>
     folders.filter((f) => f.parent_id === parentId).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  , [folders]);
+    , [folders]);
 
   const docCounts = useMemo(() => {
     const m = {};
@@ -58,13 +114,29 @@ export default function CaseDocuments() {
     return m;
   }, [docs]);
 
-  const visible = !activeFolder
-    ? docs
-    : docs.filter((d) => d.folder === getFolderName(activeFolder));
+  const totalSize = useMemo(() => docs.reduce((s, d) => s + (d.size || 0), 0), [docs]);
 
-  const filtered = visible.filter((d) =>
-    !search || (d.name || d.title || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const lastUpdated = useMemo(() => {
+    if (!docs.length) return null;
+    const dates = docs.map((d) => new Date(d.uploaded_at || d.created_at || d.uploadedAt || 0)).filter(Boolean);
+    if (!dates.length) return null;
+    return new Date(Math.max(...dates.map((x) => x.getTime())));
+  }, [docs]);
+
+  const getFolderName = useCallback((id) => {
+    const f = folders.find((x) => x.id === id);
+    return f ? f.name : null;
+  }, [folders]);
+
+  const getAllDescendantIds = useCallback((parentId) => {
+    const ids = [];
+    const walk = (pid) => {
+      const children = folders.filter((f) => f.parent_id === pid);
+      for (const c of children) { ids.push(c.id); walk(c.id); }
+    };
+    walk(parentId);
+    return ids;
+  }, [folders]);
 
   const breadcrumbPath = useMemo(() => {
     if (!activeFolder) return [];
@@ -77,31 +149,30 @@ export default function CaseDocuments() {
     return path;
   }, [activeFolder, folders]);
 
-  function getFolderName(id) {
-    const f = folders.find((x) => x.id === id);
-    return f ? f.name : null;
-  }
+  const visible = !activeFolder
+    ? docs
+    : docs.filter((d) => d.folder === getFolderName(activeFolder));
 
-  function getAllDescendantIds(parentId) {
-    const ids = [];
-    const walk = (pid) => {
-      const children = folders.filter((f) => f.parent_id === pid);
-      for (const c of children) {
-        ids.push(c.id);
-        walk(c.id);
-      }
-    };
-    walk(parentId);
-    return ids;
-  }
+  const sorted = useMemo(() => {
+    const arr = [...visible.filter((d) => !search || (d.name || d.title || '').toLowerCase().includes(search.toLowerCase()))];
+    if (sortBy === 'name-az') arr.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    if (sortBy === 'name-za') arr.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+    if (sortBy === 'date-new') arr.sort((a, b) => new Date(b.uploaded_at || 0) - new Date(a.uploaded_at || 0));
+    if (sortBy === 'date-old') arr.sort((a, b) => new Date(a.uploaded_at || 0) - new Date(b.uploaded_at || 0));
+    if (sortBy === 'size') arr.sort((a, b) => (b.size || 0) - (a.size || 0));
+    return arr;
+  }, [visible, search, sortBy]);
 
-  const toggleExpand = (id) => {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
+  const paginated = sorted.slice((page - 1) * perPage, page * perPage);
 
+  // reset page on filter change
+  useEffect(() => { setPage(1); }, [search, activeFolder, sortBy]);
+
+  /* ── folder ops ── */
+  const toggleExpand = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   const selectFolder = (id) => {
-    if (clipboard) return;
-    if (selectMode) return; // don't navigate while selecting
+    if (clipboard || selectMode) return;
     setActiveFolder(id);
     setDocSelected([]);
   };
@@ -110,274 +181,221 @@ export default function CaseDocuments() {
     const name = newName.trim();
     if (!name) { toast.push('Folder name is required.', 'error'); return; }
     const order = folders.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
-    const res = await caseFoldersRepository.create({
-      name, kind: 'document',
-      parent_id: activeFolder || null, order,
-      system: false, created_at: new Date().toISOString(),
-    }).catch((e) => { toast.push(e?.message || 'Failed to create folder.', 'error'); return null; });
-    if (res) {
-      toast.push('Folder created.', 'success');
-      setNewName(''); setCreating(false);
-      await load();
-      if (activeFolder) setExpanded((prev) => ({ ...prev, [activeFolder]: true }));
-    }
+    const res = await caseFoldersRepository.create({ name, kind: 'document', parent_id: activeFolder || null, order, system: false, created_at: new Date().toISOString() }).catch((e) => { toast.push(e?.message || 'Failed to create folder.', 'error'); return null; });
+    if (res) { toast.push('Folder created.', 'success'); setNewName(''); setCreating(false); await load(); if (activeFolder) setExpanded((p) => ({ ...p, [activeFolder]: true })); }
   };
 
   const bulkAddFolders = async () => {
     const names = bulkNames.split('\n').map((n) => n.trim()).filter(Boolean);
-    if (names.length === 0) { toast.push('Enter at least one folder name.', 'error'); return; }
+    if (!names.length) { toast.push('Enter at least one folder name.', 'error'); return; }
     const order = folders.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
     let created = 0;
     for (let i = 0; i < names.length; i++) {
-      const res = await caseFoldersRepository.create({
-        name: names[i], kind: 'document',
-        parent_id: activeFolder || null,
-        order: order + i, system: false,
-        created_at: new Date().toISOString(),
-      }).catch(() => null);
+      const res = await caseFoldersRepository.create({ name: names[i], kind: 'document', parent_id: activeFolder || null, order: order + i, system: false, created_at: new Date().toISOString() }).catch(() => null);
       if (res) created++;
     }
     toast.push(`${created} folder(s) created.`, 'success');
-    setBulkNames(''); setBulkAdding(false); setCreating(false);
-    await load();
-    if (activeFolder) setExpanded((prev) => ({ ...prev, [activeFolder]: true }));
+    setBulkNames(''); setBulkAdding(false); setCreating(false); await load();
+    if (activeFolder) setExpanded((p) => ({ ...p, [activeFolder]: true }));
   };
 
-  const startRename = (f) => {
-    setEditingId(f.id);
-    setEditName(f.name);
-  };
-
+  const startRename = (f) => { setEditingId(f.id); setEditName(f.name); };
   const saveRename = async () => {
     const name = editName.trim();
     if (!name) { setEditingId(null); return; }
-    await caseFoldersRepository.update(editingId, { name }).catch(() => {});
-    setEditingId(null);
-    await load();
+    await caseFoldersRepository.update(editingId, { name }).catch(() => { });
+    setEditingId(null); await load();
   };
-
   const cancelRename = () => setEditingId(null);
 
   const deleteFolder = async (f) => {
     const descIds = getAllDescendantIds(f.id);
     const allIds = [...descIds.reverse(), f.id];
     if (!confirm(`Delete "${f.name}"${descIds.length > 0 ? ` and ${descIds.length} sub-folder(s)` : ''}?`)) return;
-    for (const id of allIds) {
-      await caseFoldersRepository.delete(id).catch(() => {});
-    }
+    for (const id of allIds) await caseFoldersRepository.delete(id).catch(() => { });
     toast.push('Folder deleted.', 'success');
     if (activeFolder === f.id || descIds.includes(activeFolder)) setActiveFolder(null);
     await load();
   };
 
   const bulkDeleteFolders = async () => {
-    if (folderSelected.size === 0) return;
+    if (!folderSelected.size) return;
     const allIds = new Set(folderSelected);
-    for (const id of folderSelected) {
-      getAllDescendantIds(id).forEach((did) => allIds.add(did));
-    }
+    for (const id of folderSelected) getAllDescendantIds(id).forEach((did) => allIds.add(did));
     if (!confirm(`Delete ${allIds.size} folder(s)?`)) return;
-    for (const id of [...allIds].reverse()) {
-      await caseFoldersRepository.delete(id).catch(() => {});
-    }
+    for (const id of [...allIds].reverse()) await caseFoldersRepository.delete(id).catch(() => { });
     toast.push(`Deleted ${allIds.size} folder(s).`, 'success');
-    setFolderSelected(new Set());
-    await load();
+    setFolderSelected(new Set()); await load();
   };
 
-  const cutFolder = (f) => {
-    setClipboard({ type: 'cut', folderId: f.id, folder: f });
-  };
-
-  const copyFolder = (f) => {
-    setClipboard({ type: 'copy', folderId: f.id, folder: f });
-  };
-
+  const cutFolder = (f) => setClipboard({ type: 'cut', folderId: f.id, folder: f });
+  const copyFolder = (f) => setClipboard({ type: 'copy', folderId: f.id, folder: f });
   const cancelClipboard = () => setClipboard(null);
 
   const pasteHere = async (targetId) => {
     if (!clipboard) return;
     const { type, folder } = clipboard;
-
     if (type === 'cut') {
       if (folder.id === targetId) { toast.push('Cannot move folder into itself.', 'error'); return; }
       const descIds = getAllDescendantIds(folder.id);
       if (descIds.includes(targetId)) { toast.push('Cannot move folder into its own sub-folder.', 'error'); return; }
-      if (targetId && getChildren(targetId).some((f) => f.name.toLowerCase() === folder.name.toLowerCase())) {
-        toast.push('A folder with that name already exists in the destination.', 'error'); return;
-      }
-      await caseFoldersRepository.update(folder.id, { parent_id: targetId || null }).catch(() => {});
+      if (targetId && getChildren(targetId).some((f) => f.name.toLowerCase() === folder.name.toLowerCase())) { toast.push('A folder with that name already exists.', 'error'); return; }
+      await caseFoldersRepository.update(folder.id, { parent_id: targetId || null }).catch(() => { });
       toast.push('Folder moved.', 'success');
     } else if (type === 'copy') {
       const copyRecursive = async (sourceId, newParentId) => {
         const source = folders.find((f) => f.id === sourceId);
         if (!source) return;
         const children = getChildren(sourceId);
-        const newFolder = await caseFoldersRepository.create({
-          name: source.name, kind: source.kind,
-          parent_id: newParentId || null,
-          order: source.order ?? 0, system: false,
-          created_at: new Date().toISOString(),
-        }).catch(() => null);
+        const newFolder = await caseFoldersRepository.create({ name: source.name, kind: source.kind, parent_id: newParentId || null, order: source.order ?? 0, system: false, created_at: new Date().toISOString() }).catch(() => null);
         if (!newFolder) return;
-        for (const child of children) {
-          await copyRecursive(child.id, newFolder.id);
-        }
+        for (const child of children) await copyRecursive(child.id, newFolder.id);
       };
       await copyRecursive(folder.id, targetId);
       toast.push('Folder copied.', 'success');
     }
-
-    setClipboard(null);
-    await load();
+    setClipboard(null); await load();
   };
 
-  const toggleDocSelect = (id) => setDocSelected((s) =>
-    s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
-  );
-
-  const toggleFolderSelect = (id) => {
-    setFolderSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const toggleDocSelect = (id) => setDocSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
+  const toggleFolderSelect = (id) => setFolderSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  const allChecked = paginated.length > 0 && paginated.every((d) => docSelected.includes(d.id));
+  const someChecked = paginated.some((d) => docSelected.includes(d.id));
+  const toggleAll = () => {
+    if (allChecked) setDocSelected((s) => s.filter((id) => !paginated.some((d) => d.id === id)));
+    else setDocSelected((s) => [...new Set([...s, ...paginated.map((d) => d.id)])]);
   };
 
-  const renderTree = (nodes, guides = []) => {
-    return nodes.map((f, idx) => {
-      const children = getChildren(f.id);
-      const isLast = idx === nodes.length - 1;
-      const isExpanded = expanded[f.id];
-      const isActive = activeFolder === f.id;
-      const isEditing = editingId === f.id;
-      const isCut = clipboard?.type === 'cut' && clipboard?.folderId === f.id;
-      const isHovered = hoveredId === f.id;
-      const isSelected = folderSelected.has(f.id);
-      const canPaste = clipboard && clipboard.folderId !== f.id && !getAllDescendantIds(f.id).includes(clipboard.folderId);
-      const hasChildren = children.length > 0;
+  /* ── folder tree renderer ── */
+  const renderTree = (nodes, guides = []) => nodes.map((f, idx) => {
+    const children = getChildren(f.id);
+    const isLast = idx === nodes.length - 1;
+    const isExpanded = expanded[f.id];
+    const isActive = activeFolder === f.id;
+    const isEditing = editingId === f.id;
+    const isCut = clipboard?.type === 'cut' && clipboard?.folderId === f.id;
+    const isHovered = hoveredId === f.id;
+    const isSelected = folderSelected.has(f.id);
+    const canPaste = clipboard && clipboard.folderId !== f.id && !getAllDescendantIds(f.id).includes(clipboard.folderId);
+    const hasChildren = children.length > 0;
+    const count = docCounts[f.name] || 0;
 
-      const handleClick = () => {
-        if (selectMode || clipboard) return;
-        selectFolder(f.id);
-        if (hasChildren) toggleExpand(f.id);
-      };
+    return (
+      <React.Fragment key={f.id}>
+        <div
+          className={`docmgr__folder-wrap${isActive ? ' active' : ''}${isCut ? ' docmgr__folder--cut' : ''}${isSelected ? ' docmgr__folder--selected' : ''}`}
+          onMouseEnter={() => setHoveredId(f.id)}
+          onMouseLeave={() => setHoveredId(null)}
+          onClick={() => { if (selectMode || clipboard) return; selectFolder(f.id); if (hasChildren) toggleExpand(f.id); }}
+        >
+          {selectMode && <input type="checkbox" className="docmgr__folder-checkbox" checked={isSelected} onChange={() => toggleFolderSelect(f.id)} onClick={(e) => e.stopPropagation()} />}
+          {guides.map((showLine, i) => <span key={i} className={`docmgr__tree-guide${showLine ? ' docmgr__tree-guide--v' : ''}`} />)}
+          <span className={`docmgr__tree-conn${isLast ? ' docmgr__tree-conn--last' : ''}`}>
+            {hasChildren && <span className="docmgr__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}><Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} /></span>}
+          </span>
+          <Icon name={hasChildren ? 'folder' : 'file'} size={15} />
+          {isEditing
+            ? <Input autoFocus value={editName} className="docmgr__rename-input" onClick={(e) => e.stopPropagation()} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }} />
+            : <span className={`docmgr__folder-name${isActive ? ' active' : ''}`}>{f.name}</span>
+          }
+          <span className="docmgr__count">{count}</span>
+          {!selectMode && (isHovered || isEditing) && !clipboard && (
+            <div className="docmgr__folder-actions" onClick={(e) => e.stopPropagation()}>
+              {isEditing
+                ? <><button className="iconbtn" title="Save" onClick={saveRename}><Icon name="check" size={13} /></button><button className="iconbtn" title="Cancel" onClick={cancelRename}><Icon name="close" size={13} /></button></>
+                : <><button className="iconbtn" title="Rename" onClick={() => startRename(f)}><Icon name="edit" size={13} /></button><button className="iconbtn" title="Cut" onClick={() => cutFolder(f)}><Icon name="scissors" size={13} /></button><button className="iconbtn" title="Copy" onClick={() => copyFolder(f)}><Icon name="copy" size={13} /></button><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => deleteFolder(f)}><Icon name="trash" size={13} /></button></>
+              }
+            </div>
+          )}
+          {!selectMode && canPaste && <button className="docmgr__paste-btn" onClick={(e) => { e.stopPropagation(); pasteHere(f.id); }}><Icon name="cornerDownRight" size={13} /> Paste</button>}
+        </div>
+        {hasChildren && isExpanded && renderTree(children, [...guides, !isLast])}
+      </React.Fragment>
+    );
+  });
 
-      return (
-        <React.Fragment key={f.id}>
-          <div
-            className={`docmgr__folder-wrap ${isActive ? 'active' : ''} ${isCut ? 'docmgr__folder--cut' : ''} ${isSelected ? 'docmgr__folder--selected' : ''}`}
-            onMouseEnter={() => setHoveredId(f.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={handleClick}
-          >
-            {selectMode && (
-              <input
-                type="checkbox"
-                className="docmgr__folder-checkbox"
-                checked={isSelected}
-                onChange={() => toggleFolderSelect(f.id)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
+  /* ── sort label ── */
+  const sortLabels = { 'name-az': 'Name (A–Z)', 'name-za': 'Name (Z–A)', 'date-new': 'Date (Newest)', 'date-old': 'Date (Oldest)', size: 'Size' };
 
-            {guides.map((showLine, i) => (
-              <span key={i} className={`docmgr__tree-guide ${showLine ? 'docmgr__tree-guide--v' : ''}`} />
-            ))}
-
-            <span className={`docmgr__tree-conn ${isLast ? 'docmgr__tree-conn--last' : ''}`}>
-              {hasChildren && (
-                <span className="docmgr__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
-                  <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} />
-                </span>
-              )}
-            </span>
-
-            <Icon name={hasChildren ? 'folder' : 'file'} size={15} />
-            {isEditing ? (
-              <Input
-                autoFocus
-                value={editName}
-                className="docmgr__rename-input"
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }}
-              />
-            ) : (
-              <span className={`docmgr__folder-name ${isActive ? 'active' : ''}`}>{f.name}</span>
-            )}
-            <span className="docmgr__count">{docCounts[f.name] || 0}</span>
-
-            {!selectMode && (isHovered || isEditing) && !clipboard && (
-              <div className="docmgr__folder-actions" onClick={(e) => e.stopPropagation()}>
-                {isEditing ? (
-                  <><button className="iconbtn" title="Save" onClick={() => saveRename()}><Icon name="check" size={13} /></button><button className="iconbtn" title="Cancel" onClick={() => cancelRename()}><Icon name="close" size={13} /></button></>
-                ) : (
-                  <><button className="iconbtn" title="Rename" onClick={() => startRename(f)}><Icon name="edit" size={13} /></button><button className="iconbtn" title="Cut" onClick={() => cutFolder(f)}><Icon name="scissors" size={13} /></button><button className="iconbtn" title="Copy" onClick={() => copyFolder(f)}><Icon name="copy" size={13} /></button><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => deleteFolder(f)}><Icon name="trash" size={13} /></button></>
-                )}
-              </div>
-            )}
-            {!selectMode && canPaste && (
-              <button className="docmgr__paste-btn" onClick={(e) => { e.stopPropagation(); pasteHere(f.id); }}>
-                <Icon name="cornerDownRight" size={13} /> Paste
-              </button>
-            )}
-          </div>
-          {hasChildren && isExpanded && renderTree(children, [...guides, !isLast])}
-        </React.Fragment>
-      );
-    });
-  };
-
+  /* ── render ── */
   return (
     <div className="fade-in">
-      <PageHeader icon="folder" title="Case Documents" subtitle="Browse case documents organized by folders." />
+      {/* Page header */}
+      <div className="cdoc__header-row">
+        <div className="cdoc__header-left">
+          <div className="cdoc__header-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="cdoc__title">Case Documents</h1>
+            <p className="cdoc__subtitle">Organize and manage all documents related to this case.</p>
+          </div>
+        </div>
+        <Button variant="primary" icon="upload" onClick={() => toast.push('Upload functionality coming soon.', 'info')}>
+          + Upload Document
+        </Button>
+      </div>
 
-      <div className="docmgr">
-        <aside className="docmgr__folders">
-          <div className="docmgr__folders-head">
-            <span>Folders ({folders.length})</span>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button className={`docmgr__mode-btn ${selectMode ? 'active' : ''}`} title={selectMode ? 'Exit select mode' : 'Select folders'} onClick={() => { setSelectMode((s) => !s); if (selectMode) setFolderSelected(new Set()); }}>
-                <Icon name="checkSquare" size={13} />
-              </button>
-              <button className="iconbtn" title="Create folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
-                <Icon name="plus" size={14} />
-              </button>
+      {/* Stats row */}
+      <div className="cdoc__stats">
+        <StatCard
+          icon={<><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></>}
+          value={folders.length}
+          label="Folders"
+        />
+        <StatCard
+          icon={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></>}
+          value={docs.length}
+          label="Documents"
+        />
+        <StatCard
+          icon={<><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" /></>}
+          value={bytes(totalSize)}
+          label="Total Size"
+        />
+        <StatCard
+          icon={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>}
+          value="Last Updated"
+          label={lastUpdated ? formatDate(lastUpdated) : '—'}
+          sub={null}
+        />
+      </div>
+
+      {/* Main layout: folder panel + content */}
+      <div className="cdoc__layout">
+
+        {/* Left: Folder tree panel */}
+        <aside className="cdoc__sidebar">
+          <div className="cdoc__sidebar-head">
+            <span className="cdoc__sidebar-title">FOLDERS</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button className="iconbtn" title="Expand all"><Icon name="maximize" size={13} /></button>
+              {selectMode && folderSelected.size > 0 && <button className="iconbtn iconbtn--danger" title="Delete selected" onClick={bulkDeleteFolders}><Icon name="trash" size={13} /></button>}
+              <button className={`docmgr__mode-btn${selectMode ? ' active' : ''}`} title={selectMode ? 'Exit select' : 'Select folders'} onClick={() => { setSelectMode((s) => !s); if (selectMode) setFolderSelected(new Set()); }}><Icon name="checkSquare" size={13} /></button>
+              <button className="iconbtn" title="New folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}><Icon name="plus" size={14} /></button>
             </div>
           </div>
 
           {clipboard && (
             <div className="docmgr__clipboard-bar">
-              <span className="muted">
-                {clipboard.type === 'cut' ? '✂️ Move' : '📋 Copy'}: <strong>{clipboard.folder.name}</strong>
-              </span>
-              <button className="iconbtn" title="Cancel" onClick={cancelClipboard}><Icon name="close" size={13} /></button>
+              <span className="muted">{clipboard.type === 'cut' ? '✂️ Move' : '📋 Copy'}: <strong>{clipboard.folder.name}</strong></span>
+              <button className="iconbtn" onClick={cancelClipboard}><Icon name="close" size={13} /></button>
             </div>
           )}
 
-          {selectMode && folderSelected.size > 0 && !clipboard && (
-            <div className="docmgr__bulk-bar">
-              <span className="muted">{folderSelected.size} selected</span>
-              <button className="iconbtn iconbtn--danger" title="Delete selected" onClick={bulkDeleteFolders}><Icon name="trash" size={13} /></button>
-              <button className="iconbtn" title="Clear selection" onClick={() => setFolderSelected(new Set())}><Icon name="close" size={13} /></button>
-            </div>
-          )}
-
+          {/* All Documents root item */}
           <button
-            className={`docmgr__folder ${!activeFolder ? 'active' : ''}`}
+            className={`docmgr__folder${!activeFolder ? ' active' : ''}`}
             onClick={() => selectFolder(null)}
           >
-            <Icon name="layers" size={15} /> <span>All Documents</span>
+            <Icon name="layers" size={15} />
+            <span>All Documents</span>
             <span className="docmgr__count">{docs.length}</span>
           </button>
 
-          {clipboard && (
-            <button className="docmgr__paste-btn" onClick={() => pasteHere(null)} style={{ margin: '4px 12px' }}>
-              <Icon name="cornerDownRight" size={13} /> Paste to root
-            </button>
-          )}
+          {clipboard && <button className="docmgr__paste-btn" onClick={() => pasteHere(null)} style={{ margin: '4px 12px' }}><Icon name="cornerDownRight" size={13} /> Paste to root</button>}
 
           {renderTree(rootFolders)}
 
@@ -385,26 +403,13 @@ export default function CaseDocuments() {
             <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {!bulkAdding ? (
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <Input
-                    autoFocus
-                    value={newName}
-                    placeholder="Folder name..."
-                    onChange={(e) => setNewName(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setCreating(false); setBulkAdding(false); } }}
-                  />
+                  <Input autoFocus value={newName} placeholder="Folder name..." onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setCreating(false); setBulkAdding(false); } }} />
                   <button className="iconbtn" title="Confirm" onClick={createFolder}><Icon name="check" size={14} /></button>
                   <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <textarea
-                    className="input docmgr__bulk-textarea"
-                    autoFocus
-                    value={bulkNames}
-                    placeholder="Enter folder names, one per line..."
-                    onChange={(e) => setBulkNames(e.target.value)}
-                    rows={4}
-                  />
+                  <textarea className="input docmgr__bulk-textarea" autoFocus value={bulkNames} placeholder="Enter folder names, one per line..." onChange={(e) => setBulkNames(e.target.value)} rows={4} />
                   <div style={{ display: 'flex', gap: 6 }}>
                     <Button size="sm" icon="plus" onClick={bulkAddFolders}>Create All</Button>
                     <Button size="sm" variant="ghost" onClick={() => setBulkAdding(false)}>Single</Button>
@@ -413,42 +418,82 @@ export default function CaseDocuments() {
                   </div>
                 </div>
               )}
-              {!bulkAdding && (
-                <button className="docmgr__bulk-toggle" onClick={() => { setBulkAdding(true); setNewName(''); }}>
-                  + Add multiple folders
-                </button>
-              )}
+              {!bulkAdding && <button className="docmgr__bulk-toggle" onClick={() => { setBulkAdding(true); setNewName(''); }}>+ Add multiple folders</button>}
             </div>
           )}
         </aside>
 
-        <div className="docmgr__main">
-          {/* Breadcrumb */}
-          <div className="docmgr__path">
-            <button className={`docmgr__path-btn ${!activeFolder ? 'active' : ''}`} onClick={() => { setActiveFolder(null); setDocSelected([]); }}>
-              <Icon name="layers" size={14} /> All Documents
-            </button>
-            {breadcrumbPath.map((f) => (
-              <React.Fragment key={f.id}>
-                <span className="docmgr__path-sep"><Icon name="chevron" size={10} /></span>
-                <button className="docmgr__path-btn" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>{f.name}</button>
-              </React.Fragment>
-            ))}
+        {/* Right: Content panel */}
+        <div className="cdoc__content">
+
+          {/* Content toolbar */}
+          <div className="cdoc__toolbar">
+            {/* Breadcrumb */}
+            <div className="cdoc__breadcrumb">
+              <button
+                className={`cdoc__bc-btn${!activeFolder ? ' active' : ''}`}
+                onClick={() => { setActiveFolder(null); setDocSelected([]); }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z" /></svg>
+                All Documents
+              </button>
+              {breadcrumbPath.map((f) => (
+                <React.Fragment key={f.id}>
+                  <span className="cdoc__bc-sep">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                  </span>
+                  <span className="cdoc__bc-sep">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                  </span>
+                  <button className="cdoc__bc-btn" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>{f.name}</button>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* Right controls */}
+            <div className="cdoc__toolbar-right">
+              {/* View toggle */}
+              <div className="cdoc__seg">
+                <button className={`cdoc__seg-btn${viewMode === 'grid' ? ' active' : ''}`} title="Grid view" onClick={() => setViewMode('grid')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                </button>
+                <button className={`cdoc__seg-btn${viewMode === 'list' ? ' active' : ''}`} title="List view" onClick={() => setViewMode('list')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                </button>
+              </div>
+
+              {/* Sort */}
+              <div className="cdoc__sort-wrap">
+                <span className="cdoc__sort-label">Sort by: {sortLabels[sortBy]}</span>
+                <select className="cdoc__sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="name-az">Name (A–Z)</option>
+                  <option value="name-za">Name (Z–A)</option>
+                  <option value="date-new">Date (Newest)</option>
+                  <option value="date-old">Date (Oldest)</option>
+                  <option value="size">Size</option>
+                </select>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+              </div>
+
+              {/* Filters */}
+              <button className="cdoc__filter-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+                Filters
+              </button>
+            </div>
           </div>
 
-          {/* Folder grid — root or sub-folders */}
+          {/* Sub-folder grid when viewing root or a folder that has children */}
           {(!activeFolder || getChildren(activeFolder).length > 0) && (
-            <div className="docmgr__folder-grid">
+            <div className="docmgr__folder-grid" style={{ marginBottom: 20 }}>
               {(activeFolder === null ? rootFolders : getChildren(activeFolder)).map((f) => {
                 const childCount = getChildren(f.id).length;
                 const fileCount = docCounts[f.name] || 0;
                 return (
-                  <div
-                    key={f.id}
-                    className="docmgr__folder-card"
-                    onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}
-                  >
-                    <Icon name="folder" size={32} />
+                  <div key={f.id} className="docmgr__folder-card" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>
+                    <div className="cdoc__folder-card-icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                    </div>
                     <span className="docmgr__folder-card-name">{f.name}</span>
                     <span className="docmgr__folder-card-meta">
                       {childCount > 0 && `${childCount} folder${childCount > 1 ? 's' : ''}`}
@@ -456,82 +501,154 @@ export default function CaseDocuments() {
                       {fileCount > 0 && `${fileCount} file${fileCount > 1 ? 's' : ''}`}
                       {childCount === 0 && fileCount === 0 && 'Empty'}
                     </span>
+                    <button className="cdoc__folder-card-menu" onClick={(e) => e.stopPropagation()}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                    </button>
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* File view — leaf folder with documents */}
-          {activeFolder && getChildren(activeFolder).length === 0 && (
+          {/* Document list / grid — when inside a leaf folder or showing all docs */}
+          {(activeFolder && getChildren(activeFolder).length === 0) || (!activeFolder && docs.length > 0) ? (
             <>
-              <div className="toolbar-row">
-                <div style={{ flex: 1 }} />
-                <div className="seg">
-                  <button className={`seg__btn ${view === 'list' ? 'active' : ''}`} title="List view" onClick={() => setView('list')}>
-                    <Icon name="list" size={15} />
-                  </button>
-                  <button className={`seg__btn ${view === 'grid' ? 'active' : ''}`} title="Grid view" onClick={() => setView('grid')}>
-                    <Icon name="grid" size={15} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="search-row" style={{ marginBottom: 12 }}>
-                <div className="datatable__search search-row__input">
-                  <Icon name="search" size={15} />
-                  <input value={search} placeholder="Search documents..." onChange={(e) => setSearch(e.target.value)} />
-                </div>
-              </div>
-
               {loading ? (
                 <div className="empty"><span className="spinner" /></div>
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <div className="empty">
                   <div className="empty__icon"><Icon name="folder" size={24} /></div>
                   <p className="muted">No documents found.</p>
                 </div>
-              ) : view === 'list' ? (
-                <Card bodyClass="card__body--flush">
-                  <div className="table-scroll">
-                    <table className="table">
-                      <thead>
-                        <tr><th style={{ width: 34 }} /><th>Name</th><th>Folder</th><th>Size</th><th>Date</th></tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map((d) => (
-                          <tr key={d.id} className={docSelected.includes(d.id) ? 'row--selected' : ''}>
-                            <td><input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} /></td>
-                            <td style={{ fontWeight: 600 }}>
-                              <Icon name="file" size={14} /> {d.name || d.title || 'Untitled'}
+              ) : viewMode === 'list' ? (
+                <div className="cdoc__table-wrap">
+                  <table className="cdoc__table">
+                    <thead>
+                      <tr>
+                        <th className="cdoc__th cdoc__th--check">
+                          <input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} />
+                        </th>
+                        <th className="cdoc__th cdoc__th--name">Name</th>
+                        <th className="cdoc__th">Type</th>
+                        <th className="cdoc__th">Size</th>
+                        <th className="cdoc__th">Uploaded On</th>
+                        <th className="cdoc__th">Uploaded By</th>
+                        <th className="cdoc__th cdoc__th--actions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginated.map((d) => {
+                        const name = d.name || d.title || 'Untitled';
+                        const isSelected = docSelected.includes(d.id);
+                        return (
+                          <tr key={d.id} className={`cdoc__tr${isSelected ? ' cdoc__tr--sel' : ''}`}>
+                            <td className="cdoc__td cdoc__td--check">
+                              <input type="checkbox" checked={isSelected} onChange={() => toggleDocSelect(d.id)} />
                             </td>
-                            <td><span className="badge badge--grey">{d.folder || '—'}</span></td>
-                            <td>{bytes(d.size)}</td>
-                            <td>{formatDate(d.uploaded_at || d.created_at || d.uploadedAt)}</td>
+                            <td className="cdoc__td cdoc__td--name">
+                              <div className="cdoc__doc-name-cell">
+                                <FileTypeIcon name={name} />
+                                <span className="cdoc__doc-name">{name}</span>
+                              </div>
+                            </td>
+                            <td className="cdoc__td"><ExtBadge name={name} /></td>
+                            <td className="cdoc__td cdoc__td--muted">{bytes(d.size)}</td>
+                            <td className="cdoc__td cdoc__td--muted">{formatDate(d.uploaded_at || d.created_at || d.uploadedAt)}</td>
+                            <td className="cdoc__td cdoc__td--muted">{d.uploaded_by || d.uploadedBy || '—'}</td>
+                            <td className="cdoc__td cdoc__td--actions">
+                              <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                              </button>
+                              <button className="cdoc__action-btn" title="Download">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                              </button>
+                              <div className="cdoc__action-more-wrap" onClick={(e) => e.stopPropagation()}>
+                                <button className="cdoc__action-btn" title="More" onClick={() => setDocMenuId(docMenuId === d.id ? null : d.id)}>
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                                </button>
+                                {docMenuId === d.id && (
+                                  <div className="cdoc__doc-menu">
+                                    <button className="cdoc__doc-menu-item" onClick={() => { setPreview(d); setDocMenuId(null); }}>Preview</button>
+                                    <button className="cdoc__doc-menu-item">Download</button>
+                                    <button className="cdoc__doc-menu-item">Rename</button>
+                                    <button className="cdoc__doc-menu-item">Move to…</button>
+                                    <div className="cdoc__doc-menu-divider" />
+                                    <button className="cdoc__doc-menu-item cdoc__doc-menu-item--danger">Delete</button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </Card>
-              ) : (
-                <div className="docgrid">
-                  {filtered.map((d) => (
-                    <div key={d.id} className={`doccard ${docSelected.includes(d.id) ? 'doccard--sel' : ''}`}>
-                      <div className="doccard__top">
-                        <input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} />
+                        );
+                      })}
+                    </tbody>
+                  </table>
+
+                  {/* Pagination */}
+                  <div className="cdoc__pagination">
+                    <span className="cdoc__pg-info">Showing {Math.min((page - 1) * perPage + 1, sorted.length)} to {Math.min(page * perPage, sorted.length)} of {sorted.length} documents</span>
+                    <div className="cdoc__pg-right">
+                      <div className="cdoc__per-page-wrap">
+                        <select className="cdoc__per-page" value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}>
+                          <option value={10}>10 per page</option>
+                          <option value={25}>25 per page</option>
+                          <option value={50}>50 per page</option>
+                        </select>
                       </div>
-                      <div className="doccard__icon"><Icon name="file" size={26} /></div>
-                      <div className="doccard__name" title={d.name}>{d.name || d.title || 'Untitled'}</div>
-                      <div className="doccard__meta">
-                        <span className="badge badge--grey">{d.folder || '—'}</span>
-                        <span>{bytes(d.size)}</span>
+                      <div className="cdoc__pg-btns">
+                        <button className="cdoc__pg-btn" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                          <button key={p} className={`cdoc__pg-btn${p === page ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+                        ))}
+                        <button className="cdoc__pg-btn" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                </div>
+              ) : (
+                /* Grid view */
+                <div className="docgrid">
+                  {sorted.map((d) => {
+                    const name = d.name || d.title || 'Untitled';
+                    const isSelected = docSelected.includes(d.id);
+                    return (
+                      <div key={d.id} className={`doccard${isSelected ? ' doccard--sel' : ''}`}>
+                        <div className="doccard__top">
+                          <input type="checkbox" checked={isSelected} onChange={() => toggleDocSelect(d.id)} />
+                        </div>
+                        <div className="doccard__icon"><FileTypeIcon name={name} /></div>
+                        <div className="doccard__name" title={name}>{name}</div>
+                        <div className="doccard__meta">
+                          <ExtBadge name={name} />
+                          <span>{bytes(d.size)}</span>
+                        </div>
+                        <div className="doccard__actions">
+                          <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                          </button>
+                          <button className="cdoc__action-btn" title="Download">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </>
+          ) : null}
+
+          {/* Empty state for folder with no docs and no sub-folders */}
+          {activeFolder && getChildren(activeFolder).length === 0 && sorted.length === 0 && !loading && (
+            <div className="empty">
+              <div className="empty__icon"><Icon name="folder" size={24} /></div>
+              <p className="muted">This folder is empty.</p>
+              <Button size="sm" variant="ghost" onClick={() => toast.push('Upload functionality coming soon.', 'info')}>Upload a document</Button>
+            </div>
           )}
         </div>
       </div>

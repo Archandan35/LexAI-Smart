@@ -772,16 +772,26 @@ select {
 
 /* ---------- Shared page components ---------- */
 .stats-row {
-  display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .loading-text {
-  padding: 40px; text-align: center; color: var(--text-muted);
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
 }
 
 .empty-state {
-  padding: 60px 20px; text-align: center; color: var(--text-muted);
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .data-table {
@@ -797,18 +807,62 @@ select {
 }
 
 /* ---------- Utility classes ---------- */
-.text-muted { color: var(--text-muted, #6b7280) !important; }
-.text-danger { color: var(--red-600, #dc2626) !important; }
-.text-bold { font-weight: 600 !important; }
-.text-brand { color: var(--brand, #4f46e5) !important; }
-.text-xs { font-size: 12px !important; }
-.text-sm { font-size: 13px !important; }
-.font-medium { font-weight: 500 !important; }
-.align-center { align-items: center !important; }
-.mt-4 { margin-top: 4px !important; }
-.ml-10 { margin-left: 10px !important; }
-.btn-icon { background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-soft); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
-.btn-icon:hover { background: var(--surface-2); color: var(--text); }
+.text-muted {
+  color: var(--text-muted, #6b7280) !important;
+}
+
+.text-danger {
+  color: var(--red-600, #dc2626) !important;
+}
+
+.text-bold {
+  font-weight: 600 !important;
+}
+
+.text-brand {
+  color: var(--brand, #4f46e5) !important;
+}
+
+.text-xs {
+  font-size: 12px !important;
+}
+
+.text-sm {
+  font-size: 13px !important;
+}
+
+.font-medium {
+  font-weight: 500 !important;
+}
+
+.align-center {
+  align-items: center !important;
+}
+
+.mt-4 {
+  margin-top: 4px !important;
+}
+
+.ml-10 {
+  margin-left: 10px !important;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-soft);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
 
 /* ---------- Tables ---------- */
 .table {
@@ -11676,7 +11730,674 @@ kbd.cmd__kbd {
   .hearing-modal__template-select {
     min-width: 140px;
   }
+
   .hearing-modal__section {
     padding: 12px 14px 6px;
   }
+}
+
+/* ================================================================
+   CaseDocuments page additions — append to index.css
+   All rules are scoped to .cdoc__ prefix to avoid collisions.
+   ================================================================ */
+
+/* ── Page header row ── */
+.cdoc__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.cdoc__header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cdoc__header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.cdoc__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy-900);
+  letter-spacing: -0.4px;
+  margin: 0 0 2px;
+  line-height: 1.15;
+}
+
+.cdoc__subtitle {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+/* ── Stats row ── */
+.cdoc__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 900px) {
+  .cdoc__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .cdoc__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cdoc__stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.cdoc__stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.cdoc__stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.cdoc__stat-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy-900);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.cdoc__stat-label {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  margin-top: 3px;
+  font-weight: 550;
+}
+
+/* ── Main layout ── */
+.cdoc__layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .cdoc__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Left sidebar (folder panel) ── */
+.cdoc__sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 80px;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.cdoc__sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.cdoc__sidebar-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+/* ── Right content panel ── */
+.cdoc__content {
+  min-width: 0;
+}
+
+/* ── Toolbar ── */
+.cdoc__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.cdoc__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Breadcrumb inside toolbar */
+.cdoc__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.cdoc__bc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 550;
+  transition: all 0.15s var(--ease);
+}
+
+.cdoc__bc-btn:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+}
+
+.cdoc__bc-btn.active {
+  color: var(--text-soft);
+}
+
+.cdoc__bc-sep {
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+  gap: 2px;
+}
+
+/* View toggle segment */
+.cdoc__seg {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.cdoc__seg-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: all 0.15s var(--ease);
+}
+
+.cdoc__seg-btn:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+}
+
+.cdoc__seg-btn.active {
+  background: var(--surface);
+  color: var(--navy-700);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Sort control */
+.cdoc__sort-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: var(--text-soft);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.cdoc__sort-wrap:hover {
+  border-color: var(--border-strong);
+}
+
+.cdoc__sort-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.cdoc__sort-select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+/* Filters button */
+.cdoc__filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  padding: 6px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+
+.cdoc__filter-btn:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  border-color: var(--border-strong);
+}
+
+/* ── Folder card icon ── */
+.cdoc__folder-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #fff8e6;
+  color: #c9871f;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+  transition: background 0.15s;
+}
+
+.docmgr__folder-card:hover .cdoc__folder-card-icon {
+  background: #fef3c7;
+}
+
+.cdoc__folder-card-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.docmgr__folder-card {
+  position: relative;
+}
+
+.docmgr__folder-card:hover .cdoc__folder-card-menu {
+  display: flex;
+}
+
+.cdoc__folder-card-menu:hover {
+  color: var(--navy-700);
+  border-color: var(--border-strong);
+}
+
+/* ── Document table ── */
+.cdoc__table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cdoc__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cdoc__th {
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cdoc__th--check {
+  width: 42px;
+}
+
+.cdoc__th--name {
+  min-width: 220px;
+}
+
+.cdoc__th--actions {
+  width: 110px;
+  text-align: right;
+}
+
+.cdoc__tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.cdoc__tr:last-child {
+  border-bottom: none;
+}
+
+.cdoc__tr:hover {
+  background: var(--surface-2);
+}
+
+.cdoc__tr--sel {
+  background: var(--brand-soft) !important;
+}
+
+.cdoc__td {
+  padding: 11px 14px;
+  font-size: 13.5px;
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.cdoc__td--check {
+  width: 42px;
+}
+
+.cdoc__td--muted {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.cdoc__td--actions {
+  text-align: right;
+}
+
+/* Doc name cell */
+.cdoc__doc-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cdoc__doc-name {
+  font-weight: 600;
+  color: var(--navy-900);
+  font-size: 13.5px;
+}
+
+/* File type badge (small icon in table row) */
+.cdoc__type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -0.3px;
+}
+
+/* Extension badge */
+.cdoc__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+}
+
+.cdoc__badge--pdf {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.cdoc__badge--docx {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.cdoc__badge--xlsx {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+/* Action buttons (eye, download, menu) */
+.cdoc__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+
+.cdoc__action-btn:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  border-color: var(--border-strong);
+}
+
+.cdoc__td--actions .cdoc__action-btn {
+  margin-left: 4px;
+}
+
+/* Doc context menu */
+.cdoc__action-more-wrap {
+  display: inline-flex;
+  position: relative;
+}
+
+.cdoc__doc-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  min-width: 160px;
+  padding: 4px;
+  animation: fadeIn 0.1s var(--ease);
+}
+
+.cdoc__doc-menu-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.12s;
+}
+
+.cdoc__doc-menu-item:hover {
+  background: var(--surface-2);
+}
+
+.cdoc__doc-menu-item--danger {
+  color: var(--red);
+}
+
+.cdoc__doc-menu-item--danger:hover {
+  background: var(--red-soft);
+}
+
+.cdoc__doc-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ── Pagination ── */
+.cdoc__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cdoc__pg-info {
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+
+.cdoc__pg-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cdoc__per-page-wrap {
+  position: relative;
+}
+
+.cdoc__per-page {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 28px 5px 10px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  background: var(--surface);
+  cursor: pointer;
+  appearance: none;
+  font-family: inherit;
+}
+
+.cdoc__pg-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cdoc__pg-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s var(--ease);
+  font-family: inherit;
+}
+
+.cdoc__pg-btn:hover:not(:disabled) {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  border-color: var(--border-strong);
+}
+
+.cdoc__pg-btn.active {
+  background: linear-gradient(135deg, var(--navy-700), var(--navy-800));
+  color: #fff;
+  border-color: var(--navy-700);
+  box-shadow: var(--shadow-brand);
+}
+
+.cdoc__pg-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Folder cards — use existing .docmgr__folder-card with updated icon ── */
+/* Override existing folder card to be row-based for the Folders page view */
+.cdoc__layout .docmgr__folder-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.cdoc__layout .docmgr__folder-card {
+  padding: 20px 16px 16px;
+  gap: 6px;
 }
