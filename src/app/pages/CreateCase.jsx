@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import Field, { Input, Textarea, Select } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
+import Button from '@/components/Button.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';
@@ -16,22 +17,21 @@ import { priorityLogic } from '@/logic/priorityLogic.js';
 import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
-import { useCourts } from '@/hooks/useCourts.js';
 import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
+import { DEFAULT_DOC_FOLDERS } from '@/constants/caseFolders.js';
 
 const INITIAL_FORM = {
-  case_number: '', case_year: '', status: 'Active', case_type: '',
+  case_number: '', case_year: '', case_type: '',
   plaintiffs: [], defendants: [],
   client: '', advocate: '',
-  court_hierarchy: '', court_type: '', court_name: '', bench_type: '',
+  court_hierarchy: '', court_name: '', bench_type: '',
   presiding_officer: '', jurisdiction: '',
-  case_stage: '', priority: '',
+  stage: '', priority: '',
   filing_date: '', next_hearing_date: '',
   filing_number: '', registration_number: '', cnr_number: '',
   registration_date: '', disposal_date: '',
@@ -139,11 +139,9 @@ export default function CreateCase() {
   const toast = useToast();
   const nav = useNavigate();
 
-  const { statuses, refresh: refreshStatuses } = useCaseStatuses();
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { names: stageNames, refresh: refreshStages } = useCaseStages();
   const { priorities, refresh: refreshPriorities } = usePriorities();
-  const { courtNames, refresh: refreshCourts } = useCourts();
   const { hierarchy, refresh: refreshHierarchy } = useCourtHierarchy();
   const { benchTypes, refresh: refreshBenchTypes } = useBenchTypes();
   const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
@@ -165,13 +163,16 @@ export default function CreateCase() {
   const fileRef = useRef(null);
   const [crudEntity, setCrudEntity] = useState(null);
 
+  const [folderMode, setFolderMode] = useState('select');
+  const [customFolderName, setCustomFolderName] = useState('');
+
   const openCrudManager = useCallback((entity) => setCrudEntity(entity), []);
   const closeCrudManager = useCallback(() => {
     setCrudEntity(null);
-    refreshStatuses(); refreshCaseTypes(); refreshStages(); refreshPriorities();
-    refreshCourts(); refreshHierarchy(); refreshBenchTypes(); refreshJurisdictions();
+    refreshCaseTypes(); refreshStages(); refreshPriorities();
+    refreshHierarchy(); refreshBenchTypes(); refreshJurisdictions();
     clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { });
-  }, [refreshStatuses, refreshCaseTypes, refreshStages, refreshPriorities, refreshCourts, refreshHierarchy, refreshBenchTypes, refreshJurisdictions]);
+  }, [refreshCaseTypes, refreshStages, refreshPriorities, refreshHierarchy, refreshBenchTypes, refreshJurisdictions]);
 
   const setField = useCallback((key, value) => setForm((prev) => ({ ...prev, [key]: value })), []);
   const setFieldEvent = useCallback((key) => (e) => setField(key, e.target.value), [setField]);
@@ -186,6 +187,12 @@ export default function CreateCase() {
     return [pl, df].filter(Boolean).join(' vs ');
   }, [form.plaintiffs, form.defendants]);
 
+  const autoCourtName = useMemo(() => {
+    const h = form.court_hierarchy, j = form.jurisdiction;
+    if (h && j) return `${h}, ${j}`;
+    return h || j || '';
+  }, [form.court_hierarchy, form.jurisdiction]);
+
   const handleFileChange = useCallback((e) => setSelectedFiles(Array.from(e.target.files || [])), []);
 
   const handleDrop = useCallback((e) => {
@@ -195,7 +202,6 @@ export default function CreateCase() {
 
   const validate = useCallback(() => {
     if (!form.case_number.trim()) { toast.error('Case number is required.'); return false; }
-    if (!form.status) { toast.error('Status is required.'); return false; }
     if (!form.case_type) { toast.error('Case type is required.'); return false; }
     if (!form.plaintiffs.length && !form.defendants.length) { toast.error('At least one plaintiff or defendant is required.'); return false; }
     if (!form.client) { toast.error('Client is required.'); return false; }
@@ -204,22 +210,23 @@ export default function CreateCase() {
 
   const buildPayload = useCallback((draft) => ({
     case_number: form.case_number, case_year: form.case_year,
-    status: draft ? 'Draft' : form.status, case_type: form.case_type,
+    status: draft ? 'Draft' : 'Active', case_type: form.case_type,
     plaintiff: form.plaintiffs.join(', '), defendant: form.defendants.join(', '),
     client: form.client, advocate: form.advocate,
-    court_hierarchy: form.court_hierarchy, court_type: form.court_type,
-    court_name: form.court_name, bench_type: form.bench_type,
-    presiding_officer: form.presiding_officer, jurisdiction: form.jurisdiction,
-    case_stage: form.case_stage, priority: form.priority,
+    court_hierarchy: form.court_hierarchy, court_name: autoCourtName,
+    bench_type: form.bench_type, judge: form.presiding_officer,
+    jurisdiction: form.jurisdiction,
+    stage: form.stage, priority: form.priority,
     filing_date: form.filing_date, next_hearing_date: form.next_hearing_date,
     filing_number: form.filing_number, registration_number: form.registration_number,
     cnr_number: form.cnr_number, registration_date: form.registration_date,
     disposal_date: form.disposal_date,
     case_summary: form.case_summary, internal_notes: form.internal_notes,
-  }), [form]);
+  }), [form, autoCourtName]);
 
   const resetForm = useCallback(() => {
     setForm({ ...INITIAL_FORM }); setSelectedFiles([]); setPlaintiffInput(''); setDefendantInput('');
+    setFolderMode('select'); setCustomFolderName('');
     if (fileRef.current) fileRef.current.value = '';
   }, []);
 
@@ -230,9 +237,8 @@ export default function CreateCase() {
       const payload = buildPayload(draft);
       const result = await caseLogic.create(payload, user);
       if (result?.id) {
-        const folderName = form.document_folder.trim();
-        if (folderName) {
-          const folderResult = await caseFolderLogic.create(result.id, folderName, 'document', user);
+        if (form.document_folder) {
+          const folderResult = await caseFolderLogic.create(result.id, form.document_folder, 'document', user);
           if (!folderResult.ok) toast.warning(`Case created but folder failed: ${folderResult.error}`);
         }
         toast.success(draft ? 'Draft saved!' : 'Case created successfully!');
@@ -243,18 +249,17 @@ export default function CreateCase() {
 
   /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
-  const statusOptions = statuses.map((s) => ({ value: s, label: s }));
   const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
-  const courtNameOptions = courtNames.map((c) => ({ value: c, label: c }));
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
+  const folderOptions = DEFAULT_DOC_FOLDERS.map((f) => ({ value: f, label: f }));
 
   const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
   const refreshMap = {
-    Status: refreshStatuses, 'Case Type': refreshCaseTypes,
+    'Case Type': refreshCaseTypes,
     'Court Hierarchy': refreshHierarchy, 'Bench Type': refreshBenchTypes,
     Jurisdiction: refreshJurisdictions, Stage: refreshStages, Priority: refreshPriorities,
     Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { }),
@@ -263,6 +268,23 @@ export default function CreateCase() {
 
   const summaryLen = (form.case_summary || '').length;
   const notesLen = (form.internal_notes || '').length;
+
+  const handleFolderSelect = useCallback((val) => {
+    if (val === '__create__') {
+      setFolderMode('create');
+      setField('document_folder', '');
+    } else {
+      setField('document_folder', val);
+    }
+  }, [setField]);
+
+  const handleFolderCreate = useCallback(() => {
+    const n = customFolderName.trim();
+    if (!n) return;
+    setField('document_folder', n);
+    setFolderMode('select');
+    setCustomFolderName('');
+  }, [customFolderName, setField]);
 
   return (
     <div className="page-area" style={{ paddingBottom: 80 }}>
@@ -296,25 +318,25 @@ export default function CreateCase() {
 
       {/* ---- 1. Case Header ---- */}
       <SectionCard num="1" title="Case Header">
-        <div className="grid-2">
+        <div className="grid-3">
           <Field label="Case Number" required>
             <Input value={form.case_number} onChange={setFieldEvent('case_number')} placeholder="e.g., 123/2024" />
           </Field>
           <Field label="Case Year" required>
             <Input value={form.case_year} onChange={setFieldEvent('case_year')} placeholder="e.g., 2024" type="text" />
           </Field>
-          <Field label="Status" required>
-            <GearSelect
-              value={form.status} onChange={setFieldEvent('status')}
-              options={statusOptions} placeholder="Select status"
-              entity="Status" onGearClick={openCrudManager}
-            />
-          </Field>
           <Field label="Case Type" required>
             <GearSelect
               value={form.case_type} onChange={setFieldEvent('case_type')}
               options={caseTypeOptions} placeholder="Select case type"
               entity="Case Type" onGearClick={openCrudManager}
+            />
+          </Field>
+          <Field label="Case Stage">
+            <GearSelect
+              value={form.stage} onChange={setFieldEvent('stage')}
+              options={stageOptions} placeholder="Select stage"
+              entity="Stage" onGearClick={openCrudManager}
             />
           </Field>
         </div>
@@ -379,18 +401,15 @@ export default function CreateCase() {
               entity="Court Hierarchy" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Court Type" required>
+          <Field label="Jurisdiction" required>
             <GearSelect
-              value={form.court_type} onChange={setFieldEvent('court_type')}
-              options={caseTypeOptions} placeholder="Select court type"
-              entity="Case Type" onGearClick={openCrudManager}
+              value={form.jurisdiction} onChange={setFieldEvent('jurisdiction')}
+              options={jurisdictionOptions} placeholder="Select jurisdiction"
+              entity="Jurisdiction" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Court Name" required>
-            <Select value={form.court_name} onChange={setFieldEvent('court_name')}>
-              <option value="">Select court</option>
-              {courtNameOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </Select>
+          <Field label="Court Name">
+            <Input value={autoCourtName} readOnly placeholder="Auto-combined from Hierarchy & Jurisdiction" />
           </Field>
           <Field label="Bench Type" required>
             <GearSelect
@@ -402,26 +421,12 @@ export default function CreateCase() {
           <Field label="Presiding Officer">
             <Input value={form.presiding_officer} onChange={setFieldEvent('presiding_officer')} placeholder="e.g., Justice Sharma" />
           </Field>
-          <Field label="Jurisdiction" required>
-            <GearSelect
-              value={form.jurisdiction} onChange={setFieldEvent('jurisdiction')}
-              options={jurisdictionOptions} placeholder="Select jurisdiction"
-              entity="Jurisdiction" onGearClick={openCrudManager}
-            />
-          </Field>
         </div>
       </SectionCard>
 
       {/* ---- 5. Case Tracking ---- */}
       <SectionCard num="5" title="Case Tracking">
         <div className="grid-2">
-          <Field label="Case Stage" required>
-            <GearSelect
-              value={form.case_stage} onChange={setFieldEvent('case_stage')}
-              options={stageOptions} placeholder="Select stage"
-              entity="Stage" onGearClick={openCrudManager}
-            />
-          </Field>
           <Field label="Priority" required>
             <div>
               <Select value={form.priority} onChange={setFieldEvent('priority')} style={{ marginBottom: 10 }}>
@@ -510,7 +515,27 @@ export default function CreateCase() {
       <SectionCard num="8" title="Documents">
         <div className="grid-2">
           <Field label="Document Folder">
-            <Input value={form.document_folder} onChange={setFieldEvent('document_folder')} placeholder="Enter folder name for case documents" />
+            {folderMode === 'select' ? (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Select value={form.document_folder} onChange={(e) => handleFolderSelect(e.target.value)}>
+                  <option value="">Select folder...</option>
+                  {folderOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  <option value="__create__">── Create new ──</option>
+                </Select>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Input
+                  autoFocus
+                  value={customFolderName}
+                  onChange={(e) => setCustomFolderName(e.target.value)}
+                  placeholder="New folder name..."
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFolderCreate(); } }}
+                />
+                <Button variant="primary" icon="check" onClick={handleFolderCreate}>Create</Button>
+                <Button variant="ghost" onClick={() => { setFolderMode('select'); setCustomFolderName(''); }}>Cancel</Button>
+              </div>
+            )}
           </Field>
           <Field label="Upload Documents">
             <div
