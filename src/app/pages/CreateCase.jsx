@@ -25,6 +25,7 @@ import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { DEFAULT_DOC_FOLDERS } from '@/constants/caseFolders.js';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const INITIAL_FORM = {
   case_number: '', case_year: '', case_type: '',
@@ -136,6 +137,7 @@ export default function CreateCase() {
   const { user } = useAuth();
   const toast = useToast();
   const nav = useNavigate();
+  const { logs, clearLogs, copyLogs } = useLogCapture();
 
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { names: stageNames, refresh: refreshStages } = useCaseStages();
@@ -596,6 +598,7 @@ export default function CreateCase() {
           <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Case'}
         </button>
       </div>
+      <DebugPanel logs={logs} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }

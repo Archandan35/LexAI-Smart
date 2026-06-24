@@ -3,6 +3,15 @@ import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 
+function DevToggle({ value, onChange }) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', color: value ? '#22c55e' : '#64748b', fontWeight: value ? 600 : 400, marginRight: 8 }}>
+      <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} style={{ accentColor: '#22c55e' }} />
+      <span>🐛 Dev Mode</span>
+    </label>
+  );
+}
+
 const labelToId = (label) => 'setting-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /* ── helpers ─────────────────────────────────────────────── */
@@ -627,6 +636,7 @@ export default function SystemSettings() {
           </div>
         </div>
         <div className="gs-topbar__right">
+          <DevToggle value={settings.devTools} onChange={(v) => handleChange('devTools', v)} />
           <div className="gs-topbar__search">
             <Icon name="search" size={15} />
             <input
