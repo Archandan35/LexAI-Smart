@@ -15,13 +15,12 @@ import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { useCourts } from '@/hooks/useCourts.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
+import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { preferencesService } from '@/services/preferencesService.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate } from '@/utils/format.js';
-const STATUSES = ['Active', 'Disposed', 'Stayed', 'Appeal'];
 
 export default function CaseVault() {
   const nav = useNavigate();
@@ -30,8 +29,8 @@ export default function CaseVault() {
   const { refreshCases } = useAppData();
   const { can } = usePermissions();
   const { user } = useAuth();
-  const { courtNames } = useCourts();
   const { names: stageNames } = useCaseStages();
+  const { statuses } = useCaseStatuses();
 
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -72,9 +71,11 @@ export default function CaseVault() {
   const remove = (c) => { if (confirm(`Delete case ${c.caseNumber}?`)) act(() => caseLogic.remove(c.id, user), 'Case deleted.'); };
   const bulkRemove = () => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } };
 
+  const uniqueCourts = useMemo(() => Array.from(new Set(cases.map(c => combinedCourt(c)).filter(name => name && name !== '—'))), [cases]);
+
   const filtered = useMemo(() => {
     let rows = cases.filter((c) => (filters.view === 'archived' ? c.archived : !c.archived));
-    if (filters.court) rows = rows.filter((c) => c.court === filters.court);
+    if (filters.court) rows = rows.filter((c) => combinedCourt(c) === filters.court);
     if (filters.stage) rows = rows.filter((c) => c.stage === filters.stage);
     if (filters.status) rows = rows.filter((c) => c.status === filters.status);
     if (query.trim()) {
@@ -103,13 +104,13 @@ export default function CaseVault() {
           <input placeholder="Search cases, judge, client, tags…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <select className="select case-vault__filter-court" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
-          <option value="">All courts</option>{courtNames.map((c) => <option key={c}>{c}</option>)}
+          <option value="">All courts</option>{uniqueCourts.map((c) => <option key={c}>{c}</option>)}
         </select>
         <select className="select case-vault__filter-stage" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
           <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
         </select>
         <select className="select case-vault__filter-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
-          <option value="">All status</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}
+          <option value="">All status</option>{statuses.map((s) => <option key={s}>{s}</option>)}
         </select>
         {savedFilters.length > 0 && (
           <select className="select case-vault__filter-stage" value="" onChange={(e) => { if (e.target.value) applyFilter(e.target.value); }}>
