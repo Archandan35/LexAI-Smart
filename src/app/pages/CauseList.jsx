@@ -392,6 +392,19 @@ export default function CauseList() {
     return cases.find((c) => c.id === caseId) || null;
   }, [cases]);
 
+  // Format case number from individual fields for reliable display
+  const formatCaseNumber = useCallback((c) => {
+    if (!c) return '';
+    const ct = c.case_type || '';
+    const cn = c.case_number || c.caseNumber || c.case_display_number;
+    const cy = c.case_year || '';
+    if (ct && cn && cy) return `${ct} ${cn}/${cy}`;
+    if (cn && typeof cn === 'string') return cn;
+    if (c.case_display_number) return c.case_display_number;
+    if (c.caseNumber) return c.caseNumber;
+    return cn ? String(cn) : '';
+  }, []);
+
   const hearingShortcodes = useMemo(() => [
     { label: 'Case Number', value: '{caseNumber}' },
     { label: 'Parties / Title', value: '{parties}' },
@@ -412,7 +425,7 @@ export default function CauseList() {
     const nd = c.next_hearing ? new Date(c.next_hearing) : null;
     const today = new Date();
     return text
-      .replace(/\{caseNumber\}/g, c.caseNumber || '—')
+      .replace(/\{caseNumber\}/g, formatCaseNumber(c) || c.caseNumber || c.case_display_number || '—')
       .replace(/\{parties\}/g, c.title || '—')
       .replace(/\{court\}/g, c.court || '—')
       .replace(/\{judge\}/g, c.judge || '—')
@@ -562,7 +575,7 @@ export default function CauseList() {
                   </div>
                   <div className="cause-list__case-title-area">
                     <div className="cause-list__case-title-row">
-                      <h2 className="cause-list__case-title">{selCase.caseNumber}</h2>
+                      <h2 className="cause-list__case-title">{formatCaseNumber(selCase) || selCase.caseNumber || selCase.case_display_number}</h2>
                       <span className="cause-list__case-badge-active">{selCase.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{selCase.title}</p>
@@ -727,7 +740,7 @@ export default function CauseList() {
                   </div>
                   <div className="cause-list__case-title-area">
                     <div className="cause-list__case-title-row">
-                      <h2 className="cause-list__case-title">{history.case?.caseNumber}</h2>
+                      <h2 className="cause-list__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
                       {history.case?.status && (
                         <span className="cause-list__case-badge-active">{history.case.status}</span>
                       )}
@@ -919,7 +932,7 @@ export default function CauseList() {
                   </div>
                   <div className="cause-list__case-title-area">
                     <div className="cause-list__case-title-row">
-                      <h2 className="cause-list__case-title">{history.case?.caseNumber}</h2>
+                      <h2 className="cause-list__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
                       <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
@@ -1061,7 +1074,7 @@ export default function CauseList() {
                 <div className="hearing-modal__case-preview">
                   <Icon name="balance" size={13} />
                   <div className="hearing-modal__case-preview-text">
-                    <span className="hearing-modal__case-preview-number">{cd.caseNumber}</span>
+                    <span className="hearing-modal__case-preview-number">{formatCaseNumber(cd) || cd.caseNumber || cd.case_display_number}</span>
                     <span className="hearing-modal__case-preview-title">{cd.title}</span>
                   </div>
                   <span className="hearing-modal__case-preview-badge">{cd.court || '—'}</span>
