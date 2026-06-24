@@ -299,7 +299,7 @@ export default function CauseList() {
   };
 
   // ----- Filtering & Sorting calculations -----
-  const uniqueCourts = Array.from(new Set(rows.map(r => r.court).filter(Boolean)));
+  const uniqueCourts = Array.from(new Set(cases.map(c => combinedCourt(c)).filter(name => name && name !== '—')));
 
   const handleSortToggle = () => {
     setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
