@@ -78,7 +78,7 @@ export const InstallationPlanner = {
     }
 
     if (detect?.partialInstall || detect?.installed === false) {
-      steps.push({ id: 'seed', label: 'Seed default data', type: 'seed' });
+      steps.push({ id: 'seed', label: 'Finalise install', type: 'seed' });
     }
 
     if (detect?.version > 0 && detect.version < SCHEMA_VERSION) {

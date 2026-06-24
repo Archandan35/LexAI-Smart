@@ -18,21 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_caseTypes_short_code ON "caseTypes"(short_code);
 CREATE INDEX IF NOT EXISTS idx_caseTypes_status ON "caseTypes"(status);
 CREATE INDEX IF NOT EXISTS idx_caseTypes_display_order ON "caseTypes"(display_order);
 
--- Seed default case types
-INSERT INTO "caseTypes" (id, name, short_code, display_order, status, createdAt)
-VALUES
-  ('ct_civil', 'Civil Suit', 'CIV', 1, 'Active', datetime('now')),
-  ('ct_criminal', 'Criminal Case', 'CRL', 2, 'Active', datetime('now')),
-  ('ct_writ', 'Writ Petition', 'WP', 3, 'Active', datetime('now')),
-  ('ct_consumer', 'Consumer Complaint', 'CC', 4, 'Active', datetime('now')),
-  ('ct_family', 'Family Matter', 'FAM', 5, 'Active', datetime('now')),
-  ('ct_appeal', 'Appeal', 'APL', 6, 'Active', datetime('now')),
-  ('ct_revision', 'Revision Petition', 'REV', 7, 'Active', datetime('now')),
-  ('ct_arbitration', 'Arbitration', 'ARB', 8, 'Active', datetime('now')),
-  ('ct_company', 'Company Petition', 'CP', 9, 'Active', datetime('now')),
-  ('ct_tax', 'Tax Appeal', 'TAX', 10, 'Active', datetime('now')),
-  ('ct_original', 'Original Suit', 'OS', 11, 'Active', datetime('now'))
-ON CONFLICT(short_code) DO NOTHING;
+-- Case types are created through the Case Types management page
 
 -- 2. Courts table
 CREATE TABLE IF NOT EXISTS "courts" (
@@ -47,11 +33,8 @@ CREATE TABLE IF NOT EXISTS "courts" (
 CREATE INDEX IF NOT EXISTS idx_courts_status ON "courts"(status);
 CREATE INDEX IF NOT EXISTS idx_courts_display_order ON "courts"(display_order);
 
--- Seed default courts
-INSERT INTO "courts" (id, name, display_order, status, createdAt)
-VALUES
-  ('court_sc', 'Supreme Court of India', 1, 'Active', datetime('now')),
-  ('court_hc', 'High Court', 2, 'Active', datetime('now')),
+-- Courts are created through the Courts management page
+
   ('court_district', 'District & Sessions Court', 3, 'Active', datetime('now')),
   ('court_civil_sr', 'Civil Judge (Sr. Dvn.)', 4, 'Active', datetime('now')),
   ('court_civil_jr', 'Civil Judge (Jr. Dvn.)', 5, 'Active', datetime('now')),

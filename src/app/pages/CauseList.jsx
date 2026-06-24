@@ -12,7 +12,6 @@ import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
 import { useHearingStatuses } from '@/hooks/useHearingStatuses.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
-import { caseLogic } from '@/logic/caseLogic.js';
 import { templateLogic } from '@/logic/templateLogic.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
@@ -27,7 +26,7 @@ const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' 
 export default function CauseList() {
   const toast = useToast();
   const { user } = useAuth();
-  const { cases, ready, refreshCases } = useAppData();
+  const { cases } = useAppData();
   const { statuses: hearingStatuses } = useHearingStatuses();
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState('list'); // list | history | templates | timeline
@@ -75,7 +74,6 @@ export default function CauseList() {
   // Case History & Timeline views
   const [histCaseId, setHistCaseId] = useState('');
   const [history, setHistory] = useState(null);
-  const [seeding, setSeeding] = useState(false);
 
   // Rich text editor state
   const [draftTemplates, setDraftTemplates] = useState([]);
@@ -94,148 +92,12 @@ export default function CauseList() {
     setDraftTemplates(ok);
   }, []);
 
-  const checkAndSeed = useCallback(async () => {
-    if (!ready || seeding) return;
-    const demoCaseExists = cases.some((c) => c.caseNumber === 'CS (I) No. 392 of 2015');
-    if (demoCaseExists) return;
-
-    setSeeding(true);
-    try {
-      // 1. Seed Cases
-      const case1 = await caseLogic.create({
-        case_type: 'CS (I)',
-        case_number: 392,
-        case_year: 2015,
-        title: 'Purna Chandra Sahoo & Others vs Pravati Sahoo & Others',
-        court: 'Civil Judge (Sr. Div.) Athgarh',
-        judge: 'Babita Mishra',
-        stage: 'Defendant Evidence',
-        filing_date: '2015-12-09',
-        next_hearing: '2026-07-09',
-        status: 'Active',
-        priority: 'Normal',
-        court_name: 'Athgarh',
-      }, user);
-
-      const case2 = await caseLogic.create({
-        case_type: 'CS (I)',
-        case_number: 156,
-        case_year: 2024,
-        title: 'Ramesh Kumar vs State of Odisha',
-        court: 'Civil Judge (Sr. Div.) Cuttack',
-        judge: 'S.K. Patnaik',
-        stage: 'Plaintiff Evidence',
-        filing_date: '2024-01-12',
-        next_hearing: '2026-06-15',
-        status: 'Active',
-        priority: 'Normal',
-        court_name: 'Cuttack',
-      }, user);
-
-      const case3 = await caseLogic.create({
-        case_type: 'FAO',
-        case_number: 21,
-        case_year: 2017,
-        title: 'ABC Corp vs XYZ Ltd',
-        court: 'District Judge Cuttack',
-        judge: 'P. Mohanty',
-        stage: 'Final Arguments',
-        filing_date: '2017-03-05',
-        next_hearing: '2026-06-17',
-        status: 'Active',
-        priority: 'High',
-        court_name: 'Cuttack',
-      }, user);
-
-      const case4 = await caseLogic.create({
-        case_type: 'WP(C)',
-        case_number: 845,
-        case_year: 2023,
-        title: 'Priya Sharma vs Union of India',
-        court: 'High Court of Orissa Cuttack',
-        judge: 'Justice R. Panda',
-        stage: 'Hearing',
-        filing_date: '2023-06-20',
-        next_hearing: '2026-06-20',
-        status: 'Active',
-        priority: 'Critical',
-        court_name: 'Cuttack',
-      }, user);
-
-      const case5 = await caseLogic.create({
-        case_type: 'CS (I)',
-        case_number: 78,
-        case_year: 2025,
-        title: 'Suresh Patel vs Mahesh Patel',
-        court: 'Civil Judge (Jr. Div.) Athgarh',
-        judge: 'A. Behera',
-        stage: 'Framing of Issues',
-        filing_date: '2025-01-01',
-        next_hearing: '2026-06-22',
-        status: 'Active',
-        priority: 'Normal',
-        court_name: 'Athgarh',
-      }, user);
-
-      // 2. Seed Hearings for Case 1 (CS (I) No. 392 of 2015)
-      const hearingsForCase1 = [
-        { caseId: case1.id, date: '2015-12-09T10:00:00.000Z', status: 'Completed', purpose: 'Case Filed', notes: 'Case has been filed in the court.' },
-        { caseId: case1.id, date: '2015-12-22T10:30:00.000Z', status: 'Completed', purpose: 'Summons Issued', notes: 'Summons issued to defendants.' },
-        { caseId: case1.id, date: '2016-10-27T11:00:00.000Z', status: 'Completed', purpose: 'Written Statement Filed', notes: 'Written statement filed by defendants.' },
-        { caseId: case1.id, date: '2017-02-15T11:30:00.000Z', status: 'Completed', purpose: 'Issues Framed', notes: 'Court framed issues in the case.' },
-        { caseId: case1.id, date: '2018-08-10T10:00:00.000Z', status: 'Completed', purpose: 'Plaintiff Evidence', notes: 'Plaintiff evidence recorded and completed.' },
-        { caseId: case1.id, date: '2026-03-05T10:30:00.000Z', status: 'Completed', purpose: 'Defendant Evidence', notes: 'Defendant evidence in progress.' },
-        { caseId: case1.id, date: '2026-07-09T10:30:00.000Z', status: 'Scheduled', purpose: 'Next Hearing', notes: 'Hearing date scheduled.' },
-      ];
-
-      const otherHearings = [
-        { caseId: case2.id, date: '2026-06-15T11:00:00.000Z', status: 'Scheduled', purpose: 'Plaintiff Evidence', notes: 'Plaintiff evidence to be recorded.' },
-        { caseId: case3.id, date: '2026-06-17T14:00:00.000Z', status: 'Rescheduled', purpose: 'Final Arguments', notes: 'Final arguments hearing.' },
-        { caseId: case4.id, date: '2026-06-20T10:30:00.000Z', status: 'Completed', purpose: 'Hearing', notes: 'Hearing completed.' },
-        { caseId: case5.id, date: '2026-06-22T11:30:00.000Z', status: 'Scheduled', purpose: 'Framing of Issues', notes: 'Framing of issues hearing.' },
-      ];
-
-      for (const h of [...hearingsForCase1, ...otherHearings]) {
-        await causeListLogic.addHearing(h);
-      }
-
-      // 3. Seed Drafting Templates — hearing-related only
-      const demoTemplates = [
-        { name: 'Hearing Notice', category: 'Hearing', content: 'Hearing notice draft template...', is_active: true, description: 'Notice to parties for scheduled court hearing date and time.' },
-        { name: 'Adjournment Application', category: 'Hearing', content: 'Adjournment application draft template...', is_active: true, description: 'Application seeking adjournment of hearing to a future date.' },
-        { name: 'Short Cause Notice', category: 'Hearing', content: 'Short cause notice draft template...', is_active: true, description: 'Notice for listing of short cause matters before the court.' },
-        { name: 'Hearing Order Sheet', category: 'Hearing', content: 'Hearing order sheet template...', is_active: true, description: 'Standard order sheet for recording proceedings at each hearing.' },
-        { name: 'Next Date Intimation', category: 'Hearing', content: 'Next date intimation draft template...', is_active: true, description: 'Letter intimating parties of the next scheduled hearing date.' },
-        { name: 'Hearing Appearance Memo', category: 'Hearing', content: 'Appearance memo draft template...', is_active: true, description: 'Memo confirming counsel appearance at the court hearing.' },
-      ];
-
-      for (const t of demoTemplates) {
-        await templateLogic.create(t);
-      }
-
-      await refreshCases();
-      await loadList();
-      await loadDraftingTemplates();
-      toast.push('Demo litigation data seeded successfully.', 'success');
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSeeding(false);
-    }
-  }, [cases, ready, seeding, refreshCases, loadList, loadDraftingTemplates, user, toast]);
-
   useEffect(() => {
     loadList();
     loadDraftingTemplates();
   }, [loadList, loadDraftingTemplates]);
 
-  useEffect(() => {
-    if (ready && cases.length === 0) {
-      checkAndSeed();
-    }
-  }, [cases, ready, checkAndSeed]);
-
-  // Sync selected case history if case list loads and case selection matches
+  // Sync selected case history if case list loads
   const loadHistory = useCallback(async (caseId) => {
     setHistCaseId(caseId);
     if (!caseId) { setHistory(null); return; }
@@ -243,13 +105,10 @@ export default function CauseList() {
     setHistory(res.ok ? res.data : null);
   }, []);
 
-  // When cases list loads or page initializes, auto-select first case for convenience
+  // When cases list loads, auto-select first case for convenience
   useEffect(() => {
     if (cases.length > 0 && !histCaseId) {
-      const demoId = cases.find(c => c.caseNumber === 'CS (I) No. 392 of 2015')?.id || cases[0]?.id;
-      if (demoId) {
-        loadHistory(demoId);
-      }
+      loadHistory(cases[0]?.id);
     }
   }, [cases, histCaseId, loadHistory]);
 

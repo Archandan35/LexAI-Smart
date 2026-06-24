@@ -50,9 +50,6 @@ export const databaseAdminService = {
   rollback(target) { return schemaVersionManager.rollback(target); },
 
   // ---- data ops (Phase 4) ----
-  seedDemo() { return seedEngine.seedDemo(); },
-  seedPermissions() { return seedEngine.seedPermissions(); },
-  seedMasterData() { return seedEngine.seedMasterData(); },
   clearAll() { return seedEngine.clearAll(); },
   counts() { return seedEngine.counts(); },
 

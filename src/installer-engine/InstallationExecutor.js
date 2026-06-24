@@ -81,10 +81,7 @@ export const InstallationExecutor = {
         }
 
         if (step.type === 'seed') {
-          report('Seed default data');
           await databaseAdminService.stampInstalled();
-          await databaseAdminService.seedMasterData();
-          report('Seed default data', 'done');
           continue;
         }
 

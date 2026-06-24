@@ -146,14 +146,6 @@ export const databaseManagerLogic = {
   async validateHealth() { try { return ok(await databaseHealthService.validate()); } catch (e) { return fail(e); } },
 
   // ---- data ----
-  async seedDemo(user) {
-    try {
-      await databaseAdminService.ensureSchema({ coreOnly: false });
-      const demo = await databaseAdminService.seedDemo();
-      await audit('db.seed', user, 'Seeded demo data');
-      return ok({ demo });
-    } catch (e) { return fail(e); }
-  },
   async clearDatabase(user) {
     try { const removed = await databaseAdminService.clearAll(); await audit('db.clear', user); return ok(removed); }
     catch (e) { return fail(e); }
