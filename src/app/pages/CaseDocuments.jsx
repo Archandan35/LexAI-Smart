@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { Input } from '@/components/Field.jsx';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
+import storageService from '@/services/storageService.js';
 import { formatDate, bytes } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
@@ -77,7 +78,29 @@ export default function CaseDocuments() {
   const [sortBy, setSortBy] = useState('name-az');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [docMenuId, setDocMenuId] = useState(null); // context menu doc id
+  const [docMenuId, setDocMenuId] = useState(null);
+  const [folderSearch, setFolderSearch] = useState('');
+  const [fileExtFilter, setFileExtFilter] = useState([]);
+  const [showFilter, setShowFilter] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // close context menu on click outside
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const handler = () => setCtxMenu(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [ctxMenu]);
+
+  // close filter popup on click outside
+  useEffect(() => {
+    if (!showFilter) return;
+    const handler = (e) => { if (!e.target.closest('.cdoc__filter-wrap')) setShowFilter(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showFilter]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -149,19 +172,33 @@ export default function CaseDocuments() {
     return path;
   }, [activeFolder, folders]);
 
+  function folderMatches(f, term) {
+    if (!term) return true;
+    const t = term.toLowerCase();
+    if (f.name.toLowerCase().includes(t)) return true;
+    return folders.some((c) => c.parent_id === f.id && folderMatches(c, t));
+  }
+
+  const filteredRootFolders = useMemo(() => {
+    if (!folderSearch) return rootFolders;
+    return rootFolders.filter((f) => folderMatches(f, folderSearch));
+  }, [folderSearch, rootFolders, folders]);
+
   const visible = !activeFolder
     ? docs
     : docs.filter((d) => d.folder === getFolderName(activeFolder));
 
   const sorted = useMemo(() => {
-    const arr = [...visible.filter((d) => !search || (d.name || d.title || '').toLowerCase().includes(search.toLowerCase()))];
+    let arr = [...visible];
+    if (search) arr = arr.filter((d) => (d.name || d.title || '').toLowerCase().includes(search.toLowerCase()));
+    if (fileExtFilter.length > 0) arr = arr.filter((d) => fileExtFilter.includes(fileExt(d.name || '')));
     if (sortBy === 'name-az') arr.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     if (sortBy === 'name-za') arr.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
     if (sortBy === 'date-new') arr.sort((a, b) => new Date(b.uploaded_at || 0) - new Date(a.uploaded_at || 0));
     if (sortBy === 'date-old') arr.sort((a, b) => new Date(a.uploaded_at || 0) - new Date(b.uploaded_at || 0));
     if (sortBy === 'size') arr.sort((a, b) => (b.size || 0) - (a.size || 0));
     return arr;
-  }, [visible, search, sortBy]);
+  }, [visible, search, fileExtFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
   const paginated = sorted.slice((page - 1) * perPage, page * perPage);
@@ -266,11 +303,32 @@ export default function CaseDocuments() {
     else setDocSelected((s) => [...new Set([...s, ...paginated.map((d) => d.id)])]);
   };
 
+  const toggleFileExt = (ext) => {
+    setFileExtFilter((prev) => prev.includes(ext) ? prev.filter((e) => e !== ext) : [...prev, ext]);
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const folder = activeFolder ? getFolderName(activeFolder) || 'Miscellaneous' : 'Miscellaneous';
+      await storageService.uploadDocument(file, { folder });
+      toast.push('Document uploaded.', 'success');
+      await load();
+    } catch (err) {
+      toast.push(err?.message || 'Upload failed.', 'error');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   /* ── folder tree renderer ── */
   const renderTree = (nodes, guides = []) => nodes.map((f, idx) => {
     const children = getChildren(f.id);
     const isLast = idx === nodes.length - 1;
-    const isExpanded = expanded[f.id];
+    const isExpanded = folderSearch ? true : expanded[f.id];
     const isActive = activeFolder === f.id;
     const isEditing = editingId === f.id;
     const isCut = clipboard?.type === 'cut' && clipboard?.folderId === f.id;
@@ -280,6 +338,10 @@ export default function CaseDocuments() {
     const hasChildren = children.length > 0;
     const count = docCounts[f.name] || 0;
 
+    const filteredChildren = folderSearch
+      ? children.filter((c) => folderMatches(c, folderSearch))
+      : children;
+
     return (
       <React.Fragment key={f.id}>
         <div
@@ -287,6 +349,7 @@ export default function CaseDocuments() {
           onMouseEnter={() => setHoveredId(f.id)}
           onMouseLeave={() => setHoveredId(null)}
           onClick={() => { if (selectMode || clipboard) return; selectFolder(f.id); if (hasChildren) toggleExpand(f.id); }}
+          onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setCtxMenu({ id: f.id, x: e.clientX, y: e.clientY }); }}
         >
           {selectMode && <input type="checkbox" className="docmgr__folder-checkbox" checked={isSelected} onChange={() => toggleFolderSelect(f.id)} onClick={(e) => e.stopPropagation()} />}
           {guides.map((showLine, i) => <span key={i} className={`docmgr__tree-guide${showLine ? ' docmgr__tree-guide--v' : ''}`} />)}
@@ -309,7 +372,7 @@ export default function CaseDocuments() {
           )}
           {!selectMode && canPaste && <button className="docmgr__paste-btn" onClick={(e) => { e.stopPropagation(); pasteHere(f.id); }}><Icon name="cornerDownRight" size={13} /> Paste</button>}
         </div>
-        {hasChildren && isExpanded && renderTree(children, [...guides, !isLast])}
+        {hasChildren && isExpanded && renderTree(filteredChildren, [...guides, !isLast])}
       </React.Fragment>
     );
   });
@@ -333,8 +396,12 @@ export default function CaseDocuments() {
             <p className="cdoc__subtitle">Organize and manage all documents related to this case.</p>
           </div>
         </div>
-        <Button variant="primary" icon="upload" onClick={() => toast.push('Upload functionality coming soon.', 'info')}>
-          + Upload Document
+        <input ref={fileInputRef} type="file" hidden onChange={handleUpload} accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg,.txt" />
+        <Button variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
+          Add Folder
+        </Button>
+        <Button variant="primary" icon="upload" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+          {uploading ? 'Uploading…' : '+ Upload Document'}
         </Button>
       </div>
 
@@ -371,7 +438,13 @@ export default function CaseDocuments() {
           <div className="cdoc__sidebar-head">
             <span className="cdoc__sidebar-title">FOLDERS</span>
             <div style={{ display: 'flex', gap: 4 }}>
-              <button className="iconbtn" title="Expand all"><Icon name="maximize" size={13} /></button>
+              <button className="iconbtn" title="Expand / Collapse all" onClick={() => {
+                const allIds = [];
+                const walk = (list) => { list.forEach((f) => { allIds.push(f.id); walk(getChildren(f.id)); }); };
+                walk(rootFolders);
+                const allExpanded = allIds.every((id) => expanded[id]);
+                setExpanded(Object.fromEntries(allIds.map((id) => [id, !allExpanded])));
+              }}><Icon name="maximize" size={13} /></button>
               {selectMode && folderSelected.size > 0 && <button className="iconbtn iconbtn--danger" title="Delete selected" onClick={bulkDeleteFolders}><Icon name="trash" size={13} /></button>}
               <button className={`docmgr__mode-btn${selectMode ? ' active' : ''}`} title={selectMode ? 'Exit select' : 'Select folders'} onClick={() => { setSelectMode((s) => !s); if (selectMode) setFolderSelected(new Set()); }}><Icon name="checkSquare" size={13} /></button>
               <button className="iconbtn" title="New folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}><Icon name="plus" size={14} /></button>
@@ -385,6 +458,12 @@ export default function CaseDocuments() {
             </div>
           )}
 
+          {/* Folder search */}
+          <div className="cdoc__sidebar-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            <input value={folderSearch} placeholder="Search folders…" onChange={(e) => setFolderSearch(e.target.value)} />
+          </div>
+
           {/* All Documents root item */}
           <button
             className={`docmgr__folder${!activeFolder ? ' active' : ''}`}
@@ -397,7 +476,7 @@ export default function CaseDocuments() {
 
           {clipboard && <button className="docmgr__paste-btn" onClick={() => pasteHere(null)} style={{ margin: '4px 12px' }}><Icon name="cornerDownRight" size={13} /> Paste to root</button>}
 
-          {renderTree(rootFolders)}
+          {renderTree(filteredRootFolders)}
 
           {creating && (
             <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -421,6 +500,33 @@ export default function CaseDocuments() {
               {!bulkAdding && <button className="docmgr__bulk-toggle" onClick={() => { setBulkAdding(true); setNewName(''); }}>+ Add multiple folders</button>}
             </div>
           )}
+
+          {/* Right-click context menu */}
+          {ctxMenu && (() => {
+            const f = folders.find((x) => x.id === ctxMenu.id);
+            if (!f) return null;
+            return (
+              <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: ctxMenu.x, top: ctxMenu.y }}>
+                <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); startRename(f); setCtxMenu(null); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                  Rename
+                </button>
+                <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); cutFolder(f); setCtxMenu(null); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" /></svg>
+                  Cut
+                </button>
+                <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); copyFolder(f); setCtxMenu(null); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  Copy
+                </button>
+                <div className="cdoc__ctx-divider" />
+                <button className="cdoc__ctx-item cdoc__ctx-item--danger" onClick={(e) => { e.stopPropagation(); deleteFolder(f); setCtxMenu(null); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                  Delete
+                </button>
+              </div>
+            );
+          })()}
         </aside>
 
         {/* Right: Content panel */}
@@ -476,10 +582,27 @@ export default function CaseDocuments() {
               </div>
 
               {/* Filters */}
-              <button className="cdoc__filter-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
-                Filters
-              </button>
+              <div className="cdoc__filter-wrap">
+                <button className={`cdoc__filter-btn${fileExtFilter.length > 0 ? ' cdoc__filter-btn--active' : ''}`} onClick={() => setShowFilter((s) => !s)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+                  Filters{fileExtFilter.length > 0 ? ` (${fileExtFilter.length})` : ''}
+                </button>
+                {showFilter && (
+                  <div className="cdoc__filter-popup">
+                    <div className="cdoc__filter-popup-title">File type</div>
+                    {['PDF', 'DOCX', 'DOC', 'XLSX', 'XLS'].map((ext) => (
+                      <label key={ext} className="cdoc__filter-opt">
+                        <input type="checkbox" checked={fileExtFilter.includes(ext)} onChange={() => toggleFileExt(ext)} />
+                        <span>{ext}</span>
+                      </label>
+                    ))}
+                    <div className="cdoc__filter-popup-actions">
+                      <button className="cdoc__filter-clear" onClick={() => { setFileExtFilter([]); setShowFilter(false); }}>Clear</button>
+                      <button className="cdoc__filter-apply" onClick={() => setShowFilter(false)}>Apply</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
