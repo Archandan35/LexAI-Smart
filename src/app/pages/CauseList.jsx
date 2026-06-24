@@ -19,6 +19,7 @@ import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, formatDateTime } from '@/utils/format.js';
+import { combinedCourt } from '@/utils/caseFormat.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: HEARING_STATUS[0], purpose: '', notes: '', docRef: null, docName: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -579,12 +580,13 @@ export default function CauseList() {
                       <span className="cause-list__case-badge-active">{selCase.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{selCase.title}</p>
+                    <div className="cause-list__header-court">{combinedCourt(selCase)}</div>
                   </div>
                 </div>
                 <div className="cause-list__details-grid">
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Court</span>
-                    <span className="cause-list__details-value">{selCase.court || '—'}</span>
+                    <span className="cause-list__details-value">{combinedCourt(selCase)}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>
@@ -746,13 +748,14 @@ export default function CauseList() {
                       )}
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
+                    <div className="cause-list__header-court">{combinedCourt(history.case)}</div>
                   </div>
                 </div>
 
                 <div className="cause-list__details-grid">
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Court</span>
-                    <span className="cause-list__details-value">{history.case?.court || '—'}</span>
+                    <span className="cause-list__details-value">{combinedCourt(history.case)}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>
@@ -936,13 +939,14 @@ export default function CauseList() {
                       <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
+                    <div className="cause-list__header-court">{combinedCourt(history.case)}</div>
                   </div>
                 </div>
 
                 <div className="cause-list__details-grid">
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Court</span>
-                    <span className="cause-list__details-value">{history.case?.court || '—'}</span>
+                    <span className="cause-list__details-value">{combinedCourt(history.case)}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>
