@@ -1040,11 +1040,15 @@ function systemSqlPolicies({ onlyCollections } = {}) {
   return raw.filter((line) => {
     const table = tableFromPolicy(line);
     return !table || keepTable(table);
-  }).map(line =>
+  })
+  .map((line) =>
     line.startsWith('create policy ')
       ? `do $$ begin ${line} exception when duplicate_object then null; end; $$;`
       : line
-  ).join('\n');
+  )
+  .join('\n')
+  .replace(/execute 'create policy ([^']+)'/g,
+    "begin execute 'create policy $1'; exception when duplicate_object then null; end;");
 }
 
 function systemSqlGrants() {
