@@ -30,17 +30,20 @@ async function ensureRecordColumns(db, collection, record) {
   const schema = getSchema(collection);
   if (!schema || typeof db.listColumns !== 'function') return;
   const liveColumns = await db.listColumns(providerName).catch(() => null);
-  if (!liveColumns) return;
-  const liveNames = new Set(liveColumns.map((c) => c.name.toLowerCase()));
 
-  for (const [field, val] of Object.entries(record)) {
-    if (field === 'id') continue;
-    if (!liveNames.has(field.toLowerCase())) {
-      const fieldType = schema.fields?.[field] || (typeof val === 'number' ? 'numeric' : 'text');
-      const canonicalType = EntityRegistry.pgType(fieldType);
-      // eslint-disable-next-line no-await-in-loop
-      await db.ensureColumn(providerName, field, canonicalType).catch(() => {});
+  if (liveColumns) {
+    const liveNames = new Set(liveColumns.map((c) => c.name.toLowerCase()));
+    for (const [field, val] of Object.entries(record)) {
+      if (field === 'id') continue;
+      if (liveNames.has(field.toLowerCase())) continue;
+      const pgType = EntityRegistry.pgType(schema.fields?.[field] || (typeof val === 'number' ? 'numeric' : 'text'));
+      await db.ensureColumn(providerName, field, pgType).catch(() => {});
       liveNames.add(field.toLowerCase());
+    }
+  } else {
+    for (const [field, type] of Object.entries(schema.fields || {})) {
+      if (field === 'id') continue;
+      await db.ensureColumn(providerName, field, EntityRegistry.pgType(type)).catch(() => {});
     }
   }
 }
