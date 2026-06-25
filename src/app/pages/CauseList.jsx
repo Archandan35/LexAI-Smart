@@ -18,7 +18,7 @@ import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, formatDateTime } from '@/utils/format.js';
-import { combinedCourt } from '@/utils/caseFormat.js';
+import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', notes: '', docRef: null, docName: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -171,7 +171,7 @@ export default function CauseList() {
 
   // ----- Filtering & Sorting calculations -----
   const uniqueCourtNames = Array.from(new Set(cases.map(c => c.court_hierarchy || c.court || '').filter(Boolean)));
-  const uniqueCourtLocations = Array.from(new Set(cases.map(c => c.court_name || c.courtName || '').filter(Boolean)));
+  const uniqueCourtLocations = Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean)));
 
   const handleSortToggle = () => {
     setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -200,7 +200,7 @@ export default function CauseList() {
       if (!numMatch && !titleMatch && !courtMatch && !purposeMatch) return false;
     }
     if (filterCourt && (row.case?.court_hierarchy || row.case?.court) !== filterCourt) return false;
-    if (filterCourtLocation && (row.case?.court_name || row.case?.courtName) !== filterCourtLocation) return false;
+    if (filterCourtLocation && extractJurisdiction(row.case) !== filterCourtLocation) return false;
     if (filterStatus && row.status !== filterStatus) return false;
     if (dateFrom || dateTo) {
       const rowDate = new Date(row.date).getTime();

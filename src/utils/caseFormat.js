@@ -9,4 +9,13 @@ export function combinedCourt(c) {
   return hierarchy || location || '—';
 }
 
+// Extract jurisdiction from a case record.
+// jurisdiction is stored as the second part of court_name ("hierarchy, jurisdiction").
+export function extractJurisdiction(c) {
+  if (!c) return '';
+  const name = c.court_name || c.courtName || '';
+  const idx = name.indexOf(', ');
+  return idx > 0 ? name.slice(idx + 2).trim() : '';
+}
+
 export default combinedCourt;

@@ -17,7 +17,7 @@ import { usePermissions } from '@/hooks/usePermissions.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
-import { combinedCourt } from '@/utils/caseFormat.js';
+import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate } from '@/utils/format.js';
 
@@ -56,12 +56,12 @@ export default function CaseVault() {
   const bulkRemove = () => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } };
 
   const uniqueCourtNames = useMemo(() => Array.from(new Set(cases.map(c => c.court_hierarchy || c.court || '').filter(Boolean))), [cases]);
-  const uniqueCourtLocations = useMemo(() => Array.from(new Set(cases.map(c => c.court_name || c.courtName || '').filter(Boolean))), [cases]);
+  const uniqueCourtLocations = useMemo(() => Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean))), [cases]);
 
   const filtered = useMemo(() => {
     let rows = cases.filter((c) => (filters.view === 'archived' ? c.archived : !c.archived));
     if (filters.court) rows = rows.filter((c) => (c.court_hierarchy || c.court) === filters.court);
-    if (filters.courtLocation) rows = rows.filter((c) => (c.court_name || c.courtName) === filters.courtLocation);
+    if (filters.courtLocation) rows = rows.filter((c) => extractJurisdiction(c) === filters.courtLocation);
     if (filters.stage) rows = rows.filter((c) => c.stage === filters.stage);
     if (filters.status) rows = rows.filter((c) => c.status === filters.status);
     if (query.trim()) {
