@@ -1225,7 +1225,10 @@ select {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
 }
 
 /* Tabs */
@@ -3089,9 +3092,23 @@ kbd.cmd__kbd {
   gap: 10px;
 }
 
-@media (max-width: 1200px) { .docmgr__folder-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 900px)  { .docmgr__folder-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 600px)  { .docmgr__folder-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1200px) {
+  .docmgr__folder-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .docmgr__folder-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .docmgr__folder-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 .docmgr__folder-card {
   padding: 16px 12px;
@@ -11903,13 +11920,24 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   padding: 20px 20px 24px;
   min-width: 0;
-  max-height: calc(100vh - 280px);
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
 }
 
-.cdoc__content::-webkit-scrollbar { width: 8px; }
-.cdoc__content::-webkit-scrollbar-track { background: transparent; }
-.cdoc__content::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
+.cdoc__content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cdoc__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cdoc__content::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
 
 /* ── Toolbar ── */
 .cdoc__toolbar {

@@ -534,55 +534,53 @@ export default function CaseDocuments() {
               ))}
             </div>
 
-            {isFileView && (
-              <div className="cdoc__toolbar-right">
-                {/* View toggle */}
-                <div className="cdoc__seg">
-                  <button className={`cdoc__seg-btn${viewMode === 'grid' ? ' active' : ''}`} title="Grid view" onClick={() => setViewMode('grid')}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
-                  </button>
-                  <button className={`cdoc__seg-btn${viewMode === 'list' ? ' active' : ''}`} title="List view" onClick={() => setViewMode('list')}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
-                  </button>
-                </div>
-
-                {/* Sort */}
-                <div className="cdoc__sort-wrap">
-                  <span className="cdoc__sort-label">Sort by: {sortLabels[sortBy]}</span>
-                  <select className="cdoc__sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                    <option value="name-az">Name (A–Z)</option>
-                    <option value="name-za">Name (Z–A)</option>
-                    <option value="date-new">Date (Newest)</option>
-                    <option value="date-old">Date (Oldest)</option>
-                    <option value="size">Size</option>
-                  </select>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
-                </div>
-
-                {/* Filters */}
-                <div className="cdoc__filter-wrap">
-                  <button className={`cdoc__filter-btn${fileExtFilter.length > 0 ? ' cdoc__filter-btn--active' : ''}`} onClick={() => setShowFilter((s) => !s)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
-                    Filters{fileExtFilter.length > 0 ? ` (${fileExtFilter.length})` : ''}
-                  </button>
-                  {showFilter && (
-                    <div className="cdoc__filter-popup">
-                      <div className="cdoc__filter-popup-title">File type</div>
-                      {['PDF', 'DOCX', 'DOC', 'XLSX', 'XLS'].map((ext) => (
-                        <label key={ext} className="cdoc__filter-opt">
-                          <input type="checkbox" checked={fileExtFilter.includes(ext)} onChange={() => toggleFileExt(ext)} />
-                          <span>{ext}</span>
-                        </label>
-                      ))}
-                      <div className="cdoc__filter-popup-actions">
-                        <button className="cdoc__filter-clear" onClick={() => { setFileExtFilter([]); setShowFilter(false); }}>Clear</button>
-                        <button className="cdoc__filter-apply" onClick={() => setShowFilter(false)}>Apply</button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+            <div className="cdoc__toolbar-right">
+              {/* View toggle */}
+              <div className="cdoc__seg">
+                <button className={`cdoc__seg-btn${viewMode === 'grid' ? ' active' : ''}`} title="Grid view" onClick={() => setViewMode('grid')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                </button>
+                <button className={`cdoc__seg-btn${viewMode === 'list' ? ' active' : ''}`} title="List view" onClick={() => setViewMode('list')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                </button>
               </div>
-            )}
+
+              {/* Sort */}
+              <div className="cdoc__sort-wrap">
+                <span className="cdoc__sort-label">Sort by: {sortLabels[sortBy]}</span>
+                <select className="cdoc__sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="name-az">Name (A–Z)</option>
+                  <option value="name-za">Name (Z–A)</option>
+                  <option value="date-new">Date (Newest)</option>
+                  <option value="date-old">Date (Oldest)</option>
+                  <option value="size">Size</option>
+                </select>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+              </div>
+
+              {/* Filters */}
+              <div className="cdoc__filter-wrap">
+                <button className={`cdoc__filter-btn${fileExtFilter.length > 0 ? ' cdoc__filter-btn--active' : ''}`} onClick={() => setShowFilter((s) => !s)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+                  Filters{fileExtFilter.length > 0 ? ` (${fileExtFilter.length})` : ''}
+                </button>
+                {showFilter && (
+                  <div className="cdoc__filter-popup">
+                    <div className="cdoc__filter-popup-title">File type</div>
+                    {['PDF', 'DOCX', 'DOC', 'XLSX', 'XLS'].map((ext) => (
+                      <label key={ext} className="cdoc__filter-opt">
+                        <input type="checkbox" checked={fileExtFilter.includes(ext)} onChange={() => toggleFileExt(ext)} />
+                        <span>{ext}</span>
+                      </label>
+                    ))}
+                    <div className="cdoc__filter-popup-actions">
+                      <button className="cdoc__filter-clear" onClick={() => { setFileExtFilter([]); setShowFilter(false); }}>Clear</button>
+                      <button className="cdoc__filter-apply" onClick={() => setShowFilter(false)}>Apply</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Folder search + grid when viewing root or a folder that has children */}
