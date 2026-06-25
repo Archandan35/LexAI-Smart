@@ -12701,6 +12701,345 @@ kbd.cmd__kbd {
   margin: 4px 8px;
 }
 
+/* ── Folder tree ── */
+.cdoc__tree {
+  margin-bottom: 8px;
+}
+
+.cdoc__tree-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-size: 13px;
+  color: var(--text);
+  user-select: none;
+  position: relative;
+}
+
+.cdoc__tree-row:hover {
+  background: var(--surface-2);
+}
+
+.cdoc__tree-row--active {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  font-weight: 600;
+}
+
+.cdoc__tree-row--cut {
+  opacity: 0.4;
+}
+
+.cdoc__tree-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: var(--text-faint);
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+
+.cdoc__tree-expand:hover {
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
+.cdoc__tree-spacer {
+  display: inline-block;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.cdoc__tree-icon {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.cdoc__tree-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.cdoc__tree-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  padding: 0 6px;
+  border-radius: 99px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 18px;
+}
+
+.cdoc__tree-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.cdoc__tree-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: all 0.12s;
+}
+
+.cdoc__tree-act:hover {
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
+.cdoc__tree-act--danger:hover {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.cdoc__tree-paste {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--brand);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.cdoc__tree-paste:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+}
+
+.cdoc__rename-input {
+  border: 1px solid var(--brand);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Sidebar buttons ── */
+.cdoc__sidebar-actions {
+  padding: 8px 6px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cdoc__sidebar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.cdoc__sidebar-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ── Clipboard bar ── */
+.cdoc__clipboard-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--brand-soft);
+}
+
+.cdoc__clipboard-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-faint);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.cdoc__clipboard-close:hover {
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
+/* ── Create panel ── */
+.cdoc__create-panel {
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.cdoc__bulk-link {
+  font-size: 11px;
+  color: var(--brand);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.cdoc__bulk-link:hover {
+  color: var(--navy-700);
+  text-decoration: underline;
+}
+
+.cdoc__bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+/* ── Document menu button (three dots) ── */
+.cdoc__doc-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: all 0.12s;
+}
+
+.cdoc__doc-menu-btn:hover {
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
+/* ── Document action buttons (grid view) ── */
+.cdoc__doc-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: all 0.12s;
+}
+
+.cdoc__doc-action:hover {
+  background: var(--surface-2);
+  color: var(--text-soft);
+  border-color: var(--border-strong);
+}
+
+.cdoc__doc-action--danger:hover {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* ── Grid view doc cards ── */
+.docgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.doccard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 14px 14px;
+  text-align: center;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  cursor: default;
+}
+
+.doccard:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.doccard__icon {
+  margin-bottom: 8px;
+}
+
+.doccard__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.doccard__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.doccard__actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.doccard:hover .doccard__actions {
+  opacity: 1;
+}
+
 /* ── Filter popup ── */
 .cdoc__filter-wrap {
   position: relative;

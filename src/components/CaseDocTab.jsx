@@ -359,35 +359,35 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
   return (
     <div className="cdoc__layout">
       {ctxMenu && (
-        <div className="cdoc__ctxmenu" style={{ position: 'fixed', left: ctxMenu.x, top: ctxMenu.y, zIndex: 9999, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', padding: '6px 0', minWidth: 180 }} onClick={(e) => e.stopPropagation()}>
-          <div className="cdoc__ctxitem" onClick={() => { startRename(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Rename</div>
-          <div className="cdoc__ctxitem" onClick={() => { cutFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Cut</div>
-          <div className="cdoc__ctxitem" onClick={() => { copyFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Copy</div>
-          <div className="cdoc__ctxsep" />
-          <div className="cdoc__ctxitem" onClick={() => { const f = caseFolders.find((x) => x.id === ctxMenu.id); setFolderProps(f); setCtxMenu(null); }}>Properties</div>
-          <div className="cdoc__ctxitem cdoc__ctxitem--danger" onClick={() => { deleteFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Delete</div>
+        <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
+          <div className="cdoc__ctx-item" onClick={() => { startRename(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Rename</div>
+          <div className="cdoc__ctx-item" onClick={() => { cutFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Cut</div>
+          <div className="cdoc__ctx-item" onClick={() => { copyFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Copy</div>
+          <div className="cdoc__ctx-divider" />
+          <div className="cdoc__ctx-item" onClick={() => { const f = caseFolders.find((x) => x.id === ctxMenu.id); setFolderProps(f); setCtxMenu(null); }}>Properties</div>
+          <div className="cdoc__ctx-item cdoc__ctx-item--danger" onClick={() => { deleteFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Delete</div>
         </div>
       )}
       {contentCtx && (
-        <div className="cdoc__ctxmenu" style={{ position: 'fixed', left: contentCtx.x, top: contentCtx.y, zIndex: 9999, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', padding: '6px 0', minWidth: 200 }} onClick={(e) => e.stopPropagation()}>
-          <div className="cdoc__ctxitem" onClick={() => { setCreating(true); setContentCtx(null); }}>Add new folder</div>
-          <div className="cdoc__ctxsep" />
-          <div className="cdoc__ctxitem cdoc__ctxitem--disabled">Redo</div>
-          <div className="cdoc__ctxitem cdoc__ctxitem--disabled">Undo</div>
-          <div className="cdoc__ctxsep" />
-          <div className="cdoc__ctxitem cdoc__ctxitem--disabled">Delete</div>
-          <div className="cdoc__ctxitem cdoc__ctxitem--disabled">Cut</div>
-          <div className="cdoc__ctxitem cdoc__ctxitem--disabled">Move</div>
-          <div className="cdoc__ctxitem" onClick={() => { const f = caseFolders.find((x) => x.id === activeFolder); if (f) setFolderProps(f); setContentCtx(null); }}>Properties</div>
-          <div className="cdoc__ctxsep" />
-          <div className="cdoc__ctxitem" onClick={() => { setViewMode('grid'); setContentCtx(null); }}>View: Grid</div>
-          <div className="cdoc__ctxitem" onClick={() => { setViewMode('list'); setContentCtx(null); }}>View: List</div>
-          <div className="cdoc__ctxsep" />
-          <div className="cdoc__ctxitem" onClick={() => { setSortBy('name-az'); setContentCtx(null); }}>Sort by Name A–Z</div>
-          <div className="cdoc__ctxitem" onClick={() => { setSortBy('name-za'); setContentCtx(null); }}>Sort by Name Z–A</div>
-          <div className="cdoc__ctxitem" onClick={() => { setSortBy('date-new'); setContentCtx(null); }}>Sort by Date (newest)</div>
-          <div className="cdoc__ctxitem" onClick={() => { setSortBy('date-old'); setContentCtx(null); }}>Sort by Date (oldest)</div>
-          <div className="cdoc__ctxitem" onClick={() => { setSortBy('size'); setContentCtx(null); }}>Sort by Size</div>
+        <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: contentCtx.x, top: contentCtx.y }} onClick={(e) => e.stopPropagation()}>
+          <div className="cdoc__ctx-item" onClick={() => { setCreating(true); setContentCtx(null); }}>Add new folder</div>
+          <div className="cdoc__ctx-divider" />
+          <div className="cdoc__ctx-item cdoc__ctx-item--disabled">Redo</div>
+          <div className="cdoc__ctx-item cdoc__ctx-item--disabled">Undo</div>
+          <div className="cdoc__ctx-divider" />
+          <div className="cdoc__ctx-item cdoc__ctx-item--disabled">Delete</div>
+          <div className="cdoc__ctx-item cdoc__ctx-item--disabled">Cut</div>
+          <div className="cdoc__ctx-item cdoc__ctx-item--disabled">Move</div>
+          <div className="cdoc__ctx-item" onClick={() => { const f = caseFolders.find((x) => x.id === activeFolder); if (f) setFolderProps(f); setContentCtx(null); }}>Properties</div>
+          <div className="cdoc__ctx-divider" />
+          <div className="cdoc__ctx-item" onClick={() => { setViewMode('grid'); setContentCtx(null); }}>View: Grid</div>
+          <div className="cdoc__ctx-item" onClick={() => { setViewMode('list'); setContentCtx(null); }}>View: List</div>
+          <div className="cdoc__ctx-divider" />
+          <div className="cdoc__ctx-item" onClick={() => { setSortBy('name-az'); setContentCtx(null); }}>Sort by Name A–Z</div>
+          <div className="cdoc__ctx-item" onClick={() => { setSortBy('name-za'); setContentCtx(null); }}>Sort by Name Z–A</div>
+          <div className="cdoc__ctx-item" onClick={() => { setSortBy('date-new'); setContentCtx(null); }}>Sort by Date (newest)</div>
+          <div className="cdoc__ctx-item" onClick={() => { setSortBy('date-old'); setContentCtx(null); }}>Sort by Date (oldest)</div>
+          <div className="cdoc__ctx-item" onClick={() => { setSortBy('size'); setContentCtx(null); }}>Sort by Size</div>
         </div>
       )}
 
@@ -534,22 +534,22 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-faint)', flexShrink: 0 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                   <input type="text" placeholder="Search documents…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ border: 'none', background: 'none', outline: 'none', flex: 1, fontSize: 13 }} />
                 </div>
-                <div className="cdoc__filter-wrap" style={{ position: 'relative' }}>
+                <div className="cdoc__filter-wrap">
                   <button className={`cdoc__toolbtn${fileExtFilter.length > 0 ? ' cdoc__toolbtn--active' : ''}`} onClick={() => setShowFilter(!showFilter)}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
                     Filters{fileExtFilter.length > 0 && ` (${fileExtFilter.length})`}
                   </button>
                   {showFilter && (
-                    <div className="cdoc__filter-popup" style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', padding: 12, minWidth: 150, marginTop: 4 }}>
+                    <div className="cdoc__filter-popup">
                       {['PDF', 'DOCX', 'DOC', 'XLSX', 'XLS'].map((ext) => (
-                        <label key={ext} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '4px 0', cursor: 'pointer' }}>
+                        <label key={ext} className="cdoc__filter-opt">
                           <input type="checkbox" checked={fileExtFilter.includes(ext)} onChange={() => toggleFileExt(ext)} />
-                          {ext}
+                          <span>{ext}</span>
                         </label>
                       ))}
-                      <div style={{ display: 'flex', gap: 6, marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-                        <Button size="sm" variant="ghost" onClick={() => setFileExtFilter([])}>Clear</Button>
-                        <Button size="sm" onClick={() => setShowFilter(false)}>Apply</Button>
+                      <div className="cdoc__filter-popup-actions">
+                        <button className="cdoc__filter-clear" onClick={() => setFileExtFilter([])}>Clear</button>
+                        <button className="cdoc__filter-apply" onClick={() => setShowFilter(false)}>Apply</button>
                       </div>
                     </div>
                   )}
@@ -648,13 +648,13 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
                         <td className="cdoc__td"><ExtBadge name={name} /></td>
                         <td className="cdoc__td cdoc__td--muted">{bytes(d.size)}</td>
                         <td className="cdoc__td cdoc__td--muted">{formatDate(d.uploaded_at || d.created_at || d.uploadedAt)}</td>
-                        <td className="cdoc__td" style={{ textAlign: 'right' }}>
-                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <td className="cdoc__td cdoc__td--actions">
+                          <div className="cdoc__action-more-wrap">
                             <button className="cdoc__doc-menu-btn" onClick={(e) => { e.stopPropagation(); setDocMenuId(docMenuId === d.id ? null : d.id); }}>
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
                             </button>
                             {docMenuId === d.id && (
-                              <div className="cdoc__doc-menu" style={{ position: 'absolute', right: 0, top: '100%', zIndex: 50, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', padding: '4px 0', minWidth: 140, textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
+                              <div className="cdoc__doc-menu" onClick={(e) => e.stopPropagation()}>
                                 <div className="cdoc__doc-menu-item" onClick={() => { setPreview(d); setDocMenuId(null); }}>Preview</div>
                                 <div className="cdoc__doc-menu-item" onClick={async () => { const url = await storageService.getUrl(d.ref); if (url) window.open(url, '_blank'); setDocMenuId(null); }}>Download</div>
                                 <div className="cdoc__doc-menu-divider" />
@@ -669,14 +669,14 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
                 </tbody>
               </table>
               {totalPages > 1 && (
-                <div className="cdoc__pagination" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', fontSize: 13, color: 'var(--text-soft)' }}>
-                  <span>Showing {((page - 1) * perPage) + 1} to {Math.min(page * perPage, sorted.length)} of {sorted.length}</span>
-                  <div className="cdoc__page-btns" style={{ display: 'flex', gap: 4 }}>
-                    <button className="cdoc__page-btn" onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
+                <div className="cdoc__pagination">
+                  <span className="cdoc__pg-info">Showing {((page - 1) * perPage) + 1} to {Math.min(page * perPage, sorted.length)} of {sorted.length}</span>
+                  <div className="cdoc__pg-btns">
+                    <button className="cdoc__pg-btn" onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
                     {Array.from({ length: totalPages }).map((_, i) => (
-                      <button key={i} className={`cdoc__page-btn${page === i + 1 ? ' cdoc__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+                      <button key={i} className={`cdoc__pg-btn${page === i + 1 ? ' active' : ''}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
                     ))}
-                    <button className="cdoc__page-btn" onClick={() => setPage((p) => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
+                    <button className="cdoc__pg-btn" onClick={() => setPage((p) => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
                   </div>
                 </div>
               )}
