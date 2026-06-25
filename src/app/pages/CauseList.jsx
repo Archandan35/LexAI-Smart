@@ -1116,21 +1116,21 @@ export default function CauseList() {
             </div>
           )}
 
-          {/* Section 1: Case & Date */}
+          {/* Section 1: Case Detail */}
           <div className="hearing-modal__section">
             <div className="hearing-modal__section-title">
               <Icon name="target" size={16} />
-              <span>Case & Date</span>
+              <span>Case Detail</span>
             </div>
             <div className="input-row">
               <Field label="Case Number">
                 <CaseSelect value={form.caseId} onChange={(v) => { setForm({ ...form, caseId: v }); setEditorContent(''); setSelectedTemplate(''); }} />
               </Field>
-              <Field label="Hearing Date">
+              <Field label="Judge">
                 <Input
-                  type="date"
-                  value={form.date || ''}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  value={form.judge || getCaseDetails(form.caseId)?.judge || ''}
+                  onChange={(e) => setForm({ ...form, judge: e.target.value })}
+                  placeholder="Judge name"
                 />
               </Field>
             </div>
@@ -1156,6 +1156,13 @@ export default function CauseList() {
               <span>Hearing Details</span>
             </div>
             <div className="input-row">
+              <Field label="Hearing Date">
+                <Input
+                  type="date"
+                  value={form.date || ''}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </Field>
               <Field label="Status">
                 <div className="hearing-modal__status-row">
                   <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
@@ -1167,25 +1174,20 @@ export default function CauseList() {
                   </button>
                 </div>
               </Field>
+            </div>
+            <div className="input-row">
               <Field label="Purpose">
                 <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
               </Field>
-            </div>
-            <div className="input-row">
               <Field label="Next Hearing Date">
                 <Input type="date" value={form.nextHearingDate} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
               </Field>
+            </div>
+            <div className="input-row">
               <Field label="Next Hearing Purpose">
                 <Input value={form.postedFor} onChange={(e) => setForm({ ...form, postedFor: e.target.value })} placeholder="e.g. Defendant Evidence, Arguments" />
               </Field>
             </div>
-            <Field label="Judge">
-              <Input
-                value={form.judge || getCaseDetails(form.caseId)?.judge || ''}
-                onChange={(e) => setForm({ ...form, judge: e.target.value })}
-                placeholder="Judge name"
-              />
-            </Field>
           </div>
 
           {/* Section 3: Proceedings — Rich Text Editor with Template Import */}
@@ -1226,7 +1228,38 @@ export default function CauseList() {
             </div>
           </div>
 
-          {/* Section 4: Attachment */}
+          {/* Section 4: Hearing Summary */}
+          <div className="hearing-modal__section">
+            <div className="hearing-modal__section-title">
+              <Icon name="list" size={16} />
+              <span>Hearing Summary</span>
+            </div>
+            {editorContent ? (
+              <div className="hearing-summary">
+                {(() => {
+                  const lines = editorContent
+                    .replace(/<[^>]+>/g, '')
+                    .split(/[.;\n]+/)
+                    .map((s) => s.trim())
+                    .filter((s) => s.length > 3)
+                    .map((s) => s.endsWith('.') ? s : s + '.');
+                  return lines.length > 0 ? (
+                    <ul className="hearing-summary__list">
+                      {lines.map((line, i) => (
+                        <li key={i} className="hearing-summary__item">{line}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="text-muted">Write proceedings above to generate summary.</span>
+                  );
+                })()}
+              </div>
+            ) : (
+              <span className="text-muted">Proceedings text will be summarised here as a point-wise list.</span>
+            )}
+          </div>
+
+          {/* Section 5: Attachment */}
           <div className="hearing-modal__section">
             <div className="hearing-modal__section-title">
               <Icon name="paperclip" size={16} />
