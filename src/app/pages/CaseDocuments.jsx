@@ -620,8 +620,22 @@ export default function CaseDocuments() {
                 const childCount = getChildren(f.id).length;
                 const fileCount = docCounts[f.name] || 0;
                 return (
-                  <div key={f.id} className="docmgr__folder-card" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>
-                    <div className="cdoc__folder-card-icon">
+                  <div
+                    key={f.id}
+                    className={`docmgr__folder-card${folderSelected.has(f.id) ? ' docmgr__folder-card--sel' : ''}`}
+                    onClick={() => { if (selectMode) { toggleFolderSelect(f.id); return; } setActiveFolder(f.id); setDocSelected([]); }}
+                    onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setCtxMenu({ id: f.id, x: e.clientX, y: e.clientY }); }}
+                  >
+                    <div className="cdoc__folder-card-icon" style={{ position: 'relative' }}>
+                      {selectMode && (
+                        <input
+                          type="checkbox"
+                          className="cdoc__folder-card-checkbox"
+                          checked={folderSelected.has(f.id)}
+                          onChange={() => toggleFolderSelect(f.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
                     </div>
                     <span className="docmgr__folder-card-name">{f.name}</span>
@@ -631,7 +645,14 @@ export default function CaseDocuments() {
                       {fileCount > 0 && `${fileCount} file${fileCount > 1 ? 's' : ''}`}
                       {childCount === 0 && fileCount === 0 && 'Empty'}
                     </span>
-                    <button className="cdoc__folder-card-menu" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className="cdoc__folder-card-menu"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setCtxMenu({ id: f.id, x: rect.right - 160, y: rect.bottom + 4 });
+                      }}
+                    >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
                     </button>
                   </div>
