@@ -80,7 +80,10 @@ export default function ManageCase() {
   const lastHearing = vault.lastHearing;
   const upcomingHearing = [...(vault.hearings || [])]
     .filter((h) => new Date(h.date) >= startOfToday())
-    .sort((a, b) => new Date(a.date) - new Date(b.date))[0] || null;
+    .sort((a, b) => new Date(a.date) - new Date(b.date))[0]
+    || (c.next_hearing && new Date(c.next_hearing) >= startOfToday()
+      ? { date: c.next_hearing, purpose: 'Next Hearing', status: 'Scheduled' }
+      : null);
 
   return (
     <div className="fade-in">
