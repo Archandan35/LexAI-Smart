@@ -166,7 +166,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
 
       {/* ── 3. Court Information ── */}
       <SectionCard num="3" title="Court Information">
-        <div className="grid-5">
+        <div className="grid-3">
           <Field label="Courts">
             {sel('Courts', form.court_hierarchy, hierarchyOptions, (v) => setField('court_hierarchy', v), 'Select court')}
           </Field>
