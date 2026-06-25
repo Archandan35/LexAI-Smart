@@ -4,13 +4,28 @@ import { getDatabaseProvider } from '@/providers/database/index.js';
 import { EntityRegistry, FieldMapper } from '@/core/index.js';
 
 const USERS_TABLE = () => EntityRegistry.providerTable('users');
+const STORAGE_KEY = 'lexai.auth.session';
 
 // SupabaseAuthProvider — talks directly to the GoTrue REST API on Supabase.
 // Handles session persistence, token refreshing, database user record linking.
-// Session is held in-memory only (no localStorage) so it does not survive
-// full page reloads. Auth tokens are ephemeral by design.
+// Session is persisted to localStorage so it survives full page reloads.
 export default class SupabaseAuthProvider extends AuthProvider {
   #session = null;
+
+  #persist(session) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch {}
+  }
+
+  #clearPersisted() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  }
+
+  #loadPersisted() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
 
   constructor() {
     super();
@@ -89,6 +104,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
     }
 
     this.#session = { token: data.access_token, refreshToken: data.refresh_token, userId };
+    this.#persist(this.#session);
 
     const mapped = FieldMapper.toLexAI('users', dbUser);
     const { passwordHash, salt, ...safeUser } = mapped;
@@ -107,11 +123,20 @@ export default class SupabaseAuthProvider extends AuthProvider {
       }
     }
     this.#session = null;
+    this.#clearPersisted();
     return true;
   }
 
   async getSession() {
-    if (!this.#session) return null;
+    if (!this.#session) {
+      // Try restoring from localStorage after page reload
+      const persisted = this.#loadPersisted();
+      if (persisted?.token && persisted?.refreshToken && persisted?.userId) {
+        this.#session = persisted;
+      } else {
+        return null;
+      }
+    }
 
     try {
       // Verify token is active
@@ -125,6 +150,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
         const dbUser = await db.get(USERS_TABLE(), this.#session.userId);
         if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
           this.#session = null;
+          this.#clearPersisted();
           return null;
         }
         const mapped = FieldMapper.toLexAI('users', dbUser);
@@ -147,11 +173,13 @@ export default class SupabaseAuthProvider extends AuthProvider {
             refreshToken: refreshData.refresh_token,
             userId: refreshData.user?.id || this.#session.userId,
           };
+          this.#persist(this.#session);
 
           const db = getDatabaseProvider();
           const dbUser = await db.get(USERS_TABLE(), this.#session.userId);
           if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
             this.#session = null;
+            this.#clearPersisted();
             return null;
           }
           const mapped2 = FieldMapper.toLexAI('users', dbUser);
@@ -164,6 +192,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
     }
 
     this.#session = null;
+    this.#clearPersisted();
     return null;
   }
 
