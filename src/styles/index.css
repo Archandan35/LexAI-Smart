@@ -6580,6 +6580,14 @@ kbd.cmd__kbd {
   width: 110px;
 }
 
+.courts__add-card tr.dragging {
+  opacity: 0.4;
+}
+
+.courts__add-card tr.drag-over td {
+  border-bottom: 2px solid var(--navy-500);
+}
+
 /* ---- CourtReports additions ---- */
 .court-reports__name {
   font-weight: 600;
@@ -8962,6 +8970,14 @@ kbd.cmd__kbd {
 
 .courts__th-actions {
   width: 110px;
+}
+
+.courts__add-card tr.dragging {
+  opacity: 0.4;
+}
+
+.courts__add-card tr.drag-over td {
+  border-bottom: 2px solid var(--navy-500);
 }
 
 /* ---- CourtReports additions ---- */
