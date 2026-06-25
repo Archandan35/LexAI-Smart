@@ -217,7 +217,7 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     // with `[]` when zero rows matched (already-deleted id, wrong id, or an
     // RLS policy silently excluding it). Only a non-empty representation
     // means a row actually got removed. This mirrors the bulk-delete fix in
-    // LocalDatabaseProvider: never report success on a write that didn't stick.
+    // never report success on a write that didn't stick.
     const rows = await res.json().catch(() => []);
     return Array.isArray(rows) && rows.length > 0;
   }

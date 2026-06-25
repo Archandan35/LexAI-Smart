@@ -1,22 +1,21 @@
 import { config } from '@/config/config.js';
-import LocalDatabaseProvider from './LocalDatabaseProvider.js';
 import SupabaseDatabaseProvider from './SupabaseDatabaseProvider.js';
 import MongoDatabaseProvider from './MongoDatabaseProvider.js';
 import FirebaseDatabaseProvider from './FirebaseDatabaseProvider.js';
 
 const registry = {
-  local: () => new LocalDatabaseProvider(),
   supabase: () => new SupabaseDatabaseProvider(),
   mongodb: () => new MongoDatabaseProvider(),
   firebase: () => new FirebaseDatabaseProvider(),
-  // sqlite / postgres follow the same contract.
 };
 
 let instance = null;
 
 export function getDatabaseProvider() {
   if (instance) return instance;
-  const make = registry[config.providers.database] || registry.local;
+  const key = config.providers.database;
+  const make = registry[key];
+  if (!make) throw new Error(`Database provider "${key}" is not recognised or not configured. Set VITE_DATABASE_PROVIDER to supabase, mongodb, or firebase.`);
   instance = make();
   return instance;
 }

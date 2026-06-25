@@ -60,8 +60,8 @@ export default class MongoDatabaseProvider extends DatabaseProvider {
     });
     // matchedCount === 0 means the filter matched nothing — the update did
     // NOT happen even though the HTTPS call itself returned 200 OK. Returning
-    // null (same contract as LocalDatabaseProvider) lets userLogic.update
-    // surface this as a real failure instead of a false success.
+    // null lets userLogic.update surface this as a real failure instead of a
+    // false success.
     if (!matchedCount) return null;
     return this.get(collection, id);
   }
@@ -84,8 +84,8 @@ export default class MongoDatabaseProvider extends DatabaseProvider {
     const { deletedCount } = await this.#call('deleteOne', { collection, filter: { id } });
     // deletedCount is the only source of truth — a 200 response with
     // deletedCount: 0 means the document was already gone or the id didn't
-    // match. This is the exact bug class fixed in LocalDatabaseProvider and
-    // SupabaseDatabaseProvider: HTTP success != row actually deleted.
+    // match. This is the exact bug class fixed in SupabaseDatabaseProvider:
+    // HTTP success != row actually deleted.
     return deletedCount > 0;
   }
 }

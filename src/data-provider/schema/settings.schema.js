@@ -1,6 +1,6 @@
 // Universal schema — settings. A provider-agnostic key/value store for
 // application + module settings (e.g. backup retention/schedule), so settings
-// no longer have to live in a provider-specific localStorage key.
+// no longer have to live in a provider-specific key.
 export const SettingsSchema = {
   collection: 'settings',
   label: 'Settings',

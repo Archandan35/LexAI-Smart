@@ -1,7 +1,7 @@
 // Browser crypto helpers (Web Crypto API, no external deps).
 // NOTE: This is a CLIENT-SIDE app with no backend. Password "hashing" and backup
 // "encryption" here are real algorithms but provide DEMO-grade protection only —
-// anyone with devtools can read localStorage. Swap in a real backend
+// anyone with devtools can read memory. Swap in a real backend
 // (SupabaseAuthProvider template) for production-grade security.
 
 const enc = new TextEncoder();

@@ -5,26 +5,25 @@
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { config } from '@/config/config.js';
 import { schemas, SCHEMA_VERSION } from '@/data-provider/schema/index.js';
-import LocalMigration from './LocalMigration.js';
 import SupabaseMigration from './SupabaseMigration.js';
 import FirebaseMigration from './FirebaseMigration.js';
 import MongoMigration from './MongoMigration.js';
 
 const STRATEGIES = {
-  local: LocalMigration,
   supabase: SupabaseMigration,
   firebase: FirebaseMigration,
   mongodb: MongoMigration,
 };
 
 class MigrationEngine {
-  get providerName() { return config.providers.database || 'local'; }
+  get providerName() { return config.providers.database; }
   get schemaVersion() { return SCHEMA_VERSION; }
 
   // Resolve a fresh strategy bound to the current provider every call, so a
   // provider hot-swap (resetDatabaseProvider) is always respected.
   #strategy() {
-    const Strategy = STRATEGIES[this.providerName] || LocalMigration;
+    const Strategy = STRATEGIES[this.providerName];
+    if (!Strategy) throw new Error(`No migration strategy for provider "${this.providerName}".`);
     return new Strategy(getDatabaseProvider(), schemas);
   }
 

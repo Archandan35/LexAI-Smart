@@ -3,12 +3,15 @@ import { config } from '@/config/config.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { EntityRegistry, FieldMapper } from '@/core/index.js';
 
-const SESSION_KEY = 'lexai.auth.session.v1';
 const USERS_TABLE = () => EntityRegistry.providerTable('users');
 
 // SupabaseAuthProvider — talks directly to the GoTrue REST API on Supabase.
 // Handles session persistence, token refreshing, database user record linking.
+// Session is held in-memory only (no localStorage) so it does not survive
+// full page reloads. Auth tokens are ephemeral by design.
 export default class SupabaseAuthProvider extends AuthProvider {
+  #session = null;
+
   constructor() {
     super();
     this.url = config.credentials.supabaseUrl;
@@ -26,21 +29,6 @@ export default class SupabaseAuthProvider extends AuthProvider {
       Authorization: `Bearer ${token || this.key}`,
       'Content-Type': 'application/json',
     };
-  }
-
-  #persistSession(session) {
-    try { if (typeof localStorage !== 'undefined') localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* ignore */ }
-  }
-
-  #readSession() {
-    try {
-      const raw = typeof localStorage !== 'undefined' && localStorage.getItem(SESSION_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  }
-
-  #clearSession() {
-    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
   }
 
   async signUp(email, password) {
@@ -100,86 +88,82 @@ export default class SupabaseAuthProvider extends AuthProvider {
       } catch { /* ignore — RLS may block anon UPDATE */ }
     }
 
-    const session = { token: data.access_token, refreshToken: data.refresh_token, userId };
-    this.#persistSession(session);
+    this.#session = { token: data.access_token, refreshToken: data.refresh_token, userId };
 
     const mapped = FieldMapper.toLexAI('users', dbUser);
     const { passwordHash, salt, ...safeUser } = mapped;
-    return { session, user: safeUser };
+    return { session: this.#session, user: safeUser };
   }
 
   async signOut() {
-    const session = this.#readSession();
-    if (session && session.token) {
+    if (this.#session?.token) {
       try {
         await fetch(`${this.#authBase()}/logout`, {
           method: 'POST',
-          headers: this.#headers(session.token),
+          headers: this.#headers(this.#session.token),
         });
       } catch (e) {
         // ignore network error
       }
     }
-    this.#clearSession();
+    this.#session = null;
     return true;
   }
 
   async getSession() {
-    const session = this.#readSession();
-    if (!session) return null;
+    if (!this.#session) return null;
 
     try {
       // Verify token is active
       const res = await fetch(`${this.#authBase()}/user`, {
         method: 'GET',
-        headers: this.#headers(session.token),
+        headers: this.#headers(this.#session.token),
       });
 
       if (res.ok) {
         const db = getDatabaseProvider();
-        const dbUser = await db.get(USERS_TABLE(), session.userId);
+        const dbUser = await db.get(USERS_TABLE(), this.#session.userId);
         if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
-          this.#clearSession();
+          this.#session = null;
           return null;
         }
         const mapped = FieldMapper.toLexAI('users', dbUser);
         const { passwordHash, salt, ...safeUser } = mapped;
-        return { session, user: safeUser };
+        return { session: this.#session, user: safeUser };
       }
 
       // Try refreshing if token has expired
-      if (session.refreshToken) {
+      if (this.#session.refreshToken) {
         const refreshRes = await fetch(`${this.#authBase()}/token?grant_type=refresh_token`, {
           method: 'POST',
           headers: this.#headers(),
-          body: JSON.stringify({ refresh_token: session.refreshToken }),
+          body: JSON.stringify({ refresh_token: this.#session.refreshToken }),
         });
 
         if (refreshRes.ok) {
           const refreshData = await refreshRes.json();
-          const newSession = {
+          this.#session = {
             token: refreshData.access_token,
             refreshToken: refreshData.refresh_token,
-            userId: refreshData.user?.id || session.userId,
+            userId: refreshData.user?.id || this.#session.userId,
           };
-          this.#persistSession(newSession);
 
           const db = getDatabaseProvider();
-          const dbUser = await db.get(USERS_TABLE(), newSession.userId);
+          const dbUser = await db.get(USERS_TABLE(), this.#session.userId);
           if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
-            this.#clearSession();
+            this.#session = null;
             return null;
           }
           const mapped2 = FieldMapper.toLexAI('users', dbUser);
           const { passwordHash: pw2, salt: s2, ...safeUser2 } = mapped2;
-          return { session: newSession, user: safeUser2 };
+          return { session: this.#session, user: safeUser2 };
         }
       }
     } catch (e) {
       console.warn('[LexAI] Auth restore session failed:', e);
     }
 
-    this.#clearSession();
+    this.#session = null;
     return null;
   }
 
@@ -191,12 +175,10 @@ export default class SupabaseAuthProvider extends AuthProvider {
   }
 
   async changePassword(userId, newPassword) {
-    const session = this.#readSession();
-    const token = session?.token;
-    if (!token) throw new Error('No active session.');
+    if (!this.#session?.token) throw new Error('No active session.');
 
     const res = await fetch(`${this.#authBase()}/user`, {
-      method: 'PUT', headers: this.#headers(token), body: JSON.stringify({ password: newPassword }),
+      method: 'PUT', headers: this.#headers(this.#session.token), body: JSON.stringify({ password: newPassword }),
     });
     return res.ok;
   }

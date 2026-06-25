@@ -1,10 +1,8 @@
 // backupService — low-level storage for the Backup & Recovery module.
 //
-// De-leaked: the database snapshot now flows through the PROVIDER (via
-// databaseAdminService.snapshot/restore), so backups work on ANY provider — not
-// just the local localStorage blob. The backup CATALOG and SETTINGS (browser-
-// local module state) go through the preferences provider, so this service no
-// longer touches localStorage directly.
+// Database snapshot flows through the active provider (via
+// databaseAdminService.snapshot/restore), so backups work on ANY provider.
+// The backup CATALOG and SETTINGS go through the preferences provider.
 import { databaseAdminService } from './databaseAdminService.js';
 import { preferencesService } from './preferencesService.js';
 import { collectionNames } from '@/data-provider/schema/index.js';

@@ -4,7 +4,7 @@ import { preferencesService } from '@/services/preferencesService.js';
 
 // notificationLogic — derives notifications from app data (chiefly upcoming and
 // overdue hearings). Computed on read; dismissals are tracked via the
-// preferences provider (no direct localStorage) so the bell badge behaves
+// preferences provider so the bell badge behaves
 // naturally without a backend.
 const DISMISS_KEY = 'lexai.notifs.dismissed.v1';
 

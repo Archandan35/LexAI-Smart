@@ -2,8 +2,6 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 
-const LOG_STORAGE_KEY = 'lexai.wizard.debug.logs';
-
 export function useLogCapture() {
   const [logs, setLogs] = useState([]);
   const logsRef = useRef([]);
