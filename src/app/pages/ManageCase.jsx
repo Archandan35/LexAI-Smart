@@ -344,7 +344,7 @@ export default function ManageCase() {
       {tab === 'History' && <CaseHistory caseId={id} onChanged={load} />}
 
       <Modal open={editing} title="Edit Case" size="lg" onClose={() => setEditing(false)}>
-        <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" />
+        <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" caseDocuments={vault.documents} />
       </Modal>
 
       {/* Delete confirmation */}

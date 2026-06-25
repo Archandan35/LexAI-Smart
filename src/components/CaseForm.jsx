@@ -5,6 +5,7 @@ import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
 import CaseTypeManager from './CaseTypeManager.jsx';
 import CrudManager from './CrudManager.jsx';
+import SearchableSelect from './SearchableSelect.jsx';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
@@ -12,6 +13,8 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
+import { clientLogic } from '@/logic/clientLogic.js';
+import { userLogic } from '@/logic/userLogic.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 
 const currentYear = new Date().getFullYear();
@@ -43,7 +46,7 @@ function SectionCard({ num, title, children }) {
   );
 }
 
-export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Update Case' }) {
+export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Update Case', caseDocuments }) {
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { stages, names: stageNames, refresh: refreshStages } = useCaseStages();
   const { hierarchy } = useCourtHierarchy();
@@ -54,6 +57,15 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const [stageMgr, setStageMgr] = useState(false);
   const [caseTypeMgr, setCaseTypeMgr] = useState(false);
   const [jurisdictionMgr, setJurisdictionMgr] = useState(false);
+  const [clientMgr, setClientMgr] = useState(false);
+  const [advocateMgr, setAdvocateMgr] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    clientLogic.list().then((r) => { setClients(Array.isArray(r) ? r : []); }).catch(() => {});
+    userLogic.list().then((r) => { setUsers(Array.isArray(r) ? r : []); }).catch(() => {});
+  }, []);
 
   const [form, setForm] = useState(() => {
     const base = { ...blank(), ...(initial || {}) };
@@ -81,6 +93,8 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const priorityOptions = priorities.map((p) => ({ value: p.name || p, label: p.name || p }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
+  const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
+  const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
 
   const autoCourtName = useMemo(() => {
     const h = hierarchyOptions.find((o) => o.value === form.court_hierarchy);
@@ -97,6 +111,9 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     if (payload.case_year) payload.case_year = String(payload.case_year);
     payload.court_name = autoCourtName;
     delete payload.jurisdiction;
+    ['next_hearing', 'disposal_date', 'filing_date', 'registration_date', 'ws_filing_date'].forEach((k) => {
+      if (!payload[k]) delete payload[k];
+    });
     onSubmit?.(payload);
   };
 
@@ -156,10 +173,16 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
             <Input value={form.defendant} onChange={(e) => setField('defendant', e.target.value)} placeholder="Defendant name(s)" />
           </Field>
           <Field label="Client">
-            <Input value={form.client} onChange={(e) => setField('client', e.target.value)} placeholder="Client name" />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <SearchableSelect value={form.client} onChange={(e) => setField('client', e.target.value)} options={clientOptions} placeholder="Select client" />
+              <button type="button" className="btn btn--ghost btn--sm" title="Manage clients" onClick={() => setClientMgr(true)}><Icon name="gear" size={15} /></button>
+            </div>
           </Field>
           <Field label="Advocate">
-            <Input value={form.advocate} onChange={(e) => setField('advocate', e.target.value)} placeholder="Advocate name" />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <SearchableSelect value={form.advocate} onChange={(e) => setField('advocate', e.target.value)} options={userOptions} placeholder="Select advocate" />
+              <button type="button" className="btn btn--ghost btn--sm" title="Manage advocates" onClick={() => setAdvocateMgr(true)}><Icon name="gear" size={15} /></button>
+            </div>
           </Field>
         </div>
       </SectionCard>
@@ -239,6 +262,22 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
         <Field label="Document Folder">
           <Input value={form.document_folder} onChange={(e) => setField('document_folder', e.target.value)} placeholder="e.g., Suit Copy" />
         </Field>
+        {caseDocuments && caseDocuments.length > 0 && (
+          <div style={{ marginTop: 10 }}>
+            <label className="field__label">Attached Files</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+              {caseDocuments.map((d) => (
+                <div key={d.id} className="list-row" style={{ borderRadius: 8, border: '1px solid var(--border)', padding: '8px 12px', background: 'var(--surface-2)' }}>
+                  <div className="list-row__icon"><Icon name="file" size={15} /></div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="list-row__title">{d.name}</div>
+                    <div className="list-row__meta">{d.folder || '—'}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </SectionCard>
 
       <div className="modal__foot" style={{ padding: '8px 0 0', borderTop: 'none' }}>
@@ -249,6 +288,20 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       <StageManager open={stageMgr} stages={stages} onClose={() => setStageMgr(false)} onChanged={refreshStages} />
       <CaseTypeManager open={caseTypeMgr} caseTypes={caseTypes} onClose={() => setCaseTypeMgr(false)} onChanged={refreshCaseTypes} />
       <CrudManager open={jurisdictionMgr} onClose={() => { setJurisdictionMgr(false); refreshJurisdictions(); }} entity="Jurisdiction" config={{ logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'Enter jurisdiction name' }], defaults: {}, refresh: refreshJurisdictions }} />
+      <CrudManager open={clientMgr} onClose={() => { setClientMgr(false); clientLogic.list().then((r) => { setClients(Array.isArray(r) ? r : []); }).catch(() => {}); }} entity="Client" config={{ logic: clientLogic, fields: [
+        { key: 'name', label: 'Client Name', placeholder: 'Enter client name' },
+        { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' },
+        { key: 'email', label: 'Email', placeholder: 'email@example.com' },
+        { key: 'address', label: 'Address', placeholder: 'Enter address' },
+        { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual' },
+      ], defaults: {}, refresh: () => clientLogic.list().then((r) => { setClients(Array.isArray(r) ? r : []); }).catch(() => {}) }} />
+      <CrudManager open={advocateMgr} onClose={() => { setAdvocateMgr(false); userLogic.list().then((r) => { setUsers(Array.isArray(r) ? r : []); }).catch(() => {}); }} entity="Advocate" config={{ logic: userLogic, fields: [
+        { key: 'name', label: 'Name', placeholder: 'Enter advocate name' },
+        { key: 'email', label: 'Email', placeholder: 'email@example.com' },
+        { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' },
+        { key: 'address', label: 'Address', placeholder: 'Enter address' },
+        { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password' },
+      ], defaults: {}, refresh: () => userLogic.list().then((r) => { setUsers(Array.isArray(r) ? r : []); }).catch(() => {}) }} />
     </div>
   );
 }

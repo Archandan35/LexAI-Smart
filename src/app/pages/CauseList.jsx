@@ -20,7 +20,7 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate, formatDateTime } from '@/utils/format.js';
+import { formatDate } from '@/utils/format.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', notes: '', judge: '', docRef: null, docName: '' };
@@ -59,6 +59,7 @@ export default function CauseList() {
     date: true,
     case: true,
     court: true,
+    bench: true,
     purpose: true,
     judge: true,
     status: true,
@@ -358,14 +359,15 @@ export default function CauseList() {
       toast.push('No hearings to export.', 'info');
       return;
     }
-    const headers = ['Date & Time', 'Case Number', 'Title', 'Court / Bench', 'Purpose', 'Judge / Officer', 'Status'];
+    const headers = ['Hearing Date', 'Case Number', 'Title', 'Court', 'Bench', 'Purpose', 'Judge', 'Status'];
     const csvContent = [
       headers.join(','),
       ...sortedRows.map(r => [
-        `"${formatDateTime(r.date)}"`,
+        `"${formatDate(r.date)}"`,
         `"${r.caseNumber}"`,
         `"${r.parties}"`,
         `"${r.court}"`,
+        `"${r.case?.bench_type || '—'}"`,
         `"${r.purpose || '—'}"`,
         `"${r.case?.judge || '—'}"`,
         `"${r.status}"`
@@ -565,7 +567,7 @@ export default function CauseList() {
                   {Object.keys(visibleColumns).map(col => (
                     <label key={col} className="flex align-center gap-8 font-medium pointer text-sm">
                       <input type="checkbox" checked={visibleColumns[col]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }))} />
-                      {col.charAt(0).toUpperCase() + col.slice(1)}
+                      {col === 'date' ? 'Hearing Date' : col.charAt(0).toUpperCase() + col.slice(1)}
                     </label>
                   ))}
                 </div>
@@ -629,11 +631,12 @@ export default function CauseList() {
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}><input type="checkbox" /></th>
-                    {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date & Time {sortDir === 'asc' ? '▲' : '▼'}</th>}
+                    {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Hearing Date {sortDir === 'asc' ? '▲' : '▼'}</th>}
                     {visibleColumns.case && <th>Case Number & Title</th>}
-                    {visibleColumns.court && <th>Court / Bench</th>}
+                    {visibleColumns.court && <th>Court</th>}
+                    {visibleColumns.bench && <th>Bench</th>}
                     {visibleColumns.purpose && <th>Purpose</th>}
-                    {visibleColumns.judge && <th>Judge / Officer</th>}
+                    {visibleColumns.judge && <th>Judge</th>}
                     {visibleColumns.status && <th>Status</th>}
                     {visibleColumns.actions && <th style={{ textAlign: 'right' }}>Actions</th>}
                   </tr>
@@ -648,7 +651,7 @@ export default function CauseList() {
                           <td className="cause-list__cell-date">
                             <div className="flex align-center gap-8">
                               <Icon name="calendar" size={13} className="text-muted" />
-                              <span>{formatDateTime(h.date)}</span>
+                              <span>{formatDate(h.date)}</span>
                             </div>
                           </td>
                         )}
@@ -670,6 +673,7 @@ export default function CauseList() {
                           </td>
                         )}
                         {visibleColumns.court && <td>{h.court}</td>}
+                        {visibleColumns.bench && <td>{h.case?.bench_type || '—'}</td>}
                         {visibleColumns.purpose && <td>{h.purpose || '—'}</td>}
                         {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                         {visibleColumns.status && (
