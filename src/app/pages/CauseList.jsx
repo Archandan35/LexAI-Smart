@@ -148,12 +148,16 @@ export default function CauseList() {
   const saveHearing = async () => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
     const payload = { ...form, notes: editorContent || form.notes || '' };
-    if (editing) await causeListLogic.updateHearing(editing.id, payload);
-    else await causeListLogic.addHearing(payload);
-    setOpen(false);
-    await loadList();
-    if (histCaseId) await loadHistory(histCaseId);
-    toast.push(editing ? 'Hearing updated.' : 'Hearing added.', 'success');
+    try {
+      const r = editing ? await causeListLogic.updateHearing(editing.id, payload) : await causeListLogic.addHearing(payload);
+      if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
+      setOpen(false);
+      await loadList();
+      if (histCaseId) await loadHistory(histCaseId);
+      toast.push(editing ? 'Hearing updated.' : 'Hearing added.', 'success');
+    } catch (e) {
+      toast.push(e?.message || 'An unexpected error occurred.', 'error');
+    }
   };
 
   const deleteHearing = async (id) => {

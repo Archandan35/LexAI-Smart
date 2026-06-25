@@ -69,9 +69,15 @@ export const causeListLogic = {
     }
   },
 
-  addHearing: (data) => caseService.addHearing(data),
-  updateHearing: (id, patch) => caseService.updateHearing(id, patch),
-  deleteHearing: (id) => caseService.deleteHearing(id),
+  async addHearing(data) {
+    try { return ok(await caseService.addHearing(data)); } catch (e) { return fail(e); }
+  },
+  async updateHearing(id, patch) {
+    try { return ok(await caseService.updateHearing(id, patch)); } catch (e) { return fail(e); }
+  },
+  async deleteHearing(id) {
+    try { return ok(await caseService.deleteHearing(id)); } catch (e) { return fail(e); }
+  },
 
   // Template CRUD
   listTemplates: () => causeListTemplatesRepository.getAll(),
