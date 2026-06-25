@@ -3085,9 +3085,13 @@ kbd.cmd__kbd {
 /* Folder grid in main container */
 .docmgr__folder-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
+
+@media (max-width: 1200px) { .docmgr__folder-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 900px)  { .docmgr__folder-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { .docmgr__folder-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .docmgr__folder-card {
   padding: 16px 12px;
@@ -11899,7 +11903,13 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   padding: 20px 20px 24px;
   min-width: 0;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
 }
+
+.cdoc__content::-webkit-scrollbar { width: 5px; }
+.cdoc__content::-webkit-scrollbar-track { background: transparent; }
+.cdoc__content::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
 
 /* ── Toolbar ── */
 .cdoc__toolbar {
@@ -12409,8 +12419,40 @@ kbd.cmd__kbd {
 /* ── Folder cards — use existing .docmgr__folder-card with updated icon ── */
 /* Override existing folder card to be row-based for the Folders page view */
 .cdoc__layout .docmgr__folder-grid {
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 10px;
+}
+
+/* ── Content-area folder search ── */
+.cdoc__content-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-faint);
+  transition: border-color 0.15s;
+}
+
+.cdoc__content-search:focus-within {
+  border-color: var(--brand);
+  background: var(--surface);
+}
+
+.cdoc__content-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.cdoc__content-search input::placeholder {
+  color: var(--text-faint);
 }
 
 .cdoc__layout .docmgr__folder-card {
