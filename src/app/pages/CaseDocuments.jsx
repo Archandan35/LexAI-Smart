@@ -201,7 +201,7 @@ export default function CaseDocuments() {
     return arr;
   }, [visible, search, fileExtFilter, sortBy]);
 
-  const isFileView = (activeFolder && getChildren(activeFolder).length === 0) || (!activeFolder && docs.length > 0);
+  const isFileView = activeFolder && getChildren(activeFolder).length === 0;
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
   const paginated = sorted.slice((page - 1) * perPage, page * perPage);
@@ -612,7 +612,7 @@ export default function CaseDocuments() {
                           onClick={(e) => e.stopPropagation()}
                         />
                       )}
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
                     </div>
                     <span className="docmgr__folder-card-name">{f.name}</span>
                     <span className="docmgr__folder-card-meta">

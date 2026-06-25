@@ -1,7 +1,7 @@
 import { caseService } from '@/services/caseService.js';
 import { draftingService } from '@/services/draftingService.js';
 import { citationService } from '@/services/citationService.js';
-import { caseFolderLogic } from './caseFolderLogic.js';
+import { caseFolderService } from '@/services/caseFolderService.js';
 import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { reminderService } from '@/services/reminderService.js';
@@ -23,7 +23,7 @@ export const caseLogic = {
       enriched.title = [enriched.plaintiff, enriched.defendant].filter(Boolean).join(' vs ');
     }
     const row = await caseService.createCase({ ...enriched, archived: false, watch: false, stageHistory: [], createdAt: nowISO() });
-    await caseFolderLogic.ensureForCase(row.id);
+    await caseFolderService.create({ caseId: row.id, name: row.caseNumber || row.case_display_number || 'Miscellaneous', kind: 'document', order: 0, system: true, createdAt: nowISO() });
     await caseActivityService.record(row.id, 'case.create', `Case created: ${row.caseNumber}`, user);
     return row;
   },
@@ -151,7 +151,7 @@ export const caseLogic = {
         caseService.listDocuments(caseId),
         caseService.listHearings(caseId),
         caseService.listNotes(caseId),
-        caseFolderLogic.list(caseId),
+        caseFolderService.list(caseId),
         caseHistoryService.list(caseId),
         caseActivityService.list(caseId),
         reminderService.list(caseId),
