@@ -11,13 +11,10 @@ import CrudManager from './CrudManager.jsx';
 import { Field, Input } from './Field.jsx';
 import { reminderLogic } from '@/logic/reminderLogic.js';
 import { reminderTypesLogic } from '@/logic/reminderTypesLogic.js';
-import { caseCrudLogic } from '@/logic/caseCrudLogic.js';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
-
-const FALLBACK_TYPES = ['Hearing Date', 'Filing Deadline', 'Evidence Deadline', 'Compliance Deadline'];
 
 function dayDiff(date) {
   const d = new Date(date); d.setHours(0, 0, 0, 0);
@@ -25,17 +22,15 @@ function dayDiff(date) {
   return Math.round((d - today) / 86400000);
 }
 
-// RemindersPanel — add / complete / delete case reminders with deadline cues.
 export default function RemindersPanel({ caseId, onChanged }) {
   const toast = useToast();
   const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
-  const [typeOptions, setTypeOptions] = useState(FALLBACK_TYPES);
+  const [typeOptions, setTypeOptions] = useState([]);
   const [caseOptions, setCaseOptions] = useState([]);
-  const [form, setForm] = useState({ type: '', caseId, title: '', date: '' });
+  const [form, setForm] = useState({ title: '', type: '', caseId, date: '' });
   const [typeMgr, setTypeMgr] = useState(false);
-  const [caseMgr, setCaseMgr] = useState(false);
 
   const load = useCallback(async () => { setItems(await reminderLogic.list(caseId)); }, [caseId]);
   useEffect(() => { load(); }, [load]);
@@ -43,7 +38,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
   const loadTypes = useCallback(async () => {
     const rows = await reminderTypesLogic.list();
     const names = Array.isArray(rows) ? rows.map((r) => r.name).filter(Boolean) : [];
-    setTypeOptions(names.length ? names : FALLBACK_TYPES);
+    setTypeOptions(names);
   }, []);
 
   const loadCases = useCallback(async () => {
@@ -65,7 +60,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
     if (res.ok) {
       toast.push('Reminder added.', 'success');
       setOpen(false);
-      setForm({ type: '', caseId, title: '', date: '' });
+      setForm({ title: '', type: '', caseId, date: '' });
       load();
       onChanged?.();
     } else toast.push(res.error, 'error');
@@ -109,6 +104,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
 
       <Modal open={open} title="Add Reminder" onClose={() => setOpen(false)}
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={add}>Add</Button></>}>
+        <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. File written statement" autoFocus /></Field>
         <Field label="Type">
           <div style={{ display: 'flex', gap: 8 }}>
             <select
@@ -124,24 +120,17 @@ export default function RemindersPanel({ caseId, onChanged }) {
           </div>
         </Field>
         <Field label="Case">
-          <div style={{ display: 'flex', gap: 8 }}>
-            <SearchableSelect
-              value={form.caseId}
-              onChange={(e) => setForm({ ...form, caseId: e.target.value })}
-              options={caseOptionsFormatted}
-              placeholder="Select case…"
-              style={{ flex: 1 }}
-            />
-            <button type="button" className="btn btn--ghost btn--sm" title="Manage cases" onClick={() => setCaseMgr(true)}><Icon name="gear" size={15} /></button>
-          </div>
+          <SearchableSelect
+            value={form.caseId}
+            onChange={(e) => setForm({ ...form, caseId: e.target.value })}
+            options={caseOptionsFormatted}
+            placeholder="Select case…"
+          />
         </Field>
-        <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. File written statement" autoFocus /></Field>
         <Field label="Date"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       </Modal>
 
       <CrudManager open={typeMgr} onClose={() => { setTypeMgr(false); loadTypes(); }} entity="Reminder Type" config={{ logic: reminderTypesLogic, fields: [{ key: 'name', label: 'Reminder Type Name', placeholder: 'e.g., Hearing Date' }, { key: 'description', label: 'Description', placeholder: 'Optional description' }], defaults: {}, refresh: loadTypes }} />
-
-      <CrudManager open={caseMgr} onClose={() => { setCaseMgr(false); loadCases(); }} entity="Case" config={{ logic: caseCrudLogic, fields: [{ key: 'case_number', label: 'Case Number', placeholder: 'e.g., 123/2024' }, { key: 'case_type', label: 'Case Type', placeholder: 'e.g., Civil' }, { key: 'plaintiff', label: 'Plaintiff', placeholder: 'Plaintiff name' }, { key: 'defendant', label: 'Defendant', placeholder: 'Defendant name' }], defaults: {}, refresh: loadCases }} />
     </Card>
   );
 }
