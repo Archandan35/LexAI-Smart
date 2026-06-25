@@ -10,7 +10,7 @@ import { clientLogic } from '@/logic/clientLogic.js';
 import { userLogic } from '@/logic/userLogic.js';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
-import { courtHierarchyLogic } from '@/logic/courtHierarchyLogic.js';
+import { courtsLogic } from '@/logic/courtsLogic.js';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
@@ -22,7 +22,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
-import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
+import { useCourts } from '@/hooks/useCourts.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
@@ -35,7 +35,7 @@ const INITIAL_FORM = {
   case_number: '', case_year: '', case_type: '',
   plaintiffs: [], defendants: [],
   client: '', advocate: '',
-  court_hierarchy: '', court_name: '', bench_type: '',
+  court: '', court_name: '', bench_type: '',
   presiding_officer: '', jurisdiction: '',
   stage: '', priority: '',
   filing_date: '', next_hearing_date: '',
@@ -118,7 +118,7 @@ function PartyColumn({ label, items, inputValue, onInputChange, onAdd, onRemove,
 const ENTITY_CONFIGS = {
   Status: { label: 'Status', logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }], defaults: {} },
   'Case Type': { label: 'Case Type', logic: caseTypeLogic, fields: [{ key: 'name', label: 'Case Type Name', placeholder: 'e.g., Civil' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., CIV' }], defaults: {} },
-  Courts: { label: 'Courts', logic: courtHierarchyLogic, fields: [{ key: 'name', label: 'Court Name', placeholder: 'e.g., Supreme Court' }], defaults: {} },
+      Courts: { label: 'Courts', logic: courtsLogic, fields: [{ key: 'name', label: 'Court Name', placeholder: 'e.g., Supreme Court' }], defaults: {} },
   'Bench Type': { label: 'Bench Type', logic: benchTypeLogic, fields: [{ key: 'name', label: 'Bench Type Name', placeholder: 'e.g., Single Bench' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., SB' }], defaults: {} },
   Jurisdiction: { label: 'Jurisdiction', logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' }], defaults: {} },
   Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
@@ -143,7 +143,7 @@ export default function CreateCase() {
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { names: stageNames, refresh: refreshStages } = useCaseStages();
   const { priorities, refresh: refreshPriorities } = usePriorities();
-  const { hierarchy, refresh: refreshHierarchy } = useCourtHierarchy();
+  const { courts, refresh: refreshCourts } = useCourts();
   const { benchTypes, refresh: refreshBenchTypes } = useBenchTypes();
   const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
   const { judges, refresh: refreshJudges } = useJudges();
@@ -182,9 +182,9 @@ export default function CreateCase() {
   const closeCrudManager = useCallback(() => {
     setCrudEntity(null);
     refreshCaseTypes(); refreshStages(); refreshPriorities();
-    refreshHierarchy(); refreshBenchTypes(); refreshJurisdictions(); refreshJudges();
+    refreshCourts(); refreshBenchTypes(); refreshJurisdictions(); refreshJudges();
     clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { });
-  }, [refreshCaseTypes, refreshStages, refreshPriorities, refreshHierarchy, refreshBenchTypes, refreshJurisdictions, refreshJudges]);
+  }, [refreshCaseTypes, refreshStages, refreshPriorities, refreshCourts, refreshBenchTypes, refreshJurisdictions, refreshJudges]);
 
   const setField = useCallback((key, value) => setForm((prev) => ({ ...prev, [key]: value })), []);
   const setFieldEvent = useCallback((key) => (e) => setField(key, e.target.value), [setField]);
@@ -200,10 +200,10 @@ export default function CreateCase() {
   }, [form.plaintiffs, form.defendants]);
 
   const autoCourtName = useMemo(() => {
-    const h = form.court_hierarchy, j = form.jurisdiction;
+    const h = form.court, j = form.jurisdiction;
     if (h && j) return `${h}, ${j}`;
     return h || j || '';
-  }, [form.court_hierarchy, form.jurisdiction]);
+  }, [form.court, form.jurisdiction]);
 
   const handleFileChange = useCallback((e) => setSelectedFiles(Array.from(e.target.files || [])), []);
 
@@ -224,7 +224,7 @@ export default function CreateCase() {
     status: draft ? 'Draft' : 'Active', case_type: form.case_type,
     plaintiff: form.plaintiffs.join(', '), defendant: form.defendants.join(', '),
     client: form.client, advocate: form.advocate,
-    court_hierarchy: form.court_hierarchy, court_name: autoCourtName,
+    court: form.court, court_name: autoCourtName,
     bench_type: form.bench_type, judge: form.presiding_officer,
     stage: form.stage, priority: form.priority,
     filing_date: form.filing_date, next_hearing: form.next_hearing_date,
@@ -277,7 +277,7 @@ export default function CreateCase() {
 
   /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
-  const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
+  const hierarchyOptions = courts.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
   const judgeOptions = judges.map((j) => ({ value: j, label: j }));
@@ -289,7 +289,7 @@ export default function CreateCase() {
   const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
   const refreshMap = {
     'Case Type': refreshCaseTypes,
-    Courts: refreshHierarchy, 'Bench Type': refreshBenchTypes,
+    Courts: refreshCourts, 'Bench Type': refreshBenchTypes,
     Jurisdiction: refreshJurisdictions, Stage: refreshStages, Priority: refreshPriorities,
     Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { }),
     Advocate: () => userLogic.list().then((r) => { if (Array.isArray(r)) setUsers(r); }).catch(() => { }),
@@ -428,7 +428,7 @@ export default function CreateCase() {
         <div className="grid-2">
           <Field label="Courts" required>
             <GearSelect
-              value={form.court_hierarchy} onChange={setFieldEvent('court_hierarchy')}
+              value={form.court} onChange={setFieldEvent('court')}
               options={hierarchyOptions} placeholder="Select court"
               entity="Courts" onGearClick={openCrudManager}
             />

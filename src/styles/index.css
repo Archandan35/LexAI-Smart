@@ -6532,51 +6532,51 @@ kbd.cmd__kbd {
   margin-top: 2px;
 }
 
-/* ---- CourtHierarchy additions ---- */
-.court-hierarchy__name {
+/* ---- Courts additions ---- */
+.courts__name {
   font-weight: 600;
 }
 
-.court-hierarchy__add-card {
+.courts__add-card {
   margin-bottom: 16px;
 }
 
-.court-hierarchy__add-row {
+.courts__add-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.court-hierarchy__input-wrap {
+.courts__input-wrap {
   flex: 1 1 200px;
   min-width: 0;
 }
 
-.court-hierarchy__edit-row {
+.courts__edit-row {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-.court-hierarchy__level-select-sm {
+.courts__level-select-sm {
   width: 90px;
 }
 
-.court-hierarchy__level-select {
+.courts__level-select {
   width: 100px;
 }
 
-.court-hierarchy__parent-select {
+.courts__parent-select {
   flex: 1;
 }
 
-.court-hierarchy__count {
+.courts__count {
   margin-top: 12px;
   font-size: 12.5px;
 }
 
-.court-hierarchy__th-actions {
+.courts__th-actions {
   width: 110px;
 }
 
@@ -8916,51 +8916,51 @@ kbd.cmd__kbd {
   margin-top: 2px;
 }
 
-/* ---- CourtHierarchy additions ---- */
-.court-hierarchy__name {
+/* ---- Courts additions ---- */
+.courts__name {
   font-weight: 600;
 }
 
-.court-hierarchy__add-card {
+.courts__add-card {
   margin-bottom: 16px;
 }
 
-.court-hierarchy__add-row {
+.courts__add-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.court-hierarchy__input-wrap {
+.courts__input-wrap {
   flex: 1 1 200px;
   min-width: 0;
 }
 
-.court-hierarchy__edit-row {
+.courts__edit-row {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-.court-hierarchy__level-select-sm {
+.courts__level-select-sm {
   width: 90px;
 }
 
-.court-hierarchy__level-select {
+.courts__level-select {
   width: 100px;
 }
 
-.court-hierarchy__parent-select {
+.courts__parent-select {
   flex: 1;
 }
 
-.court-hierarchy__count {
+.courts__count {
   margin-top: 12px;
   font-size: 12.5px;
 }
 
-.court-hierarchy__th-actions {
+.courts__th-actions {
   width: 110px;
 }
 

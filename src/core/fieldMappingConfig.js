@@ -34,7 +34,7 @@ const SCHEMAS = {
   priorities: { ...COMMON },
   bench_types: { ...COMMON },
   jurisdictions: { ...COMMON },
-  court_hierarchy: { ...COMMON },
+
   hearing_statuses: { ...COMMON },
   folder_templates: { ...COMMON },
   draft_types: { ...COMMON },

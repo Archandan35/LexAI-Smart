@@ -32,7 +32,6 @@ import { SchemaMetaSchema } from './schema_meta.schema.js';
 import { CaseTypesSchema } from './case_types.schema.js';
 import { CourtsSchema } from './courts.schema.js';
 import { BenchTypesSchema } from './bench_types.schema.js';
-import { CourtHierarchySchema } from './court_hierarchy.schema.js';
 import { JurisdictionsSchema } from './jurisdictions.schema.js';
 import { ClientsSchema } from './clients.schema.js';
 import { ContactsSchema } from './contacts.schema.js';
@@ -81,7 +80,6 @@ export const schemas = {
   case_types: CaseTypesSchema,
   courts: CourtsSchema,
   bench_types: BenchTypesSchema,
-  court_hierarchy: CourtHierarchySchema,
   jurisdictions: JurisdictionsSchema,
   clients: ClientsSchema,
   contacts: ContactsSchema,

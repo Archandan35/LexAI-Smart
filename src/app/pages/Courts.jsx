@@ -4,7 +4,7 @@ import Card from '@/components/Card.jsx';
 import { Input, Select } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
-import { courtHierarchyLogic } from '@/logic/courtHierarchyLogic.js';
+import { courtsLogic } from '@/logic/courtsLogic.js';
 
 export default function Courts() {
   const toast = useToast();
@@ -21,7 +21,7 @@ export default function Courts() {
 
   const load = async () => {
     setLoading(true);
-    const res = await courtHierarchyLogic.list();
+    const res = await courtsLogic.list();
     if (Array.isArray(res)) setItems(res);
     setLoading(false);
   };
@@ -31,7 +31,7 @@ export default function Courts() {
   const add = async () => {
     if (!newName.trim()) { toast.push('Name is required.', 'error'); return; }
     const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
-    const res = await courtHierarchyLogic.create({ name: newName, level: Number(newLevel), parent_id: newParent || null, display_order: order });
+    const res = await courtsLogic.create({ name: newName, level: Number(newLevel), parent_id: newParent || null, display_order: order });
     if (res.ok) { setNewName(''); toast.push('Hierarchy level added.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -41,14 +41,14 @@ export default function Courts() {
   const saveEdit = async () => {
     if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
     const item = items.find((i) => i.id === editId);
-    const res = await courtHierarchyLogic.update(editId, { name: editName, level: Number(editLevel), parent_id: editParent || null, display_order: item?.display_order, status: item?.status });
+    const res = await courtsLogic.update(editId, { name: editName, level: Number(editLevel), parent_id: editParent || null, display_order: item?.display_order, status: item?.status });
     if (res.ok) { setEditId(null); toast.push('Hierarchy level updated.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
 
   const remove = async (item) => {
     if (!window.confirm(`Delete "${item.name}"?`)) return;
-    const res = await courtHierarchyLogic.remove(item.id);
+    const res = await courtsLogic.remove(item.id);
     if (res.ok) { toast.push('Hierarchy level deleted.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
@@ -69,7 +69,7 @@ export default function Courts() {
         <React.Fragment key={item.id}>
           <tr>
             <td style={{ paddingLeft: 16 + depth * 24 }}>
-              <span className="court-hierarchy__name">{item.name}</span>
+              <span className="courts__name">{item.name}</span>
             </td>
             <td>
               {isEditing ? (
@@ -80,9 +80,9 @@ export default function Courts() {
             </td>
             <td>
               {isEditing ? (
-                <div className="court-hierarchy__edit-row">
-                  <Select value={editLevel} onChange={(e) => setEditLevel(e.target.value)} options={[1,2,3,4,5].map((n) => ({ value: String(n), label: `Level ${n}` }))} className="court-hierarchy__level-select-sm" />
-                  <Select value={editParent} onChange={(e) => setEditParent(e.target.value)} options={[{ value: '', label: '— No parent —' }, ...liveOptions(editId, editLevel)]} className="court-hierarchy__parent-select" />
+                <div className="courts__edit-row">
+                  <Select value={editLevel} onChange={(e) => setEditLevel(e.target.value)} options={[1,2,3,4,5].map((n) => ({ value: String(n), label: `Level ${n}` }))} className="courts__level-select-sm" />
+                  <Select value={editParent} onChange={(e) => setEditParent(e.target.value)} options={[{ value: '', label: '— No parent —' }, ...liveOptions(editId, editLevel)]} className="courts__parent-select" />
                 </div>
               ) : (
                 <span>Level {item.level}</span>
@@ -112,13 +112,13 @@ export default function Courts() {
     <div className="fade-in">
       <PageHeader icon="layers" title="Courts" subtitle="Define the hierarchical structure of courts." />
 
-      <Card title="Add Court Level" className="court-hierarchy__add-card">
-        <div className="court-hierarchy__add-row">
-          <div className="court-hierarchy__input-wrap">
+      <Card title="Add Court Level" className="courts__add-card">
+        <div className="courts__add-row">
+          <div className="courts__input-wrap">
             <Input value={newName} placeholder="Court name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
-          <Select value={newLevel} onChange={(e) => setNewLevel(e.target.value)} options={[1,2,3,4,5].map((n) => ({ value: String(n), label: `Level ${n}` }))} className="court-hierarchy__level-select" />
-          <Select value={newParent} onChange={(e) => setNewParent(e.target.value)} options={[{ value: '', label: '— Root —' }, ...liveOptions(null, Number(newLevel) + 1)]} className="court-hierarchy__parent-select" />
+          <Select value={newLevel} onChange={(e) => setNewLevel(e.target.value)} options={[1,2,3,4,5].map((n) => ({ value: String(n), label: `Level ${n}` }))} className="courts__level-select" />
+          <Select value={newParent} onChange={(e) => setNewParent(e.target.value)} options={[{ value: '', label: '— Root —' }, ...liveOptions(null, Number(newLevel) + 1)]} className="courts__parent-select" />
           <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
         </div>
       </Card>
@@ -133,7 +133,7 @@ export default function Courts() {
       <Card bodyClass="card__body--flush">
         <table className="table">
           <thead>
-            <tr><th>Court Name</th><th>Parent</th><th>Level</th><th>Order</th><th>Status</th><th className="court-hierarchy__th-actions">Actions</th></tr>
+            <tr><th>Court Name</th><th>Parent</th><th>Level</th><th>Order</th><th>Status</th><th className="courts__th-actions">Actions</th></tr>
           </thead>
           <tbody>
             {rootItems.length === 0 ? (
@@ -142,7 +142,7 @@ export default function Courts() {
           </tbody>
         </table>
       </Card>
-      <p className="muted court-hierarchy__count">{items.length} court level(s) defined.</p>
+      <p className="muted courts__count">{items.length} court level(s) defined.</p>
     </div>
   );
 }

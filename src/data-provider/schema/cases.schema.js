@@ -15,7 +15,6 @@ export const CasesSchema = {
     plaintiff: 'string',
     defendant: 'string',
     court: 'string',
-    court_hierarchy: 'string',
     court_name: 'string',
     bench_type: 'string',
     judge: 'string',

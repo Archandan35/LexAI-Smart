@@ -1,18 +1,18 @@
-import { courtHierarchyService } from '@/services/courtHierarchyService.js';
+import { courtsService } from '@/services/courtsService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
-export const courtHierarchyLogic = {
+export const courtsLogic = {
   async list() {
     try {
-      const rows = await courtHierarchyService.list();
+      const rows = await courtsService.list();
       return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
     } catch (err) { return fail(err); }
   },
 
   async get(id) {
     try {
-      return courtHierarchyService.get(id);
+      return courtsService.get(id);
     } catch (err) { return fail(err); }
   },
 
@@ -20,7 +20,7 @@ export const courtHierarchyLogic = {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Court name is required.');
-      return ok(await courtHierarchyService.create({
+      return ok(await courtsService.create({
         name,
         level: data.level ?? 1,
         parent_id: data.parent_id || null,
@@ -35,7 +35,7 @@ export const courtHierarchyLogic = {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Court name is required.');
-      return ok(await courtHierarchyService.update(id, {
+      return ok(await courtsService.update(id, {
         name,
         level: data.level,
         parent_id: data.parent_id || null,
@@ -47,9 +47,9 @@ export const courtHierarchyLogic = {
 
   async remove(id) {
     try {
-      return ok(await courtHierarchyService.remove(id));
+      return ok(await courtsService.remove(id));
     } catch (err) { return fail(err); }
   },
 };
 
-export default courtHierarchyLogic;
+export default courtsLogic;

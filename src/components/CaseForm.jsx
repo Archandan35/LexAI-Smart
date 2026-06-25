@@ -8,7 +8,7 @@ import CrudManager from './CrudManager.jsx';
 import SearchableSelect from './SearchableSelect.jsx';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
-import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
+import { useCourts } from '@/hooks/useCourts.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
@@ -26,7 +26,7 @@ function blank() {
   return {
     case_number: '', case_year: String(currentYear), case_type: '',
     plaintiff: '', defendant: '', client: '', advocate: '',
-    court_hierarchy: '', court_name: '', jurisdiction: '', bench_type: '', judge: '',
+    court: '', court_name: '', jurisdiction: '', bench_type: '', judge: '',
     stage: '', priority: '',
     filing_date: '', next_hearing: '',
     filing_number: '', registration_number: '', cnr_number: '',
@@ -58,7 +58,7 @@ function SectionCard({ num, title, children }) {
 export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Update Case', caseDocuments }) {
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { stages, names: stageNames, refresh: refreshStages } = useCaseStages();
-  const { hierarchy } = useCourtHierarchy();
+  const { courts } = useCourts();
   const { benchTypes } = useBenchTypes();
   const { priorities } = usePriorities();
 
@@ -102,7 +102,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     caseTypes.filter((t) => t.status !== 'Inactive').map((t) => ({ value: t.short_code || t.name, label: t.name }))
   , [caseTypes]);
 
-  const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
+  const hierarchyOptions = courts.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const priorityOptions = priorities.map((p) => ({ value: p.name || p, label: p.name || p }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
@@ -112,13 +112,13 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const judgeOptions = judges.map((j) => ({ value: j, label: j }));
 
   const autoCourtName = useMemo(() => {
-    const h = hierarchyOptions.find((o) => o.value === form.court_hierarchy);
+    const h = hierarchyOptions.find((o) => o.value === form.court);
     const j = form.jurisdiction;
     if (h && j) return `${h.label}, ${j}`;
     if (h) return h.label;
     if (j) return j;
     return form.court_name || '';
-  }, [form.court_hierarchy, form.jurisdiction, form.court_name, hierarchyOptions]);
+  }, [form.court, form.jurisdiction, form.court_name, hierarchyOptions]);
 
   const submit = () => {
     const payload = { ...form };
@@ -206,7 +206,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       <SectionCard num="3" title="Court Information">
         <div className="grid-3">
           <Field label="Courts">
-            {sel('Courts', form.court_hierarchy, hierarchyOptions, (v) => setField('court_hierarchy', v), 'Select court')}
+            {sel('Courts', form.court, hierarchyOptions, (v) => setField('court', v), 'Select court')}
           </Field>
           <Field label="Jurisdiction">
             <div style={{ display: 'flex', gap: 8 }}>

@@ -299,7 +299,7 @@ export default function CauseList() {
   };
 
   // ----- Filtering & Sorting calculations -----
-  const uniqueCourtNames = Array.from(new Set(cases.map(c => c.court_hierarchy || c.court || '').filter(Boolean)));
+  const uniqueCourtNames = Array.from(new Set(cases.map(c => c.court || c.court || '').filter(Boolean)));
   const uniqueCourtLocations = Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean)));
 
   const handleSortToggle = () => {
@@ -328,7 +328,7 @@ export default function CauseList() {
       const purposeMatch = row.purpose?.toLowerCase().includes(q);
       if (!numMatch && !titleMatch && !courtMatch && !purposeMatch) return false;
     }
-    if (filterCourt && (row.case?.court_hierarchy || row.case?.court) !== filterCourt) return false;
+    if (filterCourt && (row.case?.court || row.case?.court) !== filterCourt) return false;
     if (filterCourtLocation && extractJurisdiction(row.case) !== filterCourtLocation) return false;
     if (filterStatus && row.status !== filterStatus) return false;
     if (dateFrom || dateTo) {
@@ -591,7 +591,7 @@ export default function CauseList() {
                       <span className="cause-list__case-badge-active">{selCase.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{selCase.title}</p>
-                    <div className="cause-list__header-court">{selCase.court_hierarchy || ''}{selCase.court_hierarchy && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
+                    <div className="cause-list__header-court">{selCase.court || ''}{selCase.court && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
                   </div>
                 </div>
                 <div className="cause-list__details-grid">
@@ -762,7 +762,7 @@ export default function CauseList() {
                       )}
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    <div className="cause-list__header-court">{history.case?.court_hierarchy || ''}{history.case?.court_hierarchy && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                    <div className="cause-list__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                   </div>
                 </div>
 
@@ -947,7 +947,7 @@ export default function CauseList() {
                       <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    <div className="cause-list__header-court">{history.case?.court_hierarchy || ''}{history.case?.court_hierarchy && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                    <div className="cause-list__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                   </div>
                 </div>
 

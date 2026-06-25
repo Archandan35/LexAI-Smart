@@ -789,7 +789,7 @@ const APP_TABLES = [
   'users', 'roles', 'permissions', 'cases', 'courts', 'case_types', 'case_stages',
   'reminders', 'notes', 'hearings', 'drafts', 'documents', 'case_history', 'case_folders',
   'case_activity', 'audit_logs', 'config_history', 'settings', 'env_vars', 'schema_meta',
-  'judgments', 'cause_list_templates', 'bench_types', 'court_hierarchy', 'jurisdictions',
+  'judgments', 'cause_list_templates', 'bench_types', 'courts', 'jurisdictions',
   'clients', 'contacts', 'acts', 'prompts', 'templates', 'legal_notices', 'precedents', 'reports',
 ];
 
@@ -828,7 +828,7 @@ const APP_POLICY_TABLES = [
   'reminders', 'drafts', 'case_history', 'case_activity', 'case_folders',
   'settings', 'env_vars', 'audit_logs', 'config_history', 'schema_meta',
   'courts', 'case_types', 'case_stages', 'judgments', 'cause_list_templates',
-  'bench_types', 'court_hierarchy', 'jurisdictions',
+  'bench_types', 'courts', 'jurisdictions',
   'clients', 'contacts', 'acts', 'prompts', 'templates', 'legal_notices', 'precedents', 'reports',
 ];
 

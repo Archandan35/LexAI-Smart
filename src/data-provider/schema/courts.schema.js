@@ -2,22 +2,21 @@ export const CourtsSchema = {
   collection: 'courts',
   label: 'Courts',
   primaryKey: 'id',
-  core: false,
+  core: true,
   fields: {
     id: 'string',
     name: 'string',
+    level: 'number',
+    parent_id: 'string',
     display_order: 'number',
     status: 'string',
     created_at: 'datetime',
     updated_at: 'datetime',
   },
   required: ['name'],
-  defaults: {
-    display_order: 0,
-    status: 'Active',
-  },
-  relations: [],
-  indexes: ['status', 'display_order'],
+  defaults: { level: 1, parent_id: null, display_order: 0, status: 'Active' },
+  relations: [{ field: 'parent_id', references: 'courts', on: 'id' }],
+  indexes: ['name', 'level', 'parent_id', 'status'],
 };
 
 export default CourtsSchema;

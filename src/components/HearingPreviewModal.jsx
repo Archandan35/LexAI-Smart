@@ -20,7 +20,7 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
     : null;
 
   const courtName = linkedCase
-    ? [linkedCase.court_hierarchy, extractJurisdiction(linkedCase)].filter(Boolean).join(', ')
+    ? [linkedCase.court, extractJurisdiction(linkedCase)].filter(Boolean).join(', ')
     : null;
 
   return (

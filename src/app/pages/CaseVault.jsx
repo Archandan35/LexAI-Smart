@@ -55,12 +55,12 @@ export default function CaseVault() {
   const remove = (c) => { if (confirm(`Delete case ${c.caseNumber}?`)) act(() => caseLogic.remove(c.id, user), 'Case deleted.'); };
   const bulkRemove = () => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } };
 
-  const uniqueCourtNames = useMemo(() => Array.from(new Set(cases.map(c => c.court_hierarchy || c.court || '').filter(Boolean))), [cases]);
+  const uniqueCourtNames = useMemo(() => Array.from(new Set(cases.map(c => c.court || c.court || '').filter(Boolean))), [cases]);
   const uniqueCourtLocations = useMemo(() => Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean))), [cases]);
 
   const filtered = useMemo(() => {
     let rows = cases.filter((c) => (filters.view === 'archived' ? c.archived : !c.archived));
-    if (filters.court) rows = rows.filter((c) => (c.court_hierarchy || c.court) === filters.court);
+    if (filters.court) rows = rows.filter((c) => (c.court || c.court) === filters.court);
     if (filters.courtLocation) rows = rows.filter((c) => extractJurisdiction(c) === filters.courtLocation);
     if (filters.stage) rows = rows.filter((c) => c.stage === filters.stage);
     if (filters.status) rows = rows.filter((c) => c.status === filters.status);

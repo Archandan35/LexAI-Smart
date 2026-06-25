@@ -4,7 +4,7 @@
 export function combinedCourt(c) {
   if (!c) return '';
   if (c.court_name || c.courtName) return c.court_name || c.courtName;
-  const hierarchy = c.court_hierarchy || c.court || '';
+  const hierarchy = c.court || '';
   const location = c.jurisdiction || '';
   if (hierarchy && location) return `${hierarchy}, ${location}`;
   return hierarchy || location || '—';
