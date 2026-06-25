@@ -89,10 +89,7 @@ export function createRepository(collection) {
     getAll: (query = {}) => withProvisioning(p(), entityName,
       () => p().list(providerName(), FieldMapper.filterToProvider(entityName, query))),
     getById: (id) => withProvisioning(p(), entityName,
-      async () => {
-        const row = await p().get(providerName(), id);
-        return FieldMapper.toLexAI(entityName, row);
-      }),
+      () => p().get(providerName(), id)),
     query: (query = {}) => withProvisioning(p(), entityName,
       () => p().list(providerName(), FieldMapper.filterToProvider(entityName, query))),
     count: (query = {}) => withProvisioning(p(), entityName,

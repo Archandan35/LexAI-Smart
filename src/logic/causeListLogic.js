@@ -1,5 +1,6 @@
 import { caseService } from '@/services/caseService.js';
 import { causeListTemplatesRepository } from '@/data-layer/repositories/causeListTemplatesRepository.js';
+import { FieldMapper } from '@/core/FieldMapper.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
@@ -30,6 +31,7 @@ export const causeListLogic = {
           const c = caseMap[h.caseId] || caseMap[h.case_id] || null;
           return {
             ...h,
+            caseId: h.caseId || h.case_id,
             case: c,
             caseNumber: c ? fmtCaseNumber(c) : '—',
             parties: c?.title || '—',
@@ -70,7 +72,10 @@ export const causeListLogic = {
   },
 
   async getHearing(id) {
-    try { return ok(await caseService.getHearing(id)); } catch (e) { return fail(e); }
+    try {
+      const row = await caseService.getHearing(id);
+      return ok(FieldMapper.toLexAI('hearings', row));
+    } catch (e) { return fail(e); }
   },
   async addHearing(data) {
     try { return ok(await caseService.addHearing(data)); } catch (e) { return fail(e); }
