@@ -14,13 +14,15 @@ export default function Modal({ open, title, subtitle, onClose, children, footer
   return (
     <div className="modal-overlay" onMouseDown={disableBackdrop ? undefined : (e) => e.target === e.currentTarget && onClose?.()}>
       <div className={`modal ${size === 'lg' ? 'modal--lg' : ''} ${className}`}>
-        <header className="modal__head">
-          <div>
-            <span className="modal__title">{title}</span>
-            {subtitle && <p className="em-modal-subtitle">{subtitle}</p>}
-          </div>
-          <button className="modal__close" onClick={onClose} aria-label="Close"><Icon name="close" size={16} /></button>
-        </header>
+        {title ? (
+          <header className="modal__head">
+            <div>
+              <span className="modal__title">{title}</span>
+              {subtitle && <p className="em-modal-subtitle">{subtitle}</p>}
+            </div>
+            <button className="modal__close" onClick={onClose} aria-label="Close"><Icon name="close" size={16} /></button>
+          </header>
+        ) : null}
         <div className="modal__body">{children}</div>
         {footer && <footer className="modal__foot">{footer}</footer>}
       </div>

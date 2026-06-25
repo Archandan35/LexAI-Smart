@@ -13707,8 +13707,12 @@ kbd.cmd__kbd {
 }
 
 /* ── Hearing Preview Modal ── */
-.hearing-preview-modal .modal--lg {
+.hearing-preview-modal {
   max-width: 720px;
+}
+
+.hearing-preview-modal .modal__body {
+  padding: 0;
 }
 
 .hpm-header {
@@ -13803,7 +13807,7 @@ kbd.cmd__kbd {
 .hpm-badge--grey { background: #f1f5f9; color: #475569; }
 
 .hpm-body {
-  padding: 0 24px 24px;
+  padding: 24px;
 }
 
 .hpm-section {
