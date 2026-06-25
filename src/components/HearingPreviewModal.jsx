@@ -79,20 +79,13 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
               <div className="hpm-section__title"><Icon name="calendar" size={15} /> Hearing Details</div>
               <div className="hpm-grid">
                 <div className="hpm-field"><span className="hpm-label">Date</span><span className="hpm-value">{formatDate(data.date) || '—'}</span></div>
+                <div className="hpm-field"><span className="hpm-label">Next Hearing Date</span><span className="hpm-value">{formatDate(data.nextHearingDate || data.next_hearing_date) || '—'}</span></div>
                 <div className="hpm-field"><span className="hpm-label">Purpose</span><span className="hpm-value">{data.purpose || '—'}</span></div>
+                <div className="hpm-field"><span className="hpm-label">Posted For</span><span className="hpm-value">{data.postedFor || data.posted_for || '—'}</span></div>
                 <div className="hpm-field"><span className="hpm-label">Status</span><span className="hpm-value"><span className={`hpm-badge hpm-badge--${statusColour(data.status)}`}>{data.status}</span></span></div>
                 <div className="hpm-field"><span className="hpm-label">Judge</span><span className="hpm-value">{data.judge || data.case?.judge || '—'}</span></div>
               </div>
             </div>
-
-            {data.summary && (
-              <div className="hpm-section">
-                <div className="hpm-section__title"><Icon name="list" size={15} /> Summary</div>
-                <div className="hpm-card hpm-card--rich">
-                  <div className="hpm-richtext" style={{ whiteSpace: 'pre-line' }}>{data.summary}</div>
-                </div>
-              </div>
-            )}
             {data.notes && (
               <div className="hpm-section">
                 <div className="hpm-section__title"><Icon name="file" size={15} /> Proceedings</div>
