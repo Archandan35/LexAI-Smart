@@ -3,8 +3,9 @@
 // Combined court display: "Civil Judge (Senior Division), Athgarh".
 export function combinedCourt(c) {
   if (!c) return '';
+  if (c.court_name || c.courtName) return c.court_name || c.courtName;
   const hierarchy = c.court_hierarchy || c.court || '';
-  const location = c.courtName || c.court_name || '';
+  const location = c.jurisdiction || '';
   if (hierarchy && location) return `${hierarchy}, ${location}`;
   return hierarchy || location || '—';
 }

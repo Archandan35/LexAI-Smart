@@ -219,7 +219,6 @@ export default function ManageCase() {
                   </div>
                   <div className="case-detail__hearing-info">
                     <div className="case-detail__hearing-title">{upcomingHearing.purpose || 'Hearing'}</div>
-                    <div className="case-detail__hearing-time">{datePart(upcomingHearing.date, 'time')}</div>
                     <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
                     <div style={{ marginTop: 8 }}><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
                   </div>
