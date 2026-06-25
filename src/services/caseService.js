@@ -12,6 +12,7 @@ export const caseService = {
   deleteCase: (id) => casesRepository.delete(id),
 
   listHearings: (caseId) => hearingsRepository.getAll(caseId ? { caseId } : {}),
+  getHearing: (id) => hearingsRepository.getById(id),
   addHearing: (data) => hearingsRepository.create(data),
   updateHearing: (id, patch) => hearingsRepository.update(id, patch),
   deleteHearing: (id) => hearingsRepository.delete(id),

@@ -2,20 +2,29 @@ import React from 'react';
 import Modal from './Modal.jsx';
 import Icon from './Icon.jsx';
 import { formatDate } from '@/utils/format.js';
+import { extractJurisdiction } from '@/utils/caseFormat.js';
 
 const statusColour = (s) => {
   const map = { completed: 'green', scheduled: 'blue', active: 'green', cancelled: 'red', adjourned: 'orange', disposed: 'grey' };
   return map[s?.toLowerCase()] || 'grey';
 };
 
-export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocument }) {
+export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocument, cases: allCases }) {
   const data = hearing || doc;
   if (!data) return null;
 
   const isDoc = !!doc;
 
+  const linkedCase = !isDoc && data.caseId && allCases
+    ? allCases.find((c) => c.id === data.caseId)
+    : null;
+
+  const courtName = linkedCase
+    ? [linkedCase.court_hierarchy, extractJurisdiction(linkedCase)].filter(Boolean).join(', ')
+    : null;
+
   return (
-    <Modal open={true} title="" onClose={onClose} size="lg" className="hearing-preview-modal">
+    <Modal open={true} title="" onClose={onClose} size="lg" className="hearing-preview-modal" disableBackdrop disableEscape>
       <div className="hpm-header">
         <div className="hpm-header__left">
           <h1 className="hpm-header__title">
@@ -61,7 +70,7 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
               <div className="hpm-grid">
                 <div className="hpm-field"><span className="hpm-label">Case Number</span><span className="hpm-value">{data.caseNumber || data.case?.caseNumber || '—'}</span></div>
                 <div className="hpm-field"><span className="hpm-label">Parties</span><span className="hpm-value">{data.parties || data.case?.title || '—'}</span></div>
-                <div className="hpm-field"><span className="hpm-label">Court</span><span className="hpm-value">{data.court || data.case?.court_name || '—'}</span></div>
+                <div className="hpm-field"><span className="hpm-label">Court</span><span className="hpm-value">{courtName || data.court || '—'}</span></div>
                 <div className="hpm-field"><span className="hpm-label">Judge</span><span className="hpm-value">{data.judge || data.case?.judge || '—'}</span></div>
               </div>
             </div>
@@ -84,16 +93,6 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
                 </div>
               </div>
             )}
-
-            <div className="hpm-section">
-              <div className="hpm-section__title"><Icon name="info" size={15} /> Metadata</div>
-              <div className="hpm-grid hpm-grid--meta">
-                {data.created_at && <div className="hpm-field"><span className="hpm-label">Created</span><span className="hpm-value">{formatDate(data.created_at)}</span></div>}
-                {data.updated_at && <div className="hpm-field"><span className="hpm-label">Last Updated</span><span className="hpm-value">{formatDate(data.updated_at)}</span></div>}
-                {data.caseId && <div className="hpm-field"><span className="hpm-label">Case ID</span><span className="hpm-value hpm-value--mono">{data.caseId}</span></div>}
-                {data.id && <div className="hpm-field"><span className="hpm-label">Record ID</span><span className="hpm-value hpm-value--mono">{data.id}</span></div>}
-              </div>
-            </div>
           </>
         )}
       </div>

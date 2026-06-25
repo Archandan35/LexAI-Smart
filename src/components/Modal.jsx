@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
 import Icon from './Icon.jsx';
 
-export default function Modal({ open, title, subtitle, onClose, children, footer, size, className = '' }) {
+export default function Modal({ open, title, subtitle, onClose, children, footer, size, className = '', disableBackdrop, disableEscape }) {
   useEffect(() => {
     if (!open) return undefined;
+    if (disableEscape) return undefined;
     const h = (e) => e.key === 'Escape' && onClose?.();
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [open, onClose]);
+  }, [open, onClose, disableEscape]);
 
   if (!open) return null;
   return (
-    <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
+    <div className="modal-overlay" onMouseDown={disableBackdrop ? undefined : (e) => e.target === e.currentTarget && onClose?.()}>
       <div className={`modal ${size === 'lg' ? 'modal--lg' : ''} ${className}`}>
         <header className="modal__head">
           <div>

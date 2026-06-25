@@ -1119,6 +1119,9 @@ select {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
+  background: var(--surface);
+  z-index: 11;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .modal__title {
@@ -10916,6 +10919,20 @@ kbd.cmd__kbd {
   margin-top: 6px;
 }
 
+.cause-list__timeline-v-desc p,
+.cause-list__timeline-v-desc span,
+.cause-list__timeline-v-desc div {
+  margin: 0 0 6px;
+  font-size: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.cause-list__timeline-v-desc b,
+.cause-list__timeline-v-desc strong {
+  color: var(--navy-900);
+}
+
 .cause-list__timeline-v-doc-btn {
   display: inline-flex;
   align-items: center;
@@ -11516,6 +11533,20 @@ kbd.cmd__kbd {
 .cause-list__timeline-event-detail {
   font-size: 13px;
   color: var(--text-soft);
+}
+
+.cause-list__timeline-event-detail-inner p,
+.cause-list__timeline-event-detail-inner span,
+.cause-list__timeline-event-detail-inner div {
+  margin: 0 0 4px;
+  font-size: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.cause-list__timeline-event-detail-inner b,
+.cause-list__timeline-event-detail-inner strong {
+  color: var(--navy-900);
 }
 
 .cause-list__timeline-doc-icon {
@@ -12870,6 +12901,7 @@ kbd.cmd__kbd {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .hpm-header__left {

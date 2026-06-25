@@ -129,10 +129,12 @@ export default function CauseList() {
     setSelectedTemplate('');
     setOpen(true);
   };
-  const openEdit = (h) => {
-    setEditing(h);
-    setForm({ ...EMPTY_HEARING, ...h });
-    setEditorContent(h.notes || '');
+  const openEdit = async (h) => {
+    const res = await causeListLogic.getHearing(h.id);
+    const record = res.ok ? res.data : h;
+    setEditing(record);
+    setForm({ ...EMPTY_HEARING, ...record });
+    setEditorContent(record.notes || '');
     setSelectedTemplate('');
     setOpen(true);
   };
@@ -806,7 +808,7 @@ export default function CauseList() {
                             <span className="cause-list__timeline-v-event-date">{formatDate(h.date)}</span>
                           </div>
                           <div className="cause-list__timeline-v-desc-col">
-                            {h.notes || '—'}
+                            <div className="cause-list__timeline-v-desc" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} />
                           </div>
                           <div className="cause-list__timeline-v-action-col">
                             <button className="cause-list__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
@@ -1023,14 +1025,14 @@ export default function CauseList() {
                                 <span className="cause-list__timeline-event-name">{h.purpose || 'Hearing'}</span>
                               </div>
                             </td>
-                            <td className="cause-list__timeline-event-detail">{h.notes || '—'}</td>
+                            <td className="cause-list__timeline-event-detail"><div className="cause-list__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
                             <td style={{ textAlign: 'right' }}>
                               {h.docRef ? (
                                 <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>
                                   View
                                 </Button>
                               ) : (
-                                <button className="cause-list__timeline-doc-icon" disabled title="No document">
+                                <button className="cause-list__timeline-doc-icon" title="View hearing details" onClick={() => setPreviewHearing(h)}>
                                   <Icon name="file" size={15} />
                                 </button>
                               )}
@@ -1234,6 +1236,7 @@ export default function CauseList() {
           doc={previewDoc}
           onClose={() => { setPreviewHearing(null); setPreviewDoc(null); }}
           onViewDocument={(ref) => viewFile(ref)}
+          cases={cases}
         />
       )}
 

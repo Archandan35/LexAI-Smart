@@ -69,6 +69,9 @@ export const causeListLogic = {
     }
   },
 
+  async getHearing(id) {
+    try { return ok(await caseService.getHearing(id)); } catch (e) { return fail(e); }
+  },
   async addHearing(data) {
     try { return ok(await caseService.addHearing(data)); } catch (e) { return fail(e); }
   },
