@@ -35,6 +35,13 @@ function blank() {
   };
 }
 
+function toDateInput(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+
 /* ---- Same SectionCard as CreateCase ---- */
 function SectionCard({ num, title, children }) {
   return (
@@ -83,6 +90,9 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       const extracted = extractJurisdiction(initial);
       if (extracted) base.jurisdiction = extracted;
     }
+    ['next_hearing', 'filing_date', 'registration_date', 'disposal_date', 'ws_filing_date'].forEach((k) => {
+      if (base[k]) base[k] = toDateInput(base[k]);
+    });
     return base;
   });
 
