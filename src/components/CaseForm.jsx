@@ -12,9 +12,11 @@ import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
+import { useJudges } from '@/hooks/useJudges.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';
 import { userLogic } from '@/logic/userLogic.js';
+import { judgeLogic } from '@/logic/judgeLogic.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 
 const currentYear = new Date().getFullYear();
@@ -54,11 +56,13 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const { priorities } = usePriorities();
 
   const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
+  const { judges, refresh: refreshJudges } = useJudges();
   const [stageMgr, setStageMgr] = useState(false);
   const [caseTypeMgr, setCaseTypeMgr] = useState(false);
   const [jurisdictionMgr, setJurisdictionMgr] = useState(false);
   const [clientMgr, setClientMgr] = useState(false);
   const [advocateMgr, setAdvocateMgr] = useState(false);
+  const [judgeMgr, setJudgeMgr] = useState(false);
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
 
@@ -95,6 +99,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
+  const judgeOptions = judges.map((j) => ({ value: j, label: j }));
 
   const autoCourtName = useMemo(() => {
     const h = hierarchyOptions.find((o) => o.value === form.court_hierarchy);
@@ -203,7 +208,10 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
             {sel('Bench Type', form.bench_type, benchTypeOptions, (v) => setField('bench_type', v), 'Select bench type')}
           </Field>
           <Field label="Judge">
-            <Input value={form.judge} onChange={(e) => setField('judge', e.target.value)} placeholder="Judge name" />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <SearchableSelect value={form.judge} onChange={(e) => setField('judge', e.target.value)} options={judgeOptions} placeholder="Select judge" />
+              <button type="button" className="btn btn--ghost btn--sm" title="Manage judges" onClick={() => setJudgeMgr(true)}><Icon name="gear" size={15} /></button>
+            </div>
           </Field>
           <Field label="Court Name">
             <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Enter court location" />
@@ -302,6 +310,11 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
         { key: 'address', label: 'Address', placeholder: 'Enter address' },
         { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password' },
       ], defaults: {}, refresh: () => userLogic.list().then((r) => { setUsers(Array.isArray(r) ? r : []); }).catch(() => {}) }} />
+      <CrudManager open={judgeMgr} onClose={() => { setJudgeMgr(false); refreshJudges(); }} entity="Judge" config={{ logic: judgeLogic, fields: [
+        { key: 'name', label: 'Judge Name', placeholder: 'e.g., Justice Sharma' },
+        { key: 'short_code', label: 'Short Code', placeholder: 'e.g., JS' },
+        { key: 'designation', label: 'Designation', placeholder: 'e.g., District & Sessions Judge' },
+      ], defaults: {}, refresh: refreshJudges }} />
     </div>
   );
 }

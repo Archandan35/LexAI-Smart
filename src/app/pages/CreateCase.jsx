@@ -25,6 +25,8 @@ import { usePriorities } from '@/hooks/usePriorities.js';
 import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
+import { useJudges } from '@/hooks/useJudges.js';
+import { judgeLogic } from '@/logic/judgeLogic.js';
 import { useFolderTemplates } from '@/hooks/useFolderTemplates.js';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ApiDebugLog, { useApiLog } from '@/components/ApiDebugLog.jsx';
@@ -123,6 +125,7 @@ const ENTITY_CONFIGS = {
   Priority: { label: 'Priority', logic: priorityLogic, fields: [{ key: 'name', label: 'Priority Name', placeholder: 'e.g., High' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {} },
   Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name', required: false }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210', required: false }, { key: 'email', label: 'Email', placeholder: 'email@example.com', required: false }, { key: 'address', label: 'Address', placeholder: 'Enter address', required: false }, { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual', required: false }], defaults: {} },
   Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name', required: false }, { key: 'email', label: 'Email', placeholder: 'email@example.com', required: false }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210', required: false }, { key: 'address', label: 'Address', placeholder: 'Enter address', required: false }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: false }], defaults: {} },
+  Judge: { label: 'Judge', logic: judgeLogic, fields: [{ key: 'name', label: 'Judge Name', placeholder: 'e.g., Justice Sharma' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., JS' }, { key: 'designation', label: 'Designation', placeholder: 'e.g., District & Sessions Judge' }], defaults: {} },
 };
 
 
@@ -143,6 +146,7 @@ export default function CreateCase() {
   const { hierarchy, refresh: refreshHierarchy } = useCourtHierarchy();
   const { benchTypes, refresh: refreshBenchTypes } = useBenchTypes();
   const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
+  const { judges, refresh: refreshJudges } = useJudges();
   const { templates: folderTemplates } = useFolderTemplates('document');
 
   const [clients, setClients] = useState([]);
@@ -178,9 +182,9 @@ export default function CreateCase() {
   const closeCrudManager = useCallback(() => {
     setCrudEntity(null);
     refreshCaseTypes(); refreshStages(); refreshPriorities();
-    refreshHierarchy(); refreshBenchTypes(); refreshJurisdictions();
+    refreshHierarchy(); refreshBenchTypes(); refreshJurisdictions(); refreshJudges();
     clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { });
-  }, [refreshCaseTypes, refreshStages, refreshPriorities, refreshHierarchy, refreshBenchTypes, refreshJurisdictions]);
+  }, [refreshCaseTypes, refreshStages, refreshPriorities, refreshHierarchy, refreshBenchTypes, refreshJurisdictions, refreshJudges]);
 
   const setField = useCallback((key, value) => setForm((prev) => ({ ...prev, [key]: value })), []);
   const setFieldEvent = useCallback((key) => (e) => setField(key, e.target.value), [setField]);
@@ -276,6 +280,7 @@ export default function CreateCase() {
   const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
+  const judgeOptions = judges.map((j) => ({ value: j, label: j }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
@@ -288,6 +293,7 @@ export default function CreateCase() {
     Jurisdiction: refreshJurisdictions, Stage: refreshStages, Priority: refreshPriorities,
     Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { }),
     Advocate: () => userLogic.list().then((r) => { if (Array.isArray(r)) setUsers(r); }).catch(() => { }),
+    Judge: refreshJudges,
   };
 
   const summaryLen = (form.case_summary || '').length;
@@ -445,7 +451,11 @@ export default function CreateCase() {
             />
           </Field>
           <Field label="Judge">
-            <Input value={form.presiding_officer} onChange={setFieldEvent('presiding_officer')} placeholder="e.g., Justice Sharma" />
+            <GearSelect
+              value={form.presiding_officer} onChange={setFieldEvent('presiding_officer')}
+              options={judgeOptions} placeholder="Select judge"
+              entity="Judge" onGearClick={openCrudManager}
+            />
           </Field>
         </div>
       </SectionCard>

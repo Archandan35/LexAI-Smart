@@ -39,6 +39,7 @@ const SCHEMAS = {
   folder_templates: { ...COMMON },
   draft_types: { ...COMMON },
   case_tags: { ...COMMON },
+  judges: { ...COMMON },
   acts: { ...COMMON },
   contact_types: { ...COMMON },
 };
