@@ -117,6 +117,12 @@ export default function Courts() {
       const isEditing = editId === item.id;
       const isDragging = dragId === item.id;
       const isDropOver = dropTarget === item.id;
+
+      const stopRowDnD = (e) => {
+        // Prevent selecting/typing inside edit controls from triggering row drag/drop handlers.
+        e.stopPropagation();
+      };
+
       return (
         <React.Fragment key={item.id}>
           <tr
@@ -132,14 +138,31 @@ export default function Courts() {
             <td style={{ paddingLeft: 16 + depth * 24 }}>
               <span className="courts__name">{item.name}</span>
             </td>
-            <td>
+            <td style={{ position: 'relative' }}>
               {isEditing ? (
                 <>
-                  <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
-                  <Select value={editParent} onChange={(e) => setEditParent(e.target.value)} options={[{ value: '', label: '— No parent —' }, ...liveOptions(editId)]} className="courts__parent-select" style={{ marginTop: 6 }} />
+                  <div onMouseDown={stopRowDnD} onClick={stopRowDnD} onFocus={stopRowDnD}>
+                    <Input
+                      value={editName}
+                      autoFocus
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                    />
+                  </div>
+
+                  <div onMouseDown={stopRowDnD} onClick={stopRowDnD} onFocus={stopRowDnD} style={{ position: 'relative', zIndex: 5, marginTop: 6 }}>
+                    <Select
+                      value={editParent}
+                      onChange={(e) => setEditParent(e.target.value)}
+                      options={[{ value: '', label: '— No parent —' }, ...liveOptions(editId)]}
+                      className="courts__parent-select"
+                    />
+                  </div>
                 </>
               ) : (
-                <span className="muted">{item.parent_id ? `Child of ${items.find((i) => i.id === item.parent_id)?.name || '—'}` : 'Root level'}</span>
+                <span className="muted">
+                  {item.parent_id ? `Child of ${items.find((i) => i.id === item.parent_id)?.name || '—'}` : 'Root level'}
+                </span>
               )}
             </td>
             <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
