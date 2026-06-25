@@ -8,6 +8,14 @@ import { reminderService } from '@/services/reminderService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
 
+function caseFolderName(data) {
+  const ct = data.case_type || '';
+  const cn = data.case_number;
+  const cy = data.case_year;
+  if (ct && cn != null && cy) return `${ct} ${cn}/${cy}`;
+  return data.case_display_number || data.caseNumber || 'Miscellaneous';
+}
+
 // caseLogic — case lifecycle + dashboard aggregation + vault assembly.
 export const caseLogic = {
   list: (query) => caseService.listCases(query),
@@ -16,14 +24,14 @@ export const caseLogic = {
   async create(data, user) {
     const enriched = { ...data };
     if (!enriched.case_display_number && enriched.case_type && enriched.case_number && enriched.case_year) {
-      enriched.case_display_number = `${enriched.case_type} ${enriched.case_number}/${enriched.case_year}`;
+      enriched.case_display_number = `${enriched.case_type} No. ${enriched.case_number} of ${enriched.case_year}`;
     }
     if (!enriched.caseNumber) enriched.caseNumber = enriched.case_display_number || '';
     if (!enriched.title && (enriched.plaintiff || enriched.defendant)) {
       enriched.title = [enriched.plaintiff, enriched.defendant].filter(Boolean).join(' vs ');
     }
     const row = await caseService.createCase({ ...enriched, archived: false, watch: false, stageHistory: [], createdAt: nowISO() });
-    await caseFolderService.create({ caseId: row.id, name: row.caseNumber || row.case_display_number || 'Miscellaneous', kind: 'document', order: 0, system: true, createdAt: nowISO() });
+    await caseFolderService.create({ caseId: row.id, name: caseFolderName(row), kind: 'document', order: 0, system: true, createdAt: nowISO() });
     await caseActivityService.record(row.id, 'case.create', `Case created: ${row.caseNumber}`, user);
     return row;
   },
@@ -36,7 +44,7 @@ export const caseLogic = {
       const cn = enriched.case_number ?? before?.case_number;
       const cy = enriched.case_year ?? before?.case_year;
       if (ct && cn != null && cy) {
-        enriched.case_display_number = `${ct} ${cn}/${cy}`;
+        enriched.case_display_number = `${ct} No. ${cn} of ${cy}`;
         if (!enriched.caseNumber) enriched.caseNumber = enriched.case_display_number;
       }
     }

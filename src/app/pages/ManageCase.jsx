@@ -320,7 +320,7 @@ export default function ManageCase() {
       )}
 
       {tab === 'Documents' && (
-        <CaseDocTab caseId={id} caseNumber={c.caseNumber || c.case_display_number} folders={vault.folders} documents={vault.documents} onChanged={load} />
+        <CaseDocTab caseId={id} caseNumber={c.caseNumber || c.case_display_number} folders={vault.folders} documents={vault.documents} onChanged={load} caseObj={c} />
       )}
 
       {tab === 'Hearings' && (

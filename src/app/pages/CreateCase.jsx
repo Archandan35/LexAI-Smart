@@ -15,7 +15,7 @@ import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
-import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
+import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -27,7 +27,6 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
-import { useFolderTemplates } from '@/hooks/useFolderTemplates.js';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ApiDebugLog, { useApiLog } from '@/components/ApiDebugLog.jsx';
 
@@ -147,7 +146,6 @@ export default function CreateCase() {
   const { benchTypes, refresh: refreshBenchTypes } = useBenchTypes();
   const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
   const { judges, refresh: refreshJudges } = useJudges();
-  const { templates: folderTemplates } = useFolderTemplates('document');
 
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
@@ -174,9 +172,12 @@ export default function CreateCase() {
   const fileRef = useRef(null);
   const [crudEntity, setCrudEntity] = useState(null);
 
-  const [folderMode, setFolderMode] = useState('select');
-  const [customFolderName, setCustomFolderName] = useState('');
-  const [subFolderName, setSubFolderName] = useState('');
+  const [allFolders, setAllFolders] = useState([]);
+  const [autoCreateFolder, setAutoCreateFolder] = useState(true);
+
+  useEffect(() => {
+    caseFoldersRepository.getAll().then((r) => setAllFolders(Array.isArray(r) ? r : [])).catch(() => {});
+  }, []);
 
   const openCrudManager = useCallback((entity) => setCrudEntity(entity), []);
   const closeCrudManager = useCallback(() => {
@@ -236,7 +237,7 @@ export default function CreateCase() {
 
   const resetForm = useCallback(() => {
     setForm({ ...INITIAL_FORM }); setSelectedFiles([]); setPlaintiffInput(''); setDefendantInput('');
-    setFolderMode('select'); setCustomFolderName(''); setSubFolderName('');
+    setAutoCreateFolder(true);
     if (fileRef.current) fileRef.current.value = '';
   }, []);
 
@@ -249,17 +250,7 @@ export default function CreateCase() {
       const result = await caseLogic.create(payload, user);
       if (result?.id) {
         addApiLog('success', `Case created: ${result.case_number || result.id}`, result);
-        const targetFolder = form.document_folder || 'Other Documents';
-        if (form.document_folder) {
-          const parts = form.document_folder.split('/').map((p) => p.trim()).filter(Boolean);
-          let parentId = null;
-          for (const name of parts) {
-            addApiLog('info', `Creating folder: ${name}`);
-            const fr = await caseFolderLogic.create(result.id, name, 'document', user, parentId);
-            if (fr.ok && fr.data?.id) { parentId = fr.data.id; addApiLog('success', `Folder created: ${name}`); }
-            else if (!fr.ok) { addApiLog('warn', `Folder "${name}" failed`, fr.error); toast.warning(`Folder "${name}" failed: ${fr.error}`); break; }
-          }
-        }
+        const targetFolder = !autoCreateFolder && form.document_folder ? form.document_folder : (result.caseNumber || result.case_display_number || 'Miscellaneous');
         for (const file of selectedFiles) {
           addApiLog('info', `Uploading: ${file.name}`);
           const ur = await fileLogic.uploadDocument(file, { caseId: result.id, folder: targetFolder }, user);
@@ -273,7 +264,7 @@ export default function CreateCase() {
       addApiLog('error', 'createCase exception', { message: e?.message, stack: e?.stack });
       toast.error(e?.message || 'An error occurred.');
     } finally { setSaving(false); }
-  }, [validate, buildPayload, form.document_folder, selectedFiles, user, toast, resetForm, addApiLog]);
+  }, [validate, buildPayload, form.document_folder, selectedFiles, user, toast, resetForm, addApiLog, autoCreateFolder]);
 
   /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
@@ -284,8 +275,6 @@ export default function CreateCase() {
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
-  const folderOptions = folderTemplates.map((f) => ({ value: f.name, label: f.name }));
-
   const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
   const refreshMap = {
     'Case Type': refreshCaseTypes,
@@ -298,25 +287,6 @@ export default function CreateCase() {
 
   const summaryLen = (form.case_summary || '').length;
   const notesLen = (form.internal_notes || '').length;
-
-  const handleFolderSelect = useCallback((val) => {
-    if (val === '__create__') {
-      setFolderMode('create');
-      setField('document_folder', '');
-    } else {
-      setField('document_folder', val);
-      setSubFolderName('');
-    }
-  }, [setField]);
-
-  const handleFolderCreate = useCallback(() => {
-    const n = customFolderName.trim();
-    if (!n) return;
-    setField('document_folder', n);
-    setFolderMode('select');
-    setCustomFolderName('');
-    setSubFolderName('');
-  }, [customFolderName, setField]);
 
   return (
     <div className="page-area" style={{ paddingBottom: 80 }}>
@@ -554,39 +524,46 @@ export default function CreateCase() {
       <SectionCard num="8" title="Documents">
         <div className="grid-2">
           <Field label="Document Folder">
-            {folderMode === 'select' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <SearchableSelect value={form.document_folder} onChange={(e) => handleFolderSelect(e.target.value)} options={folderOptions} placeholder="Select folder..." />
-                  <button type="button" className="btn btn--ghost" style={{ flexShrink: 0 }} onClick={() => handleFolderSelect('__create__')}><Icon name="folderPlus" size={15} /> New</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <input type="checkbox" checked={autoCreateFolder} onChange={() => { setAutoCreateFolder(!autoCreateFolder); if (!autoCreateFolder) setField('document_folder', '__auto__'); else setField('document_folder', ''); }} />
+                Auto-create folder from case number
+              </label>
+              {autoCreateFolder ? (
+                <div className="muted" style={{ fontSize: 12.5, padding: '6px 0' }}>
+                  A folder named <strong>CaseType Number/Year</strong> will be created automatically.
                 </div>
-                {form.document_folder && (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <Icon name="chevron" size={14} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
-                    <Input
-                      value={subFolderName}
-                      onChange={(e) => {
-                        setSubFolderName(e.target.value);
-                        setField('document_folder', e.target.value ? `${form.document_folder.split('/')[0]}/${e.target.value}` : form.document_folder.split('/')[0]);
-                      }}
-                      placeholder="Sub-folder (optional)"
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Input
-                  autoFocus
-                  value={customFolderName}
-                  onChange={(e) => setCustomFolderName(e.target.value)}
-                  placeholder="New folder name..."
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFolderCreate(); } }}
-                />
-                <Button variant="primary" icon="check" onClick={handleFolderCreate}>Create</Button>
-                <Button variant="ghost" onClick={() => { setFolderMode('select'); setCustomFolderName(''); }}>Cancel</Button>
-              </div>
-            )}
+              ) : (
+                <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 8, padding: 4 }}>
+                  {allFolders.filter((f) => !f.parent_id).length === 0 ? (
+                    <div className="muted" style={{ padding: 8, fontSize: 12 }}>No existing folders.</div>
+                  ) : null}
+                  {allFolders.filter((f) => !f.parent_id).map((f) => {
+                    const children = allFolders.filter((c) => c.parent_id === f.id);
+                    return (
+                      <div key={f.id}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 4, cursor: 'pointer', background: form.document_folder === f.name ? 'var(--brand-soft)' : 'transparent', fontSize: 13 }}>
+                          <input type="radio" name="doc-folder" checked={form.document_folder === f.name} onChange={() => { setAutoCreateFolder(false); setField('document_folder', f.name); }} />
+                          <Icon name="folder" size={14} />
+                          {f.name}
+                        </label>
+                        {children.length > 0 && (
+                          <div style={{ paddingLeft: 20 }}>
+                            {children.map((c) => (
+                              <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', borderRadius: 4, cursor: 'pointer', background: form.document_folder === c.name ? 'var(--brand-soft)' : 'transparent', fontSize: 13 }}>
+                                <input type="radio" name="doc-folder" checked={form.document_folder === c.name} onChange={() => { setAutoCreateFolder(false); setField('document_folder', c.name); }} />
+                                <Icon name="folder" size={13} />
+                                {c.name}
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </Field>
           <Field label="Upload Documents">
             <div

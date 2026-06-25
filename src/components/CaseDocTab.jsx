@@ -51,7 +51,7 @@ function StatCard({ icon, value, label, sub }) {
   );
 }
 
-export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
+export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
   const toast = useToast();
   const [docs, setDocs] = useState([]);
   const [folders, setFolders] = useState([]);
@@ -332,11 +332,18 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
   const handleCreateStructure = async () => {
     setCreatingStructure(true);
     try {
-      await caseFolderLogic.ensureForCase(caseId);
-      toast.push('Folder structure created.', 'success');
+      const folderName = caseObj && caseObj.case_type && caseObj.case_number != null && caseObj.case_year
+        ? `${caseObj.case_type} ${caseObj.case_number}/${caseObj.case_year}`
+        : caseNumber || 'Miscellaneous';
+      const existing = await caseFoldersRepository.getAll().catch(() => []);
+      const hasFolder = Array.isArray(existing) && existing.some((f) => (f.caseId === caseId || f.case_id === caseId));
+      if (!hasFolder) {
+        await caseFoldersRepository.create({ caseId, name: folderName, kind: 'document', order: 0, system: true, created_at: new Date().toISOString() });
+      }
+      toast.push('Folder created.', 'success');
       await load();
     } catch (err) {
-      toast.push(err?.message || 'Failed to create folder structure.', 'error');
+      toast.push(err?.message || 'Failed to create folder.', 'error');
     }
     setCreatingStructure(false);
   };
