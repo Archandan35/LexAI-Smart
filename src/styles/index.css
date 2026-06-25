@@ -12796,3 +12796,60 @@ kbd.cmd__kbd {
   color: var(--text);
   word-break: break-word;
 }
+
+/* ── Hearing modal import/export ── */
+.hearing-modal__import-export-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hearing-modal__ie-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hearing-modal__ie-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hearing-modal__ie-export-select {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.hearing-modal__import-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.hearing-modal__import-textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: var(--surface);
+  color: var(--text);
+  resize: vertical;
+}
+
+.hearing-modal__import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}

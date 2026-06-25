@@ -83,6 +83,8 @@ export default function CauseList() {
   const [draftTemplates, setDraftTemplates] = useState([]);
   const [editorContent, setEditorContent] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState('');
 
   const loadList = useCallback(async () => {
     const res = await causeListLogic.causeList();
@@ -159,6 +161,110 @@ export default function CauseList() {
     await loadList();
     if (histCaseId) await loadHistory(histCaseId);
     toast.push('Hearing deleted.', 'info');
+  };
+
+  // ----- Import / Export -----
+  const FIELD_MAP = {
+    caseid: 'caseId', case_id: 'caseId', 'case number': 'caseId', case: 'caseId',
+    date: 'date', 'hearing date': 'date', 'hearing date & time': 'date',
+    status: 'status', 'hearing status': 'status',
+    purpose: 'purpose',
+    notes: 'notes', proceedings: 'notes', content: 'notes',
+    judge: 'judge', 'presiding officer': 'judge', officer: 'judge',
+    docref: 'docRef', doc_ref: 'docRef', 'document ref': 'docRef',
+    docname: 'docName', doc_name: 'docName', 'document name': 'docName', file: 'docName',
+  };
+
+  const parseCsvRow = (line) => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
+      if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
+      current += ch;
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const importData = (raw) => {
+    const text = (raw || '').trim();
+    if (!text) { toast.push('No data to import.', 'error'); return; }
+
+    let parsed;
+    if (text.startsWith('{') || text.startsWith('[')) {
+      try { parsed = JSON.parse(text); } catch { toast.push('Invalid JSON.', 'error'); return; }
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+      if (arr.length === 0) { toast.push('No records found.', 'error'); return; }
+      const row = arr[0];
+      const mapped = {};
+      Object.keys(row).forEach((k) => {
+        const target = FIELD_MAP[k.toLowerCase().trim()];
+        if (target) mapped[target] = row[k];
+      });
+      applyImport(mapped);
+    } else {
+      const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (lines.length < 2) { toast.push('CSV must have a header row and at least one data row.', 'error'); return; }
+      const headers = parseCsvRow(lines[0]).map((h) => h.toLowerCase());
+      const vals = parseCsvRow(lines[1]);
+      const mapped = {};
+      headers.forEach((h, i) => {
+        const target = FIELD_MAP[h];
+        if (target) mapped[target] = vals[i] || '';
+      });
+      applyImport(mapped);
+    }
+  };
+
+  const applyImport = (mapped) => {
+    setForm((f) => ({ ...f, ...mapped }));
+    if (mapped.notes) setEditorContent(mapped.notes);
+    setShowImport(false);
+    setImportText('');
+    toast.push('Import applied to form.', 'success');
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target.result;
+      setImportText(text);
+      importData(text);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const exportAsJson = () => {
+    const payload = { ...form, notes: editorContent || form.notes || '' };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `hearing_${form.caseId || 'new'}_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.push('JSON exported.', 'success');
+  };
+
+  const exportAsCsv = () => {
+    const payload = { ...form, notes: editorContent || form.notes || '' };
+    const headers = ['caseId', 'date', 'status', 'purpose', 'notes', 'judge', 'docRef', 'docName'];
+    const vals = headers.map((h) => `"${(payload[h] || '').replace(/"/g, '""')}"`);
+    const csv = [headers.join(','), vals.join(',')].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `hearing_${form.caseId || 'new'}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.push('CSV exported.', 'success');
   };
 
   // ----- Templates CRUD -----
@@ -938,6 +1044,45 @@ export default function CauseList() {
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
       >
         <div className="hearing-modal">
+          {/* Import / Export toolbar */}
+          <div className="hearing-modal__import-export-bar">
+            <div className="hearing-modal__ie-left">
+              <button className={`btn btn--sm ${showImport ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setShowImport((v) => !v)}>
+                <Icon name="download" size={13} /> Import
+              </button>
+              <label className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}>
+                <Icon name="upload" size={13} /> Export
+                <select className="hearing-modal__ie-export-select" onChange={(e) => { const v = e.target.value; if (v === 'json') exportAsJson(); if (v === 'csv') exportAsCsv(); e.target.value = ''; }} onClick={(e) => e.stopPropagation()}>
+                  <option value="">—</option>
+                  <option value="json">JSON</option>
+                  <option value="csv">CSV</option>
+                </select>
+              </label>
+            </div>
+            {showImport && (
+              <div className="hearing-modal__ie-right">
+                <input type="file" accept=".json,.csv" onChange={handleImportFile} style={{ display: 'none' }} id="hearing-import-file" />
+                <label htmlFor="hearing-import-file" className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}><Icon name="file" size={13} /> Upload File</label>
+              </div>
+            )}
+          </div>
+
+          {showImport && (
+            <div className="hearing-modal__import-panel">
+              <textarea
+                className="hearing-modal__import-textarea"
+                placeholder="Paste JSON or CSV here...&#10;&#10;JSON example:&#10;{&quot;caseId&quot;: &quot;...&quot;, &quot;date&quot;: &quot;2026-06-25&quot;, &quot;status&quot;: &quot;Active&quot;, &quot;purpose&quot;: &quot;Hearing&quot;, &quot;judge&quot;: &quot;Judge name&quot; }&#10;&#10;CSV example:&#10;caseId,date,status,purpose,judge&#10;abc123,2026-06-25,Active,Hearing,Judge name"
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                rows={4}
+              />
+              <div className="hearing-modal__import-actions">
+                <Button size="sm" variant="ghost" onClick={() => { setShowImport(false); setImportText(''); }}>Cancel</Button>
+                <Button size="sm" onClick={() => importData(importText)}><Icon name="check" size={13} /> Apply Import</Button>
+              </div>
+            </div>
+          )}
+
           {/* Section 1: Case & Date */}
           <div className="hearing-modal__section">
             <div className="hearing-modal__section-title">
