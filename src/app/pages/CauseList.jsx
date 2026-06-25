@@ -138,10 +138,9 @@ export default function CauseList() {
   };
   const openEdit = async (h) => {
     const res = await causeListLogic.getHearing(h.id);
-    const record = res.data || FieldMapper.toLexAI('hearings', h);
-    if (!record) return;
+    const record = res.ok ? res.data : FieldMapper.toLexAI('hearings', h);
     setEditing(record);
-    setForm({ ...EMPTY_HEARING, ...record, nextHearingDate: record.nextHearingDate || '', postedFor: record.postedFor || '', summary: record.summary || '' });
+    setForm({ ...EMPTY_HEARING, ...record });
     setEditorContent(record.notes || '');
     setSummaryContent(record.summary || '');
     setSelectedTemplate('');

@@ -74,7 +74,6 @@ export const causeListLogic = {
   async getHearing(id) {
     try {
       const row = await caseService.getHearing(id);
-      if (!row) return fail(`Hearing ${id} not found`);
       return ok(FieldMapper.toLexAI('hearings', row));
     } catch (e) { return fail(e); }
   },
