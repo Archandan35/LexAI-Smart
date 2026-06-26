@@ -14094,8 +14094,8 @@ kbd.cmd__kbd {
 @media (max-width: 767px) {
   .input-row { flex-direction: column; }
   .input-row > * { min-width: 100%; }
-  .hearing-modal__section .input-row > * { min-width: 100%; }
-  .field input, .field select, .field textarea { font-size: 16px; } /* prevent iOS zoom */
+  .hearing-modal__section .input-row > * { min-width: 100%; flex: 0 0 auto; }
+  .field input, .field select, .field textarea { font-size: 16px; }
 }
 
 /* ---- Tables ---- */
