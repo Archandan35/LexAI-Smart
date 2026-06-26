@@ -10434,7 +10434,7 @@ kbd.cmd__kbd {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--bg); color: var(--text); font-size: 14.5px; line-height: 1.5;
   max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative;
-  padding: 18px 16px 110px;
+  padding: 18px 16px 0;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -14193,7 +14193,7 @@ kbd.cmd__kbd {
   .page-area { padding: 22px 24px 50px; }
 }
 @media (max-width: 991px) {
-  .page-area { padding: 16px 16px 40px; }
+  .page-area { padding: 16px 16px 110px; }
   .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .page-header__actions { width: 100%; flex-wrap: wrap; }
   .page-header__text h1 { font-size: 20px; }
@@ -14335,8 +14335,13 @@ kbd.cmd__kbd {
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
-    z-index: 50;
+    z-index: 9999;
     pointer-events: none;
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
@@ -14345,6 +14350,8 @@ kbd.cmd__kbd {
   pointer-events: auto;
   height: 78px;
   filter: drop-shadow(0 -4px 14px rgba(16, 31, 61, 0.10));
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .bottombar__bg {
