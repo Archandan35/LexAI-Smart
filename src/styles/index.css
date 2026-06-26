@@ -14299,7 +14299,7 @@ kbd.cmd__kbd {
 .cl-header__sub { font-size: 12px; color: var(--text-faint); margin-top: 1px; }
 .cl-header__add { background: var(--navy-700); color: #fff; border: none; border-radius: 8px; padding: 9px 13px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
 
-.cl-filters { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 10px 0; }
+.cl-filters { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 10px 0; overflow: hidden; box-sizing: border-box; }
 .cl-filters__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .cl-filters__title { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: var(--navy-900); }
 .cl-filters__hide { font-size: 13px; color: var(--navy-600); font-weight: 600; display: flex; align-items: center; gap: 3px; cursor: pointer; }
@@ -14308,8 +14308,8 @@ kbd.cmd__kbd {
 .cl-filters__label { font-size: 13px; color: var(--text-faint); min-width: 70px; }
 .cl-filters__value { font-size: 13px; font-weight: 600; color: var(--navy-900); flex: 1; }
 .cl-filters__arrow { color: var(--text-faint); margin-left: auto; }
-.cl-filters__search { border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-.cl-filters__search input { border: none; outline: none; font-size: 13px; color: var(--text-faint); flex: 1; background: transparent; font-family: inherit; }
+.cl-filters__search { border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; overflow: hidden; }
+.cl-filters__search input { border: none; outline: none; font-size: 13px; color: var(--text-faint); flex: 1; min-width: 0; background: transparent; font-family: inherit; }
 .cl-filters__actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 10px; }
 .cl-filters__reset { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; color: var(--text-soft); cursor: pointer; display: flex; align-items: center; gap: 6px; }
 .cl-filters__apply { flex: 1; background: var(--navy-700); color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }

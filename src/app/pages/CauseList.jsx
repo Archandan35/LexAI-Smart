@@ -583,9 +583,9 @@ export default function CauseList() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                      <input type="text" value={dateFrom || ''} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="text" value={dateTo || ''} onChange={(e) => setDateTo(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10, maxWidth: '100%' }}>
+                      <input type="text" value={dateFrom || ''} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: '1 1 0%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="text" value={dateTo || ''} onChange={(e) => setDateTo(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: '1 1 0%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
                     </div>
 
                     {/* Court */}
@@ -1043,7 +1043,7 @@ export default function CauseList() {
                 </thead>
                 <tbody>
                   {paginatedRows.map((h) => {
-                    const statusClass = h.status?.toLowerCase() || 'default';
+                    const statusClass = (h.status?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'default').replace(/^-+|-+$/g, '');
                     return (
                       <tr key={h.id} className={`cause-list__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
                         <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
@@ -1078,6 +1078,7 @@ export default function CauseList() {
                         {visibleColumns.status && (
                           <td>
                             <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
+                              <span className={`cl-card__badge-dot cl-card__badge-dot--${statusClass}`} />
                               {h.status}
                             </span>
                           </td>
