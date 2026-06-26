@@ -1711,6 +1711,8 @@ select {
 
 .card__body--flush {
   padding: 0;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .table-scroll {
@@ -6497,6 +6499,9 @@ kbd.cmd__kbd {
 .cause-list__cell-actions {
   display: flex;
   gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: none;
 }
 
 .cause-list__alert-sm {
@@ -9074,6 +9079,9 @@ kbd.cmd__kbd {
 .cause-list__cell-actions {
   display: flex;
   gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: none;
 }
 
 .cause-list__alert-sm {
