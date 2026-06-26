@@ -178,7 +178,7 @@ export default function ManageCase() {
                 </div>
                 <div>
                   <div className="mc-detail-hero__title">Case Particulars</div>
-                  <div className="mc-detail-hero__sub">Case details and party information</div>
+                  <div className="mc-detail-hero__sub">Track the progress and important dates of the case.</div>
                 </div>
               </div>
 
@@ -270,7 +270,7 @@ export default function ManageCase() {
               <div className="mc-detail-note">
                 <div className="mc-detail-note__left">
                   <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <p className="mc-detail-note__text">Key case information at a glance.<br />Track parties, court, and representation details.</p>
+                  <p className="mc-detail-note__text">Dates are critical to track case progress.<br />Stay updated for the next hearing.</p>
                 </div>
                 <div className="mc-detail-note__deco">
                   <Icon name="gavel" size={48} />
