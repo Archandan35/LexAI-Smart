@@ -732,6 +732,20 @@ export default function CauseList() {
                                 <span className="cl-card__footer-value">{h.case?.judge || h.judge || '—'}</span>
                               </div>
                             </div>
+                            <div className="cl-card__actions">
+                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); setPreviewHearing(h); }} title="View">
+                                <Icon name="eye" size={16} />
+                                <span>View</span>
+                              </button>
+                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); openEdit(h); }} title="Edit">
+                                <Icon name="edit" size={16} />
+                                <span>Edit</span>
+                              </button>
+                              <button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
+                                <Icon name="trash" size={16} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -1065,8 +1079,7 @@ export default function CauseList() {
                         {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                         {visibleColumns.status && (
                           <td>
-                            <span className={`cause-list__badge-status cl-sc-${colorIdx}`}>
-                              <span className={`cl-card__badge-dot cl-scd-${colorIdx}`} />
+                            <span className={`cause-list__badge-status ${statusIdx >= 0 ? `cl-sc-${colorIdx}` : ''}`}>
                               {h.status}
                             </span>
                           </td>
