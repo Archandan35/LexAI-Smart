@@ -553,13 +553,14 @@ export default function CauseList() {
                       <div style={{ flex: 1 }}>
                         <div className="cl-filters__label">Date Range</div>
                         <div className="cl-filters__value">
-                          {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : '01 Jun 2026 - 30 Jun 2026'}
+                          {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : 'No date filter'}
                         </div>
                       </div>
-                      <Icon name="chevronDown" size={14} className="cl-filters__arrow" />
                     </div>
-
-                    {/* Date Pickers (hidden by default, expand on tap) */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                      <input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                    </div>
 
                     {/* Court */}
                     <div className="cl-filters__search">
@@ -801,20 +802,6 @@ export default function CauseList() {
           )}
         </div>
       )}
-
-      {/* Mobile Modals */}
-      <Modal open={open} onClose={() => { setOpen(false); setEditing(null); setForm(EMPTY_HEARING); }} width="lg" title={editing ? 'Edit Hearing' : 'Add Hearing'}>
-        <HearingForm />
-      </Modal>
-      <Modal open={tplOpen} onClose={() => { setTplOpen(false); setTplEditing(null); setTplForm(EMPTY_TPL); }} width="lg" title={tplEditing ? 'Edit Template' : 'Add Template'}>
-        <TemplateForm />
-      </Modal>
-      <HearingPreviewModal
-        open={previewHearing !== null}
-        onClose={() => setPreviewHearing(null)}
-        hearing={previewHearing}
-        caseObj={previewHearing?.caseId ? cases.find(c => c.id === previewHearing.caseId) : null}
-      />
 
       {/* Desktop View */}
       {!isMobile && (
@@ -1630,8 +1617,6 @@ export default function CauseList() {
         <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." /></Field>
         <Field label="Template Content"><Textarea value={tplForm.content} onChange={(e) => setTplForm({ ...tplForm, content: e.target.value })} placeholder="Drafting content structure..." /></Field>
       </Modal>
-      </div>
-    )}
   </>
   );
 }
