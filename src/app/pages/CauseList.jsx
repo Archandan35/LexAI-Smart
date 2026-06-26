@@ -583,9 +583,9 @@ export default function CauseList() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 10, maxWidth: '100%' }}>
-                      <input type="text" value={dateFrom || ''} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: '1 1 0%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="text" value={dateTo || ''} onChange={(e) => setDateTo(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: '1 1 0%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                      <input type="text" value={dateFrom || ''} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="text" value={dateTo || ''} onChange={(e) => setDateTo(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
                     </div>
 
                     {/* Court */}
@@ -680,8 +680,7 @@ export default function CauseList() {
                       const dayNum = hDate.getDate();
                       const mon = hDate.toLocaleString('default', { month: 'short' });
                       const year = hDate.getFullYear();
-                      const statusIdx = caseStatuses ? caseStatuses.indexOf(h.status) : -1;
-                      const colorIdx = statusIdx >= 0 ? statusIdx % 10 : 0;
+                      const statusClass = h.status?.toLowerCase() || 'default';
                       return (
                         <div
                           key={h.id}
@@ -712,8 +711,8 @@ export default function CauseList() {
                                   {h.caseNumber}
                                 </a>
                               </div>
-                              <span className={`cause-list__badge-status cl-sc-${colorIdx}`}>
-                                <span className={`cl-card__badge-dot cl-scd-${colorIdx}`} />
+                              <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
+                                <span className={`cl-card__badge-dot cl-card__badge-dot--${statusClass}`} />
                                 {h.status}
                               </span>
                             </div>
@@ -1044,8 +1043,7 @@ export default function CauseList() {
                 </thead>
                 <tbody>
                   {paginatedRows.map((h) => {
-                    const statusIdx = caseStatuses ? caseStatuses.indexOf(h.status) : -1;
-                    const colorIdx = statusIdx >= 0 ? statusIdx % 10 : 0;
+                    const statusClass = h.status?.toLowerCase() || 'default';
                     return (
                       <tr key={h.id} className={`cause-list__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
                         <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
@@ -1079,7 +1077,7 @@ export default function CauseList() {
                         {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                         {visibleColumns.status && (
                           <td>
-                            <span className={`cause-list__badge-status ${statusIdx >= 0 ? `cl-sc-${colorIdx}` : ''}`}>
+                            <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
                               {h.status}
                             </span>
                           </td>
