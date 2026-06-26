@@ -14243,6 +14243,10 @@ kbd.cmd__kbd {
   .datatable__bar { flex-direction: column; align-items: stretch; gap: 8px; }
   .datatable__search { width: 100%; min-width: 0; }
 }
+@media (max-width: 767px) {
+  .mc-mobile-detail .toolbar-row .datatable__search,
+  .mc-mobile-detail .toolbar-row input[type="date"] { width: 100% !important; max-width: 100% !important; min-width: 0; }
+}
 
 /* ---- Pagination ---- */
 @media (max-width: 767px) {
