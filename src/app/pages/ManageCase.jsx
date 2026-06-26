@@ -238,7 +238,7 @@ export default function ManageCase() {
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
                     <span className="mc-detail-chart__label">Defendant</span>
-                    <span className="mc-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(/\s*(?:,| and )\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
+                    <span className="mc-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(/\s*(?:,| &)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
                   </div>
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>

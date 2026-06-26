@@ -802,6 +802,20 @@ export default function CauseList() {
         </div>
       )}
 
+      {/* Mobile Modals */}
+      <Modal open={open} onClose={() => { setOpen(false); setEditing(null); setForm(EMPTY_HEARING); }} width="lg" title={editing ? 'Edit Hearing' : 'Add Hearing'}>
+        <HearingForm />
+      </Modal>
+      <Modal open={tplOpen} onClose={() => { setTplOpen(false); setTplEditing(null); setTplForm(EMPTY_TPL); }} width="lg" title={tplEditing ? 'Edit Template' : 'Add Template'}>
+        <TemplateForm />
+      </Modal>
+      <HearingPreviewModal
+        open={previewHearing !== null}
+        onClose={() => setPreviewHearing(null)}
+        hearing={previewHearing}
+        caseObj={previewHearing?.caseId ? cases.find(c => c.id === previewHearing.caseId) : null}
+      />
+
       {/* Desktop View */}
       {!isMobile && (
         <div className="cl-desktop-view fade-in">
@@ -1394,6 +1408,9 @@ export default function CauseList() {
             </>
           )}
         </div>
+      )}
+
+      </div>
       )}
 
       {/* Hearing add/edit modal — redesigned with sections, icons, rich text editor & template import */}
