@@ -73,6 +73,7 @@ import SqlConsole from '@/app/pages/SqlConsole.jsx';
 import RestoreCenter from '@/app/pages/RestoreCenter.jsx';
 import PerformanceAnalytics from '@/app/pages/PerformanceAnalytics.jsx';
 import CustomReports from '@/app/pages/CustomReports.jsx';
+import TestDesignPage from '@/app/pages/TestDesignPage.jsx';
 
 const G = (module, element) => <RequireAuth module={module}>{element}</RequireAuth>;
 
@@ -158,6 +159,7 @@ export default function AppRoutes() {
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
 
         {/* ── Tools ── */}
+        <Route path="/test-design" element={<TestDesignPage />} />
         <Route path="/tools/ai" element={G('drafting', <AiAssistant />)} />
         <Route path="/tools/ai/prompts" element={G('drafting', <PromptLibrary />)} />
         <Route path="/tools/ai/usage" element={G('drafting', <AiUsage />)} />

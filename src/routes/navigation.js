@@ -89,6 +89,13 @@ export const NAV_GROUPS = [
       },
     ],
   },
+  { type: 'heading', label: 'DEVELOPMENT' },
+  {
+    label: '',
+    items: [
+      { to: '/test-design', label: 'Test Design Page', icon: 'grid' },
+    ],
+  },
   { type: 'heading', label: 'TOOLS' },
   {
     label: '',
