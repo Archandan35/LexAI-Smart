@@ -14339,9 +14339,10 @@ kbd.cmd__kbd {
 }
 @media (max-width: 767px) {
   .field label { font-size: 12px; }
-  .input-row { gap: 8px; }
-  .hearing-modal__section .input-row { gap: 8px; }
-  .hearing-modal__section .field { margin-bottom: 8px; }
+  .input-row { gap: 10px; }
+  .hearing-modal__section .input-row { gap: 10px; }
+  .hearing-modal__section .input-row .field { margin-bottom: 0; }
+  .hearing-modal__section .input-row:not(:last-child) { margin-bottom: 10px; }
 }
 
 /* ---- Grid gap consistency ---- */
