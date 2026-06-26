@@ -14609,6 +14609,7 @@ kbd.cmd__kbd {
   flex-direction: column;
   gap: 14px;
   padding-bottom: 20px;
+  overflow-x: hidden;
 }
 
 /* ── Banner card ── */
@@ -14705,9 +14706,11 @@ kbd.cmd__kbd {
   border-radius: 12px;
   padding: 11px 14px;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
 }
 .cv-search-wrap input {
   flex: 1;
+  min-width: 0;
   border: none;
   outline: none;
   background: transparent;
@@ -14724,6 +14727,7 @@ kbd.cmd__kbd {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  min-width: 0;
 }
 .cv-select {
   background: var(--surface);
@@ -14736,6 +14740,8 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   font-family: inherit;
   appearance: auto;
+  width: 100%;
+  min-width: 0;
 }
 
 /* ── Segment control ── */
