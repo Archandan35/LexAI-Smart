@@ -193,7 +193,7 @@ export default function ManageCase() {
 
             <Card
               title="Description & Summary"
-              actions={editingBtn}
+              actions={<PermissionGate perm="casevault.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
             >
               <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
               <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
