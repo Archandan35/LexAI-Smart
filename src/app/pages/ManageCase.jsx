@@ -171,110 +171,112 @@ export default function ManageCase() {
 
         {tab === 'Overview' && (
           <>
-            <div className="mc-detail-hero">
-              <div className="mc-detail-hero__icon">
-                <Icon name="vault" size={28} />
-              </div>
-              <div>
-                <div className="mc-detail-hero__title">Case Particulars</div>
-                <div className="mc-detail-hero__sub">Case details and party information</div>
-              </div>
-            </div>
-
-            <div className="mc-detail-triad">
-              <div className="mc-detail-triad__item">
-                <div className="mc-detail-triad__icon mc-detail-triad__icon--blue">
-                  <Icon name="target" size={18} />
+            <Card title="Case Particulars">
+              <div className="mc-detail-hero" style={{ margin: '-4px 0 14px' }}>
+                <div className="mc-detail-hero__icon">
+                  <Icon name="route" size={28} />
                 </div>
                 <div>
-                  <div className="mc-detail-triad__label">Current Stage</div>
-                  <div className="mc-detail-triad__value mc-detail-triad__value--blue">{c.stage || '—'}</div>
+                  <div className="mc-detail-hero__title">Case Particulars</div>
+                  <div className="mc-detail-hero__sub">Case details and party information</div>
                 </div>
               </div>
-              <div className="mc-detail-triad__divider" />
-              <div className="mc-detail-triad__item">
-                <div className="mc-detail-triad__icon mc-detail-triad__icon--green">
-                  <Icon name="check-circle" size={18} />
-                </div>
-                <div>
-                  <div className="mc-detail-triad__label">Status</div>
-                  <div className="mc-detail-triad__value mc-detail-triad__value--green">{c.status || '—'}</div>
-                </div>
-              </div>
-              <div className="mc-detail-triad__divider" />
-              <div className="mc-detail-triad__item">
-                <div className="mc-detail-triad__icon mc-detail-triad__icon--amber">
-                  <Icon name="alert" size={18} />
-                </div>
-                <div>
-                  <div className="mc-detail-triad__label">Priority</div>
-                  <div className="mc-detail-triad__value mc-detail-triad__value--amber">{c.priority || '—'}</div>
-                </div>
-              </div>
-            </div>
 
-            <div className="mc-detail-chart">
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="file" size={18} /></div>
-                <span className="mc-detail-chart__label">Case Number</span>
-                <span className="mc-detail-chart__value">{c.case_display_number || c.caseNumber || '—'}</span>
+              <div className="mc-detail-triad" style={{ marginBottom: 14 }}>
+                <div className="mc-detail-triad__item">
+                  <div className="mc-detail-triad__icon mc-detail-triad__icon--blue">
+                    <Icon name="target" size={18} />
+                  </div>
+                  <div>
+                    <div className="mc-detail-triad__label">Current Stage</div>
+                    <div className="mc-detail-triad__value mc-detail-triad__value--blue">{c.stage || '—'}</div>
+                  </div>
+                </div>
+                <div className="mc-detail-triad__divider" />
+                <div className="mc-detail-triad__item">
+                  <div className="mc-detail-triad__icon mc-detail-triad__icon--green">
+                    <Icon name="check-circle" size={18} />
+                  </div>
+                  <div>
+                    <div className="mc-detail-triad__label">Status</div>
+                    <div className="mc-detail-triad__value mc-detail-triad__value--green">{c.status || '—'}</div>
+                  </div>
+                </div>
+                <div className="mc-detail-triad__divider" />
+                <div className="mc-detail-triad__item">
+                  <div className="mc-detail-triad__icon mc-detail-triad__icon--amber">
+                    <Icon name="alert" size={18} />
+                  </div>
+                  <div>
+                    <div className="mc-detail-triad__label">Priority</div>
+                    <div className="mc-detail-triad__value mc-detail-triad__value--amber">{c.priority || '—'}</div>
+                  </div>
+                </div>
               </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="calendar" size={18} /></div>
-                <span className="mc-detail-chart__label">Case Year</span>
-                <span className="mc-detail-chart__value">{c.case_year || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="layers" size={18} /></div>
-                <span className="mc-detail-chart__label">Case Type</span>
-                <span className="mc-detail-chart__value">{c.case_type || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="users" size={18} /></div>
-                <span className="mc-detail-chart__label">Plaintiff</span>
-                <span className="mc-detail-chart__value">{c.plaintiff || c.parties?.plaintiff || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
-                <span className="mc-detail-chart__label">Defendant</span>
-                <span className="mc-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(',').map(s => s.trim()).filter(Boolean); return d.length === 0 ? '—' : <>{d[0]}{d.length > 1 && <Badge tone="navy" style={{ marginLeft: 6, fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge>}</>; })()}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>
-                <span className="mc-detail-chart__label">Court</span>
-                <span className="mc-detail-chart__value">{c.court_name || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="grid" size={18} /></div>
-                <span className="mc-detail-chart__label">Bench</span>
-                <span className="mc-detail-chart__value">{c.bench_type || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="balance" size={18} /></div>
-                <span className="mc-detail-chart__label">Judge</span>
-                <span className="mc-detail-chart__value">{c.judge || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="user-plus" size={18} /></div>
-                <span className="mc-detail-chart__label">Client</span>
-                <span className="mc-detail-chart__value">{c.client || '—'}</span>
-              </div>
-              <div className="mc-detail-chart__row">
-                <div className="mc-detail-chart__icon"><Icon name="briefcase" size={18} /></div>
-                <span className="mc-detail-chart__label">Advocate</span>
-                <span className="mc-detail-chart__value">{c.advocate || '—'}</span>
-              </div>
-            </div>
 
-            <div className="mc-detail-note">
-              <div className="mc-detail-note__left">
-                <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 1 }} />
-                <p className="mc-detail-note__text">Key case information at a glance.<br />Track parties, court, and representation details.</p>
+              <div className="mc-detail-chart" style={{ marginBottom: 14 }}>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="file" size={18} /></div>
+                  <span className="mc-detail-chart__label">Case Number</span>
+                  <span className="mc-detail-chart__value">{c.case_display_number || c.caseNumber || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="calendar" size={18} /></div>
+                  <span className="mc-detail-chart__label">Case Year</span>
+                  <span className="mc-detail-chart__value">{c.case_year || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="layers" size={18} /></div>
+                  <span className="mc-detail-chart__label">Case Type</span>
+                  <span className="mc-detail-chart__value">{c.case_type || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="users" size={18} /></div>
+                  <span className="mc-detail-chart__label">Plaintiff</span>
+                  <span className="mc-detail-chart__value">{c.plaintiff || c.parties?.plaintiff || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
+                  <span className="mc-detail-chart__label">Defendant</span>
+                  <span className="mc-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(',').map(s => s.trim()).filter(Boolean); return d.length === 0 ? '—' : <>{d[0]}{d.length > 1 && <Badge tone="navy" style={{ marginLeft: 6, fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge>}</>; })()}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>
+                  <span className="mc-detail-chart__label">Court</span>
+                  <span className="mc-detail-chart__value">{c.court_name || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="grid" size={18} /></div>
+                  <span className="mc-detail-chart__label">Bench</span>
+                  <span className="mc-detail-chart__value">{c.bench_type || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="balance" size={18} /></div>
+                  <span className="mc-detail-chart__label">Judge</span>
+                  <span className="mc-detail-chart__value">{c.judge || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="user-plus" size={18} /></div>
+                  <span className="mc-detail-chart__label">Client</span>
+                  <span className="mc-detail-chart__value">{c.client || '—'}</span>
+                </div>
+                <div className="mc-detail-chart__row">
+                  <div className="mc-detail-chart__icon"><Icon name="briefcase" size={18} /></div>
+                  <span className="mc-detail-chart__label">Advocate</span>
+                  <span className="mc-detail-chart__value">{c.advocate || '—'}</span>
+                </div>
               </div>
-              <div className="mc-detail-note__deco">
-                <Icon name="gavel" size={48} />
+
+              <div className="mc-detail-note">
+                <div className="mc-detail-note__left">
+                  <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <p className="mc-detail-note__text">Key case information at a glance.<br />Track parties, court, and representation details.</p>
+                </div>
+                <div className="mc-detail-note__deco">
+                  <Icon name="gavel" size={48} />
+                </div>
               </div>
-            </div>
+            </Card>
 
             <Card
               title="Description & Summary"

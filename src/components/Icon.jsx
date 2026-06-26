@@ -99,6 +99,14 @@ const COMPLEX = {
       <path key="p2" d="M18 14l3 3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </>
   ),
+  'route': (
+    <>
+      <circle key="c1" cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <circle key="c2" cx="22" cy="20" r="2.5" fill="currentColor" stroke="none" />
+      <path key="p" d="M9 11 C9 16 19 14 22 17.5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <line key="l" x1="9" y1="11" x2="9" y2="17.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="2 2" />
+    </>
+  ),
   'briefcase-duo': (
     <>
       <path key="p1" d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
