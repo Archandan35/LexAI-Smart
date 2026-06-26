@@ -532,6 +532,24 @@ export default function CauseList() {
   const tplTotalPages = Math.ceil(filteredTpls.length / tplPageSize);
   const paginatedTpls = filteredTpls.slice((tplPage - 1) * tplPageSize, tplPage * tplPageSize);
 
+  const STATUS_COLORS = [
+    { bg: '#e7f5ff', text: '#0066cc', border: '#a5d8ff', dot: '#0066cc' },
+    { bg: '#fff9db', text: '#d97706', border: '#ffe066', dot: '#d97706' },
+    { bg: '#ebfbee', text: '#0ca678', border: '#b2f2bb', dot: '#0ca678' },
+    { bg: '#fff5f5', text: '#e03131', border: '#ffc9c9', dot: '#e03131' },
+    { bg: '#f3f0ff', text: '#7048e8', border: '#d0bfff', dot: '#7048e8' },
+    { bg: '#fff0f6', text: '#c2255c', border: '#faa2c1', dot: '#c2255c' },
+    { bg: '#e6fcf5', text: '#0b7285', border: '#96f2d7', dot: '#0b7285' },
+    { bg: '#fff4e6', text: '#e8590c', border: '#ffc078', dot: '#e8590c' },
+    { bg: '#f4fce3', text: '#5c940d', border: '#c0eb75', dot: '#5c940d' },
+    { bg: '#edf2ff', text: '#364fc7', border: '#bac8ff', dot: '#364fc7' },
+  ];
+  const getStatusStyle = (status) => {
+    const idx = caseStatuses.indexOf(status);
+    if (idx === -1) return STATUS_COLORS[9];
+    return STATUS_COLORS[idx % 10];
+  };
+
   return (
     <>
       {/* Mobile View */}
@@ -680,7 +698,6 @@ export default function CauseList() {
                       const dayNum = hDate.getDate();
                       const mon = hDate.toLocaleString('default', { month: 'short' });
                       const year = hDate.getFullYear();
-                      const statusClass = h.status?.toLowerCase() || 'default';
                       return (
                         <div
                           key={h.id}
@@ -711,8 +728,8 @@ export default function CauseList() {
                                   {h.caseNumber}
                                 </a>
                               </div>
-                              <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
-                                <span className={`cl-card__badge-dot cl-card__badge-dot--${statusClass}`} />
+                              <span className="cause-list__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
+                                <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
                                 {h.status}
                               </span>
                             </div>
@@ -1043,7 +1060,6 @@ export default function CauseList() {
                 </thead>
                 <tbody>
                   {paginatedRows.map((h) => {
-                    const statusClass = h.status?.toLowerCase() || 'default';
                     return (
                       <tr key={h.id} className={`cause-list__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
                         <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
@@ -1077,7 +1093,7 @@ export default function CauseList() {
                         {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                         {visibleColumns.status && (
                           <td>
-                            <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
+                            <span className="cause-list__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
                               {h.status}
                             </span>
                           </td>
@@ -1418,13 +1434,12 @@ export default function CauseList() {
                     </thead>
                     <tbody>
                       {history.hearings.map((h, i) => {
-                        const statusClass = h.status?.toLowerCase() || 'default';
                         return (
                           <tr key={h.id || i}>
                             <td style={{ whiteSpace: 'nowrap' }} className="cause-list__timeline-event-date-cell">{formatDate(h.date)}</td>
                             <td>
                               <div className="flex align-center gap-8">
-                                <span className={`cause-list__timeline-event-dot cause-list__timeline-event-dot--${statusClass}`} />
+                                <span className="cause-list__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
                                 <span className="cause-list__timeline-event-name">{h.purpose || 'Hearing'}</span>
                               </div>
                             </td>
