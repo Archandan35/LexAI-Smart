@@ -673,6 +673,7 @@ export default function CauseList() {
                                 </a>
                               </div>
                               <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
+                                <span className={`cl-card__badge-dot cl-card__badge-dot--${statusClass}`} />
                                 {h.status}
                               </span>
                             </div>
@@ -682,8 +683,14 @@ export default function CauseList() {
                               <div className="cl-card__meta-item"><Icon name="users" size={11} /> {h.case?.bench_type || '—'}</div>
                             </div>
                             <div className="cl-card__footer">
-                              <div className="cl-card__footer-item"><Icon name="calendar" size={11} /> Next: {formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</div>
-                              <div className="cl-card__footer-item"><Icon name="users" size={11} /> {h.case?.judge || h.judge || '—'}</div>
+                              <div className="cl-card__footer-item">
+                                <span className="cl-card__footer-label">Next Hearing Date</span>
+                                <span className="cl-card__footer-value">{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</span>
+                              </div>
+                              <div className="cl-card__footer-item">
+                                <span className="cl-card__footer-label">Judge</span>
+                                <span className="cl-card__footer-value">{h.case?.judge || h.judge || '—'}</span>
+                              </div>
                             </div>
                           </div>
                           <div className="cl-card__more">
