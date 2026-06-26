@@ -64,6 +64,91 @@ function docIconVariant(name) {
 
 const BAR_COLORS = ['#6d4fe8', '#1f9d6b', '#e07b00', '#2547a3', '#888'];
 
+/* ---- Mobile view SVG icon components (stroke-based line icons) ---- */
+const MenuIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+const BellIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+const CalendarIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+const PlusIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+const FileTextIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+  </svg>
+);
+const FolderIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+  </svg>
+);
+const CheckCircleIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+const UsersIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+const BriefcaseIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  </svg>
+);
+const UserPlusIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="17" y1="11" x2="23" y2="11" />
+  </svg>
+);
+const ChevronRightIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+const HomeIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+const MoreHorizontalIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" {...p}>
+    <circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" />
+  </svg>
+);
+const MoreDotsIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" {...p}>
+    <circle cx="4.5" cy="12" r="1.9" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none" /><circle cx="19.5" cy="12" r="1.9" fill="currentColor" stroke="none" />
+  </svg>
+);
+const DownloadIcon = (p) => (
+  <svg width={p.size||20} height={p.size||20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+const BriefcaseDuoIcon = ({ size = 21, ...rest }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...rest}>
+    <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <rect x="3" y="7" width="18" height="12" rx="2.5" fill="currentColor" fillOpacity="0.92" />
+    <circle cx="12" cy="13" r="1.7" fill="var(--surface)" /><circle cx="12" cy="13" r="0.6" fill="currentColor" />
+  </svg>
+);
+/* ---------------------------------------------------------------*/
+
 export default function Dashboard() {
   const { data, loading } = useDashboard();
   const nav = useNavigate();
@@ -90,6 +175,13 @@ export default function Dashboard() {
   const hearingsCnt = stats.hearings ?? 0;
   const draftCnt = stats.drafts ?? 0;
 
+  /* Mobile donut chart computation */
+  const donutR = 50;
+  const donutCirc = 2 * Math.PI * donutR;
+  const activePct = totalCases > 0 ? activeCnt / totalCases : 0;
+  const donutDash = activePct * donutCirc;
+  const donutGap = donutCirc - donutDash;
+
   const donutSegments = [
     { label: 'Active', value: activeCnt, color: '#2547a3', pct: totalCases ? ((activeCnt / totalCases) * 100).toFixed(1) : 0 },
     { label: 'Closed', value: closedCnt, color: '#1f9d6b', pct: totalCases ? ((closedCnt / totalCases) * 100).toFixed(1) : 0 },
@@ -104,7 +196,7 @@ export default function Dashboard() {
   const maxCat = Math.max(...categories.map((c) => c.value));
 
   return (
-    <div className="fade-in" style={{ paddingBottom: 40 }}>
+    <><div className="fade-in dash-desktop-view" style={{ paddingBottom: 40 }}>
 
       {/* ---- Greeting row ---- */}
       <div className="dash-greeting-row">
@@ -336,5 +428,225 @@ export default function Dashboard() {
         )}
       </div>
     </div>
+
+      {/* ===== Mobile / Tablet Portrait View ===== */}
+      <div className="dash-mobile-view">
+        <div className="lexm-header">
+          <button className="lexm-menu-btn" aria-label="Menu"><MenuIcon size={19} /></button>
+          <div className="lexm-greeting">
+            <h1>{greeting}, {user?.name || 'Admin'} 👋</h1>
+            <p>Here&apos;s what&apos;s happening with your legal practice today.</p>
+          </div>
+          <div className="lexm-header-actions">
+            <button className="lexm-bell" aria-label="Notifications">
+              <BellIcon size={18} />
+              <span className="lexm-bell-badge">3</span>
+            </button>
+            <div className="lexm-avatar">{(user?.name || 'A')[0]}</div>
+          </div>
+        </div>
+
+        <div className="lexm-date-row">
+          <div className="lexm-date">
+            <CalendarIcon size={17} />
+            {today()}
+          </div>
+          <button className="lexm-add-btn" onClick={() => nav('/cases/create')}>
+            <PlusIcon size={15} />
+            Add New
+          </button>
+        </div>
+
+        <div className="lexm-stat-grid">
+          {[
+            { label: 'Total Cases', value: totalCases, icon: FileTextIcon, tone: 'blue' },
+            { label: 'Active Cases', value: activeCnt, icon: FolderIcon, tone: 'green' },
+            { label: 'Closed Cases', value: closedCnt, icon: CheckCircleIcon, tone: 'amber' },
+            { label: 'Hearings This Month', value: hearingsCnt, icon: CalendarIcon, tone: 'red' },
+            { label: 'Documents', value: docsCnt, icon: FileTextIcon, tone: 'purple' },
+          ].map((s) => {
+            const Ic = s.icon;
+            return (
+              <div className="lexm-stat-card" key={s.label}>
+                <div className="lexm-stat-top">
+                  <div className={`lexm-stat-icon tone-${s.tone}`}><Ic size={17} /></div>
+                  <div className="lexm-stat-value">{s.value}</div>
+                </div>
+                <div className="lexm-stat-label">{s.label}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="lexm-card">
+          <div className="lexm-card-head">
+            <span className="lexm-card-head__title">Case Status Overview</span>
+            <button className="lexm-card-head__icon-btn" aria-label="More options">
+              <MoreHorizontalIcon size={18} />
+            </button>
+          </div>
+          <div className="lexm-card-body">
+            <div className="lexm-donut-row">
+              <svg width="128" height="128" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r={donutR} fill="none" stroke="var(--border)" strokeWidth="14" />
+                <circle cx="60" cy="60" r={donutR} fill="none" stroke="var(--navy-700)" strokeWidth="14" strokeLinecap="round" strokeDasharray={`${donutDash} ${donutGap}`} transform="rotate(-90 60 60)" />
+                <text x="60" y="57" textAnchor="middle" className="lexm-donut-center-value">{totalCases}</text>
+                <text x="60" y="74" textAnchor="middle" className="lexm-donut-center-label">Total Cases</text>
+              </svg>
+              <div className="lexm-legend">
+                {[
+                  { label: 'Active', value: activeCnt, pct: totalCases ? ((activeCnt / totalCases) * 100).toFixed(0) + '%' : '0%', tone: 'blue' },
+                  { label: 'Closed', value: closedCnt, pct: totalCases ? ((closedCnt / totalCases) * 100).toFixed(0) + '%' : '0%', tone: 'green' },
+                  { label: 'On Hold', value: onHoldCnt, pct: totalCases ? ((onHoldCnt / totalCases) * 100).toFixed(0) + '%' : '0%', tone: 'amber' },
+                  { label: 'Draft', value: draftCnt, pct: '0%', tone: 'grey' },
+                ].map((l) => (
+                  <div className="lexm-legend-item" key={l.label}>
+                    <div className="lexm-legend-left">
+                      <span className={`lexm-legend-dot tone-${l.tone}`} />
+                      {l.label}
+                    </div>
+                    <div className="lexm-legend-right">
+                      <span className="lexm-legend-value">{l.value}</span>
+                      <span className="lexm-legend-pct">({l.pct})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lexm-card">
+          <div className="lexm-card-head">
+            <span className="lexm-card-head__title">Upcoming Hearings</span>
+            <span className="lexm-card-head__link" onClick={() => nav('/cause-list')}>View All</span>
+          </div>
+          {upcomingHearings.length === 0 ? (
+            <div className="lexm-empty">
+              <div className="lexm-empty-icon"><CalendarIcon size={22} /></div>
+              <p className="lexm-empty-title">No upcoming hearings.</p>
+              <p className="lexm-empty-sub">You&apos;re all caught up!</p>
+            </div>
+          ) : upcomingHearings.slice(0, 3).map((h) => (
+            <div className="lexm-case-row" key={h.id} onClick={() => nav('/cause-list')}>
+              <div className="lexm-case-icon" style={{ background: 'var(--red-soft)', color: 'var(--red)' }}>
+                <CalendarIcon size={16} />
+              </div>
+              <div className="lexm-case-text">
+                <div className="lexm-case-title">{h.purpose || 'Hearing'}</div>
+                <div className="lexm-case-client">{h.caseTitle || h.purpose || '—'}</div>
+              </div>
+              <div className="lexm-case-right">
+                <span style={{ fontSize: 12, fontWeight: 650, color: 'var(--navy-600)', whiteSpace: 'nowrap' }}>{formatDate(h.date)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="lexm-card">
+          <div className="lexm-card-head">
+            <span className="lexm-card-head__title">Recent Cases</span>
+            <span className="lexm-card-head__link" onClick={() => nav('/cases')}>View All</span>
+          </div>
+          {activeCases.length === 0 ? (
+            <div className="lexm-empty">
+              <div className="lexm-empty-icon"><BriefcaseIcon size={22} /></div>
+              <p className="lexm-empty-title">No cases yet.</p>
+              <p className="lexm-empty-sub">Create your first case to get started.</p>
+            </div>
+          ) : activeCases.slice(0, 3).map((c) => (
+            <div className="lexm-case-row" key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
+              <div className="lexm-case-icon"><UsersIcon size={16} /></div>
+              <div className="lexm-case-text">
+                <div className="lexm-case-title">{c.title || c.caseNumber}</div>
+                <div className="lexm-case-client">Client: {c.client || '—'}</div>
+              </div>
+              <div className="lexm-case-right">
+                <span className="lexm-badge">{c.status || 'Active'}</span>
+                <ChevronRightIcon size={16} style={{ color: 'var(--text-faint)' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="lexm-card">
+          <div className="lexm-card-head">
+            <span className="lexm-card-head__title">Quick Actions</span>
+          </div>
+          <div className="lexm-qa-grid">
+            {[
+              { icon: BriefcaseIcon, label: 'Add New Case', tone: 'blue', route: '/cases/create' },
+              { icon: UserPlusIcon, label: 'Add New Client', tone: 'green', route: '/clients' },
+              { icon: FileTextIcon, label: 'Upload Document', tone: 'amber', route: '/documents' },
+              { icon: CalendarIcon, label: 'Schedule Hearing', tone: 'red', route: '/cause-list' },
+            ].map((a) => {
+              const Ic = a.icon;
+              return (
+                <button className={`lexm-qa-tile tone-${a.tone}`} key={a.label} onClick={() => nav(a.route)}>
+                  <span className="lexm-qa-icon"><Ic size={19} /></span>
+                  <span className="lexm-qa-label">{a.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="lexm-card">
+          <div className="lexm-card-head">
+            <span className="lexm-card-head__title">Recent Documents</span>
+            <span className="lexm-card-head__link" onClick={() => nav('/documents')}>View All</span>
+          </div>
+          {recentDocuments.length === 0 ? (
+            <div className="lexm-empty">
+              <div className="lexm-empty-icon"><FileTextIcon size={22} /></div>
+              <p className="lexm-empty-title">No documents yet.</p>
+              <p className="lexm-empty-sub">Upload documents to your cases.</p>
+            </div>
+          ) : recentDocuments.slice(0, 3).map((d) => (
+            <div className="lexm-doc-row" key={d.id}>
+              <div className="lexm-doc-icon"><FileTextIcon size={19} /></div>
+              <div className="lexm-doc-text">
+                <div className="lexm-doc-name">{d.name}</div>
+                <div className="lexm-doc-meta">{formatDate(d.uploadedAt)} &nbsp;•&nbsp; {(d.name||'').split('.').pop().toUpperCase() || 'FILE'}</div>
+              </div>
+              <button className="lexm-doc-dl" aria-label="Download"><DownloadIcon size={16} /></button>
+            </div>
+          ))}
+        </div>
+
+        <div className="lexm-navwrap">
+          <div className="lexm-navbar">
+            <svg className="lexm-navbg" viewBox="0 0 400 78" preserveAspectRatio="none">
+              <path d="M10 0 H140 C168 0 176 34 200 34 C224 34 232 0 260 0 H390 Q400 0 400 10 V78 H0 V10 Q0 0 10 0 Z" fill="currentColor" />
+            </svg>
+            <div className="lexm-navitems">
+              {[
+                { key: 'dashboard', label: 'Dashboard', icon: HomeIcon },
+                { key: 'matters', label: 'Matters', icon: BriefcaseDuoIcon },
+                { key: 'add', label: 'Add', icon: PlusIcon },
+                { key: 'calendar', label: 'Calendar', icon: CalendarIcon },
+                { key: 'more', label: 'More', icon: MoreDotsIcon },
+              ].map((item) => {
+                const Ic = item.icon;
+                if (item.key === 'add') {
+                  return (
+                    <button key={item.key} className="lexm-navitem lexm-navitem--fab" onClick={() => nav('/cases/create')}>
+                      <span className="lexm-fab"><Ic size={24} /></span>
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                }
+                return (
+                  <button key={item.key} className={`lexm-navitem ${item.key === 'dashboard' ? 'is-active' : ''}`} onClick={() => nav('/' + (item.key === 'dashboard' ? '' : item.key))}>
+                    <Ic size={21} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
