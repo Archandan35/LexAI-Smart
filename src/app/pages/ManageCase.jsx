@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -17,6 +17,7 @@ import PermissionGate from '@/components/PermissionGate.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useCases } from '@/hooks/useCases.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate, formatDateTime } from '@/utils/format.js';
@@ -24,8 +25,157 @@ import { usePriorities } from '@/hooks/usePriorities.js';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
 
+const NAV_CATEGORIES = [
+  { key: 'all', label: 'All Cases', icon: 'vault' },
+  { key: 'active', label: 'Active', icon: 'check-circle' },
+  { key: 'pending', label: 'Pending', icon: 'clock' },
+  { key: 'trial', label: 'Trial', icon: 'target' },
+  { key: 'archived', label: 'Archived', icon: 'vault' },
+];
+
 export default function ManageCase() {
   const { id } = useParams();
+
+  if (!id) return <MobileCaseListView />;
+
+  return <DesktopCaseDetail id={id} />;
+}
+
+function MobileCaseListView() {
+  const nav = useNavigate();
+  const toast = useToast();
+  const { user } = useAuth();
+  const { cases, loading, refresh } = useCases();
+  const { priorities } = usePriorities();
+  const priorityTone = Object.fromEntries((priorities || []).map((p) => [p.name, p.color || 'grey']));
+
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  const [selectedCases, setSelectedCases] = useState([]);
+
+  const act = async (fn, msg) => {
+    const r = await fn();
+    if (r?.ok === false) { toast.push(r.error, 'error'); return; }
+    if (msg) toast.push(msg, 'success');
+    refresh();
+  };
+
+  const filtered = useMemo(() => {
+    let rows = cases || [];
+    if (category === 'archived') rows = rows.filter((c) => c.archived);
+    else if (category !== 'all') rows = rows.filter((c) => (c.stage || '').toLowerCase() === category && !c.archived);
+    else rows = rows.filter((c) => !c.archived);
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      rows = rows.filter((c) =>
+        `${c.caseNumber || ''} ${c.case_display_number || ''} ${c.title || ''} ${combinedCourt(c) || ''} ${c.judge || ''} ${c.advocate || ''} ${c.client || ''}`.toLowerCase().includes(q)
+      );
+    }
+    return [...rows].sort((a, b) => (b.watch ? 1 : 0) - (a.watch ? 1 : 0));
+  }, [cases, category, query]);
+
+  const toggleStar = (c) => act(() => caseLogic.toggleWatch(c.id, !c.watch));
+
+  const remove = (c) => {
+    if (confirm(`Delete case ${c.case_display_number || c.caseNumber}?`))
+      act(() => caseLogic.remove(c.id, user), 'Case deleted.');
+  };
+
+  return (
+    <div className="mc-mobile-view">
+      {/* Search */}
+      <div className="mc-searchbar">
+        <div className="mc-searchbar__wrapper">
+          <Icon name="search" size={18} />
+          <input
+            className="mc-searchbar__input"
+            placeholder="Search cases, client, judge…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button className="mc-searchbar__filter">
+            <Icon name="filter" size={17} />
+          </button>
+        </div>
+      </div>
+
+      {/* Banner */}
+      <div className="mc-banner">
+        <div className="mc-banner__illustration">
+          <Icon name="vault" size={30} />
+        </div>
+        <div className="mc-banner__text">
+          <div className="mc-banner__title">Case Vault</div>
+          <div className="mc-banner__sub">{filtered.length} matter{filtered.length !== 1 ? 's' : ''} tracked</div>
+        </div>
+        <PermissionGate perm="casevault.create">
+          <button className="mc-banner__btn" onClick={() => nav('/cases/create')}>
+            <Icon name="plus" size={20} />
+          </button>
+        </PermissionGate>
+      </div>
+
+      {/* Category Nav */}
+      <div className="mc-nav">
+        {NAV_CATEGORIES.map((n) => (
+          <button
+            key={n.key}
+            className={`mc-nav__item ${category === n.key ? 'mc-nav__item--active' : ''}`}
+            onClick={() => setCategory(n.key)}
+          >
+            <Icon name={n.icon} size={14} />
+            {n.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Case List */}
+      {loading ? (
+        <Spinner label="Loading cases…" />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon="vault" title="No cases found." />
+      ) : (
+        filtered.map((c) => (
+          <div key={c.id} className="mc-card" onClick={() => nav(`/cases/${c.id}`)}>
+            <div className="mc-card__head">
+              <div className="mc-card__title">{c.case_display_number || c.caseNumber}</div>
+              <div className="mc-card__badge"><Badge tone={c.archived ? 'amber' : 'green'}>{c.status || (c.archived ? 'Archived' : 'Active')}</Badge></div>
+            </div>
+            <div className="mc-card__sub">{c.title || '—'}</div>
+            <div className="mc-meta">
+              <span className="mc-meta__item"><Icon name="building" size={13} />{combinedCourt(c) || c.court_name || '—'}</span>
+              <span className="mc-meta__item"><Icon name="calendar" size={13} />{formatDate(c.next_hearing) || '—'}</span>
+              {c.priority && (
+                <span className="mc-meta__item">
+                  <span className={`mc-indicator mc-indicator--${priorityTone[c.priority] || 'grey'}`} />
+                  {c.priority}
+                </span>
+              )}
+            </div>
+            <div className="mc-actions" onClick={(e) => e.stopPropagation()}>
+              <button className="mc-actions__btn" title="View" onClick={() => nav(`/cases/${c.id}`)}><Icon name="eye" size={15} /></button>
+              <PermissionGate perm="casevault.edit">
+                <button className="mc-actions__btn" title="Edit" onClick={() => nav(`/cases/${c.id}?edit=1`)}><Icon name="edit" size={15} /></button>
+              </PermissionGate>
+              <PermissionGate perm="casevault.export">
+                <button className="mc-actions__btn" title="Export" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))}><Icon name="download" size={15} /></button>
+              </PermissionGate>
+              <div className="mc-actions__spacer" />
+              <button className="mc-actions__btn" title={c.watch ? 'Unwatch' : 'Watch'} onClick={() => toggleStar(c)}>
+                <Icon name="star" size={15} fill={!!c.watch} className={c.watch ? 'star--on' : ''} />
+              </button>
+              <PermissionGate perm="casevault.delete">
+                <button className="mc-actions__btn" title="Delete" onClick={() => remove(c)}><Icon name="trash" size={15} /></button>
+              </PermissionGate>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function DesktopCaseDetail({ id }) {
   const nav = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
@@ -349,7 +499,6 @@ export default function ManageCase() {
         <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" caseDocuments={vault.documents} />
       </Modal>
 
-      {/* Delete confirmation */}
       <Modal
         open={showDeleteDlg}
         title="Delete Case"

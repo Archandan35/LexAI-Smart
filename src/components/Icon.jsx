@@ -63,6 +63,9 @@ const PATHS = {
   briefcase: 'M2 7h20v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16',
   'user-plus': 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M8.5 11a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M20 8v6 M17 11h6',
   'check-circle': 'M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4 12 14.01 9 11.01',
+  filter: 'M22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3',
+  building: 'M3 22h18M6 18V9m12 9V9M2 9l10-7 10 7M9 22V12h6v10',
+  video: 'M23 7l-7 5 7 5V7z M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z',
 };
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */
@@ -72,6 +75,13 @@ const COMPLEX = {
       <circle key="c1" cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" />
       <circle key="c2" cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
       <circle key="c3" cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </>
+  ),
+  'more-vertical': (
+    <>
+      <circle key="c1" cx="12" cy="5" r="1.6" fill="currentColor" stroke="none" />
+      <circle key="c2" cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle key="c3" cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
     </>
   ),
   'briefcase-duo': (
