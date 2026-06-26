@@ -14136,6 +14136,8 @@ kbd.cmd__kbd {
   .input-row > * { min-width: 100%; }
   .hearing-modal__section .input-row > * { min-width: 100%; }
   .field input, .field select, .field textarea { font-size: 16px; } /* prevent iOS zoom */
+  .hearing-modal__section { padding: 10px 12px 6px; }
+  .hearing-modal__section-title { margin-bottom: 6px; padding-bottom: 4px; }
 }
 
 /* ---- Tables ---- */
