@@ -172,7 +172,7 @@ export default function ManageCase() {
         {tab === 'Overview' && (
           <>
             <Card title="Case Particulars">
-              <div className="mc-detail-hero" style={{ margin: '-4px 0 14px' }}>
+              <div className="mc-detail-hero">
                 <div className="mc-detail-hero__icon">
                   <Icon name="route" size={28} />
                 </div>
@@ -182,7 +182,7 @@ export default function ManageCase() {
                 </div>
               </div>
 
-              <div className="mc-detail-triad" style={{ marginBottom: 14 }}>
+              <div className="mc-detail-triad">
                 <div className="mc-detail-triad__item">
                   <div className="mc-detail-triad__icon mc-detail-triad__icon--blue">
                     <Icon name="target" size={18} />
@@ -214,7 +214,7 @@ export default function ManageCase() {
                 </div>
               </div>
 
-              <div className="mc-detail-chart" style={{ marginBottom: 14 }}>
+              <div className="mc-detail-chart">
                 <div className="mc-detail-chart__row">
                   <div className="mc-detail-chart__icon"><Icon name="file" size={18} /></div>
                   <span className="mc-detail-chart__label">Case Number</span>

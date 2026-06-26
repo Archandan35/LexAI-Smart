@@ -14592,6 +14592,7 @@ kbd.cmd__kbd {
 .mc-detail-hero {
   background: var(--surface); border-radius: 18px; padding: 20px;
   display: flex; align-items: flex-start; gap: 16px;
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 14px;
 }
 .mc-detail-hero__icon {
   width: 56px; height: 56px; background: var(--brand-soft); border-radius: 16px;
@@ -14604,6 +14605,7 @@ kbd.cmd__kbd {
 .mc-detail-triad {
   background: var(--surface); border-radius: 16px; padding: 14px 16px;
   display: flex; align-items: center;
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 14px;
 }
 .mc-detail-triad__item { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .mc-detail-triad__divider { width: 1px; height: 38px; background: var(--border); margin: 0 6px; flex-shrink: 0; }
@@ -14622,6 +14624,7 @@ kbd.cmd__kbd {
 
 .mc-detail-chart {
   background: var(--surface); border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 14px;
 }
 .mc-detail-chart__row {
   display: flex; align-items: center; padding: 13px 16px;
