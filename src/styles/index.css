@@ -6497,11 +6497,12 @@ kbd.cmd__kbd {
 }
 
 .table td.cause-list__cell-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: flex-end;
-  border-bottom: none;
+  vertical-align: middle;
+  text-align: right;
+  white-space: nowrap;
+}
+.table td.cause-list__cell-actions .btn--ghost + .btn--ghost {
+  margin-left: 6px;
 }
 
 .cause-list__alert-sm {
@@ -9077,11 +9078,12 @@ kbd.cmd__kbd {
 }
 
 .table td.cause-list__cell-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: flex-end;
-  border-bottom: none;
+  vertical-align: middle;
+  text-align: right;
+  white-space: nowrap;
+}
+.table td.cause-list__cell-actions .btn--ghost + .btn--ghost {
+  margin-left: 6px;
 }
 
 .cause-list__alert-sm {
