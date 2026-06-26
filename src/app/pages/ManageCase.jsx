@@ -40,6 +40,15 @@ export default function ManageCase() {
   const [activityKey, setActivityKey] = useState(0);
   const [showDeleteDlg, setShowDeleteDlg] = useState(false);
   const [mobileSection, setMobileSection] = useState('details');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const load = useCallback(async () => {
     const res = await caseLogic.vault(id);
@@ -93,7 +102,7 @@ export default function ManageCase() {
 
   return (
     <>
-      {/* === Mobile View (≤991px) === */}
+      {isMobile && (
       <div className="mc-mobile-detail">
         <div className="mc-detail-topbar">
           <button className="mc-detail-back" onClick={() => nav('/cases')}><Icon name="chevron" size={20} /></button>
@@ -259,8 +268,9 @@ export default function ManageCase() {
           <NotesPanel caseId={id} notes={notes} onChanged={load} />
         )}
       </div>
+      )}
 
-      {/* === Desktop View (>991px) === */}
+      {!isMobile && (
       <div className="fade-in mc-desktop-detail">
         <Button variant="ghost" size="sm" icon="arrow" onClick={() => nav('/cases')} className="case-detail__back-btn" />
 
@@ -520,6 +530,7 @@ export default function ManageCase() {
 
         {tab === 'History' && <CaseHistory caseId={id} onChanged={load} />}
       </div>
+      )}
 
       {/* Shared Modals */}
       <Modal open={editing} title="Edit Case" size="lg" onClose={() => setEditing(false)}>
