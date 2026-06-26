@@ -11266,35 +11266,29 @@ kbd.cmd__kbd {
   border: 1px solid var(--border);
 }
 
-.cause-list__badge-status--scheduled {
-  background: #e7f5ff;
-  color: #0066cc;
-  border-color: #a5d8ff;
-}
+/* Index-based status colors – each status gets a unique color via its index in caseStatuses */
+.cl-sc-0 { background: #e7f5ff; color: #0066cc; border-color: #a5d8ff; }
+.cl-sc-1 { background: #fff9db; color: #d97706; border-color: #ffe066; }
+.cl-sc-2 { background: #ebfbee; color: #0ca678; border-color: #b2f2bb; }
+.cl-sc-3 { background: #fff5f5; color: #e03131; border-color: #ffc9c9; }
+.cl-sc-4 { background: #f3f0ff; color: #7048e8; border-color: #d0bfff; }
+.cl-sc-5 { background: #fff0f6; color: #c2255c; border-color: #faa2c1; }
+.cl-sc-6 { background: #e7f5ff; color: #1971c2; border-color: #74c0fc; }
+.cl-sc-7 { background: #fff4e6; color: #e67700; border-color: #ffc078; }
+.cl-sc-8 { background: #f8f9fa; color: #495057; border-color: #ced4da; }
+.cl-sc-9 { background: #e0f5ff; color: #0b7285; border-color: #66d9e8; }
 
-.cause-list__badge-status--rescheduled {
-  background: #fff9db;
-  color: #d97706;
-  border-color: #ffe066;
-}
-
-.cause-list__badge-status--completed {
-  background: #ebfbee;
-  color: #0ca678;
-  border-color: #b2f2bb;
-}
-
-.cause-list__badge-status--adjourned {
-  background: #fff5f5;
-  color: #e03131;
-  border-color: #ffc9c9;
-}
-
-.cause-list__badge-status--pending {
-  background: #f3f0ff;
-  color: #7048e8;
-  border-color: #d0bfff;
-}
+/* Dot colors match the badge colors */
+.cl-scd-0 { background: #0066cc; }
+.cl-scd-1 { background: #d97706; }
+.cl-scd-2 { background: #0ca678; }
+.cl-scd-3 { background: #e03131; }
+.cl-scd-4 { background: #7048e8; }
+.cl-scd-5 { background: #c2255c; }
+.cl-scd-6 { background: #1971c2; }
+.cl-scd-7 { background: #e67700; }
+.cl-scd-8 { background: #495057; }
+.cl-scd-9 { background: #0b7285; }
 
 /* Case Detail Card (History & Timeline) */
 .cause-list__case-info-card {
@@ -14346,11 +14340,16 @@ kbd.cmd__kbd {
 
 @keyframes cl-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 .cl-card__badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; animation: cl-blink 1.2s ease-in-out infinite; vertical-align: middle; background: var(--text-soft); }
-.cl-card__badge-dot--scheduled { background: #0066cc; }
-.cl-card__badge-dot--rescheduled { background: #d97706; }
-.cl-card__badge-dot--completed { background: #0ca678; }
-.cl-card__badge-dot--adjourned { background: #e03131; }
-.cl-card__badge-dot--pending { background: #7048e8; }
+.cl-scd-0 { background: #0066cc; }
+.cl-scd-1 { background: #d97706; }
+.cl-scd-2 { background: #0ca678; }
+.cl-scd-3 { background: #e03131; }
+.cl-scd-4 { background: #7048e8; }
+.cl-scd-5 { background: #c2255c; }
+.cl-scd-6 { background: #1971c2; }
+.cl-scd-7 { background: #e67700; }
+.cl-scd-8 { background: #495057; }
+.cl-scd-9 { background: #0b7285; }
 
 .cl-table-header { display: flex; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.04em; align-items: center; gap: 8px; }
 .cl-table-header__check { width: 20px; }
