@@ -243,7 +243,7 @@ export default function ManageCase() {
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>
                     <span className="mc-detail-chart__label">Court</span>
-                    <span className="mc-detail-chart__value">{c.court_name || '—'}</span>
+                    <span className="mc-detail-chart__value">{c.court_name ? (c.court_name.length > 12 ? `${c.court_name.slice(0, 12)}...` : c.court_name) : '—'}</span>
                   </div>
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="grid" size={18} /></div>
