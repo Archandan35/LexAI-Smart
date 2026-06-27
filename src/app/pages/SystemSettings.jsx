@@ -583,6 +583,22 @@ export default function SystemSettings() {
   }, []);
 
   const handleSave = useCallback(async () => {
+    if (!settings.siteTitle || !settings.siteTitle.trim()) {
+      toast.push('Application Name is required.', 'error');
+      return;
+    }
+    if (settings.adminEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.adminEmail)) {
+      toast.push('Please enter a valid administrator email address.', 'error');
+      return;
+    }
+    if (settings.mainUrl && !/^https?:\/\/.+/.test(settings.mainUrl)) {
+      toast.push('Application URL must start with http:// or https://', 'error');
+      return;
+    }
+    if (settings.portalUrl && !/^https?:\/\/.+/.test(settings.portalUrl)) {
+      toast.push('Website URL must start with http:// or https://', 'error');
+      return;
+    }
     const res = await settingsLogic.saveSettings(settings);
     if (res.ok) {
       setDirty({});

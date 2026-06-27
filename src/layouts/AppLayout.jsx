@@ -5,6 +5,7 @@ import Topbar from './Topbar.jsx';
 import Bottombar from './Bottombar.jsx';
 import { BackupManager } from '@/logic/BackupManager.js';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import DebugOverlay from '@/components/DebugOverlay.jsx';
 
 // AppLayout — the shell. Holds sidebar collapse/mobile state and renders the
@@ -13,6 +14,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { debugMode } = useDebug();
+  const { settings } = useSettings();
 
   // Best-effort scheduled-backup catch-up once per authenticated session load.
   useEffect(() => { BackupManager.runDue(null).catch(() => {}); }, []);
@@ -37,6 +39,11 @@ export default function AppLayout() {
           <main className="page-area">
             <Outlet />
           </main>
+          <footer className="app-footer">
+            <span>{settings.siteTitle}</span>
+            {settings.adminEmail && <span> · {settings.adminEmail}</span>}
+            {settings.mainUrl && <span> · {settings.mainUrl}</span>}
+          </footer>
         </div>
         {debugMode && <DebugOverlay />}
       </div>

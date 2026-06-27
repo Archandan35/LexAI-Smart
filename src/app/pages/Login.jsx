@@ -89,8 +89,9 @@ export default function Login() {
           <Button type="submit" variant="primary" className="btn--block" loading={busy} icon="shield">Sign in</Button>
         </form>
 
-        <div className="auth-foot">
+        <div className="auth-foot auth-foot--between">
           <Link to="/forgot-password" className="auth-link">Forgot password?</Link>
+          {settings.allowRegistration ? <Link to="/register" className="auth-link">Create account</Link> : null}
         </div>
 
         <div className="auth-note">Client-side demo auth — not production-secure. All other users are created in User Management.</div>

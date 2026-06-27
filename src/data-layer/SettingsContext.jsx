@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { settingsLogic } from '@/logic/settingsLogic.js';
+import { settingsCache } from '@/core/settingsCache.js';
 
 const DEFAULTS = {
   siteTitle: 'LexAI',
@@ -29,13 +30,15 @@ export function SettingsProvider({ children }) {
     setError(null);
     try {
       const res = await settingsLogic.loadSettings();
+      const merged = { ...DEFAULTS };
       if (res.ok && res.data && Object.keys(res.data).length > 0) {
-        setSettings({ ...DEFAULTS, ...res.data });
-      } else {
-        setSettings({ ...DEFAULTS });
+        Object.assign(merged, res.data);
       }
+      settingsCache.setAll(merged);
+      setSettings(merged);
     } catch (err) {
       setError(err.message);
+      settingsCache.setAll(DEFAULTS);
       setSettings({ ...DEFAULTS });
     }
     setLoading(false);

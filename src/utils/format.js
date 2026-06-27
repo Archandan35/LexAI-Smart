@@ -1,17 +1,19 @@
+import { DateEngine } from '@/core/DateEngine.js';
+
 export function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return DateEngine.formatDate(value);
 }
 
 export function formatDateTime(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
-  return d.toLocaleString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
+  const date = DateEngine.formatDate(value);
+  const time = DateEngine.formatTime(value);
+  return `${date} ${time}`;
 }
 
 export function fromNow(value) {

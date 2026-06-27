@@ -5,6 +5,8 @@
 // `nowISO()` directly. This ensures consistent date formatting and makes
 // date representation independent of the storage provider.
 
+import { settingsCache } from '@/core/settingsCache.js';
+
 function pad2(n) {
   return String(n).padStart(2, '0');
 }
@@ -171,18 +173,30 @@ export const DateEngine = {
   },
 
   // Format a date using a named pattern and optional timezone.
-  formatDate(date, format = 'june23', timezone) {
-    return formatByPattern(date, format, timezone);
+  // If format/timezone omitted, reads from global settings cache.
+  formatDate(date, format, timezone) {
+    const s = settingsCache.getAll();
+    return formatByPattern(date, format || s.dateFormat || 'june23', timezone || s.timezone);
   },
 
   // Format a time using a named pattern and optional timezone.
-  formatTime(date, format = '12h', timezone) {
-    return formatTimeByPattern(date, format, timezone);
+  // If format/timezone omitted, reads from global settings cache.
+  formatTime(date, format, timezone) {
+    const s = settingsCache.getAll();
+    return formatTimeByPattern(date, format || s.timeFormat || '12h', timezone || s.timezone);
   },
 
   // Apply a timezone offset to a date and return a new Date.
   inTimezone(date, timezone) {
     return toDateObj(date, timezone);
+  },
+
+  // Get the first day of the week (0=Sunday, 1=Monday) from settings cache.
+  // Falls back to Monday if no setting found.
+  getWeekStart() {
+    const s = settingsCache.getAll();
+    const val = (s.weekStart || 'Monday').toLowerCase();
+    return val.startsWith('sun') ? 0 : 1;
   },
 };
 

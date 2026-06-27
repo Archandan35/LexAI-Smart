@@ -372,7 +372,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
         <div className="auth-brand">
           <div className="sidebar__logo">{'\u2696'}</div>
           <div>
-            <div className="auth-brand-title">Lex<span>AI</span></div>
+            <div className="auth-brand-title">LexAI</div>
             <div className="sidebar__sub">Installation Wizard</div>
           </div>
         </div>
