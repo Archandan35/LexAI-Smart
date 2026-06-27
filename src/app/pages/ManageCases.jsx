@@ -57,7 +57,7 @@ function getStageVariant(stage) {
   return '';
 }
 
-export default function CaseVault() {
+export default function ManageCases() {
   const nav = useNavigate();
   const toast = useToast();
   const { cases, loading, refresh } = useCases();
@@ -125,7 +125,7 @@ export default function CaseVault() {
         <div className="fade-in cv-desktop-view">
           <PageHeader
             icon="vault"
-            title="Case Vault"
+            title="Manage Cases"
             subtitle="Every matter with its documents, drafts, history, timeline and hearings in one secure place."
             actions={<PermissionGate perm="casevault.create"><Button icon="plus" onClick={() => setOpen(true)}>New Case</Button></PermissionGate>}
           />

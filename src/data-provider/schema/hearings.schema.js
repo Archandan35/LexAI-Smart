@@ -1,7 +1,7 @@
 // Universal schema — hearings.
 export const HearingsSchema = {
   collection: 'hearings',
-  label: 'Hearings',
+  label: 'Order Sheets',
   primaryKey: 'id',
   core: false,
   fields: {

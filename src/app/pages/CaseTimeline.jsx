@@ -14,7 +14,7 @@ import { exportPdf } from '@/utils/exportDoc.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
 // Timeline Builder — OCR-driven chronology from documents or pasted text.
-export default function TimelineBuilder() {
+export default function CaseTimeline() {
   const toast = useToast();
   const [events, setEvents] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +56,7 @@ export default function TimelineBuilder() {
     <div className="fade-in">
       <PageHeader
         icon="clock"
-        title="Timeline Builder"
+        title="Case Timeline"
         subtitle="Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline."
         actions={events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}
       />

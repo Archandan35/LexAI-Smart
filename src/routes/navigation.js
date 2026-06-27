@@ -12,11 +12,10 @@ export const NAV_GROUPS = [
       {
         label: 'Cases', icon: 'folder',
         children: [
-          { to: '/cases/create', label: 'Create Case', icon: 'plus', module: 'casevault' },
-          { to: '/cases', label: 'Manage Case', icon: 'file', end: true, module: 'casevault' },
+          { to: '/cases/create', label: 'Create Cases', icon: 'plus', module: 'casevault' },
+          { to: '/cases', label: 'Manage Cases', icon: 'file', end: true, module: 'casevault' },
           { to: '/cases/cause-list', label: 'Cause List', icon: 'calendar', module: 'causeList' },
-          { to: '/cases/hearings', label: 'Hearings', icon: 'mic', module: 'hearingNotes' },
-          { to: '/cases/timeline', label: 'Timeline Builder', icon: 'clock', module: 'timeline' },
+          { to: '/cases/case-timeline', label: 'Case Timeline', icon: 'clock', module: 'timeline' },
         ],
       },
       { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },

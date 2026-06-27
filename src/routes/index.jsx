@@ -32,9 +32,9 @@ import StrategyEngine from '@/app/pages/StrategyEngine.jsx';
 import CrossExamination from '@/app/pages/CrossExamination.jsx';
 import EvidenceGap from '@/app/pages/EvidenceGap.jsx';
 import DocumentReview from '@/app/pages/DocumentReview.jsx';
-import TimelineBuilder from '@/app/pages/TimelineBuilder.jsx';
+import CaseTimeline from '@/app/pages/CaseTimeline.jsx';
 import HearingNotes from '@/app/pages/HearingNotes.jsx';
-import CaseVault from '@/app/pages/CaseVault.jsx';
+import ManageCases from '@/app/pages/ManageCases.jsx';
 import ManageCase from '@/app/pages/ManageCase.jsx';
 import CauseList from '@/app/pages/CauseList.jsx';
 
@@ -104,8 +104,8 @@ export default function AppRoutes() {
         <Route path="/cases/create" element={G('casevault', <CreateCase />)} />
         <Route path="/cases/cause-list" element={G('causeList', <CauseList />)} />
         <Route path="/cases/hearings" element={G('hearingNotes', <HearingNotes />)} />
-        <Route path="/cases/timeline" element={G('timeline', <TimelineBuilder />)} />
-        <Route path="/cases" element={G('casevault', <CaseVault />)} />
+        <Route path="/cases/case-timeline" element={G('timeline', <CaseTimeline />)} />
+        <Route path="/cases" element={G('casevault', <ManageCases />)} />
         <Route path="/cases/:id" element={G('casevault', <ManageCase />)} />
 
         {/* ── Calendar / Clients / Contacts ── */}
@@ -185,7 +185,7 @@ export default function AppRoutes() {
         <Route path="/cause-list" element={<Navigate to="/cases/cause-list" replace />} />
         <Route path="/case-manage" element={<Navigate to="/cases" replace />} />
         <Route path="/hearing-notes" element={<Navigate to="/cases/hearings" replace />} />
-        <Route path="/timeline" element={<Navigate to="/cases/timeline" replace />} />
+        <Route path="/timeline" element={<Navigate to="/cases/case-timeline" replace />} />
         <Route path="/citations" element={<Navigate to="/research/citations" replace />} />
         <Route path="/verify" element={<Navigate to="/research/citation-verify" replace />} />
         <Route path="/analysis" element={<Navigate to="/research/case-analysis" replace />} />
