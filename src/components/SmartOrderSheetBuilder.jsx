@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import Icon from './Icon.jsx';
+import CrudManager from './CrudManager.jsx';
+import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
+import { partyLogic } from '@/logic/partyLogic.js';
 
 const STEPS = [
   { num: 1, title: 'HAZIRA', sub: 'Party Details' },
@@ -12,18 +15,22 @@ const STEPS = [
   { num: 8, title: 'PUT UP FOR', sub: 'Final Order Line' },
 ];
 
-export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStatuses = [], onSave, onClose }) {
+const OBJECTION_STATUSES = ['Pending', 'No Objection Filed', 'Objection Filed'];
+
+export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStatuses = [], onSave, onClose, onRefreshParties, onRefreshStatuses }) {
   const [activeStep, setActiveStep] = useState(1);
+  const [showPartyCrud, setShowPartyCrud] = useState(false);
+  const [showStatusCrud, setShowStatusCrud] = useState(false);
   const [form, setForm] = useState({
-    hazira: 'Appellant',
-    filedBy: 'Appellant',
+    hazira: '',
+    filedBy: '',
     petitionName: '',
     petitionDetails: '',
     filedOn: '',
     status: '',
     description: '',
-    objectionStatus: 'Objection Filed',
-    objectionFiledBy: 'Respondent',
+    objectionStatus: 'Pending',
+    objectionFiledBy: '',
     todaysMatter: '',
     courtObservation: '',
     orderStatus: '',
@@ -35,8 +42,6 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const charCount = (str) => `${(str || '').length}/250`;
-
-  const activeStepData = STEPS[activeStep - 1];
 
   return (
     <div className="sosb">
@@ -89,11 +94,10 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
               </div>
               <div className="sosb-dropdown-row">
                 <select className="sosb-select sosb-select--grow" value={form.hazira} onChange={(e) => set('hazira', e.target.value)}>
-                  {['Plaintiff', 'Defendant', 'Petitioner', 'Applicant', 'Appellant', 'Respondent', 'Opposite Party', 'Both', 'Non Applicant'].map((o) => (
-                    <option key={o} value={o}>{o}</option>
-                  ))}
+                  <option value="">Select party...</option>
+                  {parties.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
-                <button className="sosb-gear-btn" title="Manage parties">
+                <button className="sosb-gear-btn" title="Manage parties" onClick={() => setShowPartyCrud(true)}>
                   <Icon name="gear" size={16} strokeWidth={1.7} />
                 </button>
               </div>
@@ -108,9 +112,15 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
               </div>
               <div className="sosb-field" style={{ marginBottom: 14 }}>
                 <label className="sosb-lbl">Filed By <span className="sosb-req">*</span></label>
-                <select className="sosb-select" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
-                  {parties.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <div className="sosb-dropdown-row">
+                  <select className="sosb-select sosb-select--grow" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
+                    <option value="">Select...</option>
+                    {parties.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <button className="sosb-gear-btn" title="Manage parties" onClick={() => setShowPartyCrud(true)}>
+                    <Icon name="gear" size={16} strokeWidth={1.7} />
+                  </button>
+                </div>
               </div>
               <div className="sosb-field" style={{ marginBottom: 8 }}>
                 <div className="sosb-field-title-row">
@@ -131,10 +141,15 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
                 </div>
                 <div className="sosb-field">
                   <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
-                  <select className="sosb-select" value={form.status} onChange={(e) => set('status', e.target.value)}>
-                    <option value="">Select...</option>
-                    {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <div className="sosb-dropdown-row">
+                    <select className="sosb-select sosb-select--grow" value={form.status} onChange={(e) => set('status', e.target.value)}>
+                      <option value="">Select status...</option>
+                      {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <button className="sosb-gear-btn" title="Manage statuses" onClick={() => setShowStatusCrud(true)}>
+                      <Icon name="gear" size={16} strokeWidth={1.7} />
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="sosb-field" style={{ marginBottom: 14 }}>
@@ -157,18 +172,21 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
               <label className="sosb-lbl">Objection Status <span className="sosb-req">*</span></label>
               <div className="sosb-dropdown-row" style={{ marginBottom: 14 }}>
                 <select className="sosb-select sosb-select--grow" value={form.objectionStatus} onChange={(e) => set('objectionStatus', e.target.value)}>
-                  {['Pending', 'No Objection Filed', 'Objection Filed'].map((o) => (
+                  {OBJECTION_STATUSES.map((o) => (
                     <option key={o} value={o}>{o}</option>
                   ))}
                 </select>
-                <button className="sosb-gear-btn" title="Manage options">
+              </div>
+              <label className="sosb-lbl">Objection Filed By <span className="sosb-req">*</span></label>
+              <div className="sosb-dropdown-row">
+                <select className="sosb-select sosb-select--grow" value={form.objectionFiledBy} onChange={(e) => set('objectionFiledBy', e.target.value)}>
+                  <option value="">Select...</option>
+                  {parties.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+                <button className="sosb-gear-btn" title="Manage parties" onClick={() => setShowPartyCrud(true)}>
                   <Icon name="gear" size={16} strokeWidth={1.7} />
                 </button>
               </div>
-              <label className="sosb-lbl">Objection Filed By <span className="sosb-req">*</span></label>
-              <select className="sosb-select" value={form.objectionFiledBy} onChange={(e) => set('objectionFiledBy', e.target.value)}>
-                {parties.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
             </div>
           )}
 
@@ -201,10 +219,15 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
                 <h3>6. STATUS <span className="sosb-opt">(Order Status)</span></h3>
               </div>
               <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
-              <select className="sosb-select" value={form.orderStatus} onChange={(e) => set('orderStatus', e.target.value)}>
-                <option value="">Select status...</option>
-                {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <div className="sosb-dropdown-row">
+                <select className="sosb-select sosb-select--grow" value={form.orderStatus} onChange={(e) => set('orderStatus', e.target.value)}>
+                  <option value="">Select status...</option>
+                  {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button className="sosb-gear-btn" title="Manage statuses" onClick={() => setShowStatusCrud(true)}>
+                  <Icon name="gear" size={16} strokeWidth={1.7} />
+                </button>
+              </div>
             </div>
           )}
 
@@ -221,10 +244,7 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
                 </div>
                 <div className="sosb-field">
                   <label className="sosb-lbl">Purpose <span className="sosb-req">*</span></label>
-                  <select className="sosb-select" value={form.nextPurpose} onChange={(e) => set('nextPurpose', e.target.value)}>
-                    <option value="">Select...</option>
-                    {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <input className="sosb-input" type="text" value={form.nextPurpose} onChange={(e) => set('nextPurpose', e.target.value)} placeholder="Enter purpose..." />
                 </div>
               </div>
             </div>
@@ -288,6 +308,37 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
           </div>
         </div>
       </div>
+
+      <CrudManager
+        open={showPartyCrud}
+        onClose={() => { setShowPartyCrud(false); onRefreshParties?.(); }}
+        entity="Party"
+        config={{
+          logic: partyLogic,
+          fields: [
+            { key: 'name', label: 'Party Name', placeholder: 'e.g. Appellant, Respondent' },
+            { key: 'type', label: 'Type', placeholder: 'e.g. Individual, Organization' },
+            { key: 'display_order', label: 'Display Order', type: 'number' },
+          ],
+          defaults: { type: 'Individual', display_order: 0, status: 'Active' },
+          refresh: onRefreshParties,
+        }}
+      />
+
+      <CrudManager
+        open={showStatusCrud}
+        onClose={() => { setShowStatusCrud(false); onRefreshStatuses?.(); }}
+        entity="Case Status"
+        config={{
+          logic: caseStatusLogic,
+          fields: [
+            { key: 'name', label: 'Status Name', placeholder: 'e.g. Active, Disposed' },
+            { key: 'display_order', label: 'Display Order', type: 'number' },
+          ],
+          defaults: { display_order: 0, status: 'Active' },
+          refresh: onRefreshStatuses,
+        }}
+      />
     </div>
   );
 }

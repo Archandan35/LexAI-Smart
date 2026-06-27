@@ -53,7 +53,7 @@ export default function CauseList() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStatusCrud, setShowStatusCrud] = useState(false);
   const [smartMode, setSmartMode] = useState(false);
-  const { parties } = useParties();
+  const { parties, refresh: refreshParties } = useParties();
 
   // Sorting & Pagination for Cause List Tab
   const [sortDir, setSortDir] = useState('asc'); // asc | desc
@@ -1491,6 +1491,8 @@ export default function CauseList() {
             caseStatuses={caseStatuses}
             onSave={saveHearing}
             onClose={() => { setOpen(false); setSmartMode(false); }}
+            onRefreshParties={refreshParties}
+            onRefreshStatuses={refreshStatuses}
           />
         ) : (
         <div className="hearing-modal">
