@@ -20,7 +20,8 @@ function toSupabase(schema) {
     Object.entries(schema.fields)
       .filter(([name]) => !existingColumns.includes(name))
       .map(([name, type]) => `alter table ${q(schema.collection)} add column if not exists ${q(name)} ${name === schema.primaryKey ? 'text' : (PG[type] || 'text')};`);
-  return { provider: 'supabase', collection: schema.collection, createTable, createIndexes, alterTable, sql: [createTable, ...createIndexes].join('\n') };
+  const alterLines = alterTable([]);
+  return { provider: 'supabase', collection: schema.collection, createTable, createIndexes, alterTable, sql: [createTable, ...alterLines, ...createIndexes].join('\n') };
 }
 
 function toFirebase(schema) {
@@ -575,7 +576,7 @@ function systemSqlForeignKeys({ onlyCollections } = {}) {
     '-- All safe_create_fk calls run after registry tables AND application',
     '-- tables are created, so referenced tables/columns are guaranteed to exist.',
     ...lines,
-    "do $$ begin alter table roles add constraint uq_roles_code unique (code); exception when duplicate_table then null; end; $$;",
+    "do $$ begin alter table roles add constraint uq_roles_code unique (code); exception when duplicate_object then null; end; $$;",
   ].join('\n');
 }
 
