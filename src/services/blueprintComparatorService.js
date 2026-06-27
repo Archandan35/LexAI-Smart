@@ -484,7 +484,7 @@ export const blueprintComparatorService = {
         healthyMatviews: matviewsResult.healthy.length,
         relationships: relationships.length,
         junctionTables: junctionTables.length,
-        warningCount: missingTables.length + missingPolicies.length + missingFks.length + missingExtensions.length + missingTriggers.length + unnecessaryTables.length + unusedIndexes.length + (indexesResult.extra || []).length + (unknownPolicies || []).length + missingColumns.length,
+        warningCount: missingTables.length + missingPolicies.length + missingFks.length + (extensionsResult.missing || []).length + (triggersResult.missing || []).length + unnecessaryTables.length + unusedIndexes.length + (indexesResult.extra || []).length + (unknownPolicies || []).length + missingColumns.length,
       },
       findings: {
         missingTables,
