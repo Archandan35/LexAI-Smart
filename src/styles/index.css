@@ -4265,7 +4265,7 @@ kbd.cmd__kbd {
   .sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s var(--ease);
-    z-index: 60;
+    z-index: 10000;
   }
 
   .sidebar.mobile-open {
@@ -7904,7 +7904,7 @@ kbd.cmd__kbd {
   .sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s var(--ease);
-    z-index: 60;
+    z-index: 10000;
   }
 
   .sidebar.mobile-open {
