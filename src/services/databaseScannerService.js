@@ -60,6 +60,14 @@ const CATALOG_QUERIES = {
   tableRowCounts: `select relname as name, n_live_tup as row_count from pg_stat_user_tables order by n_live_tup`,
 
   emptyTables: `select relname as name from pg_stat_user_tables where n_live_tup = 0 order by relname`,
+
+  materializedViews: `select matviewname as name, definition, schemaname, is_populated from pg_matviews where schemaname = 'public' order by matviewname`,
+
+  orphanRecordCounts: `select con.conrelid::regclass::text as table_name, con.confrelid::regclass::text as referenced_table, con.conname as constraint_name, (select count(*) from (select (pg_get_constraintdef(con.oid))) as dummy) as total from pg_constraint con where contype = 'f' and con.confrelid is not null`,
+
+  relationshipCardinality: `select con.conrelid::regclass::text as table_name, con.confrelid::regclass::text as referenced_table, con.conname as constraint_name, case when (select true from pg_constraint uc where uc.conrelid = con.conrelid and uc.contype = 'u' and uc.conkey @> con.conkey limit 1) then 'one-to-one' else 'one-to-many' end as cardinality from pg_constraint con where contype = 'f'`,
+
+  manyToManyJunction: `select c.conrelid::regclass::text as table_name, string_agg(distinct c.confrelid::regclass::text, ',') as referenced_tables, count(*) as fk_count from pg_constraint c where c.contype = 'f' and c.conrelid in (select conrelid from pg_constraint where contype = 'p' and array_length(conkey, 1) > 1) and c.conrelid in (select conrelid from pg_constraint where contype = 'f' group by conrelid having count(*) >= 2) group by c.conrelid having count(*) >= 2 order by c.conrelid::regclass::text`,
 };
 
 export const databaseScannerService = {
@@ -79,7 +87,7 @@ export const databaseScannerService = {
       }
     };
 
-    const [schemas, tables, columns, primaryKeys, foreignKeys, uniqueConstraints, checkConstraints, indexes, views, functions, triggers, policies, extensions, enums, storageBuckets, roles, publications, tableSizes, duplicateIndexes, unusedIndexes, circularForeignKeys, duplicateTablesByStructure, exclusionConstraints, compositeConstraints, emptySchemas, tableRowCounts, emptyTables] = await Promise.all([
+    const [schemas, tables, columns, primaryKeys, foreignKeys, uniqueConstraints, checkConstraints, indexes, views, functions, triggers, policies, extensions, enums, storageBuckets, roles, publications, tableSizes, duplicateIndexes, unusedIndexes, circularForeignKeys, duplicateTablesByStructure, exclusionConstraints, compositeConstraints, emptySchemas, tableRowCounts, emptyTables, materializedViews, orphanRecordCounts, relationshipCardinality, manyToManyJunction] = await Promise.all([
       run('schemas', CATALOG_QUERIES.schemas),
       run('tables', CATALOG_QUERIES.tables),
       run('columns', CATALOG_QUERIES.columns),
@@ -107,6 +115,10 @@ export const databaseScannerService = {
       run('emptySchemas', CATALOG_QUERIES.emptySchemas).catch(() => []),
       run('tableRowCounts', CATALOG_QUERIES.tableRowCounts).catch(() => []),
       run('emptyTables', CATALOG_QUERIES.emptyTables).catch(() => []),
+      run('materializedViews', CATALOG_QUERIES.materializedViews).catch(() => []),
+      run('orphanRecordCounts', CATALOG_QUERIES.orphanRecordCounts).catch(() => []),
+      run('relationshipCardinality', CATALOG_QUERIES.relationshipCardinality).catch(() => []),
+      run('manyToManyJunction', CATALOG_QUERIES.manyToManyJunction).catch(() => []),
     ]);
 
     const columnsByTable = {};
@@ -165,6 +177,9 @@ export const databaseScannerService = {
         storageBuckets: Array.isArray(storageBuckets) ? storageBuckets.length : 0,
         roles: Array.isArray(roles) ? roles.length : 0,
         publications: Array.isArray(publications) ? publications.length : 0,
+        materializedViews: Array.isArray(materializedViews) ? materializedViews.length : 0,
+        orphanRecordCounts: Array.isArray(orphanRecordCounts) ? orphanRecordCounts.length : 0,
+        manyToManyJunction: Array.isArray(manyToManyJunction) ? manyToManyJunction.length : 0,
       },
       details: {
         schemas: Array.isArray(schemas) ? schemas : [],
@@ -195,6 +210,10 @@ export const databaseScannerService = {
         emptySchemas: Array.isArray(emptySchemas) ? emptySchemas : [],
         tableRowCounts: Array.isArray(tableRowCounts) ? tableRowCounts : [],
         emptyTables: Array.isArray(emptyTables) ? emptyTables : [],
+        materializedViews: Array.isArray(materializedViews) ? materializedViews : [],
+        orphanRecordCounts: Array.isArray(orphanRecordCounts) ? orphanRecordCounts : [],
+        relationshipCardinality: Array.isArray(relationshipCardinality) ? relationshipCardinality : [],
+        manyToManyJunction: Array.isArray(manyToManyJunction) ? manyToManyJunction : [],
       },
     };
   },

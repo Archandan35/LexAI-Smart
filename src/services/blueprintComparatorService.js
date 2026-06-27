@@ -220,6 +220,8 @@ const BLUEPRINT = {
   roles: ['role_admin', 'role_manager', 'role_user'],
 
   storageBuckets: [],
+
+  materializedViews: [],
 };
 
 function classify(registry, blueprint) {
@@ -325,6 +327,24 @@ export const blueprintComparatorService = {
     const dbViewNames = new Set((details.views || []).map((v) => v.name));
     const bpViewSet = new Set(BLUEPRINT.views || []);
     const viewsResult = classify(dbViewNames, bpViewSet);
+
+    const dbMatviewNames = new Set((details.materializedViews || []).map((v) => v.name));
+    const bpMatviewSet = new Set(BLUEPRINT.materializedViews || []);
+    const matviewsResult = classify(dbMatviewNames, bpMatviewSet);
+
+    const relationships = (details.relationshipCardinality || []).map((r) => ({
+      table: r.table_name,
+      referencedTable: r.referenced_table,
+      constraint: r.constraint_name,
+      cardinality: r.cardinality,
+    }));
+
+    const junctionTables = (details.manyToManyJunction || []).map((r) => ({
+      table: r.table_name,
+      references: r.referenced_tables,
+      fkCount: Number(r.fk_count),
+      cardinality: 'many-to-many',
+    }));
 
     const missingPolicies = policiesResult.missing.map((name) => {
       for (const [table, pols] of Object.entries(BLUEPRINT.policies)) {
@@ -461,6 +481,9 @@ export const blueprintComparatorService = {
         exclusionConstraints: exclusionConstrains.length,
         compositeConstraints: compositeConstrains.length,
         largeTables: largeTables.length,
+        healthyMatviews: matviewsResult.healthy.length,
+        relationships: relationships.length,
+        junctionTables: junctionTables.length,
         warningCount: missingTables.length + missingPolicies.length + missingFks.length + missingExtensions.length + missingTriggers.length + unnecessaryTables.length + unusedIndexes.length + (indexesResult.extra || []).length + (unknownPolicies || []).length + missingColumns.length,
       },
       findings: {
@@ -495,6 +518,9 @@ export const blueprintComparatorService = {
         exclusionConstraints: exclusionConstrains,
         compositeConstraints: compositeConstrains,
         largeTables,
+        materializedViews: matviewsResult,
+        relationships,
+        junctionTables,
       },
       dbScan: details,
     };

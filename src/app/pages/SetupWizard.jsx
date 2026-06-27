@@ -162,12 +162,26 @@ function FindingCategory({ title, findings, selectedIds, onToggle, kind }) {
   );
 }
 
-const getRecSql = (r) => {
+const resolveSql = (r) => {
   if (r.sql) return r.sql;
   if (r.action === 'remove') {
     if (r.category === 'table') return `DROP TABLE IF EXISTS public.${r.target} CASCADE;`;
     if (r.category === 'index') return `DROP INDEX IF EXISTS public.${r.target};`;
     if (r.category === 'policy') return `DROP POLICY IF EXISTS "${r.target}" ON public.${r.table};`;
+    if (r.category === 'function') return `DROP FUNCTION IF EXISTS public.${r.target};`;
+    if (r.category === 'trigger') return `DROP TRIGGER IF EXISTS ${r.target} ON public.${r.table || 'table_name'};`;
+    if (r.category === 'view') return `DROP VIEW IF EXISTS public.${r.target};`;
+    if (r.category === 'extension') return `DROP EXTENSION IF EXISTS "${r.target}";`;
+    if (r.category === 'role') return `DROP ROLE IF EXISTS "${r.target}";`;
+    if (r.category === 'foreignKey') return `ALTER TABLE public.${r.table || r.target} DROP CONSTRAINT IF EXISTS ${r.target};`;
+    if (r.category === 'column') return `ALTER TABLE public.${r.table || r.target} DROP COLUMN IF EXISTS ${r.column || r.target};`;
+  }
+  if (r.action === 'create') {
+    if (r.category === 'table') return `CREATE TABLE IF NOT EXISTS public.${r.target} (id TEXT PRIMARY KEY);`;
+    if (r.category === 'extension') return `CREATE EXTENSION IF NOT EXISTS "${r.target}";`;
+  }
+  if (r.action === 'repair') {
+    if (r.category === 'foreignKey') return `-- Repair needed: ${r.description || r.target}`;
   }
   return null;
 };
@@ -198,7 +212,7 @@ function ChangePreview({ recommendations, selectedIds, duplicateActions, duplica
         <div key={cat} className="dm-mt">
           <h4 style={{ fontSize: 14, fontWeight: 600, margin: 0, marginBottom: 6, textTransform: 'capitalize' }}>{cat} ({items.length})</h4>
           {items.map((r) => {
-            const sql = getRecSql(r);
+            const sql = resolveSql(r);
             return (
               <div key={r.id} className="wizard-preview-item">
                 <div className="flex-row gap-8" style={{ alignItems: 'center' }}>
@@ -393,19 +407,9 @@ export default function SetupWizard({ detectError: propDetectError }) {
     return { scan, comparison: cmp, recommendations: recs, duplicates: dupResult };
   };
 
-  const getRecommendationSql = (r) => {
-    if (r.sql) return r.sql;
-    if (r.action === 'remove') {
-      if (r.category === 'table') return `DROP TABLE IF EXISTS public.${r.target} CASCADE;`;
-      if (r.category === 'index') return `DROP INDEX IF EXISTS public.${r.target};`;
-      if (r.category === 'policy') return `DROP POLICY IF EXISTS "${r.target}" ON public.${r.table};`;
-    }
-    return null;
-  };
-
   const getApprovedSql = () => {
     const approved = recommendations.filter((r) => selectedIds.has(r.id));
-    return approved.map((r) => getRecommendationSql(r)).filter(Boolean).join('\n\n');
+    return approved.map((r) => resolveSql(r)).filter(Boolean).join('\n\n');
   };
 
   // --- SIMPLE SETUP ---
@@ -463,7 +467,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
       let executed = [];
 
       for (const r of approved) {
-        const sql = getRecommendationSql(r);
+        const sql = resolveSql(r);
         if (sql) {
           const res = await InstallationExecutor.executeSql(sql);
           if (res.ok) {
