@@ -24,7 +24,7 @@ import { usePriorities } from '@/hooks/usePriorities.js';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
 
-export default function ManageCase() {
+export default function CaseDetails() {
   const { id } = useParams();
   const nav = useNavigate();
   const toast = useToast();
@@ -102,59 +102,59 @@ export default function ManageCase() {
   return (
     <>
       {isMobile && (
-        <div className="mc-mobile-detail">
-          <div className="mc-detail-topbar">
-            <button className="mc-detail-back" onClick={() => nav('/cases')}><Icon name="chevron" size={20} /></button>
-            <span className="mc-detail-topbar__title">Case Detail</span>
-            <div className="mc-detail-topbar__spacer" />
-            <button className="mc-detail-edit-btn" onClick={() => setEditing(true)}><Icon name="edit" size={18} /></button>
+        <div className="case-details-mobile-detail">
+          <div className="case-details-detail-topbar">
+            <button className="case-details-detail-back" onClick={() => nav('/cases')}><Icon name="chevron" size={20} /></button>
+            <span className="case-details-detail-topbar__title">Case Detail</span>
+            <div className="case-details-detail-topbar__spacer" />
+            <button className="case-details-detail-edit-btn" onClick={() => setEditing(true)}><Icon name="edit" size={18} /></button>
           </div>
 
-          <div className="mc-detail-header">
-            <div className="mc-detail-header__top">
-              <div className="mc-detail-header__number">{c.case_display_number || c.caseNumber}</div>
+          <div className="case-details-detail-header">
+            <div className="case-details-detail-header__top">
+              <div className="case-details-detail-header__number">{c.case_display_number || c.caseNumber}</div>
               <Badge tone={c.archived ? 'amber' : 'green'}>{c.status || (c.archived ? 'Archived' : 'Active')}</Badge>
             </div>
-            <div className="mc-detail-header__title">{c.title}</div>
-            <div className="mc-meta">
-              <span className="mc-meta__item"><Icon name="building" size={13} />{c.court_name || combinedCourt(c) || '—'}</span>
-              <span className="mc-meta__item"><Icon name="users" size={13} />{c.judge || '—'}</span>
-              <span className="mc-meta__item"><Icon name="calendar" size={13} />{formatDate(c.filing_date)}</span>
+            <div className="case-details-detail-header__title">{c.title}</div>
+            <div className="case-details-meta">
+              <span className="case-details-meta__item"><Icon name="building" size={13} />{c.court_name || combinedCourt(c) || '—'}</span>
+              <span className="case-details-meta__item"><Icon name="users" size={13} />{c.judge || '—'}</span>
+              <span className="case-details-meta__item"><Icon name="calendar" size={13} />{formatDate(c.filing_date)}</span>
             </div>
           </div>
 
-          <div className="mc-detail-actions">
-            <PermissionGate perm="manageCase.edit"><button className="mc-detail-actions__btn" onClick={() => setEditing(true)}><Icon name="edit" size={16} /><span>Edit</span></button></PermissionGate>
-            <PermissionGate perm="manageCase.create"><button className="mc-detail-actions__btn" onClick={duplicate}><Icon name="layers" size={16} /><span>Duplicate</span></button></PermissionGate>
-            <PermissionGate perm="manageCase.export"><button className="mc-detail-actions__btn" onClick={exportCase}><Icon name="download" size={16} /><span>Export</span></button></PermissionGate>
-            <PermissionGate perm="manageCase.archive"><button className="mc-detail-actions__btn" onClick={archive}><Icon name={c.archived ? 'history' : 'vault'} size={16} /><span>{c.archived ? 'Restore' : 'Archive'}</span></button></PermissionGate>
-            <PermissionGate perm="manageCase.delete"><button className="mc-detail-actions__btn mc-detail-actions__btn--danger" onClick={() => setShowDeleteDlg(true)}><Icon name="trash" size={16} /><span>Delete</span></button></PermissionGate>
+          <div className="case-details-detail-actions">
+            <PermissionGate perm="manageCase.edit"><button className="case-details-detail-actions__btn" onClick={() => setEditing(true)}><Icon name="edit" size={16} /><span>Edit</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.create"><button className="case-details-detail-actions__btn" onClick={duplicate}><Icon name="layers" size={16} /><span>Duplicate</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.export"><button className="case-details-detail-actions__btn" onClick={exportCase}><Icon name="download" size={16} /><span>Export</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.archive"><button className="case-details-detail-actions__btn" onClick={archive}><Icon name={c.archived ? 'history' : 'vault'} size={16} /><span>{c.archived ? 'Restore' : 'Archive'}</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.delete"><button className="case-details-detail-actions__btn case-details-detail-actions__btn--danger" onClick={() => setShowDeleteDlg(true)}><Icon name="trash" size={16} /><span>Delete</span></button></PermissionGate>
           </div>
 
-          <div className="mc-detail-metrics">
-            <div className="mc-detail-metric">
-              <div className="mc-detail-metric__label"><Icon name="target" size={13} /> Stage</div>
-              <div className="mc-detail-metric__value">{c.stage || '—'}</div>
+          <div className="case-details-detail-metrics">
+            <div className="case-details-detail-metric">
+              <div className="case-details-detail-metric__label"><Icon name="target" size={13} /> Stage</div>
+              <div className="case-details-detail-metric__value">{c.stage || '—'}</div>
             </div>
-            <div className="mc-detail-metric">
-              <div className="mc-detail-metric__label"><Icon name="calendar" size={13} /> Next Hearing</div>
-              <div className="mc-detail-metric__value">{formatDate(c.next_hearing)}</div>
+            <div className="case-details-detail-metric">
+              <div className="case-details-detail-metric__label"><Icon name="calendar" size={13} /> Next Hearing</div>
+              <div className="case-details-detail-metric__value">{formatDate(c.next_hearing)}</div>
             </div>
-            <div className="mc-detail-metric">
-              <div className="mc-detail-metric__label"><Icon name="alert" size={13} /> Priority</div>
-              <div className="mc-detail-metric__value">{c.priority || '—'}</div>
+            <div className="case-details-detail-metric">
+              <div className="case-details-detail-metric__label"><Icon name="alert" size={13} /> Priority</div>
+              <div className="case-details-detail-metric__value">{c.priority || '—'}</div>
             </div>
-            <div className="mc-detail-metric">
-              <div className="mc-detail-metric__label"><Icon name="file" size={13} /> Documents</div>
-              <div className="mc-detail-metric__value">{documents.length}</div>
+            <div className="case-details-detail-metric">
+              <div className="case-details-detail-metric__label"><Icon name="file" size={13} /> Documents</div>
+              <div className="case-details-detail-metric__value">{documents.length}</div>
             </div>
-            <div className="mc-detail-metric">
-              <div className="mc-detail-metric__label"><Icon name="list" size={13} /> Hearings</div>
-              <div className="mc-detail-metric__value">{hearings.length}</div>
+            <div className="case-details-detail-metric">
+              <div className="case-details-detail-metric__label"><Icon name="list" size={13} /> Hearings</div>
+              <div className="case-details-detail-metric__value">{hearings.length}</div>
             </div>
-            <div className="mc-detail-metric">
-              <div className="mc-detail-metric__label"><Icon name="notes" size={13} /> Notes</div>
-              <div className="mc-detail-metric__value">{notes.length}</div>
+            <div className="case-details-detail-metric">
+              <div className="case-details-detail-metric__label"><Icon name="notes" size={13} /> Notes</div>
+              <div className="case-details-detail-metric__value">{notes.length}</div>
             </div>
           </div>
 
@@ -172,107 +172,107 @@ export default function ManageCase() {
           {tab === 'Overview' && (
             <>
               <Card title="Case Particulars">
-                <div className="mc-detail-hero">
-                  <div className="mc-detail-hero__icon">
+                <div className="case-details-detail-hero">
+                  <div className="case-details-detail-hero__icon">
                     <Icon name="route" size={28} />
                   </div>
                   <div>
-                    <div className="mc-detail-hero__title">Case Particulars</div>
-                    <div className="mc-detail-hero__sub">Track the progress and important dates of the case</div>
+                    <div className="case-details-detail-hero__title">Case Particulars</div>
+                    <div className="case-details-detail-hero__sub">Track the progress and important dates of the case</div>
                   </div>
                 </div>
 
-                <div className="mc-detail-triad">
-                  <div className="mc-detail-triad__item">
-                    <div className="mc-detail-triad__icon mc-detail-triad__icon--blue">
+                <div className="case-details-detail-triad">
+                  <div className="case-details-detail-triad__item">
+                    <div className="case-details-detail-triad__icon case-details-detail-triad__icon--blue">
                       <Icon name="target" size={18} />
                     </div>
                     <div>
-                      <div className="mc-detail-triad__label">Current Stage</div>
-                      <div className="mc-detail-triad__value mc-detail-triad__value--blue">{c.stage || '—'}</div>
+                      <div className="case-details-detail-triad__label">Current Stage</div>
+                      <div className="case-details-detail-triad__value case-details-detail-triad__value--blue">{c.stage || '—'}</div>
                     </div>
                   </div>
-                  <div className="mc-detail-triad__divider" />
-                  <div className="mc-detail-triad__item">
-                    <div className="mc-detail-triad__icon mc-detail-triad__icon--green">
+                  <div className="case-details-detail-triad__divider" />
+                  <div className="case-details-detail-triad__item">
+                    <div className="case-details-detail-triad__icon case-details-detail-triad__icon--green">
                       <Icon name="check-circle" size={18} />
                     </div>
                     <div>
-                      <div className="mc-detail-triad__label">Status</div>
-                      <div className="mc-detail-triad__value mc-detail-triad__value--green">{c.status || '—'}</div>
+                      <div className="case-details-detail-triad__label">Status</div>
+                      <div className="case-details-detail-triad__value case-details-detail-triad__value--green">{c.status || '—'}</div>
                     </div>
                   </div>
-                  <div className="mc-detail-triad__divider" />
-                  <div className="mc-detail-triad__item">
-                    <div className="mc-detail-triad__icon mc-detail-triad__icon--amber">
+                  <div className="case-details-detail-triad__divider" />
+                  <div className="case-details-detail-triad__item">
+                    <div className="case-details-detail-triad__icon case-details-detail-triad__icon--amber">
                       <Icon name="alert" size={18} />
                     </div>
                     <div>
-                      <div className="mc-detail-triad__label">Priority</div>
-                      <div className="mc-detail-triad__value mc-detail-triad__value--amber">{c.priority || '—'}</div>
+                      <div className="case-details-detail-triad__label">Priority</div>
+                      <div className="case-details-detail-triad__value case-details-detail-triad__value--amber">{c.priority || '—'}</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mc-detail-chart">
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="file" size={18} /></div>
-                    <span className="mc-detail-chart__label">Case Number</span>
-                    <span className="mc-detail-chart__value">{c.case_display_number || c.caseNumber || '—'}</span>
+                <div className="case-details-detail-chart">
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="file" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Case Number</span>
+                    <span className="case-details-detail-chart__value">{c.case_display_number || c.caseNumber || '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="calendar" size={18} /></div>
-                    <span className="mc-detail-chart__label">Case Year</span>
-                    <span className="mc-detail-chart__value">{c.case_year || '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="calendar" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Case Year</span>
+                    <span className="case-details-detail-chart__value">{c.case_year || '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="layers" size={18} /></div>
-                    <span className="mc-detail-chart__label">Case Type</span>
-                    <span className="mc-detail-chart__value">{c.case_type || '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="layers" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Case Type</span>
+                    <span className="case-details-detail-chart__value">{c.case_type || '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="users" size={18} /></div>
-                    <span className="mc-detail-chart__label">Plaintiff</span>
-                    <span className="mc-detail-chart__value">{(() => { const d = (c.plaintiff || c.parties?.plaintiff || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 28 ? `${d[0].slice(0, 28)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="users" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Plaintiff</span>
+                    <span className="case-details-detail-chart__value">{(() => { const d = (c.plaintiff || c.parties?.plaintiff || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 28 ? `${d[0].slice(0, 28)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
-                    <span className="mc-detail-chart__label">Defendant</span>
-                    <span className="mc-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 12 ? `${d[0].slice(0, 12)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="shield" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Defendant</span>
+                    <span className="case-details-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 12 ? `${d[0].slice(0, 12)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>
-                    <span className="mc-detail-chart__label">Court</span>
-                    <span className="mc-detail-chart__value">{c.court_name ? (c.court_name.length > 30 ? `${c.court_name.slice(0, 30)}...` : c.court_name) : '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="building" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Court</span>
+                    <span className="case-details-detail-chart__value">{c.court_name ? (c.court_name.length > 30 ? `${c.court_name.slice(0, 30)}...` : c.court_name) : '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="grid" size={18} /></div>
-                    <span className="mc-detail-chart__label">Bench</span>
-                    <span className="mc-detail-chart__value">{c.bench_type || '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="grid" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Bench</span>
+                    <span className="case-details-detail-chart__value">{c.bench_type || '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="balance" size={18} /></div>
-                    <span className="mc-detail-chart__label">Judge</span>
-                    <span className="mc-detail-chart__value">{c.judge ? (c.judge.length > 30 ? `${c.judge.slice(0, 30)}...` : c.judge) : '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="balance" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Judge</span>
+                    <span className="case-details-detail-chart__value">{c.judge ? (c.judge.length > 30 ? `${c.judge.slice(0, 30)}...` : c.judge) : '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="user-plus" size={18} /></div>
-                    <span className="mc-detail-chart__label">Client</span>
-                    <span className="mc-detail-chart__value">{c.client ? (c.client.length > 30 ? `${c.client.slice(0, 30)}...` : c.client) : '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="user-plus" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Client</span>
+                    <span className="case-details-detail-chart__value">{c.client ? (c.client.length > 30 ? `${c.client.slice(0, 30)}...` : c.client) : '—'}</span>
                   </div>
-                  <div className="mc-detail-chart__row">
-                    <div className="mc-detail-chart__icon"><Icon name="briefcase" size={18} /></div>
-                    <span className="mc-detail-chart__label">Advocate</span>
-                    <span className="mc-detail-chart__value">{c.advocate ? (c.advocate.length > 30 ? `${c.advocate.slice(0, 30)}...` : c.advocate) : '—'}</span>
+                  <div className="case-details-detail-chart__row">
+                    <div className="case-details-detail-chart__icon"><Icon name="briefcase" size={18} /></div>
+                    <span className="case-details-detail-chart__label">Advocate</span>
+                    <span className="case-details-detail-chart__value">{c.advocate ? (c.advocate.length > 30 ? `${c.advocate.slice(0, 30)}...` : c.advocate) : '—'}</span>
                   </div>
                 </div>
 
-                <div className="mc-detail-note">
-                  <div className="mc-detail-note__left">
+                <div className="case-details-detail-note">
+                  <div className="case-details-detail-note__left">
                     <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 1 }} />
-                    <p className="mc-detail-note__text">Dates are critical to track case.<br />Stay updated for the next hearing.</p>
+                    <p className="case-details-detail-note__text">Dates are critical to track case.<br />Stay updated for the next hearing.</p>
                   </div>
-                  <div className="mc-detail-note__deco">
+                  <div className="case-details-detail-note__deco">
                     <Icon name="gavel" size={48} />
                   </div>
                 </div>
@@ -301,34 +301,34 @@ export default function ManageCase() {
                 title="Important Dates"
                 actions={<button className="linkbtn" onClick={() => setTab('Case Tracking')}>View All</button>}
               >
-                <div className="mc-detail-dates">
-                  <div className="mc-detail-dates__cell">
-                    <div className="mc-detail-dates__top">
-                      <div className="mc-detail-dates__icon"><Icon name="calendar" size={15} /></div>
-                      <span className="mc-detail-dates__label">Filing Date</span>
+                <div className="case-details-detail-dates">
+                  <div className="case-details-detail-dates__cell">
+                    <div className="case-details-detail-dates__top">
+                      <div className="case-details-detail-dates__icon"><Icon name="calendar" size={15} /></div>
+                      <span className="case-details-detail-dates__label">Filing Date</span>
                     </div>
-                    <div className="mc-detail-dates__value">{formatDate(c.filing_date)}</div>
+                    <div className="case-details-detail-dates__value">{formatDate(c.filing_date)}</div>
                   </div>
-                  <div className="mc-detail-dates__cell">
-                    <div className="mc-detail-dates__top">
-                      <div className="mc-detail-dates__icon"><Icon name="calendar" size={15} /></div>
-                      <span className="mc-detail-dates__label">Next Hearing</span>
+                  <div className="case-details-detail-dates__cell">
+                    <div className="case-details-detail-dates__top">
+                      <div className="case-details-detail-dates__icon"><Icon name="calendar" size={15} /></div>
+                      <span className="case-details-detail-dates__label">Next Hearing</span>
                     </div>
-                    <div className="mc-detail-dates__value">{formatDate(c.next_hearing)}</div>
+                    <div className="case-details-detail-dates__value">{formatDate(c.next_hearing)}</div>
                   </div>
-                  <div className="mc-detail-dates__cell">
-                    <div className="mc-detail-dates__top">
-                      <div className="mc-detail-dates__icon"><Icon name="gavel" size={15} /></div>
-                      <span className="mc-detail-dates__label">Last Hearing</span>
+                  <div className="case-details-detail-dates__cell">
+                    <div className="case-details-detail-dates__top">
+                      <div className="case-details-detail-dates__icon"><Icon name="gavel" size={15} /></div>
+                      <span className="case-details-detail-dates__label">Last Hearing</span>
                     </div>
-                    <div className="mc-detail-dates__value">{lastHearing ? formatDate(lastHearing.date) : '—'}</div>
+                    <div className="case-details-detail-dates__value">{lastHearing ? formatDate(lastHearing.date) : '—'}</div>
                   </div>
-                  <div className="mc-detail-dates__cell">
-                    <div className="mc-detail-dates__top">
-                      <div className="mc-detail-dates__icon"><Icon name="balance" size={15} /></div>
-                      <span className="mc-detail-dates__label">Judgment</span>
+                  <div className="case-details-detail-dates__cell">
+                    <div className="case-details-detail-dates__top">
+                      <div className="case-details-detail-dates__icon"><Icon name="balance" size={15} /></div>
+                      <span className="case-details-detail-dates__label">Judgment</span>
                     </div>
-                    <div className="mc-detail-dates__value">{formatDate(c.disposal_date)}</div>
+                    <div className="case-details-detail-dates__value">{formatDate(c.disposal_date)}</div>
                   </div>
                 </div>
               </Card>
@@ -476,7 +476,7 @@ export default function ManageCase() {
       )}
 
       {!isMobile && (
-        <div className="fade-in mc-desktop-detail">
+        <div className="fade-in case-details-desktop-detail">
           <Button variant="ghost" size="sm" icon="arrow" onClick={() => nav('/cases')} className="case-detail__back-btn" />
 
           <div className="page-header">

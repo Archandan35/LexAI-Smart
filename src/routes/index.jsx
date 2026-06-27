@@ -35,7 +35,7 @@ import DocumentReview from '@/app/pages/DocumentReview.jsx';
 import CaseTimeline from '@/app/pages/CaseTimeline.jsx';
 import HearingNotes from '@/app/pages/HearingNotes.jsx';
 import ManageCases from '@/app/pages/ManageCases.jsx';
-import ManageCase from '@/app/pages/ManageCase.jsx';
+import CaseDetails from '@/app/pages/CaseDetails.jsx';
 import OrderSheet from '@/app/pages/OrderSheet.jsx';
 
 import NotFound from '@/app/pages/NotFound.jsx';
@@ -106,7 +106,7 @@ export default function AppRoutes() {
         <Route path="/cases/hearings" element={G('hearingNotes', <HearingNotes />)} />
         <Route path="/cases/case-timeline" element={G('timeline', <CaseTimeline />)} />
         <Route path="/cases" element={G('manageCase', <ManageCases />)} />
-        <Route path="/cases/:id" element={G('manageCase', <ManageCase />)} />
+        <Route path="/cases/:id" element={G('manageCase', <CaseDetails />)} />
 
         {/* ── Calendar / Clients / Contacts ── */}
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
