@@ -5,17 +5,19 @@ import CommandBar from '@/components/CommandBar.jsx';
 import NotificationsBell from '@/components/NotificationsBell.jsx';
 import { ALL_NAV_ITEMS } from '@/routes/navigation.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 
 export default function Topbar({ onToggle }) {
   const { pathname } = useLocation();
   const nav = useNavigate();
   const { user, logout, roles, canViewModule } = useAuth();
+  const { settings } = useSettings();
   const [cmdOpen, setCmdOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   const current = ALL_NAV_ITEMS.find((i) => (i.end ? i.to === pathname : pathname.startsWith(i.to) && i.to !== '/')) ||
-    ALL_NAV_ITEMS.find((i) => i.to === pathname) || { label: 'LexAI' };
+    ALL_NAV_ITEMS.find((i) => i.to === pathname) || { label: settings.siteTitle };
 
   useEffect(() => {
     const h = (e) => {
@@ -41,7 +43,7 @@ export default function Topbar({ onToggle }) {
       </button>
       <div>
         <div className="topbar__title">{current.label}</div>
-        <div className="topbar__crumb">LexAI · Indian Litigation Assistant</div>
+        <div className="topbar__crumb">{settings.siteTitle}{settings.tagline ? ` · ${settings.tagline}` : ''}</div>
       </div>
       <div className="topbar__spacer" />
 

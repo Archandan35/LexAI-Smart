@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { NAV_GROUPS } from '@/routes/navigation.js';
 import { config } from '@/config/config.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import Icon from '@/components/Icon.jsx';
 
 function SidebarItem({ item, collapsed }) {
@@ -64,6 +65,7 @@ function SubmenuGroup({ item, collapsed, canViewModule }) {
 
 export default function Sidebar({ collapsed, mobileOpen }) {
   const { canViewModule } = useAuth();
+  const { settings } = useSettings();
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
@@ -72,8 +74,8 @@ export default function Sidebar({ collapsed, mobileOpen }) {
           <Icon name="bolt" size={22} />
         </div>
         <div>
-          <div className="sidebar__title">Lex<span>AI</span></div>
-          <div className="sidebar__sub">Litigation Assistant</div>
+          <div className="sidebar__title">{settings.siteTitle}</div>
+          <div className="sidebar__sub">{settings.tagline}</div>
         </div>
       </div>
 

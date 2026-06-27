@@ -9,6 +9,80 @@ function pad2(n) {
   return String(n).padStart(2, '0');
 }
 
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function toDateObj(date, timezone) {
+  const iso = DateEngine.toISO(date);
+  if (!iso) return null;
+  const d = new Date(iso);
+  return timezone ? new Date(d.toLocaleString('en-US', { timeZone: timezone })) : d;
+}
+
+function ordinal(n) {
+  if (n > 3 && n < 21) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
+function formatByPattern(date, format, timezone) {
+  const d = toDateObj(date, timezone);
+  if (!d) return '—';
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+  const h = d.getHours();
+  const min = d.getMinutes();
+  const sec = d.getSeconds();
+
+  switch (format) {
+    case 'june23':
+      return `${MONTHS_FULL[m]} ${day}, ${y}`;
+    case '23june':
+      return `${day} ${MONTHS_FULL[m]} ${y}`;
+    case '23rdjune':
+      return `${ordinal(day)} ${MONTHS_FULL[m]} ${y}`;
+    case '23.06.2026':
+      return `${pad2(day)}.${pad2(m + 1)}.${y}`;
+    case '2026-06-23':
+    case 'iso':
+      return `${y}-${pad2(m + 1)}-${pad2(day)}`;
+    case '23-06-2026':
+      return `${pad2(day)}-${pad2(m + 1)}-${y}`;
+    case '23/06/2026':
+    case 'dmy':
+      return `${pad2(day)}/${pad2(m + 1)}/${y}`;
+    case '06/23/2026':
+    case 'mdy':
+      return `${pad2(m + 1)}/${pad2(day)}/${y}`;
+    default:
+      return `${MONTHS_FULL[m]} ${day}, ${y}`;
+  }
+}
+
+function formatTimeByPattern(date, format, timezone) {
+  const d = toDateObj(date, timezone);
+  if (!d) return '—';
+  const h = d.getHours();
+  const min = d.getMinutes();
+  const hour12 = h % 12 || 12;
+
+  switch (format) {
+    case '12h':
+      return `${pad2(hour12)}:${pad2(min)} ${h >= 12 ? 'PM' : 'AM'}`;
+    case '24h':
+      return `${pad2(h)}:${pad2(min)}`;
+    default:
+      return `${pad2(hour12)}:${pad2(min)} ${h >= 12 ? 'PM' : 'AM'}`;
+  }
+}
+
 export const DateEngine = {
   // Current timestamp as ISO 8601 string (always UTC).
   now() {
@@ -94,6 +168,21 @@ export const DateEngine = {
   // Get the timestamp number from a date value.
   timestamp(date) {
     return new Date(this.toISO(date) || 0).getTime();
+  },
+
+  // Format a date using a named pattern and optional timezone.
+  formatDate(date, format = 'june23', timezone) {
+    return formatByPattern(date, format, timezone);
+  },
+
+  // Format a time using a named pattern and optional timezone.
+  formatTime(date, format = '12h', timezone) {
+    return formatTimeByPattern(date, format, timezone);
+  },
+
+  // Apply a timezone offset to a date and return a new Date.
+  inTimezone(date, timezone) {
+    return toDateObj(date, timezone);
   },
 };
 

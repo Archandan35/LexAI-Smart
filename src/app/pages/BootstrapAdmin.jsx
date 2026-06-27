@@ -4,6 +4,7 @@ import { authLogic } from '@/logic/authLogic.js';
 import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
@@ -16,6 +17,7 @@ const TIMEOUT_MS = 10000;
 export default function BootstrapAdmin() {
   const { logs, clearLogs, copyLogs } = useLogCapture();
   const { refreshUser } = useAuth();
+  const { settings } = useSettings();
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -147,8 +149,8 @@ export default function BootstrapAdmin() {
           <div className="auth-brand">
             <div className="sidebar__logo">&#x2696;</div>
             <div>
-              <div className="auth-brand-title">Lex<span>AI</span></div>
-              <div className="sidebar__sub">Indian Litigation Assistant</div>
+<div className="auth-brand-title">{settings.siteTitle}</div>
+          <div className="sidebar__sub">{settings.tagline}</div>
             </div>
           </div>
           <h1 className="auth-title">Preparing Setup</h1>
@@ -180,8 +182,8 @@ export default function BootstrapAdmin() {
           <div className="auth-brand">
             <div className="sidebar__logo">&#x2696;</div>
             <div>
-              <div className="auth-brand-title">Lex<span>AI</span></div>
-              <div className="sidebar__sub">Indian Litigation Assistant</div>
+<div className="auth-brand-title">{settings.siteTitle}</div>
+          <div className="sidebar__sub">{settings.tagline}</div>
             </div>
           </div>
           <div className="auth-confirm">
@@ -210,8 +212,8 @@ export default function BootstrapAdmin() {
         <div className="auth-brand">
           <div className="sidebar__logo">&#x2696;</div>
           <div>
-            <div className="auth-brand-title">Lex<span>AI</span></div>
-            <div className="sidebar__sub">Indian Litigation Assistant</div>
+            <div className="auth-brand-title">{settings.siteTitle}</div>
+            <div className="sidebar__sub">{settings.tagline}</div>
           </div>
         </div>
 

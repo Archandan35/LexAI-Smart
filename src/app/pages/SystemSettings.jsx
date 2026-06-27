@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 
 const labelToId = (label) => 'setting-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -558,6 +559,7 @@ function SettingsField({ field, value, onChange, settings }) {
 export default function SystemSettings() {
   const toast = useToast();
   const { debugMode, toggleDebug } = useDebug();
+  const { refreshSettings } = useSettings();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
   const [settings, setSettings] = useState(DEFAULTS);
   const [search, setSearch] = useState('');
@@ -584,11 +586,12 @@ export default function SystemSettings() {
     const res = await settingsLogic.saveSettings(settings);
     if (res.ok) {
       setDirty({});
+      await refreshSettings();
       toast.push('Settings saved successfully.', 'success');
     } else {
       toast.push(res.error, 'error');
     }
-  }, [settings, toast]);
+  }, [settings, toast, refreshSettings]);
 
   const handleReset = useCallback(async () => {
     if (!window.confirm('Reset all settings to defaults?')) return;

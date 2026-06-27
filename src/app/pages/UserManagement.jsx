@@ -4,6 +4,7 @@ import { useUsers } from '@/hooks/useUsers.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { userLogic, isProtectedUser } from '@/logic/userLogic.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
@@ -25,6 +26,7 @@ export default function UserManagement() {
   const { users, loading, refresh } = useUsers();
   const { user: actor, roles } = useAuth();
   const { can } = usePermissions();
+  const { settings } = useSettings();
   const toast = useToast();
   const nav = useNavigate();
 
@@ -38,7 +40,7 @@ export default function UserManagement() {
   const protectedIds = useMemo(() => users.filter(isProtectedUser).map((u) => u.id), [users]);
   const selectionHasProtected = selected.some((id) => protectedIds.includes(id));
 
-  const openCreate = () => setForm({ ...BLANK });
+  const openCreate = () => setForm({ ...BLANK, roleCode: settings.defaultRole || '' });
   const submit = async () => {
     setBusy(true);
     const res = await userLogic.create(form, actor);

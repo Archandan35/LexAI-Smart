@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { userService } from '@/services/userService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
@@ -11,6 +12,7 @@ import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 export default function Login() {
   const { logs, clearLogs, copyLogs } = useLogCapture();
   const { login, isAuthenticated } = useAuth();
+  const { settings } = useSettings();
   const nav = useNavigate();
   const location = useLocation();
   const [identifier, setIdentifier] = useState('');
@@ -54,8 +56,8 @@ export default function Login() {
         <div className="auth-brand">
           <div className="sidebar__logo">⚖</div>
           <div>
-            <div className="auth-brand-title">Lex<span>AI</span></div>
-            <div className="sidebar__sub">Indian Litigation Assistant</div>
+            <div className="auth-brand-title">{settings.siteTitle}</div>
+            <div className="sidebar__sub">{settings.tagline}</div>
           </div>
         </div>
 
