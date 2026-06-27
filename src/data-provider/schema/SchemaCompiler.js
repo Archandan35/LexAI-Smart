@@ -492,7 +492,7 @@ function systemSqlUserRoleRegistry() {
     'alter table user_role_registry enable row level security;',
     '',
     '-- Admin-only policy on user_role_registry (lookup is via security-definer function)',
-    "do $$ begin create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin'); exception when duplicate_object then null; end; $$;",
+    "create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');",
   ].join('\n');
 }
 
@@ -576,7 +576,7 @@ function systemSqlForeignKeys({ onlyCollections } = {}) {
     '-- All safe_create_fk calls run after registry tables AND application',
     '-- tables are created, so referenced tables/columns are guaranteed to exist.',
     ...lines,
-    "do $$ begin alter table roles add constraint uq_roles_code unique (code); exception when duplicate_object then null; end; $$;",
+    "alter table roles add constraint uq_roles_code unique (code);",
   ].join('\n');
 }
 
@@ -1046,16 +1046,7 @@ function systemSqlPolicies({ onlyCollections } = {}) {
     const table = tableFromPolicy(line);
     return !table || keepTable(table);
   })
-  .map((line) =>
-    line.startsWith('create policy ')
-      ? `do $$ begin ${line} exception when duplicate_object then null; end; $$;`
-      : line
-  )
   .join('\n')
-  .replace(/execute 'create policy ([^']+)';/g,
-    "begin execute 'create policy $1'; exception when duplicate_object then null; end;")
-  .replace(/execute \$p\$create policy (.+?)\$p\$;/g,
-    "begin execute \$p\$create policy $1\$p\$; exception when duplicate_object then null; end;");
 }
 
 function systemSqlGrants() {

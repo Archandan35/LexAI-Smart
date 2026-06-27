@@ -81,6 +81,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const [execSqlBusy, setExecSqlBusy] = useState(false);
   const [execSqlError, setExecSqlError] = useState('');
   const [execSqlDone, setExecSqlDone] = useState(false);
+  const [sqlConflicts, setSqlConflicts] = useState(null);
   const fileRef = useRef(null);
 
   // Simple Setup
@@ -257,6 +258,16 @@ export default function SetupWizard({ detectError: propDetectError }) {
     try {
       const text = copySql || sql;
       if (!text) { setExecSqlError('No SQL to execute.'); setExecSqlBusy(false); return; }
+
+      // Pre-validate for existing objects that would conflict
+      const pre = await InstallationExecutor.preValidateSql(text);
+      if (pre.conflicts?.length > 0) {
+        setSqlConflicts(pre.conflicts);
+        setExecSqlBusy(false);
+        return;
+      }
+      setSqlConflicts(null);
+
       const res = await InstallationExecutor.executeSql(text);
       if (!res.ok) {
         setExecSqlError(res.error || 'SQL execution failed.');
@@ -513,6 +524,21 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
                 {execSqlSupported && step < 5 && (
                   <div className="dm-toolbar-mt">
+                    {sqlConflicts && (
+                      <div className="alert alert--warn" style={{ marginBottom: 10 }}>
+                        <Icon name="alert" size={16} />
+                        <div>
+                          <strong>Existing objects detected in database — remove duplicates from SQL source:</strong>
+                          <ul style={{ margin: '6px 0 0 16px', fontSize: 13 }}>
+                            {sqlConflicts.map((c, i) => (
+                              <li key={i}>
+                                {c.type === 'table' ? `Table "${c.name}"` : c.type === 'index' ? `Index "${c.name}"` : c.type === 'function' ? `Function "${c.name}"` : c.type === 'policy' ? `Policy "${c.name}" on "${c.table}"` : `Constraint "${c.name}" on "${c.table}"`}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                     {execSqlError && (
                       <div className="alert alert--warn" style={{ marginBottom: 10 }}>
                         <Icon name="alert" size={16} />
@@ -712,6 +738,21 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
                 {execSqlSupported && (
                   <div className="dm-toolbar-mt">
+                    {sqlConflicts && (
+                      <div className="alert alert--warn" style={{ marginBottom: 10 }}>
+                        <Icon name="alert" size={16} />
+                        <div>
+                          <strong>Existing objects detected in database — remove duplicates from SQL source:</strong>
+                          <ul style={{ margin: '6px 0 0 16px', fontSize: 13 }}>
+                            {sqlConflicts.map((c, i) => (
+                              <li key={i}>
+                                {c.type === 'table' ? `Table "${c.name}"` : c.type === 'index' ? `Index "${c.name}"` : c.type === 'function' ? `Function "${c.name}"` : c.type === 'policy' ? `Policy "${c.name}" on "${c.table}"` : `Constraint "${c.name}" on "${c.table}"`}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                     {execSqlError && (
                       <div className="alert alert--warn" style={{ marginBottom: 10 }}>
                         <Icon name="alert" size={16} />
