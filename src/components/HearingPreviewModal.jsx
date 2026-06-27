@@ -200,7 +200,6 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
                   <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
                 </div>
                 <div className="hpm-proceedings">
-                  <Icon className="hpm-proceedings__icon" name="quote" size={24} />
                   <div className="hpm-proceedings__text" dangerouslySetInnerHTML={{ __html: data.notes }} />
                 </div>
               </div>

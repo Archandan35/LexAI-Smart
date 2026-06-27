@@ -14306,7 +14306,6 @@ kbd.cmd__kbd {
 .hpm-mobile-badges { display: none; }
 .hpm-chevron { display: none; }
 .hpm-action-bar { display: none; }
-.hpm-proceedings__icon { display: none; }
 .hpm-action-btn { background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
 
 /* ============================================================
@@ -14646,7 +14645,6 @@ kbd.cmd__kbd {
   .hpm-hcell .hpm-pill--grey { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
 
   .hpm-proceedings { margin: 12px 16px; background: #f0f2fb; border: none; border-left: none; border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; }
-  .hpm-proceedings__icon { display: block; color: #6272b0; flex-shrink: 0; margin-top: 1px; }
   .hpm-proceedings__text { font-size: 13.5px; color: #3848a0; font-weight: 500; padding-top: 2px; }
   .hpm-proceedings__text p { margin: 0 0 2px; }
   .hpm-proceedings__text p:last-child { margin-bottom: 0; }
