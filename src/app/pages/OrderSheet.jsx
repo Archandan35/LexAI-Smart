@@ -564,7 +564,7 @@ export default function OrderSheet() {
             <div className="cl-header__left">
               <div className="cl-header__icon"><Icon name="calendar" size={22} /></div>
               <div>
-                <div className="cl-header__title">Case List</div>
+                <div className="cl-header__title">Cases</div>
                 <div className="cl-header__sub">View and manage all hearings across your matters.</div>
               </div>
             </div>
@@ -894,7 +894,7 @@ export default function OrderSheet() {
           />
 
           <div className="tabs">
-            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Order Sheet</div>
+            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Cases</div>
             <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
             <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
             <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
@@ -969,7 +969,7 @@ export default function OrderSheet() {
 
               {/* Table Header controls */}
               <div className="order-sheet__card-header">
-                <div className="cases__card-header-title">Hearings ({sortedRows.length})</div>
+                <div className="cases__card-header-title">Cases ({sortedRows.length})</div>
                 <div className="order-sheet__actions-group" style={{ position: 'relative' }}>
                   <button className="order-sheet__action-btn" onClick={exportToCsv}>
                     <Icon name="download" size={13} /> Export
