@@ -4278,7 +4278,7 @@ kbd.cmd__kbd {
   }
 
   .page-area {
-    padding: 18px 16px 50px;
+    padding: 18px 16px 100px;
   }
 
   .topbar__search {
@@ -4338,7 +4338,7 @@ kbd.cmd__kbd {
 
 @media (max-width: 480px) {
   .page-area {
-    padding: 12px 12px 40px;
+    padding: 12px 12px 100px;
   }
 
   .auth-shell {
@@ -7917,7 +7917,7 @@ kbd.cmd__kbd {
   }
 
   .page-area {
-    padding: 18px 16px 50px;
+    padding: 18px 16px 100px;
   }
 
   .topbar__search {
@@ -7977,7 +7977,7 @@ kbd.cmd__kbd {
 
 @media (max-width: 480px) {
   .page-area {
-    padding: 12px 12px 40px;
+    padding: 12px 12px 100px;
   }
 
   .auth-shell {
@@ -15181,7 +15181,7 @@ kbd.cmd__kbd {
 
 @media (max-width: 767px) {
   .page-area {
-    padding: 12px 10px 36px;
+    padding: 12px 10px 100px;
   }
 
   .page-header {
