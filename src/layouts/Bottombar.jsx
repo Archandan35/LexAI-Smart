@@ -7,8 +7,8 @@ const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', icon: 'home', to: '/dashboard' },
   { key: 'matters', label: 'Matters', icon: 'briefcase-duo', to: '/cases' },
   { key: 'add', label: 'Add', icon: 'plus', to: '/cases/create', fab: true },
+  { key: 'order-sheet', label: 'Order Sheet', icon: 'file', to: '/cases/order-sheet' },
   { key: 'calendar', label: 'Calendar', icon: 'calendar', to: '/calendar' },
-  { key: 'more', label: 'More', icon: 'more-horizontal', to: '' },
 ];
 
 export default function Bottombar() {
