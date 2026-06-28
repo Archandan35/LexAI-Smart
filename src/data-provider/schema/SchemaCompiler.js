@@ -12,7 +12,11 @@ function toSupabase(schema) {
     if (name === schema.primaryKey) return `  ${q(name)} text primary key`;
     return `  ${q(name)} ${PG[type] || 'text'}`;
   });
-  const createTable = `create table if not exists ${q(schema.collection)} (\n${cols.join(',\n')}\n);`;
+  const uniqueConstraints = (schema.uniqueConstraints || []).map(
+    (uc) => `  constraint ${uc.name} unique (${q(uc.field)})`
+  );
+  const allCols = [...cols, ...uniqueConstraints];
+  const createTable = `create table if not exists ${q(schema.collection)} (\n${allCols.join(',\n')}\n);`;
   const createIndexes = (schema.indexes || []).map(
     (f) => `create index if not exists ${`idx_${schema.collection}_${f}`} on ${q(schema.collection)} (${q(f)});`
   );
@@ -575,19 +579,7 @@ function systemSqlForeignKeys({ onlyCollections } = {}) {
     '-- ============================================================',
     '-- All safe_create_fk calls run after registry tables AND application',
     '-- tables are created, so referenced tables/columns are guaranteed to exist.',
-    [,
-      "do $$",
-      "begin",
-      "  if not exists (",
-      "    select 1 from pg_constraint c",
-      "    join pg_class t on t.oid = c.conrelid",
-      "    where t.relname = 'roles' and c.conname = 'uq_roles_code'",
-      "  ) then",
-      "    alter table roles add constraint uq_roles_code unique (code);",
-      "  end if;",
-      "end;",
-      "$$;",
-    ].join('\n'),
+    '-- uq_roles_code unique constraint is defined inline in the CREATE TABLE for roles (see roles.schema.js).',
     ...lines,
   ].join('\n');
 }

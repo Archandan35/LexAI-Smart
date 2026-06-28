@@ -28,6 +28,9 @@ export const RolesSchema = {
   },
   relations: [],
   indexes: ['code', 'status'],
+  uniqueConstraints: [
+    { field: 'code', name: 'uq_roles_code' },
+  ],
 };
 
 export default RolesSchema;
