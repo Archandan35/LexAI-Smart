@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -234,12 +233,12 @@ export default function CaseDetails() {
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="users" size={18} /></div>
                     <span className="case-details-detail-chart__label">Plaintiff</span>
-                    <span className="case-details-detail-chart__value">{(() => { const d = (c.plaintiff || c.parties?.plaintiff || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 28 ? `${d[0].slice(0, 28)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
+                    <span className="case-details-detail-chart__value">{(() => { const d = (c.plaintiff || c.parties?.plaintiff || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 28 ? `${d[0].slice(0, 28)}...` : d[0]}{d.length > 1 && <><span className="mx-4">and</span><Badge tone="navy" className="cd__badge-plus">+{d.length - 1}</Badge></>}</>; })()}</span>
                   </div>
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="shield" size={18} /></div>
                     <span className="case-details-detail-chart__label">Defendant</span>
-                    <span className="case-details-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 12 ? `${d[0].slice(0, 12)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
+                    <span className="case-details-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 12 ? `${d[0].slice(0, 12)}...` : d[0]}{d.length > 1 && <><span className="mx-4">and</span><Badge tone="navy" className="cd__badge-plus">+{d.length - 1}</Badge></>}</>; })()}</span>
                   </div>
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="building" size={18} /></div>
@@ -270,7 +269,7 @@ export default function CaseDetails() {
 
                 <div className="case-details-detail-note">
                   <div className="case-details-detail-note__left">
-                    <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <Icon name="info" size={20} className="cd__info-icon" />
                     <p className="case-details-detail-note__text">Dates are critical to track case.<br />Stay updated for the next hearing.</p>
                   </div>
                   <div className="case-details-detail-note__deco">
@@ -283,10 +282,10 @@ export default function CaseDetails() {
                 title="Description & Summary"
                 actions={<PermissionGate perm="manageCase.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
               >
-                <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
+                <div className="card__sub mb-4">Case Summary</div>
                 <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
-                <div className="card__sub" style={{ marginTop: 10, marginBottom: 4 }}>Internal Notes</div>
-                <p className="case-detail__description" style={{ color: 'var(--text-muted)' }}>{c.internal_notes || '—'}</p>
+                <div className="card__sub mt-10 mb-4">Internal Notes</div>
+                <p className="case-detail__description c-text-muted">{c.internal_notes || '—'}</p>
                 <div className="case-detail__tags">
                   {c.stage && <span className="tag tag--navy">{c.stage}</span>}
                   {c.status && <span className="tag tag--green">{c.status}</span>}
@@ -350,7 +349,7 @@ export default function CaseDetails() {
                     <div className="case-detail__hearing-info">
                       <div className="case-detail__hearing-title">{c.case_display_number || c.caseNumber || upcomingHearing.purpose || 'Hearing'}</div>
                       <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
-                      <div style={{ marginTop: 8 }}><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
+                      <div className="mt-8"><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
                     </div>
                   </div>
                 )}
@@ -375,7 +374,7 @@ export default function CaseDetails() {
                     return (
                       <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
                         <div className="list-row__icon"><Icon name="folder" size={15} /></div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="flex-1 min-w-0">
                           <div className="list-row__title">{f.name}</div>
                           <div className="list-row__meta">{count} document{count !== 1 ? 's' : ''}</div>
                         </div>
@@ -482,7 +481,7 @@ export default function CaseDetails() {
 
           <div className="page-header">
             <div className="case-detail__head-icon"><Icon name="vault" size={24} /></div>
-            <div className="page-header__text" style={{ flex: 1, minWidth: 0 }}>
+            <div className="page-header__text flex-1 min-w-0">
               <div className="case-detail__head-top">
                 {c.archived && <Badge tone="amber">Archived</Badge>}
                 <Badge tone="green">{c.status}</Badge>
@@ -553,10 +552,10 @@ export default function CaseDetails() {
                     title="Description & Summary"
                     actions={<PermissionGate perm="manageCase.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
                   >
-                    <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
+                    <div className="card__sub mb-4">Case Summary</div>
                     <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
-                    <div className="card__sub" style={{ marginTop: 10, marginBottom: 4 }}>Internal Notes</div>
-                    <p className="case-detail__description" style={{ color: 'var(--text-muted)' }}>{c.internal_notes || '—'}</p>
+                    <div className="card__sub mt-10 mb-4">Internal Notes</div>
+                    <p className="case-detail__description c-text-muted">{c.internal_notes || '—'}</p>
                     <div className="case-detail__tags">
                       {c.stage && <span className="tag tag--navy">{c.stage}</span>}
                       {c.status && <span className="tag tag--green">{c.status}</span>}
@@ -594,7 +593,7 @@ export default function CaseDetails() {
                 </div>
               </div>
 
-              <div className="case-detail__grid-mt" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+              <div className="case-detail__grid-mt cd__grid-3">
                 <Card
                   title="Upcoming Hearing"
                   actions={<button className="linkbtn" onClick={() => setTab('Hearings')}>View All</button>}
@@ -611,7 +610,7 @@ export default function CaseDetails() {
                       <div className="case-detail__hearing-info">
                         <div className="case-detail__hearing-title">{c.case_display_number || c.caseNumber || upcomingHearing.purpose || 'Hearing'}</div>
                         <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
-                        <div style={{ marginTop: 8 }}><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
+                      <div className="mt-8"><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
                       </div>
                     </div>
                   )}
@@ -636,7 +635,7 @@ export default function CaseDetails() {
                       return (
                         <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
                           <div className="list-row__icon"><Icon name="folder" size={15} /></div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="flex-1 min-w-0">
                             <div className="list-row__title">{f.name}</div>
                             <div className="list-row__meta">{count} document{count !== 1 ? 's' : ''}</div>
                           </div>
@@ -748,7 +747,7 @@ export default function CaseDetails() {
         title="Delete Case"
         onClose={() => setShowDeleteDlg(false)}
         footer={(
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <div className="flex-row gap-8 justify-end">
             <Button variant="ghost" onClick={() => setShowDeleteDlg(false)}>Cancel</Button>
             <Button variant="ghost" onClick={() => { setShowDeleteDlg(false); remove(false); }}>No, keep folders</Button>
             <Button variant="danger" icon="trash" onClick={() => { setShowDeleteDlg(false); remove(true); }}>Yes, delete folders</Button>

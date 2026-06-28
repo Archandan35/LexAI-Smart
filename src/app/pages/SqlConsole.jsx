@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -129,7 +128,7 @@ export default function SqlConsole() {
                 {validation.errors.map((e, i) => (
                   <tr key={i}>
                     <td>{e.statement}</td>
-                    <td><code style={{ fontSize: 12 }}>{e.sql}</code></td>
+                    <td><code className="sql-console__code">{e.sql}</code></td>
                     <td><Badge tone="red">{e.reason}</Badge></td>
                   </tr>
                 ))}
@@ -162,9 +161,9 @@ export default function SqlConsole() {
                     {results.results.map((r, i) => (
                       <tr key={i}>
                         <td>{i + 1}</td>
-                        <td><code style={{ fontSize: 12 }}>{r.sql}</code></td>
+                        <td><code className="sql-console__code">{r.sql}</code></td>
                         <td>{r.ok ? <Badge tone="green">OK</Badge> : <Badge tone="red">Failed</Badge>}</td>
-                        <td style={{ fontSize: 12, color: 'var(--red)' }}>{r.error || ''}</td>
+                        <td className="sql-console__error-cell">{r.error || ''}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -187,11 +186,11 @@ export default function SqlConsole() {
                   {history.map((h, i) => (
                     <tr key={i} className="row--clickable" onClick={() => selectHistory(h)}>
                       <td>{h.ok ? <Badge tone="green">OK</Badge> : <Badge tone="red">Failed</Badge>}</td>
-                      <td><code style={{ fontSize: 12 }}>{h.sql}</code></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-faint)' }}>
+                      <td><code className="sql-console__code">{h.sql}</code></td>
+                      <td className="sql-console__ts-cell">
                         {h.ts ? DateEngine.formatTime(h.ts) : '—'}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className="text-right">
                         <Button size="sm" variant="ghost" icon="edit" onClick={(e) => { e.stopPropagation(); selectHistory(h); }}>Load</Button>
                       </td>
                     </tr>

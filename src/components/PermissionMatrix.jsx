@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { ACTIONS, MODULES, permKey, PERM_SOURCE } from '@/constants/permissions.js';
 import PermissionCheckbox from './PermissionCheckbox.jsx';
 import Icon from './Icon.jsx';

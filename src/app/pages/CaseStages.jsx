@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import PageHeader from '@/components/PageHeader.jsx';
@@ -51,24 +50,24 @@ export default function CaseStages() {
     <div className="fade-in">
       <PageHeader icon="layers" title="Case Stages" subtitle="Manage case stages (filing, hearing, judgment, etc.)." />
 
-      <Card title="Add Stage" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Input value={newName} placeholder="Stage name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} style={{ flex: 1 }} />
+      <Card title="Add Stage" className="mb-16">
+        <div className="flex-row gap-8">
+          <Input value={newName} placeholder="Stage name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} className="flex-1" />
           <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
         </div>
       </Card>
 
       {loading ? (
-        <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>
+        <div className="fade-in loading-page"><div className="spinner" /></div>
       ) : (
         <Card bodyClass="card__body--flush">
           <table className="table">
             <thead>
-              <tr><th>Order</th><th>Name</th><th style={{ width: 110 }}>Actions</th></tr>
+              <tr><th>Order</th><th>Name</th><th className="col-actions">Actions</th></tr>
             </thead>
             <tbody>
               {stages.length === 0 ? (
-                <tr><td colSpan={3} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No stages configured.</td></tr>
+                <tr><td colSpan={3} className="empty-table">No stages configured.</td></tr>
               ) : stages.map((stage, idx) => (
                 <tr key={stage.id}>
                   <td><span className="badge">{stage.order ?? idx}</span></td>
@@ -76,7 +75,7 @@ export default function CaseStages() {
                     {editId === stage.id ? (
                       <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
                     ) : (
-                      <span style={{ fontWeight: 600 }}>{stage.name}</span>
+                      <span className="font-medium">{stage.name}</span>
                     )}
                   </td>
                   <td>
@@ -94,7 +93,7 @@ export default function CaseStages() {
           </table>
         </Card>
       )}
-      <p className="muted" style={{ marginTop: 12, fontSize: 12.5 }}>{stages.length} stage(s) configured.</p>
+      <p className="muted muted--sm mt-12">{stages.length} stage(s) configured.</p>
     </div>
   );
 }

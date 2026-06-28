@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { authService } from '@/services/authService.js';
@@ -52,7 +51,7 @@ export default function ResetPassword() {
           <>
             <h1 className="auth-title">Password Reset</h1>
             <p className="auth-sub">Your password has been updated successfully.</p>
-            <div className="alert alert--success" style={{ marginBottom: 16 }}>
+            <div className="alert alert--success mb-16">
               <Icon name="check" size={16} />
               <span>You can now sign in with your new password.</span>
             </div>

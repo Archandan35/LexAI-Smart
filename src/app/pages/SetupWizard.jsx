@@ -1,4 +1,3 @@
-import React, { useState, useCallback } from 'react';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import ProgressTimeline from '@/components/setup/wizard/ProgressTimeline.jsx';
 import WelcomeStep from '@/components/setup/steps/WelcomeStep.jsx';
@@ -12,6 +11,7 @@ import InstallStep from '@/components/setup/steps/InstallStep.jsx';
 import VerifyStep from '@/components/setup/steps/VerifyStep.jsx';
 import HealthReport from '@/components/setup/steps/HealthReport.jsx';
 import FinishStep from '@/components/setup/steps/FinishStep.jsx';
+import RestoreStep from '@/components/setup/steps/RestoreStep.jsx';
 import { SqlGenerator } from '@/services/setup/SqlGenerator.js';
 import { ReportGenerator } from '@/services/setup/ReportGenerator.js';
 import { WizardLogger } from '@/services/setup/WizardLogger.js';
@@ -36,12 +36,12 @@ export default function SetupWizard({ detectError: propDetectError }) {
       next();
     } else if (m === 'sql') {
       toast.info('Generating installation SQL...');
-      setStep(5);
       const sql = SqlGenerator.getInstallationSql();
       setSqlText(sql);
       setScanResult({ present: [], missing: [] });
+      goTo(7);
     } else if (m === 'restore') {
-      setStep(11);
+      goTo(12);
     }
   };
 
@@ -98,6 +98,11 @@ export default function SetupWizard({ detectError: propDetectError }) {
     toast.info('Backup feature coming soon');
   };
 
+  const handleRestoreComplete = () => {
+    toast.success('Database restored successfully');
+    setStep(11);
+  };
+
   const renderStep = () => {
     switch (step) {
       case 1: return <WelcomeStep onMethodSelect={handleMethodSelect} />;
@@ -114,28 +119,22 @@ export default function SetupWizard({ detectError: propDetectError }) {
       case 9: return <VerifyStep onVerified={handleVerified} manualSql={sqlText} back={() => goTo(7)} />;
       case 10: return <HealthReport onComplete={handleHealthDone} back={back} />;
       case 11: return <FinishStep health={health} onLaunch={handleLaunch} onExport={handleExport} onBackup={handleBackup} />;
+      case 12: return <RestoreStep onComplete={handleRestoreComplete} back={() => goTo(2)} />;
       default: return null;
     }
   };
 
   return (
-    <div style={{
-      minHeight: '100vh', background: 'var(--bg)', display: 'flex',
-      fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-    }}>
+    <div className="wizard-layout">
       <ProgressTimeline currentStep={step} goToStep={goTo} />
-      <div className="wizard-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 48px', overflow: 'auto' }}>
+      <div className="wizard-body">
         {propDetectError && (
-          <div style={{ padding: 14, borderRadius: 'var(--radius-sm)', background: 'var(--red-soft)', marginBottom: 20, fontSize: 13, color: 'var(--red)' }}>
-            {propDetectError}
-          </div>
+          <div className="wizard-error-box">{propDetectError}</div>
         )}
         {error && (
-          <div style={{ padding: 14, borderRadius: 'var(--radius-sm)', background: 'var(--red-soft)', marginBottom: 20, fontSize: 13, color: 'var(--red)' }}>
-            {error}
-          </div>
+          <div className="wizard-error-box">{error}</div>
         )}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+        <div className="wizard-body__center">
           {renderStep()}
         </div>
       </div>

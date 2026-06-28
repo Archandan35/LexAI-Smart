@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -51,7 +50,7 @@ export default function StrategyEngine() {
                 <div><strong>{result.triggeredCount}</strong> threshold issue(s) flagged.</div>
               </div>
               {result.flags.map((f) => (
-                <div key={f.id} className="card" style={{ marginBottom: 12, borderLeft: `4px solid ${f.triggered ? 'var(--red)' : 'var(--green)'}` }}>
+                <div key={f.id} className="card mb-12" style={{ borderLeft: `4px solid ${f.triggered ? 'var(--red)' : 'var(--green)'}` }}>
                   <div className="card__body strategy-engine__card-body">
                     <div className="flex-row items-center gap-10">
                       <strong className="fs-14">{f.label}</strong>

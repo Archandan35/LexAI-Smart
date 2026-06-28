@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import Icon from './Icon.jsx';
 import Badge from './Badge.jsx';
 import { formatDate } from '@/utils/format.js';

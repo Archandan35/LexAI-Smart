@@ -1,4 +1,3 @@
-import React, { useRef, useEffect } from 'react';
 
 // RichTextEditor — lightweight contentEditable editor using the built-in
 // document.execCommand formatting (bold/italic/underline/lists). No external

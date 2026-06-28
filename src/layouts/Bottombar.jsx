@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';

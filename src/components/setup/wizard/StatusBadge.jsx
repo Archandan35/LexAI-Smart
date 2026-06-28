@@ -1,4 +1,3 @@
-import React from 'react';
 
 const COLORS = {
   ok: 'var(--green)', warn: 'var(--amber)', fail: 'var(--red)',
@@ -17,13 +16,9 @@ export default function StatusBadge({ status, label, size }) {
   const b = BG[status] || 'transparent';
   const s = size === 'sm' ? 11 : 12;
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: size === 'sm' ? '2px 8px' : '3px 10px', borderRadius: 20,
-      fontSize: s, fontWeight: 600, color: c, background: b,
-      whiteSpace: 'nowrap',
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, flexShrink: 0 }} />
+    <span className={`wizard-badge${size === 'sm' ? ' wizard-badge--sm' : ''}`}
+      style={{ fontSize: s, color: c, background: b }}>
+      <span className="wizard-badge__dot" style={{ background: c }} />
       {label || status}
     </span>
   );

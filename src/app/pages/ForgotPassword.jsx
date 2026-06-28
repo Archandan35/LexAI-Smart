@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authLogic } from '@/logic/authLogic.js';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
@@ -35,10 +34,10 @@ export default function ForgotPassword() {
         <p className="auth-sub">Enter your email or username to generate a reset token.</p>
 
         {result ? (
-          <div className="alert alert--info" style={{ marginBottom: 16, flexDirection: 'column', alignItems: 'flex-start' }}>
-            <div style={{ display: 'flex', gap: 8 }}><Icon name="check" size={16} />{result.message}</div>
-            {result.token && <div style={{ marginTop: 8 }}>Demo reset token: <code>{result.token}</code></div>}
-            <div style={{ marginTop: 6, fontSize: 12 }}>No email is sent in this client-side demo. An administrator can reset passwords in User Management.</div>
+          <div className="alert alert--info forgot-password__result">
+            <div className="flex-row gap-8"><Icon name="check" size={16} />{result.message}</div>
+            {result.token && <div className="mt-8">Demo reset token: <code>{result.token}</code></div>}
+            <div className="forgot-password__hint">No email is sent in this client-side demo. An administrator can reset passwords in User Management.</div>
           </div>
         ) : (
           <form onSubmit={submit}>

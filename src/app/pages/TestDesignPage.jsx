@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function TestDesignPage() {
   return (
@@ -8,3 +7,4 @@ export default function TestDesignPage() {
     </div>
   );
 }
+

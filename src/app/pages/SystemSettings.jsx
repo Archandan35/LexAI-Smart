@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
@@ -693,8 +692,8 @@ export default function SystemSettings() {
           </div>
         </div>
         <div className="gs-topbar__right">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', color: debugMode ? '#22c55e' : '#64748b', fontWeight: debugMode ? 600 : 400, marginRight: 8 }}>
-            <input type="checkbox" checked={debugMode} onChange={(e) => toggleDebug(e.target.checked)} style={{ accentColor: '#22c55e' }} />
+          <label className="gs-debug-label" style={{ color: debugMode ? '#22c55e' : '#64748b', fontWeight: debugMode ? 600 : 400 }}>
+            <input type="checkbox" checked={debugMode} onChange={(e) => toggleDebug(e.target.checked)} className="gs-debug-checkbox" />
             <span>🐛 Dev Mode</span>
           </label>
           <div className="gs-topbar__search">
@@ -819,7 +818,6 @@ export default function SystemSettings() {
                       const el = document.getElementById(targetId);
                       if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.transition = 'box-shadow 0.3s'; el.style.boxShadow = '0 0 0 3px var(--brand-soft)'; setTimeout(() => { el.style.boxShadow = ''; }, 1500); }
                     }}
-                    style={{ cursor: 'pointer' }}
                   >
                     {item}
                   </li>

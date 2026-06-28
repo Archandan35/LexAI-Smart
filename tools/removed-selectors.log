@@ -1,0 +1,492 @@
+.case-details-detail-hearing-item__notes
+.case-details-detail-hearing-item__event
+.case-details-detail-hearing-item__date
+.case-details-detail-hearing-item:last-child
+.case-details-detail-hearing-item
+.case-details-detail-hearing__court
+.case-details-detail-hearing__title
+.case-details-detail-hearing__info
+.case-details-detail-hearing__year
+.case-details-detail-hearing__mon
+.case-details-detail-hearing__day
+.case-details-detail-hearing__datebox
+.case-details-detail-hearing
+.case-details-detail-empty
+.case-details-detail-tags
+.case-details-detail-info-text--muted
+.case-details-detail-chart__value--dash
+.case-details-detail-info-text
+.case-details-detail-info-sub
+.case-details-detail-info-row>span:last-child
+.case-details-detail-info-label
+.case-details-detail-info-row:last-child
+.case-details-detail-info-row
+.case-details-detail-info-grid
+.case-details-detail-info-card__body
+.case-details-detail-section-tab
+.case-details-detail-section-tab
+.case-details-detail-section-tabs
+.case-details-mobile-view .case-details-fab
+.case-details-mobile-view .case-details-fab:active
+.case-details-mobile-view .case-details-fab
+.case-details-mobile-view .case-details-indicator--grey
+.case-details-mobile-view .case-details-indicator--red
+.case-details-mobile-view .case-details-indicator--amber
+.case-details-mobile-view .case-details-indicator--green
+.case-details-mobile-view .case-details-indicator
+.case-details-mobile-view .case-details-actions__spacer
+.case-details-mobile-view .case-details-actions__btn:active
+.case-details-mobile-view .case-details-actions__btn
+.case-details-mobile-view .case-details-actions
+.case-details-mobile-view .case-details-nav__item--active
+.case-details-mobile-view .case-details-nav__item
+.case-details-mobile-view .case-details-nav::-webkit-scrollbar
+.case-details-mobile-view .case-details-nav
+.case-details-mobile-view .case-details-banner__btn
+.case-details-mobile-view .case-details-banner__sub
+.case-details-mobile-view .case-details-banner__title
+.case-details-mobile-view .case-details-banner__text
+.case-details-mobile-view .case-details-banner__illustration
+.case-details-mobile-view .case-details-banner
+.case-details-mobile-view .case-details-searchbar__filter:active
+.case-details-mobile-view .case-details-searchbar__filter
+.case-details-mobile-view .case-details-searchbar__input
+.case-details-mobile-view .case-details-searchbar__wrapper:focus-within
+.case-details-mobile-view .case-details-searchbar__wrapper
+.case-details-mobile-view .case-details-searchbar
+.case-details-card__sub
+.case-details-card__badge
+.case-details-card__title
+.case-details-card__head
+.case-details-card:active
+.case-details-card
+.file-drop
+.cl-filters__arrow
+.hpm-pill--grey
+.hpm-pill--orange
+.hpm-pill--red
+.hpm-pill--blue
+.hpm-pill--green
+.hearing-summary__item
+.hearing-summary__list
+.hearing-summary
+.order-sheet__timeline-v-circle--default
+.order-sheet__timeline-v-circle--adjourned
+.order-sheet__timeline-v-circle--completed
+.order-sheet__timeline-v-circle--rescheduled
+.order-sheet__timeline-v-circle--scheduled
+.order-sheet__no-file
+.order-sheet__tpl-used
+.order-sheet__tpl-tag--hearing
+.order-sheet__tpl-tag--affidavit
+.order-sheet__tpl-tag--miscellaneous
+.order-sheet__tpl-tag--notice
+.order-sheet__tpl-tag--criminal
+.order-sheet__tpl-tag--application
+.order-sheet__tpl-tag--evidence
+.order-sheet__tpl-tag--pleading
+.order-sheet__tpl-icon-wrapper--orange
+.order-sheet__tpl-icon-wrapper--purple
+.order-sheet__tpl-icon-wrapper--blue
+.order-sheet__tpl-icon-wrapper--green
+.order-sheet__timeline-h-circle--adjourned
+.order-sheet__timeline-h-circle--completed
+.order-sheet__timeline-h-circle--rescheduled
+.order-sheet__timeline-h-circle--scheduled
+.order-sheet__timeline-v-doc-btn:hover
+.order-sheet__timeline-v-doc-btn
+.order-sheet__timeline-v-date
+.order-sheet__timeline-v-title
+.order-sheet__timeline-v-header
+.order-sheet__timeline-v-marker--adjourned
+.order-sheet__timeline-v-marker--completed
+.order-sheet__timeline-v-marker--rescheduled
+.order-sheet__timeline-v-marker--scheduled
+.order-sheet__timeline-v-marker
+.order-sheet__timeline-v-item:last-child .order-sheet__timeline-v-line
+.order-sheet__timeline-v-line
+.order-sheet__timeline-v-item:last-child
+.order-sheet__timeline-v-item
+.order-sheet__timeline-v
+.em-modal-footer
+.priority-chip--urgent
+.priority-chip--high
+.priority-chip--medium
+.priority-chip--low
+.dash-doc__size
+.dash-doc-icon--other
+.dash-doc-icon--doc
+.dash-doc-icon--pdf
+.dash-qa-icon--purple
+.dash-qa-icon--red
+.dash-qa-icon--amber
+.dash-qa-icon--green
+.dash-qa-icon--blue
+.dash-task-legend__count
+.dash-task-legend__left
+.dash-task-legend__item
+.dash-task-legend
+.dash-task-wrap
+.dash-hearing-icon--navy
+.dash-hearing-icon--amber
+.dash-hearing-icon--green
+.dash-hearing-icon--blue
+.dash-stat__trend--down
+.dash-stat__trend--up
+.dash-stat__trend
+.court-types__count
+.court-types__name
+.court-types__th-actions
+.court-types__th-check
+.court-types__add-btn
+.court-types__bulk-label
+.court-types__bulk-header
+.court-types__add-row
+.court-reports__name
+.courts__level-select
+.courts__level-select-sm
+.courts__edit-row
+.order-sheet__tpl-format
+.order-sheet__tpl-name
+.order-sheet__history-event
+.order-sheet__alert-bottom
+.order-sheet__alert-sm
+.order-sheet__no-file
+.case-reports__cell-bold
+.case-reports__bar-value
+.case-reports__bar-track
+.case-reports__bar-label
+.case-reports__bar-row
+.system-settings__footer
+.system-settings__no-matches
+.setup-wizard__check-name
+.setup-wizard__check-status
+.setup-wizard__checks
+.setup-wizard__host-grid
+.restore-center__alert-mb
+.placeholder-page__empty
+.text-navy
+.fs-135
+.fs-13
+.fs-125
+.fs-12
+.fw-650
+.gap-20
+.settings-field-label
+.settings-field-row
+.settings-nav
+.settings-sidebar
+.settings-layout
+.case-manage__detail-value
+.case-manage__detail-label
+.case-manage__detail
+.case-manage__viewer-text
+.case-manage__viewer-iframe
+.case-manage__viewer-img
+.case-manage__td-name
+.case-manage__back-btn
+.case-manage__folder-actions
+.case-manage__folder-title
+.case-manage__folder-body
+.case-manage__card-mb
+.case-detail__draft-info
+.bench-types__summary
+.bench-types__name-text
+.bench-types__th-actions
+.bench-types__search-flex
+.bench-types__search-bar
+.bench-types__input-code
+.bench-types__input-name
+.bench-types__add-row
+.bench-types__add-card
+.bench-types__center
+.ai-usage__card-mt
+.ai-assistant__chat-area
+.settings-toggle input:checked+.settings-toggle__slider::after
+.settings-toggle input:checked+.settings-toggle__slider
+.settings-toggle__slider::after
+.settings-toggle__slider
+.settings-toggle input
+.settings-toggle
+.settings-file-placeholder:hover
+.settings-file-placeholder
+.settings-field-control
+.settings-field-label
+.settings-field-row:last-child
+.settings-field-row
+.settings-card
+.settings-content__actions
+.settings-content__header h2
+.settings-content__header
+.settings-content
+.settings-nav__num
+.settings-nav__item:hover
+.settings-nav__item
+.settings-nav
+.settings-search input
+.settings-search
+.settings-sidebar
+.settings-layout
+.wizard-method__desc
+.wizard-method__title
+.db-setup__step
+.doc-margin--wide
+.doc-margin--narrow
+.doc-margin--normal
+.auth-brand-title
+.case-types__status--inactive
+.case-types__status--active
+.wizard-method__desc
+.wizard-method__icon
+.wizard-method
+.wizard-analysis__item--warn b
+.wizard-analysis__item--warn span
+.wizard-analysis__item--warn
+.wizard-analysis__item b
+.wizard-analysis__item span
+.wizard-analysis__item:last-child
+.wizard-analysis__item
+.wizard-analysis
+.wizard-dropzone__text
+.wizard-info
+.doc-margin--wide
+.doc-margin--normal
+.wizard-sql
+.wizard-progress__pct
+.wizard-progress__bar
+.wizard-step__label
+.wizard-step--current .wizard-step__num
+.wizard-step__num
+.wizard-step__icon
+.wizard-step--pending
+.wizard-step--current
+.wizard-step--active
+.wizard-step--done
+.wizard-steps
+.wizard-method-bar__step
+.wizard-method-bar__label
+.wizard-method-bar__back:hover
+.wizard-method-bar__back
+.wizard-method-bar
+.wizard-method--selected .wizard-method__radio
+.wizard-method__radio
+.wizard-method__desc
+.wizard-method__title
+.wizard-method--selected .wizard-method__icon
+.wizard-method__icon
+.wizard-method--selected
+.wizard-method:hover
+.wizard-method
+.wizard-methods
+.db-setup__sql
+.db-setup__progress-pct
+.db-setup__progress-label
+.db-setup__progress-fill
+.db-setup__progress-bar
+.db-setup__step-label
+.db-setup__step-num
+.db-setup__step-icon
+.db-setup__step--pending
+.db-setup__step--active
+.db-setup__step--done
+.db-setup__step
+.db-setup__steps
+.db-setup__meta
+.doc-margin--wide
+.doc-margin--narrow
+.doc-margin--normal
+.doc-page--landscape
+.doc-page--legal,
+.doc-page--letter
+.court-types__count
+.court-types__name
+.court-types__th-actions
+.court-types__th-check
+.court-types__add-btn
+.court-types__bulk-label
+.court-types__bulk-header
+.court-types__add-row
+.court-reports__name
+.courts__level-select
+.courts__level-select-sm
+.courts__edit-row
+.order-sheet__tpl-format
+.order-sheet__tpl-name
+.order-sheet__history-event
+.order-sheet__alert-bottom
+.order-sheet__alert-sm
+.order-sheet__no-file
+.case-reports__cell-bold
+.case-reports__bar-value
+.case-reports__bar-track
+.case-reports__bar-label
+.case-reports__bar-row
+.gs-toc__dot
+.gs-toc__item--active
+.gs-date-example
+.system-settings__footer
+.system-settings__no-matches
+.setup-wizard__check-name
+.setup-wizard__check-status
+.setup-wizard__checks
+.setup-wizard__host-grid
+.restore-center__alert-mb
+.placeholder-page__empty
+.text-navy
+.fs-135
+.fs-13
+.fs-125
+.fs-12
+.fw-650
+.gap-20
+.settings-field-label
+.settings-field-row
+.settings-nav
+.settings-sidebar
+.settings-layout
+.case-manage__detail-value
+.case-manage__detail-label
+.case-manage__detail
+.case-manage__viewer-text
+.case-manage__viewer-iframe
+.case-manage__viewer-img
+.case-manage__td-name
+.case-manage__back-btn
+.case-manage__folder-actions
+.case-manage__folder-title
+.case-manage__folder-body
+.case-manage__card-mb
+.case-detail__hearing-time
+.case-detail__card-head-row
+.case-detail__draft-info
+.bench-types__summary
+.bench-types__name-text
+.bench-types__th-actions
+.bench-types__search-flex
+.bench-types__search-bar
+.bench-types__input-code
+.bench-types__input-name
+.bench-types__add-row
+.bench-types__add-card
+.bench-types__center
+.ai-usage__card-mt
+.ai-assistant__chat-area
+.settings-toggle input:checked+.settings-toggle__slider::after
+.settings-toggle input:checked+.settings-toggle__slider
+.settings-toggle__slider::after
+.settings-toggle__slider
+.settings-toggle input
+.settings-toggle
+.settings-file-placeholder:hover
+.settings-file-placeholder
+.settings-field-control
+.settings-field-label
+.settings-field-row:last-child
+.settings-field-row
+.settings-card
+.settings-content__actions
+.settings-content__header h2
+.settings-content__header
+.settings-content
+.settings-nav__num
+.settings-nav__item:hover
+.settings-nav__item
+.settings-nav
+.settings-search input
+.settings-search
+.settings-sidebar
+.settings-layout
+.wizard-method__desc
+.wizard-method__title
+.db-setup__step
+.doc-margin--wide
+.doc-margin--narrow
+.doc-margin--normal
+.auth-brand-title
+.case-types__status--inactive
+.case-types__status--active
+.wizard-method__desc
+.wizard-method__icon
+.wizard-method
+.wizard-analysis__item--warn b
+.wizard-analysis__item--warn span
+.wizard-analysis__item--warn
+.wizard-analysis__item b
+.wizard-analysis__item span
+.wizard-analysis__item:last-child
+.wizard-analysis__item
+.wizard-analysis
+.wizard-dropzone__text
+.wizard-info
+.doc-margin--wide
+.doc-margin--normal
+.wizard-sql
+.wizard-progress__pct
+.wizard-progress__bar
+.wizard-step__label
+.wizard-step--current .wizard-step__num
+.wizard-step__num
+.wizard-step__icon
+.wizard-step--pending
+.wizard-step--current
+.wizard-step--active
+.wizard-step--done
+.wizard-steps
+.wizard-method-bar__step
+.wizard-method-bar__label
+.wizard-method-bar__back:hover
+.wizard-method-bar__back
+.wizard-method-bar
+.wizard-method--selected .wizard-method__radio
+.wizard-method__radio
+.wizard-method__desc
+.wizard-method__title
+.wizard-method--selected .wizard-method__icon
+.wizard-method__icon
+.wizard-method--selected
+.wizard-method:hover
+.wizard-method
+.wizard-methods
+.db-setup__sql
+.db-setup__progress-pct
+.db-setup__progress-label
+.db-setup__progress-fill
+.db-setup__progress-bar
+.db-setup__step-label
+.db-setup__step-num
+.db-setup__step-icon
+.db-setup__step--pending
+.db-setup__step--active
+.db-setup__step--done
+.db-setup__step
+.db-setup__steps
+.db-setup__meta
+.doc-margin--wide
+.doc-margin--narrow
+.doc-margin--normal
+.doc-page--landscape
+.doc-page--legal,
+.doc-page--letter
+.syncstatus--error .syncstatus__dot
+.syncstatus--saving .syncstatus__dot,
+.syncstatus--pending .syncstatus__dot
+.syncstatus--synced .syncstatus__dot
+.syncstatus__dot
+.docmgr__path-sep
+.docmgr__path-btn:hover
+.docmgr__path-btn
+.docmgr__path
+.docmgr__bulk-bar
+.matrix__yes--custom
+.auth-brand-title span
+.auth-brand-title
+.auth-hint code
+.auth-hint__row
+.auth-hint
+.auth-brand
+.toast--info
+.toast--error
+.toast--success
+.wizard-content
+.btn--gold:hover:not(:disabled)
+.btn--gold

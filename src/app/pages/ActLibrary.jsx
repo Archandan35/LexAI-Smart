@@ -1,4 +1,3 @@
-import React from 'react';
 import LibraryPage from '@/components/LibraryPage.jsx';
 import { actLogic } from '@/logic/actLogic.js';
 
@@ -27,3 +26,4 @@ export default function ActLibrary() {
     />
   );
 }
+

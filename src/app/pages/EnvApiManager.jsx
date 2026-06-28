@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -85,22 +84,22 @@ export default function EnvApiManager() {
       {tab === 'Environment Variables' && (
         <>
           <div className="toolbar-row">
-            <div className="datatable__search" style={{ maxWidth: 280 }}>
+            <div className="datatable__search env-api__search">
               <Icon name="search" size={15} />
               <input placeholder="Search variables…" value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
-            <select className="select" style={{ maxWidth: 200 }} value={category} onChange={(e) => setCategory(e.target.value)}>
+            <select className="select env-api__category-select" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">All categories</option>{ENV_CATEGORY_KEYS.map((c) => <option key={c}>{c}</option>)}
             </select>
           </div>
           <Card bodyClass="card__body--flush">
             <div className="table-scroll">
               <table className="table">
-                <thead><tr><th>Variable Name</th><th>Category</th><th>Value</th><th>Status</th><th>Last Updated</th><th>Updated By</th><th style={{ width: 200 }}>Actions</th></tr></thead>
+                <thead><tr><th>Variable Name</th><th>Category</th><th>Value</th><th>Status</th><th>Last Updated</th><th>Updated By</th><th className="env-api__actions-lg">Actions</th></tr></thead>
                 <tbody>
                   {filtered.map((r) => (
                     <tr key={r.name}>
-                      <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{r.name}</td>
+                      <td className="env-api__var-name">{r.name}</td>
                       <td><Badge tone="grey">{r.category}</Badge></td>
                       <td>{display(r)}</td>
                       <td><Badge tone={r.status === 'enabled' ? 'green' : r.status === 'disabled' ? 'amber' : 'grey'}>{r.status}</Badge></td>
@@ -123,7 +122,7 @@ export default function EnvApiManager() {
               </table>
             </div>
           </Card>
-          <div className="alert alert--warn" style={{ marginTop: 14 }}>
+          <div className="alert alert--warn mt-14">
             <Icon name="alert" size={16} />
             <span>Client-side demo: managed values persist locally and are masked in the UI. In production, store secrets only in environment variables on the backend and sync to your deployment platform (Railway / Render / Fly.io / Docker).</span>
           </div>
@@ -134,11 +133,11 @@ export default function EnvApiManager() {
         <Card title="API Configurations" sub="Connection state derives from whether the configuring variable is set.">
           <div className="table-scroll">
             <table className="table">
-              <thead><tr><th>API Name</th><th>Provider</th><th>Status</th><th>Key Variable</th><th style={{ width: 120 }}>Actions</th></tr></thead>
-              <tbody>
-                {apis.map((a) => (
-                  <tr key={a.name}>
-                    <td style={{ fontWeight: 600 }}>{a.name}</td>
+                <thead><tr><th>API Name</th><th>Provider</th><th>Status</th><th>Key Variable</th><th className="env-api__actions-sm">Actions</th></tr></thead>
+                <tbody>
+                  {apis.map((a) => (
+                    <tr key={a.name}>
+                      <td className="font-medium">{a.name}</td>
                     <td>{a.provider}</td>
                     <td><Badge tone={a.status === 'connected' ? 'green' : 'amber'}>{a.status}</Badge></td>
                     <td><code>{a.keyVar}</code></td>
@@ -153,14 +152,14 @@ export default function EnvApiManager() {
 
       {tab === 'Secret Manager' && (
         <Card title="Secret Manager" sub="Sensitive values are masked. Reveal requires the env.secrets permission.">
-          {!canSecrets && <div className="alert alert--warn" style={{ marginBottom: 12 }}><Icon name="lock" size={15} /><span>You do not have permission to reveal secret values.</span></div>}
+          {!canSecrets && <div className="alert alert--warn mb-12"><Icon name="lock" size={15} /><span>You do not have permission to reveal secret values.</span></div>}
           <div className="table-scroll">
             <table className="table">
-              <thead><tr><th>Secret</th><th>Category</th><th>Value</th><th style={{ width: 160 }}>Actions</th></tr></thead>
+              <thead><tr><th>Secret</th><th>Category</th><th>Value</th><th className="env-api__actions-md">Actions</th></tr></thead>
               <tbody>
                 {secrets.map((r) => (
                   <tr key={r.name}>
-                    <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{r.name}</td>
+                    <td className="env-api__var-name">{r.name}</td>
                     <td><Badge tone="grey">{r.category}</Badge></td>
                     <td>{r.hasValue ? <code>{revealed[r.name] && canSecrets ? r.value : r.masked}</code> : <span className="muted">unset</span>}</td>
                     <td>
@@ -185,7 +184,7 @@ export default function EnvApiManager() {
             <Stat label="Total APIs" value={apiStats.total} icon="bolt" />
             <Stat label="Managed Variables" value={rows.filter((r) => r.persisted).length} icon="gear" />
           </div>
-          <div className="alert alert--info" style={{ marginTop: 14 }}>
+          <div className="alert alert--info mt-14">
             <Icon name="refresh" size={15} />
             <span>Auto-deployment sync targets (Railway / Render / Fly.io / Koyeb / VPS / Docker) push variable changes to the platform and optionally trigger a restart. Configure via backend integration.</span>
           </div>
@@ -201,7 +200,7 @@ export default function EnvApiManager() {
                 <tbody>
                   {history.map((h) => (
                     <tr key={h.id}>
-                      <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{h.name}</td>
+                      <td className="env-api__var-name">{h.name}</td>
                       <td><code>{h.oldValue || '—'}</code></td>
                       <td><code>{h.newValue || '—'}</code></td>
                       <td>{h.changedBy}</td>
@@ -219,7 +218,7 @@ export default function EnvApiManager() {
         footer={<><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button><Button icon="save" onClick={save}>Save</Button></>}>
         {editing && (
           <>
-            <Field label="Variable Name"><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="E.G. OPENAI_API_KEY" style={{ fontFamily: 'monospace' }} /></Field>
+            <Field label="Variable Name"><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="E.G. OPENAI_API_KEY" className="input--mono" /></Field>
             <Field label="Value" hint="Stored locally for this demo; production secrets belong in backend environment variables."><Input value={editing.value} onChange={(e) => setEditing({ ...editing, value: e.target.value })} /></Field>
             <Field label="Status"><Select value={editing.status} onChange={(e) => setEditing({ ...editing, status: e.target.value })}><option value="enabled">Enabled</option><option value="disabled">Disabled</option></Select></Field>
           </>

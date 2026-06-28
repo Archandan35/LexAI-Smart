@@ -1,4 +1,3 @@
-import React from 'react';
 
 const METHODS = [
   { id: 'simple', icon: '⚡', title: 'Simple Setup', desc: 'Connect using a Project URL and API Key. Ideal for Supabase and compatible providers.', badge: 'Recommended', difficulty: 'Easy', time: '~2 min' },
@@ -10,37 +9,23 @@ const METHODS = [
 export default function MethodStep({ onSelect, back }) {
   return (
     <div>
-      <p style={{ fontSize: 14, color: 'var(--text-soft)', marginBottom: 20 }}>
+      <p className="wizard-desc" style={{ marginBottom: 20 }}>
         Choose how you want to connect your database. Simple Setup is the fastest path for Supabase users.
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div className="wizard-info-grid" style={{ gap: 14 }}>
         {METHODS.map((m) => (
           <button key={m.id} onClick={() => onSelect(m.id)}
             tabIndex={0}
+            className="wizard-method-card"
             aria-label={`${m.title}: ${m.desc}`}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
-              padding: 20, borderRadius: 'var(--radius)', border: '1px solid var(--border)',
-              background: 'var(--surface-2)', cursor: 'pointer', textAlign: 'left',
-              transition: 'all 0.2s var(--ease)', position: 'relative',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none'; }}
-            onFocus={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-            onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
             {m.badge && (
-              <span style={{
-                position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 700,
-                padding: '2px 8px', borderRadius: 10, background: 'var(--gold-soft)', color: 'var(--gold)',
-              }}>
-                {m.badge}
-              </span>
+              <span className="wizard-method-card__badge">{m.badge}</span>
             )}
-            <span style={{ fontSize: 24 }}>{m.icon}</span>
-            <span style={{ fontWeight: 700, fontSize: 15 }}>{m.title}</span>
-            <span style={{ fontSize: 13, color: 'var(--text-soft)', lineHeight: 1.5 }}>{m.desc}</span>
-            <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-faint)', marginTop: 4 }}>
+            <span className="wizard-method-card__icon">{m.icon}</span>
+            <span className="wizard-method-card__title">{m.title}</span>
+            <span className="wizard-method-card__desc">{m.desc}</span>
+            <div className="wizard-method-card__meta">
               <span>{m.difficulty}</span>
               <span>{m.time}</span>
             </div>

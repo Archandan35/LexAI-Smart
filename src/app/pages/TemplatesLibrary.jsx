@@ -1,4 +1,3 @@
-import React from 'react';
 import LibraryPage from '@/components/LibraryPage.jsx';
 import { templateLogic } from '@/logic/templateLogic.js';
 
@@ -26,3 +25,4 @@ export default function TemplatesLibrary() {
     />
   );
 }
+

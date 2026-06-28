@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef } from 'react';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';

@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import PageHeader from '@/components/PageHeader.jsx';
@@ -48,15 +47,15 @@ export default function CaseStatuses() {
     else { toast.push(res.error, 'error'); }
   };
 
-  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in loading-page"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in">
       <PageHeader icon="toggle" title="Case Statuses" subtitle="Manage case statuses (Active, Closed, Archived, Transferred, etc.)." />
 
-      <Card title="Add Status" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Input value={newName} placeholder="Status name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} style={{ flex: 1 }} />
+      <Card title="Add Status" className="mb-16">
+        <div className="flex-row gap-8">
+          <Input value={newName} placeholder="Status name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} className="flex-1" />
           <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
         </div>
       </Card>
@@ -64,11 +63,11 @@ export default function CaseStatuses() {
       <Card bodyClass="card__body--flush">
         <table className="table">
           <thead>
-            <tr><th>Order</th><th>Name</th><th>Status</th><th style={{ width: 110 }}>Actions</th></tr>
+            <tr><th>Order</th><th>Name</th><th>Status</th><th className="col-actions">Actions</th></tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
-              <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No statuses configured.</td></tr>
+              <tr><td colSpan={4} className="empty-table">No statuses configured.</td></tr>
             ) : items.map((item) => (
               <tr key={item.id}>
                 <td><span className="badge">{item.display_order ?? '—'}</span></td>
@@ -76,7 +75,7 @@ export default function CaseStatuses() {
                   {editId === item.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
                   ) : (
-                    <span style={{ fontWeight: 600 }}>{item.name}</span>
+                    <span className="font-medium">{item.name}</span>
                   )}
                 </td>
                 <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status || 'Active'}</span></td>
@@ -94,7 +93,7 @@ export default function CaseStatuses() {
           </tbody>
         </table>
       </Card>
-      <p className="muted" style={{ marginTop: 12, fontSize: 12.5 }}>{items.length} status(es) configured.</p>
+      <p className="muted muted--sm mt-12">{items.length} status(es) configured.</p>
     </div>
   );
 }

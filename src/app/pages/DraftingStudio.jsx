@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Modal from '@/components/Modal.jsx';
-import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
@@ -174,7 +172,7 @@ export default function DraftingStudio() {
         title="Drafting Studio"
         subtitle="Professional legal drafting suite — Word-grade editor, folders, version history, auto-save and PDF/DOCX/HTML/TXT export. Store finished drafts straight into a case folder."
         actions={(
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex-row gap-8">
             <PermissionGate perm="drafting.create"><Button variant="ghost" icon="plus" onClick={() => setBlankOpen(true)}>Blank</Button></PermissionGate>
             <PermissionGate perm="drafting.create"><Button icon="bolt" onClick={() => setGenOpen(true)}>Generate</Button></PermissionGate>
           </div>
@@ -210,8 +208,8 @@ export default function DraftingStudio() {
                   onClick={() => openDraft(d)}
                 >
                   <div className="list-row__icon"><Icon name="doc" size={16} /></div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="list-row__title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.title}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="list-row__title ellipsis">{d.title}</div>
                     <div className="list-row__meta">{(d.fileType || 'docx').toUpperCase()} · {d.folder || 'Miscellaneous'} · {fromNow(d.updatedAt || d.createdAt)}</div>
                   </div>
                   <PermissionGate perm="drafting.delete"><button className="btn btn--danger btn--sm" onClick={(e) => { e.stopPropagation(); onDelete(d.id); }}><Icon name="trash" size={13} /></button></PermissionGate>
@@ -235,7 +233,7 @@ export default function DraftingStudio() {
                     </span>
                   )}
                   actions={(
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div className="flex-row gap-6 flex-wrap items-center">
                       <div className="seg">
                         <button className={`seg__btn ${mode === 'edit' ? 'active' : ''}`} onClick={() => setMode('edit')} title="Edit"><Icon name="edit" size={14} /></button>
                         <button className={`seg__btn ${mode === 'view' ? 'active' : ''}`} onClick={() => setMode('view')} title="Read-only view"><Icon name="eye" size={14} /></button>
@@ -251,18 +249,18 @@ export default function DraftingStudio() {
                     </div>
                   )}
                 >
-                  <div className="toolbar-row" style={{ marginBottom: 10 }}>
-                    <Select value={layout.pageSize} onChange={(e) => setLayout({ ...layout, pageSize: e.target.value })} style={{ maxWidth: 130 }}>
+                  <div className="toolbar-row mb-10">
+                    <Select value={layout.pageSize} onChange={(e) => setLayout({ ...layout, pageSize: e.target.value })} className="ds__select-page">
                       <option value="a4">A4</option><option value="legal">Legal</option><option value="letter">Letter</option>
                     </Select>
-                    <Select value={layout.orientation} onChange={(e) => setLayout({ ...layout, orientation: e.target.value })} style={{ maxWidth: 140 }}>
+                    <Select value={layout.orientation} onChange={(e) => setLayout({ ...layout, orientation: e.target.value })} className="ds__select-orient">
                       <option value="portrait">Portrait</option><option value="landscape">Landscape</option>
                     </Select>
-                    <Select value={layout.margin} onChange={(e) => setLayout({ ...layout, margin: e.target.value })} style={{ maxWidth: 140 }}>
+                    <Select value={layout.margin} onChange={(e) => setLayout({ ...layout, margin: e.target.value })} className="ds__select-margin">
                       <option value="normal">Normal margins</option><option value="narrow">Narrow</option><option value="wide">Wide</option>
                     </Select>
-                    <div style={{ flex: 1 }} />
-                    <label className="muted" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5 }}>
+                    <div className="flex-1" />
+                    <label className="muted ds__autosave-label">
                       <input type="checkbox" checked={autoSave} onChange={toggleAutoSave} /> Auto-save ({Math.round(interval / 1000)}s)
                     </label>
                   </div>
@@ -303,8 +301,8 @@ export default function DraftingStudio() {
           <Field label="Defendant / Respondent"><Input value={form.defendant} onChange={(e) => setForm({ ...form, defendant: e.target.value })} /></Field>
         </div>
         <Field label="Material Facts"><Textarea value={form.facts} onChange={(e) => setForm({ ...form, facts: e.target.value })} placeholder="Brief facts the draft should plead…" /></Field>
-        <Field label="Reliefs / Prayer"><Textarea value={form.reliefs} onChange={(e) => setForm({ ...form, reliefs: e.target.value })} placeholder="Reliefs claimed…" style={{ minHeight: 80 }} /></Field>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, color: 'var(--text-soft)' }}>
+        <Field label="Reliefs / Prayer"><Textarea value={form.reliefs} onChange={(e) => setForm({ ...form, reliefs: e.target.value })} placeholder="Reliefs claimed…" className="ds__reliefs-input" /></Field>
+        <label className="ds__attach-label">
           <input type="checkbox" checked={form.attachCitations} onChange={(e) => setForm({ ...form, attachCitations: e.target.checked })} />
           Attach verified authorities (retrieved &amp; verified — never invented)
         </label>
@@ -326,11 +324,11 @@ export default function DraftingStudio() {
           <EmptyState icon="history" title="No previous versions." hint="Versions are saved each time you Save." />
         ) : (active.versions).map((v, i) => (
           <div key={v.id} className="qa-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="flex-row items-center justify-between">
               <div><strong>Version {(active.versions.length - i)}</strong><div className="qa-card__p">{formatDateTime(v.savedAt)}</div></div>
               <Button size="sm" variant="ghost" icon="history" onClick={() => onRestore(v.id)}>Restore</Button>
             </div>
-            <div style={{ marginTop: 8, fontSize: 12.5, color: 'var(--text-faint)', maxHeight: 60, overflow: 'hidden' }}>{(v.content || '').replace(/<[^>]+>/g, ' ').slice(0, 180)}…</div>
+            <div className="ds__version-preview">{(v.content || '').replace(/<[^>]+>/g, ' ').slice(0, 180)}…</div>
           </div>
         ))}
       </Modal>
@@ -354,17 +352,17 @@ function DraftFolderManager({ open, folders, onClose, onSave }) {
 
   return (
     <Modal open={open} title="Manage Draft Folders" onClose={onClose}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <div className="flex-row gap-8 mb-12">
         <Input value={name} placeholder="New folder…" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
         <Button icon="folderPlus" onClick={add}>Add</Button>
       </div>
-      <div className="table-scroll" style={{ maxHeight: '46vh' }}>
+      <div className="table-scroll ds__folder-table-scroll">
         <table className="table">
           <tbody>
             {list.map((f, i) => (
               <tr key={f}>
                 <td><Input value={f} onChange={(e) => rename(i, e.target.value)} /></td>
-                <td style={{ width: 50 }}><button className="iconbtn iconbtn--danger" onClick={() => del(i)}><Icon name="trash" size={14} /></button></td>
+                <td className="col-min-50"><button className="iconbtn iconbtn--danger" onClick={() => del(i)}><Icon name="trash" size={14} /></button></td>
               </tr>
             ))}
           </tbody>

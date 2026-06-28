@@ -1,4 +1,3 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';

@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import Icon from './Icon.jsx';
 
 export default function PasswordInput({ value, onChange, placeholder, label, required, autoFocus, id, name, className = '' }) {

@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_GROUPS } from '@/routes/navigation.js';
 import { config } from '@/config/config.js';

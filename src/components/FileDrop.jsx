@@ -1,4 +1,3 @@
-import React, { useRef, useState } from 'react';
 import Icon from './Icon.jsx';
 import { bytes } from '@/utils/format.js';
 

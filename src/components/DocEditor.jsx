@@ -1,4 +1,3 @@
-import React, { useRef, useEffect, useState } from 'react';
 import Icon from './Icon.jsx';
 
 // DocEditor — Word-grade contentEditable editor (dependency-free, execCommand).

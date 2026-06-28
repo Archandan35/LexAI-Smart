@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { Select } from './Field.jsx';
 

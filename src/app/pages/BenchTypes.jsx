@@ -1,4 +1,3 @@
-import React from 'react';
 import EntityListPage from '@/components/EntityListPage.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 

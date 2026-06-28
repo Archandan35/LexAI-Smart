@@ -1,4 +1,3 @@
-import React from 'react';
 import Button from '@/components/Button.jsx';
 import StatusBadge from '../wizard/StatusBadge.jsx';
 
@@ -14,28 +13,28 @@ export default function PlanStep({ scanResult, onPlanned, back }) {
 
   return (
     <div>
-      <p style={{ fontSize: 14, color: 'var(--text-soft)', marginBottom: 16 }}>
+      <p className="wizard-desc">
         Installation plan generated. {total} total component(s) in the blueprint.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {sections.map(s => (
-          <div key={s.title} style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', background: 'var(--surface-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, fontSize: 14 }}>{s.title}</span>
+          <div key={s.title} className="wizard-section-card">
+            <div className="wizard-section-card__head">
+              <span className="wizard-section-card__title">{s.title}</span>
               <StatusBadge status={s.status} label={`${s.count} item(s)`} />
             </div>
             {s.items.length > 0 && (
-              <div style={{ padding: '8px 16px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              <div className="wizard-section-card__body">
                 {s.items.map(i => <span key={i} className="tag">{i}</span>)}
               </div>
             )}
             {s.items.length === 0 && (
-              <div style={{ padding: '8px 16px', fontSize: 13, color: 'var(--text-faint)' }}>None</div>
+              <div className="wizard-section-card__empty">None</div>
             )}
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'flex-end' }}>
+      <div className="wizard-actions" style={{ marginTop: 24 }}>
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" onClick={() => onPlanned(scanResult)}>
           {missing.length > 0 ? 'Continue to Review' : 'Continue'}

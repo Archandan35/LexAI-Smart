@@ -1,4 +1,3 @@
-import React from 'react';
 
 // Toggle — accessible on/off switch reusing design-system colours.
 export default function Toggle({ checked, onChange, disabled, label, size = 'md' }) {

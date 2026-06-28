@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Field, { Input, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
-import Button from '@/components/Button.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import SearchableSelect from '@/components/SearchableSelect.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
@@ -62,10 +60,9 @@ function GearSelect({ value, onChange, options, placeholder, entity, onGearClick
       <SearchableSelect value={value} onChange={onChange} options={options} placeholder={placeholder} />
       <button
         type="button"
-        className="icon-btn"
+        className="icon-btn cc__gear-btn"
         title={`Manage ${entity}`}
         onClick={() => onGearClick(entity)}
-        style={{ padding: 7, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface-2)', cursor: 'pointer', color: 'var(--text-soft)', display: 'grid', placeItems: 'center', flexShrink: 0 }}
       >
         <Icon name="gear" size={16} />
       </button>
@@ -77,7 +74,7 @@ function PartyColumn({ label, items, inputValue, onInputChange, onAdd, onRemove,
   return (
     <div className="cc-party-col">
       <div className="cc-party-col__head">
-        <span className="cc-party-col__label">{label} <span style={{ color: 'var(--red)' }}>*</span></span>
+        <span className="cc-party-col__label">{label} <span className="text-red">*</span></span>
         <button
           type="button"
           className="btn btn--ghost btn--sm"
@@ -94,11 +91,11 @@ function PartyColumn({ label, items, inputValue, onInputChange, onAdd, onRemove,
         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onAdd(); } }}
       />
       {items.length > 0 ? (
-        <div className="multi-value-container" style={{ marginTop: 10 }}>
+        <div className="multi-value-container mt-10">
           {items.map((item, i) => (
             <span key={i} className="multi-value-item">
               {item}
-              <button type="button" className="icon-btn" onClick={() => onRemove(i)} aria-label={`Remove ${item}`} style={{ marginLeft: 4, display: 'inline-flex', border: 'none', background: 'none', cursor: 'pointer', color: 'inherit' }}>
+              <button type="button" className="icon-btn cc__remove-btn" onClick={() => onRemove(i)} aria-label={`Remove ${item}`}>
                 <Icon name="close" size={12} />
               </button>
             </span>
@@ -126,8 +123,6 @@ const ENTITY_CONFIGS = {
   Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name', required: false }, { key: 'email', label: 'Email', placeholder: 'email@example.com', required: false }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210', required: false }, { key: 'address', label: 'Address', placeholder: 'Enter address', required: false }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: false }], defaults: {} },
   Judge: { label: 'Judge', logic: judgeLogic, fields: [{ key: 'name', label: 'Judge Name', placeholder: 'e.g., Justice Sharma' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., JS' }, { key: 'designation', label: 'Designation', placeholder: 'e.g., District & Sessions Judge' }], defaults: {} },
 };
-
-
 
 /* ================================================================
    Main component
@@ -289,7 +284,7 @@ export default function CreateCase() {
   const notesLen = (form.internal_notes || '').length;
 
   return (
-    <div className="page-area" style={{ paddingBottom: 80 }}>
+    <div className="page-area pb-80">
 
       {/* Crud Manager Modal */}
       {crudEntity && activeEntityConfig && (
@@ -311,8 +306,7 @@ export default function CreateCase() {
           </div>
         </div>
         <button
-          className="btn btn--ghost"
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          className="btn btn--ghost flex-row items-center gap-8"
         >
           <Icon name="download" size={16} /> Load from Template
         </button>
@@ -346,7 +340,7 @@ export default function CreateCase() {
 
       {/* ---- 2. Parties ---- */}
       <SectionCard num="2" title="Parties">
-        <div className="grid-2" style={{ marginBottom: 16 }}>
+        <div className="grid-2 mb-16">
           <PartyColumn
             label="Plaintiff / Petitioner"
             items={form.plaintiffs}
@@ -490,7 +484,7 @@ export default function CreateCase() {
       <SectionCard num="7" title="Summary & Notes">
         <div className="grid-2">
           <Field label="Case Summary">
-            <div style={{ position: 'relative' }}>
+            <div className="pos-relative">
               <Textarea
                 value={form.case_summary}
                 onChange={setFieldEvent('case_summary')}
@@ -498,13 +492,11 @@ export default function CreateCase() {
                 placeholder="Enter case summary..."
                 maxLength={1000}
               />
-              <div style={{ textAlign: 'right', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 4 }}>
-                {summaryLen} / 1000
-              </div>
+              <div className="cc__char-counter">{summaryLen} / 1000</div>
             </div>
           </Field>
           <Field label="Internal Notes">
-            <div style={{ position: 'relative' }}>
+            <div className="pos-relative">
               <Textarea
                 value={form.internal_notes}
                 onChange={setFieldEvent('internal_notes')}
@@ -512,9 +504,7 @@ export default function CreateCase() {
                 placeholder="Enter internal notes..."
                 maxLength={1000}
               />
-              <div style={{ textAlign: 'right', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 4 }}>
-                {notesLen} / 1000
-              </div>
+              <div className="cc__char-counter">{notesLen} / 1000</div>
             </div>
           </Field>
         </div>
@@ -524,33 +514,33 @@ export default function CreateCase() {
       <SectionCard num="8" title="Documents">
         <div className="grid-2">
           <Field label="Document Folder">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+            <div className="flex-col gap-8">
+              <label className="cc__folder-checkbox">
                 <input type="checkbox" checked={autoCreateFolder} onChange={() => { setAutoCreateFolder(!autoCreateFolder); if (!autoCreateFolder) setField('document_folder', '__auto__'); else setField('document_folder', ''); }} />
                 Auto-create folder from case number
               </label>
               {autoCreateFolder ? (
-                <div className="muted" style={{ fontSize: 12.5, padding: '6px 0' }}>
+                <div className="muted cc__auto-folder-info">
                   A folder named <strong>CaseType Number/Year</strong> will be created automatically.
                 </div>
               ) : (
-                <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 8, padding: 4 }}>
-                  {allFolders.filter((f) => !f.parent_id).length === 0 ? (
-                    <div className="muted" style={{ padding: 8, fontSize: 12 }}>No existing folders.</div>
+                <div className="cc__folder-list">
+                  {(allFolders.filter((f) => !f.parent_id)).length === 0 ? (
+                    <div className="muted cc__no-folders">No existing folders.</div>
                   ) : null}
                   {allFolders.filter((f) => !f.parent_id).map((f) => {
                     const children = allFolders.filter((c) => c.parent_id === f.id);
                     return (
                       <div key={f.id}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 4, cursor: 'pointer', background: form.document_folder === f.name ? 'var(--brand-soft)' : 'transparent', fontSize: 13 }}>
+                        <label className={`cc__folder-radio${form.document_folder === f.name ? ' cc__folder-radio--selected' : ''}`}>
                           <input type="radio" name="doc-folder" checked={form.document_folder === f.name} onChange={() => { setAutoCreateFolder(false); setField('document_folder', f.name); }} />
                           <Icon name="folder" size={14} />
                           {f.name}
                         </label>
                         {children.length > 0 && (
-                          <div style={{ paddingLeft: 20 }}>
+                          <div className="pl-20">
                             {children.map((c) => (
-                              <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', borderRadius: 4, cursor: 'pointer', background: form.document_folder === c.name ? 'var(--brand-soft)' : 'transparent', fontSize: 13 }}>
+                              <label key={c.id} className={`cc__folder-radio cc__folder-radio--child${form.document_folder === c.name ? ' cc__folder-radio--selected' : ''}`}>
                                 <input type="radio" name="doc-folder" checked={form.document_folder === c.name} onChange={() => { setAutoCreateFolder(false); setField('document_folder', c.name); }} />
                                 <Icon name="folder" size={13} />
                                 {c.name}
@@ -580,12 +570,12 @@ export default function CreateCase() {
                 <span className="cc-file-drop__link">Choose Files</span>
               </div>
               <div className="cc-file-drop__hint">PDF, DOC, DOCX, JPG, PNG (Max. 50MB)</div>
-              <input ref={fileRef} type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} />
+              <input ref={fileRef} type="file" multiple onChange={handleFileChange} className="hidden" />
             </div>
           </Field>
         </div>
         {selectedFiles.length > 0 && (
-          <div className="multi-value-container" style={{ marginTop: 12 }}>
+          <div className="multi-value-container mt-12">
             {selectedFiles.map((file, i) => (
               <span key={i} className="multi-value-item">
                 {file.name} ({(file.size / 1024).toFixed(1)} KB)

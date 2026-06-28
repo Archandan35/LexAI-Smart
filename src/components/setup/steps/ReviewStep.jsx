@@ -1,44 +1,51 @@
-import React from 'react';
+import { useToast } from '@/data-layer/ToastContext.jsx';
 import Button from '@/components/Button.jsx';
 import StatusBadge from '../wizard/StatusBadge.jsx';
 
 export default function ReviewStep({ scanResult, sqlText, onInstall, onGenerateSql, back }) {
+  const toast = useToast();
   const missing = scanResult?.missing || [];
   const hasSql = sqlText && sqlText.trim().length > 0;
 
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(sqlText);
+      toast.success('SQL copied to clipboard');
+    } catch {
+      toast.error('Failed to copy');
+    }
+  }, [sqlText, toast]);
+
   return (
-    <div>
-      <p style={{ fontSize: 14, color: 'var(--text-soft)', marginBottom: 16 }}>
+    <div className="wizard-step">
+      <p className="wizard-desc">
         Review the changes that will be made to your database.
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-        <div style={{ padding: 16, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--green-soft)' }}>
+      <div className="wizard-summary-grid">
+        <div className="wizard-summary-card wizard-summary-card--green">
           <StatusBadge status="ok" label="Will Skip" />
-          <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>{scanResult?.present?.length || 0}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-soft)' }}>Already installed</div>
+          <div className="wizard-summary-card__value">{scanResult?.present?.length || 0}</div>
+          <div className="wizard-summary-card__label">Already installed</div>
         </div>
-        <div style={{ padding: 16, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--amber-soft)' }}>
+        <div className="wizard-summary-card wizard-summary-card--amber">
           <StatusBadge status="warn" label="Will Create" />
-          <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>{missing.length}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-soft)' }}>New objects</div>
+          <div className="wizard-summary-card__value">{missing.length}</div>
+          <div className="wizard-summary-card__label">New objects</div>
         </div>
       </div>
       {hasSql && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontWeight: 600, fontSize: 13 }}>Generated SQL ({sqlText.split('\n').length} lines)</span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <Button variant="ghost" size="sm" onClick={() => navigator.clipboard?.writeText(sqlText)}>Copy</Button>
+        <div className="wizard-sql-section">
+          <div className="wizard-sql-header">
+            <span className="wizard-sql-title">Generated SQL ({sqlText.split('\n').length} lines)</span>
+            <div className="wizard-sql-actions">
+              <Button variant="ghost" size="sm" onClick={handleCopy}>Copy</Button>
               <Button variant="ghost" size="sm" onClick={onGenerateSql}>Download</Button>
             </div>
           </div>
-          <pre style={{
-            maxHeight: 200, overflow: 'auto', padding: 14, borderRadius: 'var(--radius-sm)',
-            border: '1px solid var(--border)', background: 'var(--surface-2)', fontSize: 12, lineHeight: 1.5,
-          }}>{sqlText}</pre>
+          <pre className="wizard-sql-block">{sqlText}</pre>
         </div>
       )}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+      <div className="wizard-actions">
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" icon="bolt" onClick={onInstall} disabled={missing.length === 0}>
           Install

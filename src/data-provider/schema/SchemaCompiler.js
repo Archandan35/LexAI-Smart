@@ -808,7 +808,7 @@ function systemSqlRls({ onlyCollections } = {}) {
     'schema_registry', 'entity_registry', 'field_registry', 'provider_registry',
     'migration_registry', 'installer_state', 'provider_adapter_registry',
     'schema_mapping', 'mapping_history', 'mapping_versions', 'provider_capabilities',
-    'entity_prefix_registry', 'id_registry', 'foreign_key_registry',
+    'entity_prefix_registry', 'id_registry', 'foreign_key_registry', 'user_role_registry',
   ];
   const appTables = onlyCollections
     ? APP_TABLES.filter((t) => onlyCollections.includes(t))
@@ -830,7 +830,7 @@ const SYSTEM_POLICY_TABLES = [
   'schema_registry', 'entity_registry', 'field_registry', 'provider_registry',
   'migration_registry', 'installer_state', 'provider_adapter_registry',
   'schema_mapping', 'mapping_history', 'mapping_versions', 'provider_capabilities',
-  'entity_prefix_registry', 'id_registry', 'foreign_key_registry',
+  'entity_prefix_registry', 'id_registry', 'foreign_key_registry', 'user_role_registry',
 ];
 
 const APP_POLICY_TABLES = [
@@ -851,216 +851,77 @@ function systemSqlPolicies({ onlyCollections } = {}) {
     return APP_POLICY_TABLES.includes(table);
   };
 
-  const raw = [
-    '-- ============================================================',
-    '-- 12. RLS POLICIES (P2 — TO authenticated + current_user_role(); P3 — unique names)',
-    '-- ============================================================',
-    '-- P2: All policies use TO authenticated (Supabase-compatible PostgreSQL role)',
-    '--      and current_user_role() = ANY(ARRAY[...]) for app-level authorization.',
-    '--      admins get full access, managers get CRUD, users get read-only.',
-    '',
-    '-- schema_registry',
-    'create policy schema_registry_admin_all on schema_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy schema_registry_manager_select on schema_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy schema_registry_user_select on schema_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy schema_registry_anon_select on schema_registry for select to anon using (true)';",
-    'end if; end $$;',
-    '',
-    '-- entity_registry',
-    'create policy entity_registry_admin_all on entity_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy entity_registry_manager_select on entity_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy entity_registry_manager_insert on entity_registry for insert to authenticated with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy entity_registry_manager_update on entity_registry for update to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy entity_registry_user_select on entity_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- field_registry',
-    'create policy field_registry_admin_all on field_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy field_registry_manager_select on field_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy field_registry_manager_insert on field_registry for insert to authenticated with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy field_registry_user_select on field_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- provider_registry',
-    'create policy provider_registry_admin_all on provider_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy provider_registry_manager_select on provider_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- migration_registry',
-    'create policy migration_registry_admin_all on migration_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy migration_registry_manager_select on migration_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy migration_registry_anon_select on migration_registry for select to anon using (true)';",
-    'end if; end $$;',
-    '',
-    '-- installer_state',
-    'create policy installer_state_admin_all on installer_state for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy installer_state_manager_select on installer_state for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy installer_state_user_select on installer_state for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy installer_state_anon_select on installer_state for select to anon using (true)';",
-    'end if; end $$;',
-    '',
-    '-- provider_adapter_registry',
-    'create policy provider_adapter_admin_all on provider_adapter_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy provider_adapter_manager_select on provider_adapter_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy provider_adapter_anon_select on provider_adapter_registry for select to anon using (true)';",
-    'end if; end $$;',
-    '',
-    '-- schema_mapping',
-    'create policy schema_mapping_admin_all on schema_mapping for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy schema_mapping_manager_select on schema_mapping for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy schema_mapping_manager_insert on schema_mapping for insert to authenticated with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy schema_mapping_manager_update on schema_mapping for update to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- mapping_history',
-    'create policy mapping_history_admin_all on mapping_history for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy mapping_history_manager_select on mapping_history for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- mapping_versions',
-    'create policy mapping_versions_admin_all on mapping_versions for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy mapping_versions_manager_select on mapping_versions for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- provider_capabilities',
-    'create policy provider_capabilities_admin_all on provider_capabilities for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy provider_capabilities_manager_select on provider_capabilities for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy provider_capabilities_user_select on provider_capabilities for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- entity_prefix_registry',
-    'create policy entity_prefix_admin_all on entity_prefix_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy entity_prefix_manager_select on entity_prefix_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy entity_prefix_user_select on entity_prefix_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- id_registry',
-    'create policy id_registry_admin_all on id_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy id_registry_manager_select on id_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- foreign_key_registry',
-    'create policy foreign_key_registry_admin_all on foreign_key_registry for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy foreign_key_registry_manager_select on foreign_key_registry for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- ============================================================',
-    '-- APPLICATION TABLE POLICIES',
-    '-- ============================================================',
-    '-- users (sensitive — admin/manager full, user read own)',
-    'create policy users_admin_all on users for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy users_manager_all on users for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy users_user_select on users for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy users_anon_select on users for select to anon using (true)';",
-    'end if; end $$;',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute $p$create policy users_anon_insert on users for insert to anon with check (not exists (select 1 from users))$p$;",
-    'end if; end $$;',
-    '',
-    '-- Grant base INSERT/SELECT to anon so PostgREST accepts the request (RLS policies gate the actual access)',
-    'grant insert on table users to anon;',
-    'grant select on table users to anon;',
-    'grant insert on table roles to anon;',
-    'grant select on table roles to anon;',
-    '',
-    '-- roles (sensitive — admin/manager read-only)',
-    'create policy roles_admin_all on roles for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy roles_manager_select on roles for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy roles_user_select on roles for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy roles_anon_select on roles for select to anon using (true)';",
-    'end if; end $$;',
-    '',
-    '-- permissions (sensitive — admin/manager read-only)',
-    'create policy permissions_admin_all on permissions for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy permissions_manager_select on permissions for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- cases (standard — admin/manager full, user read)',
-    'create policy cases_admin_all on cases for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy cases_manager_all on cases for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy cases_user_select on cases for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- documents (standard — admin/manager full, user read)',
-    'create policy documents_admin_all on documents for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy documents_manager_all on documents for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy documents_user_select on documents for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- hearings, notes, reminders, drafts (standard)',
-    'create policy hearings_admin_all on hearings for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy hearings_manager_all on hearings for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy hearings_user_select on hearings for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy notes_admin_all on notes for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy notes_manager_all on notes for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy notes_user_select on notes for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy reminders_admin_all on reminders for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy reminders_manager_all on reminders for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy reminders_user_select on reminders for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy drafts_admin_all on drafts for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy drafts_manager_all on drafts for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy drafts_user_select on drafts for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- case_history, case_activity, case_folders (standard)',
-    'create policy case_history_admin_all on case_history for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy case_history_manager_all on case_history for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy case_history_user_select on case_history for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy case_activity_admin_all on case_activity for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy case_activity_manager_all on case_activity for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy case_activity_user_select on case_activity for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy case_folders_admin_all on case_folders for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy case_folders_manager_all on case_folders for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy case_folders_user_select on case_folders for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- settings, env_vars (sensitive — admin/manager full)',
-    'create policy settings_admin_all on settings for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy settings_manager_all on settings for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy env_vars_admin_all on env_vars for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy env_vars_manager_all on env_vars for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    '',
-    '-- audit_logs (sensitive — admin read only)',
-    'create policy audit_logs_admin_select on audit_logs for select to authenticated using (current_user_role() = \'admin\');',
-    '',
-    '-- config_history (sensitive — admin read only)',
-    'create policy config_history_admin_select on config_history for select to authenticated using (current_user_role() = \'admin\');',
-    '',
-    '-- schema_meta (admin/manager read, anon read for version check)',
-    'create policy schema_meta_admin_all on schema_meta for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy schema_meta_manager_select on schema_meta for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
-    "  execute 'create policy schema_meta_anon_select on schema_meta for select to anon using (true)';",
-    'end if; end $$;',
-    '',
-    '-- courts, case_types, case_stages (admin/manager full, user read)',
-    'create policy courts_admin_all on courts for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy courts_manager_all on courts for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy courts_user_select on courts for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy case_types_admin_all on case_types for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy case_types_manager_all on case_types for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy case_types_user_select on case_types for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    'create policy case_stages_admin_all on case_stages for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy case_stages_manager_all on case_stages for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy case_stages_user_select on case_stages for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- judgments (public read — all authenticated)',
-    'create policy judgments_admin_all on judgments for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy judgments_manager_all on judgments for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy judgments_user_select on judgments for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-    '',
-    '-- cause_list_templates (public read)',
-    'create policy cause_list_templates_admin_all on cause_list_templates for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
-    'create policy cause_list_templates_manager_all on cause_list_templates for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
-    'create policy cause_list_templates_user_select on cause_list_templates for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
+  const adminAll = (t) => `create policy ${t}_admin_all on ${t} for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');`;
+  const adminSelect = (t) => `create policy ${t}_admin_select on ${t} for select to authenticated using (current_user_role() = 'admin');`;
+  const managerAll = (t) => `create policy ${t}_manager_all on ${t} for all to authenticated using (current_user_role() = ANY(ARRAY['admin','manager'])) with check (current_user_role() = ANY(ARRAY['admin','manager']));`;
+  const managerSelect = (t) => `create policy ${t}_manager_select on ${t} for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));`;
+  const userSelect = (t) => `create policy ${t}_user_select on ${t} for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));`;
+  const anonSelect = (t) => `do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute 'create policy ${t}_anon_select on ${t} for select to anon using (true)'; end if; end $$;`;
+
+  const allTables = [
+    ...SYSTEM_POLICY_TABLES.map(t => ({ table: t, kind: 'system' })),
+    ...APP_POLICY_TABLES.map(t => ({ table: t, kind: 'app' })),
   ];
-  const tableFromPolicy = (line) => {
-    const m = line.match(/^create policy (\w+) on (\w+) for /);
-    return m ? { name: m[1], table: m[2] } : null;
-  };
-  return raw.filter((line) => {
-    const info = tableFromPolicy(line);
-    return !info || keepTable(info.table);
-  })
-  .map((line) => {
-    const info = tableFromPolicy(line);
-    if (info) {
-      return `drop policy if exists ${info.name} on ${info.table};\n${line}`;
+
+  const lines = [];
+  for (const { table, kind } of allTables) {
+    if (!keepTable(table)) continue;
+
+    const drop = `drop policy if exists`;
+    const policy = (name) => `${drop} ${name} on ${table};`;
+
+    if (table === 'users') {
+      lines.push(`-- ${table} (sensitive — admin/manager full, user read own, anon registration)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_all`) + '\n' + managerAll(table));
+      lines.push(policy(`${table}_user_select`) + '\n' + userSelect(table));
+      lines.push(anonSelect(table));
+      lines.push(`do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute $p$create policy ${table}_anon_insert on ${table} for insert to anon with check (not exists (select 1 from ${table}))$p$; end if; end $$;`);
+      lines.push(`grant insert on table ${table} to anon;`);
+      lines.push(`grant select on table ${table} to anon;`);
+    } else if (table === 'roles') {
+      lines.push(`-- ${table} (sensitive — admin/manager read-only, anon select)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_select`) + '\n' + managerSelect(table));
+      lines.push(policy(`${table}_user_select`) + '\n' + userSelect(table));
+      lines.push(anonSelect(table));
+      lines.push(`grant insert on table ${table} to anon;`);
+      lines.push(`grant select on table ${table} to anon;`);
+    } else if (table === 'permissions') {
+      lines.push(`-- ${table} (sensitive — admin full, manager read-only)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_select`) + '\n' + managerSelect(table));
+    } else if (table === 'audit_logs' || table === 'config_history') {
+      lines.push(`-- ${table} (sensitive — admin read only)`);
+      lines.push(policy(`${table}_admin_select`) + '\n' + adminSelect(table));
+    } else if (table === 'settings' || table === 'env_vars') {
+      lines.push(`-- ${table} (sensitive — admin/manager full)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_all`) + '\n' + managerAll(table));
+    } else if (table === 'schema_meta') {
+      lines.push(`-- ${table} (admin/manager read, anon read for version check)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_select`) + '\n' + managerSelect(table));
+      lines.push(anonSelect(table));
+    } else if (table === 'user_role_registry') {
+      lines.push(`-- ${table} (admin only — lookup via security-definer function)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+    } else if (kind === 'system') {
+      lines.push(`-- ${table} (system — admin full, manager/user select, anon select)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_select`) + '\n' + managerSelect(table));
+      lines.push(policy(`${table}_user_select`) + '\n' + userSelect(table));
+      lines.push(anonSelect(table));
+    } else {
+      lines.push(`-- ${table} (standard — admin/manager full, user read)`);
+      lines.push(policy(`${table}_admin_all`) + '\n' + adminAll(table));
+      lines.push(policy(`${table}_manager_all`) + '\n' + managerAll(table));
+      lines.push(policy(`${table}_user_select`) + '\n' + userSelect(table));
     }
-    return line;
-  })
-  .join('\n')
+    lines.push('');
+  }
+
+  return lines.join('\n');
 }
 
 function systemSqlGrants() {
@@ -1123,73 +984,7 @@ function systemSqlSchemaVersion() {
   ].join('\n');
 }
 
-function systemSqlSeedAdapters() {
-  return [
-    '-- ============================================================',
-    '-- 16. SEED DEFAULT PROVIDER ADAPTERS',
-    '-- ============================================================',
-    "insert into provider_adapter_registry (id, provider, adapter_name, adapter_version, migration_engine, capabilities, active)",
-    "values",
-    "  ('ADP-supabase', 'supabase', 'SupabaseAdapter', '1.0.0', 'sql', '{\"exec_sql\":true,\"safe_ddl\":true,\"rls\":true,\"fk\":true,\"transactions\":true,\"json_support\":true}'::jsonb, true)",
-    "on conflict (provider) do nothing;",
-  ].join('\n');
-}
 
-function systemSqlSeedData() {
-  const version = SCHEMA_VERSION;
-  return [
-    '-- ============================================================',
-    '-- 17. SEED INSTALLER STATE + SCHEMA META (wizard expects these rows)',
-    '-- ============================================================',
-    "-- Seed installer_state so the wizard sees installation as completed",
-    `insert into installer_state (id, install_status, schema_version, installer_version, installed_at)`,
-    `values ('default', 'completed', ${version}, 1, now())`,
-    "on conflict (id) do update set install_status = excluded.install_status, schema_version = excluded.schema_version, installed_at = now();",
-    '',
-    "-- Seed schema_meta so the wizard sees a configured schema",
-    `insert into schema_meta (id, version, provider, app_version, installed_at, updated_at, history)`,
-    `values ('default', ${version}, 'supabase', '1.0.0', now(), now(), '[{\"version\": ${version}, \"action\": \"install\", \"at\": \"${new Date().toISOString()}\"}]'::jsonb)`,
-    "on conflict (id) do update set version = excluded.version, updated_at = now();",
-    '',
-    '-- Seed schema_registry so migration checks report the correct version',
-    `insert into schema_registry (id, version, description)`,
-    `values ('schema_version', ${version}, 'Installation')`,
-    'on conflict (id) do update set version = excluded.version;',
-    '',
-    '-- Seed provider_adapter_registry so provider checks see an active adapter',
-    `insert into provider_adapter_registry (provider, adapter_name, adapter_version, active)`,
-    `values ('supabase', 'SupabaseAdapter', '1.0.0', true)`,
-    'on conflict (provider) do update set active = true, adapter_name = excluded.adapter_name;',
-    '',
-    '-- Seed default roles so the app finds them during bootstrap',
-    'insert into roles (id, code, name, description, permissions, "all", inherits_hierarchy, system, status)',
-    "values ('role_admin', 'Admin', 'Administrator', 'Full system administration role', '[]'::jsonb, true, false, true, 'Active')",
-    'on conflict (code) do update set name = excluded.name, "all" = true;',
-    'insert into roles (id, code, name, description, permissions, "all", inherits_hierarchy, system, status)',
-    "values ('role_manager', 'manager', 'Manager', 'Management role with elevated permissions', '[]'::jsonb, false, true, true, 'Active')",
-    'on conflict (code) do nothing;',
-    'insert into roles (id, code, name, description, permissions, "all", inherits_hierarchy, system, status)',
-    "values ('role_user', 'user', 'User', 'Standard user role', '[]'::jsonb, false, true, true, 'Active')",
-    'on conflict (code) do nothing;',
-    '-- Backfill foreign_key_registry for any FKs created before registration was added',
-    'insert into foreign_key_registry (id, from_entity, from_field, to_entity, to_field, cascade_delete, enabled)',
-    'select',
-    '  c.conname,',
-    '  t1.relname,',
-    '  a1.attname,',
-    '  t2.relname,',
-    '  a2.attname,',
-    "  c.confupdtype = 'c' or c.confdeltype = 'c',",
-    '  true',
-    'from pg_constraint c',
-    'join pg_class t1 on t1.oid = c.conrelid',
-    'join pg_class t2 on t2.oid = c.confrelid',
-    'join pg_attribute a1 on a1.attrelid = c.conrelid and a1.attnum = c.conkey[1]',
-    'join pg_attribute a2 on a2.attrelid = c.confrelid and a2.attnum = c.confkey[1]',
-    "where c.contype = 'f'",
-    'on conflict (id) do nothing;',
-  ].join('\n');
-}
 
 const COMPILERS = { supabase: toSupabase, firebase: toFirebase, mongodb: toMongo, local: toLocal };
 
@@ -1280,8 +1075,6 @@ export const SchemaCompiler = {
       systemSqlGrants({ onlyCollections }),
       systemSqlIndexes({ onlyCollections }),
       systemSqlSchemaVersion(),
-      systemSqlSeedAdapters(),
-      systemSqlSeedData(),
     ].join('\n\n');
   },
 };

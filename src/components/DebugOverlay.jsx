@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
 import { useLogCapture } from '@/components/DebugPanel.jsx';
-import Icon from '@/components/Icon.jsx';
 import { DateEngine } from '@/core/DateEngine.js';
 
 export default function DebugOverlay() {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { PERM_SOURCE } from '@/constants/permissions.js';
 
 // PermissionCheckbox — a single permission cell. Colour-coded by provenance

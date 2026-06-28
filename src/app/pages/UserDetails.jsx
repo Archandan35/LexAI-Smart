@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { userLogic } from '@/logic/userLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -9,7 +8,6 @@ import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Badge from '@/components/Badge.jsx';
-import Icon from '@/components/Icon.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import RoleSelector from '@/components/RoleSelector.jsx';
 import PermissionMatrix from '@/components/PermissionMatrix.jsx';

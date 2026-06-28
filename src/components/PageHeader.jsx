@@ -1,4 +1,3 @@
-import React from 'react';
 import Icon from './Icon.jsx';
 
 export default function PageHeader({ icon, title, subtitle, actions }) {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { usePermissions } from '@/hooks/usePermissions.js';
 
 // PermissionGate — conditionally renders children based on a permission.

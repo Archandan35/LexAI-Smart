@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
-import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import GuardrailBanner from '@/components/GuardrailBanner.jsx';
 import CitationCard from '@/components/CitationCard.jsx';
@@ -52,11 +50,11 @@ export default function CitationVerify() {
               const passed = result?.checks?.[c.key];
               return (
                 <div key={c.key} className="citation-verify__check-row">
-                  <span style={{
-                    width: 22, height: 22, borderRadius: 6, display: 'grid', placeItems: 'center',
-                    background: result ? (passed ? 'var(--green-soft)' : 'var(--red-soft)') : 'var(--surface-2)',
-                    color: passed ? 'var(--green)' : 'var(--red)',
-                  }}>
+                  <span className="citation-verify__check-icon"
+                    style={{
+                      background: result ? (passed ? 'var(--green-soft)' : 'var(--red-soft)') : 'var(--surface-2)',
+                      color: passed ? 'var(--green)' : 'var(--red)',
+                    }}>
                     <Icon name={result ? (passed ? 'check' : 'close') : 'alert'} size={13} />
                   </span>
                   <span className="citation-verify__check-label">{c.label}</span>

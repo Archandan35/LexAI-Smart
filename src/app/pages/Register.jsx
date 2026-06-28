@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';

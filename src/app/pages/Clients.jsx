@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import { Input, Textarea, Select, Field } from '@/components/Field.jsx';
 import { clientLogic } from '@/logic/clientLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
@@ -102,7 +100,7 @@ export default function Clients() {
       </div>
 
       {loading ? (
-        <div className="empty-state"><div className="spinner" /><p style={{ marginTop: 12 }}>Loading clients…</p></div>
+        <div className="empty-state"><div className="spinner" /><p className="empty-state__text">Loading clients…</p></div>
       ) : filtered.length === 0 ? (
         <div className="empty-state"><Icon name="users" size={24} /><p>{search ? 'No clients match your search.' : 'No clients yet. Add your first client.'}</p></div>
       ) : (
@@ -182,19 +180,19 @@ export default function Clients() {
             <div className="client-detail__header">
               <div className="client-card__avatar client-detail__avatar" style={{ background: colourFromName(viewing.name) }}>{initials(viewing.name)}</div>
               <div>
-                <h2 style={{ margin: 0 }}>{viewing.name}</h2>
-                <p className="muted" style={{ margin: '4px 0 0' }}>{viewing.client_type || 'Individual'} · <span className={`badge badge--${viewing.status === 'Active' ? 'green' : 'grey'}`}>{viewing.status || 'Active'}</span></p>
+                <h2 className="m-0">{viewing.name}</h2>
+                <p className="muted mt-4">{viewing.client_type || 'Individual'} · <span className={`badge badge--${viewing.status === 'Active' ? 'green' : 'grey'}`}>{viewing.status || 'Active'}</span></p>
               </div>
             </div>
-            <div className="grid-2" style={{ marginTop: 20 }}>
+            <div className="grid-2 mt-20">
               {viewing.contact_person && <div><span className="client-detail__label">Contact Person</span><span>{viewing.contact_person}</span></div>}
               {viewing.email && <div><span className="client-detail__label">Email</span><span>{viewing.email}</span></div>}
               {viewing.phone && <div><span className="client-detail__label">Phone</span><span>{viewing.phone}</span></div>}
-              {viewing.address && <div style={{ gridColumn: '1 / -1' }}><span className="client-detail__label">Address</span><span>{viewing.address}</span></div>}
+              {viewing.address && <div className="client-detail__full-width"><span className="client-detail__label">Address</span><span>{viewing.address}</span></div>}
               <div><span className="client-detail__label">Linked Cases</span><span>{viewing.linked_cases ?? 0}</span></div>
               <div><span className="client-detail__label">Payment Status</span><span>{viewing.payment_status || 'Pending'}</span></div>
             </div>
-            {viewing.notes && <div style={{ marginTop: 16 }}><span className="client-detail__label">Notes</span><p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{viewing.notes}</p></div>}
+            {viewing.notes && <div className="client-detail__notes"><span className="client-detail__label">Notes</span><p className="client-detail__notes-text">{viewing.notes}</p></div>}
           </div>
         )}
         <div className="modal__foot">

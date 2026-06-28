@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';

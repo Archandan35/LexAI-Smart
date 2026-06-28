@@ -3,7 +3,6 @@
 // hardcoding provider-specific logic in pages or the Setup Wizard.
 
 import { getDatabaseProvider } from '@/providers/database/index.js';
-import { EntityRegistry } from '@/core/EntityRegistry.js';
 
 const TABLE = 'provider_adapter_registry';
 

@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
-import Icon from '@/components/Icon.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import Spinner from '@/components/Spinner.jsx';
@@ -62,10 +60,10 @@ export default function DocumentReview() {
       />
 
       <div className="grid-sidebar">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex-col gap-16">
           <Card title="Upload">
             <FileDrop onFile={onFile} hint="PDF · DOCX · PNG · JPG · TXT" />
-            <div style={{ marginTop: 14 }}>
+            <div className="mt-14">
               <Field label="Or paste text">
                 <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste document text…" />
               </Field>
@@ -91,7 +89,7 @@ export default function DocumentReview() {
                   return (
                     <Card key={e.key} title={e.label} sub={`${items.length} found`} className="card--hover">
                       {items.length === 0 ? (
-                        <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>None detected.</div>
+                        <div className="muted muted--sm">None detected.</div>
                       ) : (
                         <div>{items.map((it, i) => <span key={i} className="tag tag--key">{it}</span>)}</div>
                       )}
@@ -99,8 +97,8 @@ export default function DocumentReview() {
                   );
                 })}
               </div>
-              <Card title="Extracted Text" style={{ marginTop: 16 }}>
-                <div style={{ maxHeight: 280, overflow: 'auto', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', color: 'var(--text-soft)' }}>
+              <Card title="Extracted Text" className="mt-16">
+                <div className="doc-review__extracted-text">
                   {result.text}
                 </div>
               </Card>

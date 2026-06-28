@@ -1,4 +1,3 @@
-import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -23,7 +22,7 @@ export default function VerifyAccount() {
         {status === 'success' ? (
           <>
             <div className="auth-confirm">
-              <div className="auth-confirm__icon">&#x2705;</div>
+              <div className="auth-confirm__icon"><Icon name="check" size={32} /></div>
               <h1 className="auth-title">Email Verified</h1>
               <p className="auth-sub">Your account has been verified successfully.</p>
             </div>
@@ -34,11 +33,11 @@ export default function VerifyAccount() {
         ) : status === 'error' ? (
           <>
             <div className="auth-confirm">
-              <div className="auth-confirm__icon" style={{ color: 'var(--danger)' }}>&#x274C;</div>
+              <div className="auth-confirm__icon auth-confirm__icon--danger"><Icon name="x" size={32} /></div>
               <h1 className="auth-title">Verification Failed</h1>
               <p className="auth-sub">The verification link is invalid or has expired.</p>
             </div>
-            <div className="alert alert--warn" style={{ marginBottom: 16 }}>
+            <div className="alert alert--warn alert--mb">
               <Icon name="alert" size={16} />
               <span>Please contact an administrator or request a new verification email.</span>
             </div>
@@ -49,7 +48,7 @@ export default function VerifyAccount() {
         ) : (
           <>
             <div className="auth-confirm">
-              <div className="auth-confirm__icon" style={{ color: 'var(--warning)' }}>&#x23F3;</div>
+              <div className="auth-confirm__icon auth-confirm__icon--warning"><Icon name="clock" size={32} /></div>
               <h1 className="auth-title">Verify your email</h1>
               <p className="auth-sub">We sent a verification link to your email address.</p>
               <p className="auth-sub auth-sub--sm">Click the link in the email to activate your account. If you don&apos;t see it, check your spam folder.</p>
@@ -63,3 +62,4 @@ export default function VerifyAccount() {
     </div>
   );
 }
+

@@ -1,4 +1,3 @@
-import React from 'react';
 import Badge from './Badge.jsx';
 import Icon from './Icon.jsx';
 import DataTable from './DataTable.jsx';

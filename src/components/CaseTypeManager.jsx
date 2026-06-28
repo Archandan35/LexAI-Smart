@@ -1,4 +1,3 @@
-import React from 'react';
 import EntityManager from './EntityManager.jsx';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 

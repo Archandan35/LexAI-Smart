@@ -1,4 +1,3 @@
-import React, { useState, useMemo } from 'react';
 import Card from './Card.jsx';
 import Button from './Button.jsx';
 import Badge from './Badge.jsx';
@@ -9,7 +8,6 @@ import FileDrop from './FileDrop.jsx';
 import FolderPicker from './FolderPicker.jsx';
 import PermissionGate from './PermissionGate.jsx';
 import SyncStatus from './SyncStatus.jsx';
-import { Field, Input, Select } from './Field.jsx';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { preferencesService } from '@/services/preferencesService.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';

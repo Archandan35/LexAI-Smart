@@ -1,9 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Badge from '@/components/Badge.jsx';
-import Icon from '@/components/Icon.jsx';
 import Modal from '@/components/Modal.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
@@ -110,9 +108,9 @@ export default function DatabaseStudio() {
         subtitle="Browse tables, columns, indexes and policies. Execute safe DDL operations."
       />
 
-      <div className="grid-sidebar" style={{ alignItems: 'start' }}>
+      <div className="grid-sidebar db-studio__layout">
         <Card title={`Tables (${tables.length})`} bodyClass="ds-sidebar">
-          <div style={{ marginBottom: 10 }}>
+          <div className="mb-10">
             <Input placeholder="Filter tables…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div className="ds-table-list">
@@ -167,7 +165,7 @@ export default function DatabaseStudio() {
                 {tab === 'schema' && <SchemaTab schemaDef={schemaDef} />}
               </Card>
 
-              <div style={{ marginTop: 16 }}>
+              <div className="mt-16">
                 <PermissionGate perm="settings.manageSettings">
                   <Button
                     size="sm"
@@ -199,7 +197,7 @@ export default function DatabaseStudio() {
           </Select>
         </Field>
         <Field label="Nullable">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5 }}>
+          <label className="db-studio__checkbox-label">
             <input type="checkbox" checked={addColNullable} onChange={(e) => setAddColNullable(e.target.checked)} />
             Allow NULL values
           </label>
@@ -243,7 +241,7 @@ function ColumnsTab({ columns }) {
         <tbody>
           {columns.map((c) => (
             <tr key={c.name}>
-              <td style={{ fontWeight: 600 }}><code>{c.name}</code></td>
+              <td className="font-medium"><code>{c.name}</code></td>
               <td><Badge tone="navy">{c.type}</Badge></td>
             </tr>
           ))}
@@ -263,9 +261,9 @@ function IndexesTab({ indexes, selected, runDdl }) {
         <tbody>
           {indexes.map((ix) => (
             <tr key={ix.name}>
-              <td style={{ fontWeight: 600 }}><code>{ix.name}</code></td>
+              <td className="font-medium"><code>{ix.name}</code></td>
               <td><Badge tone="grey">{ix.column}</Badge></td>
-              <td style={{ textAlign: 'right' }}>
+              <td className="text-right">
                 <PermissionGate perm="settings.manageSettings">
                   <Button size="sm" variant="ghost" icon="trash"
                     onClick={() => runDdl(`dropidx_${ix.name}`, () => databaseDdlService.dropIndex(selected, ix.name), `Index "${ix.name}" dropped.`)}
@@ -290,11 +288,11 @@ function PoliciesTab({ policies, selected, runDdl }) {
         <tbody>
           {policies.map((p) => (
             <tr key={p.policyname}>
-              <td style={{ fontWeight: 600 }}><code>{p.policyname}</code></td>
+              <td className="font-medium"><code>{p.policyname}</code></td>
               <td><Badge tone="navy">{p.cmd}</Badge></td>
-              <td style={{ fontSize: 12.5 }}>{(p.roles || []).join(', ') || 'public'}</td>
-              <td style={{ fontSize: 12.5, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}><code>{p.qual}</code></td>
-              <td style={{ textAlign: 'right' }}>
+              <td className="muted--sm">{(p.roles || []).join(', ') || 'public'}</td>
+              <td className="db-studio__policy-qual"><code>{p.qual}</code></td>
+              <td className="text-right">
                 <PermissionGate perm="settings.manageSettings">
                   <Button size="sm" variant="ghost" icon="trash"
                     onClick={() => runDdl(`droppol_${p.policyname}`, () => databaseDdlService.dropPolicy(p.policyname, selected), `Policy "${p.policyname}" dropped.`)}
@@ -320,16 +318,16 @@ function SchemaTab({ schemaDef }) {
       </div>
       <div className="ds-schema-section">
         <b>Fields ({schemaDef.fields.length})</b>
-        <div className="table-scroll" style={{ marginTop: 8 }}>
+        <div className="table-scroll mt-8">
           <table className="table">
             <thead><tr><th>Field</th><th>Schema Type</th><th>PG Type</th><th>Required</th></tr></thead>
             <tbody>
               {schemaDef.fields.map((f) => (
                 <tr key={f.name}>
-                  <td style={{ fontWeight: 600 }}><code>{f.name}</code></td>
+                  <td className="font-medium"><code>{f.name}</code></td>
                   <td><Badge tone="grey">{f.schemaType}</Badge></td>
                   <td><Badge tone="navy">{f.type}</Badge></td>
-                  <td>{schemaDef.required.includes(f.name) ? <Badge tone="red">Yes</Badge> : <span style={{ color: 'var(--text-faint)' }}>No</span>}</td>
+                  <td>{schemaDef.required.includes(f.name) ? <Badge tone="red">Yes</Badge> : <span className="text-faint">No</span>}</td>
                 </tr>
               ))}
             </tbody>
@@ -338,7 +336,7 @@ function SchemaTab({ schemaDef }) {
       </div>
       <div className="ds-schema-section">
         <b>Indexes ({schemaDef.indexes.length})</b>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+        <div className="flex-row flex-wrap gap-6 mt-8">
           {schemaDef.indexes.map((ix) => (
             <Badge key={ix.name} tone="green">{ix.column}</Badge>
           ))}

@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import { VerificationEngine } from '@/services/setup/VerificationEngine.js';
 import { SqlGenerator } from '@/services/setup/SqlGenerator.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -35,18 +34,18 @@ export default function VerifyStep({ onVerified, manualSql, back }) {
 
   if (phase === 'verifying') {
     return (
-      <div style={{ textAlign: 'center', padding: 40 }}>
+      <div className="wizard-center wizard-center--lg">
         <div className="spinner" />
-        <p style={{ marginTop: 16, color: 'var(--text-soft)' }}>Verifying installation...</p>
+        <p className="wizard-loading-text">Verifying installation...</p>
       </div>
     );
   }
 
   if (phase === 'passed') {
     return (
-      <div style={{ textAlign: 'center', padding: 20 }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>✓</div>
-        <h3 style={{ margin: 0, color: 'var(--green)' }}>All checks passed</h3>
+      <div className="wizard-center wizard-center--sm">
+        <div className="wizard-check">✓</div>
+        <h3 className="wizard-title--green">All checks passed</h3>
         <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>{result?.present?.length} component(s) verified.</p>
       </div>
     );
@@ -56,26 +55,26 @@ export default function VerifyStep({ onVerified, manualSql, back }) {
 
   return (
     <div>
-      <div style={{ padding: 14, borderRadius: 'var(--radius-sm)', background: 'var(--amber-soft)', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+      <div className="wizard-alert-items">
+        <div className="wizard-alert-items__header">
           <StatusBadge status="warn" label="Items Missing" />
-          <span style={{ fontWeight: 600, fontSize: 14 }}>{missing.length} item(s) still need attention</span>
+          <span className="wizard-alert-items__title">{missing.length} item(s) still need attention</span>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+        <div className="wizard-tag-list">
           {missing.map(m => <span key={m} className="tag">{m}</span>)}
         </div>
       </div>
-      {error && <div style={{ padding: 12, borderRadius: 8, background: 'var(--red-soft)', color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{error}</div>}
+      {error && <div className="wizard-alert-box wizard-alert-box--red wizard-alert-box--sm wizard-alert-box--mb-sm">{error}</div>}
       {sqlText && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontWeight: 600, fontSize: 13 }}>SQL for missing items</span>
+        <div className="wizard-sql-section">
+          <div className="wizard-sql-header" style={{ marginBottom: 6 }}>
+            <span className="wizard-sql-title">SQL for missing items</span>
             <Button variant="ghost" size="sm" onClick={() => navigator.clipboard?.writeText(sqlText)}>Copy SQL</Button>
           </div>
-          <pre style={{ maxHeight: 180, overflow: 'auto', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-2)', fontSize: 12 }}>{sqlText}</pre>
+          <pre className="wizard-sql-block wizard-sql-block--sm">{sqlText}</pre>
         </div>
       )}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+      <div className="wizard-actions">
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" icon="refresh" onClick={runVerify}>Verify Again</Button>
       </div>

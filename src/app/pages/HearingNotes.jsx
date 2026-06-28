@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -57,7 +56,7 @@ export default function HearingNotes() {
             <Textarea value={facts} onChange={(e) => setFacts(e.target.value)} placeholder="Override the facts for these notes…" />
           </Field>
           <Field label="Issues (optional — one per line)">
-            <Textarea value={issuesText} onChange={(e) => setIssuesText(e.target.value)} style={{ minHeight: 90 }} placeholder="Leave blank to auto-derive issues" />
+            <Textarea value={issuesText} onChange={(e) => setIssuesText(e.target.value)} className="hearing-notes__issues" placeholder="Leave blank to auto-derive issues" />
           </Field>
           <Button icon="notes" loading={busy} onClick={generate} className="btn--block">Generate Hearing Notes</Button>
         </Card>
@@ -66,14 +65,14 @@ export default function HearingNotes() {
           {busy && <Spinner label="Assembling hearing notes…" />}
           {!busy && !notes && <Card><EmptyState icon="notes" title="No notes yet." hint="Pick a case and generate." /></Card>}
           {!busy && notes && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="flex-col gap-16">
               <Card title="Facts">
-                <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.8 }}>
+                <ol className="hearing-notes__list">
                   {notes.facts.map((f, i) => <li key={i}>{f}</li>)}
                 </ol>
               </Card>
               <Card title="Issues">
-                <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.8 }}>
+                <ol className="hearing-notes__list">
                   {notes.issues.map((q, i) => <li key={i}>{q}</li>)}
                 </ol>
               </Card>
@@ -91,7 +90,7 @@ export default function HearingNotes() {
                 ) : notes.citations.map((c, i) => <CitationCard key={c.id} item={c} rank={i + 1} />)}
               </Card>
               <Card title="Oral Submissions">
-                <div style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{notes.oralSubmissions}</div>
+                <div className="hearing-notes__oral-submissions">{notes.oralSubmissions}</div>
               </Card>
             </div>
           )}

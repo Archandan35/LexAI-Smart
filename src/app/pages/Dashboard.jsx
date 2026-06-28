@@ -1,4 +1,3 @@
-import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '@/hooks/useDashboard.js';
 import Icon from '@/components/Icon.jsx';
@@ -30,7 +29,7 @@ function DonutChart({ segments, size = 120, stroke = 18 }) {
             strokeDasharray={`${dash} ${gap}`}
             strokeDashoffset={-offset * circ}
             strokeLinecap="round"
-            style={{ transform: 'rotate(-90deg)', transformOrigin: 'center', transition: 'stroke-dasharray 0.5s ease' }}
+            className="dash-donut-segment"
           />
         );
         offset += pct;
@@ -108,7 +107,7 @@ export default function Dashboard() {
   const maxCat = Math.max(...categories.map((c) => c.value));
 
   return (
-    <><div className="fade-in dash-desktop-view" style={{ paddingBottom: 40 }}>
+    <><div className="fade-in dash-desktop-view dash-desktop-view__pb">
 
       {/* ---- Greeting row ---- */}
       <div className="dash-greeting-row">
@@ -173,7 +172,7 @@ export default function Dashboard() {
         <div className="card">
           <div className="dash-card-head">
             <span className="dash-card-head__title">Case Status Overview</span>
-            <Icon name="list" size={15} style={{ color: 'var(--text-faint)', cursor: 'pointer' }} />
+            <Icon name="list" size={15} className="dash-card-head__icon" />
           </div>
           <div className="dash-donut-wrap">
             <div className="dash-donut-row">
@@ -185,8 +184,8 @@ export default function Dashboard() {
                       <span className="dash-donut-legend__dot" style={{ background: s.color }} />
                       {s.label}
                     </div>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--navy-900)' }}>{s.value}</span>
+                    <div className="flex-row gap-8 items-center">
+                      <span className="dash-donut-legend__value">{s.value}</span>
                       <span className="dash-donut-legend__pct">({s.pct}%)</span>
                     </div>
                   </div>
@@ -203,7 +202,7 @@ export default function Dashboard() {
             <span className="dash-card-head__link" onClick={() => nav('/cases/order-sheet')}>View All <Icon name="arrow" size={13} /></span>
           </div>
           {upcomingHearings.length === 0 ? (
-            <div style={{ padding: '20px 18px' }}>
+            <div className="dash-padded-content">
               <EmptyState icon="calendar" title="No upcoming hearings." />
             </div>
           ) : upcomingHearings.slice(0, 5).map((h, i) => (
@@ -211,7 +210,7 @@ export default function Dashboard() {
               <div className={`dash-hearing-icon dash-hearing-icon--${HEARING_ICONS[i % HEARING_ICONS.length]}`}>
                 <Icon name="calendar" size={16} />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="flex-1 min-w-0">
                 <div className="dash-hearing__title">{h.purpose || 'Hearing'}</div>
                 <div className="dash-hearing__sub">{h.caseTitle || h.purpose || '—'}</div>
               </div>
@@ -229,13 +228,13 @@ export default function Dashboard() {
       <div className="dash-grid-3">
 
         {/* Recent Cases */}
-        <div className="card" style={{ gridColumn: '1 / 2' }}>
+        <div className="card dash-card--col1">
           <div className="dash-card-head">
             <span className="dash-card-head__title">Recent Cases</span>
             <span className="dash-card-head__link" onClick={() => nav('/cases')}>View All <Icon name="arrow" size={13} /></span>
           </div>
           {activeCases.length === 0 ? (
-            <div style={{ padding: '20px 18px' }}><EmptyState icon="vault" title="No cases yet." /></div>
+            <div className="dash-padded-content"><EmptyState icon="vault" title="No cases yet." /></div>
           ) : (
             <table className="dash-cases-table">
               <thead>
@@ -252,9 +251,9 @@ export default function Dashboard() {
                   <tr key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
                     <td><span className="dash-case-title">{c.title || c.caseNumber}</span></td>
                     <td><span className="dash-case-num">{c.caseNumber}</span></td>
-                    <td style={{ fontSize: 13, color: 'var(--text-soft)' }}>{c.client || '—'}</td>
+                    <td className="dash-cases__client">{c.client || '—'}</td>
                     <td><Badge tone={c.status === 'Active' ? 'green' : c.status === 'On Hold' ? 'amber' : 'grey'}>{c.status || 'Active'}</Badge></td>
-                    <td style={{ fontSize: 12, color: 'var(--text-faint)' }}>{formatDate(c.updatedAt || c.createdAt)}</td>
+                    <td className="dash-cases__date">{formatDate(c.updatedAt || c.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -304,7 +303,7 @@ export default function Dashboard() {
                     <div className="dash-qa__sub">{qa.sub}</div>
                   </div>
                 </div>
-                <Icon name="chevron" size={15} style={{ color: 'var(--text-faint)' }} />
+                <Icon name="chevron" size={15} className="dash-chevron" />
               </div>
             ))}
           </div>
@@ -313,21 +312,21 @@ export default function Dashboard() {
 
       {/* ---- Recent Documents ---- */}
       <div>
-        <div className="dash-card-head" style={{ border: 'none', padding: '0 0 14px', borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
-          <span className="dash-card-head__title" style={{ fontSize: 16 }}>Recent Documents</span>
+        <div className="dash-card-head dash-card-head--documents">
+          <span className="dash-card-head__title dash-card-head__title--lg">Recent Documents</span>
           <span className="dash-card-head__link" onClick={() => nav('/documents')}>View All <Icon name="arrow" size={13} /></span>
         </div>
         {recentDocuments.length === 0 ? (
           <EmptyState icon="file" title="No documents yet." />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+          <div className="dash-doc-grid">
             {recentDocuments.slice(0, 5).map((d) => {
               const variant = docIconVariant(d.name);
               return (
                 <div className="dash-doc-row" key={d.id} onClick={() => nav('/documents')}>
                   <div className="dash-doc-icon-row">
                     <div className={`dash-doc-icon dash-doc-icon--${variant}`}><Icon name="file" size={18} /></div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex-1 min-w-0">
                       <div className="dash-doc__name">{d.name}</div>
                       <div className="dash-doc__date">{formatDate(d.uploadedAt)}</div>
                     </div>
@@ -429,7 +428,7 @@ export default function Dashboard() {
             </div>
           ) : upcomingHearings.slice(0, 3).map((h) => (
             <div className="lexm-case-row" key={h.id} onClick={() => nav('/cases/order-sheet')}>
-              <div className="lexm-case-icon" style={{ background: 'var(--red-soft)', color: 'var(--red)' }}>
+              <div className="lexm-case-icon lexm-case-icon--hearing">
                 <Icon name="calendar" size={16} />
               </div>
               <div className="lexm-case-text">
@@ -437,7 +436,7 @@ export default function Dashboard() {
                 <div className="lexm-case-client">{h.caseTitle || h.purpose || '—'}</div>
               </div>
               <div className="lexm-case-right">
-                <span style={{ fontSize: 12, fontWeight: 650, color: 'var(--navy-600)', whiteSpace: 'nowrap' }}>{formatDate(h.date)}</span>
+                <span className="lexm-case-date">{formatDate(h.date)}</span>
               </div>
             </div>
           ))}
@@ -463,7 +462,7 @@ export default function Dashboard() {
               </div>
               <div className="lexm-case-right">
                 <span className="lexm-badge">{c.status || 'Active'}</span>
-                <Icon name="chevron" size={16} style={{ color: 'var(--text-faint)' }} />
+                <Icon name="chevron" size={16} className="dash-chevron" />
               </div>
             </div>
           ))}

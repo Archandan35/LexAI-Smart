@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Modal from '@/components/Modal.jsx';
-import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import CaseSelect from '@/components/CaseSelect.jsx';
@@ -25,7 +23,6 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
-import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
@@ -599,23 +596,23 @@ export default function OrderSheet() {
                     {/* Date Range */}
                     <div className="cl-filters__row" onClick={() => { }}>
                       <Icon name="calendar" size={16} color="var(--navy-600)" />
-                      <div style={{ flex: 1 }}>
+                      <div className="flex-1">
                         <div className="cl-filters__label">Date Range</div>
                         <div className="cl-filters__value">
                           {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : 'No date filter'}
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                      <input type="text" placeholder="dd-mm-yyyy" value={dateFrom ? DateEngine.formatDate(dateFrom) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setDateFrom(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="text" placeholder="dd-mm-yyyy" value={dateTo ? DateEngine.formatDate(dateTo) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setDateTo(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                    <div className="flex-row gap-8 mb-10">
+                      <input type="text" placeholder="dd-mm-yyyy" value={dateFrom ? DateEngine.formatDate(dateFrom) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setDateFrom(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} className="order-sheet__date-input" />
+                      <input type="text" placeholder="dd-mm-yyyy" value={dateTo ? DateEngine.formatDate(dateTo) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setDateTo(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} className="order-sheet__date-input" />
                     </div>
 
                     {/* Court */}
                     <div className="cl-filters__search">
                       <Icon name="building" size={15} color="var(--navy-600)" />
                       <select
-                        style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, background: 'transparent', fontFamily: 'inherit', color: 'var(--navy-900)', fontWeight: 600 }}
+                        className="order-sheet__filter-select"
                         value={filterCourt}
                         onChange={(e) => setFilterCourt(e.target.value)}
                       >
@@ -628,7 +625,7 @@ export default function OrderSheet() {
                     <div className="cl-filters__search">
                       <Icon name="globe" size={15} color="var(--navy-600)" />
                       <select
-                        style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, background: 'transparent', fontFamily: 'inherit', color: 'var(--navy-900)', fontWeight: 600 }}
+                        className="order-sheet__filter-select"
                         value={filterCourtLocation}
                         onChange={(e) => setFilterCourtLocation(e.target.value)}
                       >
@@ -647,7 +644,7 @@ export default function OrderSheet() {
                     <div className="cl-filters__search">
                       <Icon name="checkSquare" size={15} color="var(--navy-600)" />
                       <select
-                        style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, background: 'transparent', fontFamily: 'inherit', color: 'var(--navy-900)', fontWeight: 600 }}
+                        className="order-sheet__filter-select"
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
                       >
@@ -711,7 +708,7 @@ export default function OrderSheet() {
                           onClick={() => setSelectedCaseId(h.caseId)}
                         >
                           <div className="cl-card__check" onClick={(e) => e.stopPropagation()}>
-                            <input type="checkbox" checked={selectedIds.has(h.id)} onChange={() => toggleSelect(h.id)} style={{ width: 18, height: 18, cursor: 'pointer' }} />
+                            <input type="checkbox" checked={selectedIds.has(h.id)} onChange={() => toggleSelect(h.id)} className="order-sheet__checkbox" />
                           </div>
                           <div className="cl-card__date">
                             <div className="cl-card__date-num">{dayNum}</div>
@@ -810,8 +807,8 @@ export default function OrderSheet() {
               {tab === 'history' && (
                 <div className="flex-col gap-16">
                   {/* Case Select bar inline */}
-                  <div className="flex align-center gap-12" style={{ marginBottom: '16px' }}>
-                    <span className="text-bold text-sm text-soft" style={{ whiteSpace: 'nowrap' }}>Select Case:</span>
+                  <div className="flex align-center gap-12 mb-16">
+                    <span className="text-bold text-sm text-soft text-nowrap">Select Case:</span>
                     <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
                   </div>
                   {!history ? (
@@ -972,7 +969,7 @@ export default function OrderSheet() {
               {/* Table Header controls */}
               <div className="order-sheet__card-header">
                 <div className="cases__card-header-title">Cases ({sortedRows.length})</div>
-                <div className="order-sheet__actions-group" style={{ position: 'relative' }}>
+                <div className="order-sheet__actions-group pos-relative">
                   <button className="order-sheet__action-btn" onClick={exportToCsv}>
                     <Icon name="download" size={13} /> Export
                   </button>
@@ -984,7 +981,7 @@ export default function OrderSheet() {
                   </button>
 
                   {showColumnsMenu && (
-                    <div className="order-sheet__datepicker-popover" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
+                    <div className="order-sheet__datepicker-popover order-sheet__popover-right">
                       {Object.keys(visibleColumns).map(col => (
                         <label key={col} className="flex align-center gap-8 font-medium pointer text-sm">
                           <input type="checkbox" checked={visibleColumns[col]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }))} />
@@ -1001,7 +998,7 @@ export default function OrderSheet() {
                 const selCase = cases.find(c => c.id === selectedCaseId);
                 if (!selCase) return null;
                 return (
-                  <div className="order-sheet__case-info-card" style={{ marginBottom: '14px' }}>
+                  <div className="order-sheet__case-info-card mb-14">
                     <div className="order-sheet__case-info-header">
                       <div className="order-sheet__case-icon-box">
                         <Icon name="balance" size={24} />
@@ -1044,15 +1041,15 @@ export default function OrderSheet() {
               {/* Hearings Table Card */}
               <Card bodyClass="card__body--flush">
                 {paginatedRows.length === 0 ? (
-                  <div style={{ padding: '40px' }}>
+                  <div className="p-40">
                     <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Order Sheet</Button>} />
                   </div>
                 ) : (
                   <table className="table">
                     <thead>
                       <tr>
-                        <th style={{ width: '40px' }}><input type="checkbox" /></th>
-                        {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date {sortDir === 'asc' ? '▲' : '▼'}</th>}
+                        <th className="order-sheet__checkbox-cell"><input type="checkbox" /></th>
+                        {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date <Icon name={sortDir === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} /></th>}
                         {visibleColumns.case && <th>Case Number & Title</th>}
                         {visibleColumns.court && <th>Court</th>}
                         {visibleColumns.bench && <th>Bench</th>}
@@ -1061,7 +1058,7 @@ export default function OrderSheet() {
                         {visibleColumns.postedFor && <th>Posted For</th>}
                         {visibleColumns.judge && <th>Judge</th>}
                         {visibleColumns.status && <th>Status</th>}
-                        {visibleColumns.actions && <th style={{ textAlign: 'right' }}>Actions</th>}
+                        {visibleColumns.actions && <th className="text-right">Actions</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1106,7 +1103,7 @@ export default function OrderSheet() {
                               </td>
                             )}
                             {visibleColumns.actions && (
-                              <td className="order-sheet__cell-actions" style={{ textAlign: 'right' }}>
+                              <td className="order-sheet__cell-actions text-right">
                                 <button className="btn btn--ghost btn--sm" onClick={() => setPreviewHearing(h)} title="View">
                                   <Icon name="eye" size={13} />
                                 </button>
@@ -1161,8 +1158,8 @@ export default function OrderSheet() {
           {tab === 'history' && (
             <div className="flex-col gap-16">
               {/* Case Select bar inline */}
-              <div className="flex align-center gap-12" style={{ marginBottom: '16px' }}>
-                <span className="text-bold text-sm text-soft" style={{ whiteSpace: 'nowrap' }}>Select Case:</span>
+              <div className="flex align-center gap-12 mb-16">
+                <span className="text-bold text-sm text-soft text-nowrap">Select Case:</span>
                 <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
               </div>
 
@@ -1436,14 +1433,14 @@ export default function OrderSheet() {
                             <th>Date</th>
                             <th>Event</th>
                             <th>Details</th>
-                            <th style={{ textAlign: 'right' }}>Document</th>
+                            <th className="text-right">Document</th>
                           </tr>
                         </thead>
                         <tbody>
                           {history.hearings.map((h, i) => {
                             return (
                               <tr key={h.id || i}>
-                                <td style={{ whiteSpace: 'nowrap' }} className="order-sheet__timeline-event-date-cell">{formatDate(h.date)}</td>
+                                <td className="order-sheet__timeline-event-date-cell text-nowrap">{formatDate(h.date)}</td>
                                 <td>
                                   <div className="flex align-center gap-8">
                                     <span className="order-sheet__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
@@ -1451,7 +1448,7 @@ export default function OrderSheet() {
                                   </div>
                                 </td>
                                 <td className="order-sheet__timeline-event-detail"><div className="order-sheet__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
-                                <td style={{ textAlign: 'right' }}>
+                                <td className="text-right">
                                   {h.docRef ? (
                                     <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>
                                       View
@@ -1504,7 +1501,7 @@ export default function OrderSheet() {
                 <button className={`btn btn--sm ${showImport ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setShowImport((v) => !v)}>
                   <Icon name="download" size={13} /> Import
                 </button>
-                <label className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}>
+                <label className="btn btn--sm btn--ghost pointer-cursor">
                   <Icon name="upload" size={13} /> Export
                   <select className="hearing-modal__ie-export-select" onChange={(e) => { const v = e.target.value; if (v === 'json') exportAsJson(); if (v === 'csv') exportAsCsv(); e.target.value = ''; }} onClick={(e) => e.stopPropagation()}>
                     <option value="">—</option>
@@ -1518,8 +1515,8 @@ export default function OrderSheet() {
               </div>
               {showImport && (
                 <div className="hearing-modal__ie-right">
-                  <input type="file" accept=".json,.csv" onChange={handleImportFile} style={{ display: 'none' }} id="hearing-import-file" />
-                  <label htmlFor="hearing-import-file" className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}><Icon name="file" size={13} /> Upload File</label>
+                  <input type="file" accept=".json,.csv" onChange={handleImportFile} className="hidden" id="hearing-import-file" />
+                  <label htmlFor="hearing-import-file" className="btn btn--sm btn--ghost pointer-cursor"><Icon name="file" size={13} /> Upload File</label>
                 </div>
               )}
             </div>

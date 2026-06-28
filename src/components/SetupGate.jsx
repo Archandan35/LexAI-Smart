@@ -1,25 +1,9 @@
-import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import SetupWizard from '@/app/pages/SetupWizard.jsx';
 import Spinner from './Spinner.jsx';
 import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
+import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { userService } from '@/services/userService.js';
-import { getDatabaseProvider } from '@/providers/database/index.js';
-import { listSchemas } from '@/data-provider/schema/index.js';
-
-async function preGrantAllCollections() {
-  const db = getDatabaseProvider();
-  if (typeof db.execSql !== 'function') return;
-  const tables = [...new Set(listSchemas().map((s) => s.collection).filter(Boolean))];
-  tables.push('_sequences');
-  const sql = tables.map((t) => `
-    alter table if exists "${t}" enable row level security;
-    drop policy if exists "${t}_anon_all" on "${t}";
-    create policy "${t}_anon_all" on "${t}" for all to anon using (true) with check (true);
-    grant insert, select, update, delete on table "${t}" to anon;
-  `).join('\n');
-  const res = await db.execSql(sql).catch(() => ({ ok: false }));
-}
 
 export default function SetupGate({ children }) {
   const [state, setState] = useState('checking');
@@ -48,7 +32,7 @@ export default function SetupGate({ children }) {
   };
 
   useEffect(() => { check(); }, []);
-  useEffect(() => { if (state === 'ready') preGrantAllCollections(); }, [state]);
+  useEffect(() => { if (state === 'ready') databaseAdminService.grantAllCollections(); }, [state]);
 
   if (state === 'checking') return <div className="auth-shell"><Spinner /></div>;
   if (state === 'setup') return <SetupWizard detectError={detectError} />;

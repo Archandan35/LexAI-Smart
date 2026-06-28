@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import { Input, Select, Textarea } from '@/components/Field.jsx';
@@ -6,6 +5,21 @@ import Icon from '@/components/Icon.jsx';
 import Modal from '@/components/Modal.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtsLogic } from '@/logic/courtsLogic.js';
+
+const STOP_WORDS = new Set(['of', 'and', 'the', 'in', 'at', 'a', 'an', 'for', 'to']);
+
+function slugShortCode(name) {
+  const cleaned = String(name || '').trim();
+  if (!cleaned) return '';
+  const parenMatch = cleaned.match(/\(([^)]+)\)/);
+  const parenPart = parenMatch ? parenMatch[1] : '';
+  let mainName = cleaned.replace(/\([^)]*\)/g, '').trim();
+  const mainWords = mainName.split(/\s+/).filter(Boolean);
+  const mainAbbrev = mainWords.filter((w) => !STOP_WORDS.has(w.toLowerCase())).map((w) => w[0].toUpperCase()).join('');
+  const parenWords = parenPart.split(/\s+/).filter(Boolean);
+  const parenAbbrev = parenWords.filter((w) => !STOP_WORDS.has(w.toLowerCase())).map((w) => w[0].toUpperCase()).join('');
+  return (mainAbbrev + parenAbbrev).toUpperCase();
+}
 
 export default function Courts() {
   const toast = useToast();
@@ -27,11 +41,8 @@ export default function Courts() {
   // Import summary
   const [importResult, setImportResult] = useState(null);
 
-  // Edit
-  const [editId, setEditId] = useState(null);
-  const [editName, setEditName] = useState('');
-  const [editCode, setEditCode] = useState('');
-  const [editParent, setEditParent] = useState('');
+  // Edit modal
+  const [editModal, setEditModal] = useState(null);
 
   // Bulk delete
   const [selected, setSelected] = useState(new Set());
@@ -96,19 +107,24 @@ export default function Courts() {
     e.target.value = '';
   };
 
-  // Edit
+  // Edit modal
   const startEdit = (item) => {
-    setEditId(item.id);
-    setEditName(item.name);
-    setEditCode(item.short_code || '');
-    setEditParent(item.parent_id || '');
+    setEditModal({
+      id: item.id,
+      name: item.name,
+      short_code: item.short_code || '',
+      parent_id: item.parent_id || '',
+      preview: item.short_code || slugShortCode(item.name),
+    });
   };
 
   const saveEdit = async () => {
-    if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
-    const item = items.find((i) => i.id === editId);
-    const res = await courtsLogic.update(editId, { name: editName, short_code: editCode, parent_id: editParent || null, display_order: item?.display_order, status: item?.status });
-    if (res.ok) { setEditId(null); toast.push('Court updated.', 'success'); await load(); }
+    const m = editModal;
+    if (!m) return;
+    if (!m.name.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
+    const item = items.find((i) => i.id === m.id);
+    const res = await courtsLogic.update(m.id, { name: m.name, short_code: m.short_code, parent_id: m.parent_id || null, display_order: item?.display_order, status: item?.status });
+    if (res.ok) { setEditModal(null); toast.push('Court updated.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
   };
 
@@ -217,21 +233,19 @@ export default function Courts() {
   const renderTree = (nodes, depth = 0) => {
     return nodes.map((item) => {
       const children = getChildren(item.id);
-      const isEditing = editId === item.id;
       const isDragging = dragId === item.id;
       const isDropOver = dropTarget === item.id;
 
       return (
         <React.Fragment key={item.id}>
           <tr
-            draggable={!isEditing}
-            className={isDragging ? 'dragging' : isDropOver ? 'drag-over' : ''}
+            draggable
+            className={isDragging ? 'dragging' : isDropOver ? 'drag-over' : 'courts__row--draggable'}
             onDragStart={(e) => handleDragStart(e, item.id)}
             onDragOver={(e) => handleDragOver(e, item.id)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, item.id)}
             onDragEnd={handleDragEnd}
-            style={{ cursor: isEditing ? 'default' : 'grab' }}
           >
             <td className="courts__cell courts__cell--checkbox">
               <input
@@ -245,53 +259,19 @@ export default function Courts() {
               <span className="courts__name">{item.name}</span>
             </td>
             <td>
-              {isEditing ? (
-                <div onMouseDown={stopRowDnD} onClick={stopRowDnD} onFocus={stopRowDnD}>
-                  <Input
-                    value={editCode}
-                    onChange={(e) => setEditCode(e.target.value)}
-                    placeholder="Auto"
-                    style={{ width: 90 }}
-                  />
-                </div>
-              ) : (
-                <code className="courts__code">{item.short_code || '—'}</code>
-              )}
+              <code className="courts__code">{item.short_code || '—'}</code>
             </td>
-            <td style={{ position: 'relative' }}>
-              {isEditing ? (
-                <>
-                  <div onMouseDown={stopRowDnD} onClick={stopRowDnD} onFocus={stopRowDnD}>
-                    <Input
-                      value={editName}
-                      autoFocus
-                      onChange={(e) => setEditName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                    />
-                  </div>
-                  <div onMouseDown={stopRowDnD} onClick={stopRowDnD} onFocus={stopRowDnD} style={{ position: 'relative', zIndex: 5, marginTop: 6 }}>
-                    <Select
-                      value={editParent}
-                      onChange={(e) => setEditParent(e.target.value)}
-                      options={[{ value: '', label: '— No parent —' }, ...liveOptions(editId)]}
-                      className="courts__parent-select"
-                    />
-                  </div>
-                </>
-              ) : (
-                <span className="muted">
-                  {item.parent_id ? `Child of ${items.find((i) => i.id === item.parent_id)?.name || '—'}` : 'Root level'}
-                </span>
-              )}
+            <td>
+              <span className="muted">
+                {item.parent_id ? `Child of ${items.find((i) => i.id === item.parent_id)?.name || '—'}` : 'Root level'}
+              </span>
             </td>
             <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
             <td>
               <div className="row-actions">
-                {isEditing ? (
-                  <><button className="iconbtn" title="Save" onClick={saveEdit}><Icon name="check" size={15} /></button><button className="iconbtn" title="Cancel" onClick={() => setEditId(null)}><Icon name="close" size={15} /></button></>
-                ) : (
-                  <><button className="iconbtn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button><button className="iconbtn" title="Duplicate" onClick={() => duplicate(item)}><Icon name="layers" size={15} /></button><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(item)}><Icon name="trash" size={15} /></button></>
-                )}
+                <button className="iconbtn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                <button className="iconbtn" title="Duplicate" onClick={() => duplicate(item)}><Icon name="layers" size={15} /></button>
+                <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(item)}><Icon name="trash" size={15} /></button>
               </div>
             </td>
           </tr>
@@ -372,7 +352,7 @@ export default function Courts() {
                 ref={fileInputRef}
                 type="file"
                 accept=".csv,.json,.txt"
-                style={{ display: 'none' }}
+                className="visually-hidden"
                 onChange={handleFileUpload}
               />
             </div>
@@ -473,6 +453,55 @@ export default function Courts() {
                 </ul>
               </>
             )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        open={!!editModal}
+        onClose={() => setEditModal(null)}
+        title={editModal ? `Edit Court: ${editModal.name}` : 'Edit Court'}
+        footer={
+          <>
+            <button className="btn btn--ghost" onClick={() => setEditModal(null)}>Cancel</button>
+            <button className="btn btn--primary" onClick={saveEdit}><Icon name="check" size={15} /> Save</button>
+          </>
+        }
+      >
+        {editModal && (
+          <div className="courts__edit-modal">
+            <div className="flex-col gap-8">
+              <div className="flex-col gap-4">
+                <label className="field-label">Name</label>
+                <Input
+                  value={editModal.name}
+                  autoFocus
+                  onChange={(e) => setEditModal({ ...editModal, name: e.target.value, preview: slugShortCode(e.target.value) || editModal.short_code })}
+                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                />
+              </div>
+              <div className="flex-col gap-4">
+                <label className="field-label">Short Code <span className="muted">(leave empty to auto-generate)</span></label>
+                <Input
+                  value={editModal.short_code}
+                  onChange={(e) => setEditModal({ ...editModal, short_code: e.target.value })}
+                  placeholder={editModal.preview || 'Auto'}
+                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                />
+                {!editModal.short_code && editModal.preview && (
+                  <span className="courts__preview-hint">Will be generated as: <strong>{editModal.preview}</strong></span>
+                )}
+              </div>
+              <div className="flex-col gap-4">
+                <label className="field-label">Parent Court</label>
+                <Select
+                  value={editModal.parent_id}
+                  onChange={(e) => setEditModal({ ...editModal, parent_id: e.target.value })}
+                  options={[{ value: '', label: '— No parent —' }, ...liveOptions(editModal.id)]}
+                />
+              </div>
+            </div>
           </div>
         )}
       </Modal>

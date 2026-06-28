@@ -1,4 +1,3 @@
-import React from 'react';
 
 // SyncStatus — file save/sync indicator.
 // 🟢 synced · 🟡 saving/pending · 🔴 error

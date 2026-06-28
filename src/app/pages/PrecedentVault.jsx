@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input } from '@/components/Field.jsx';
-import Button from '@/components/Button.jsx';
 import { precedentLogic } from '@/logic/precedentLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 

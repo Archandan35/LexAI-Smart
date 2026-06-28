@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 

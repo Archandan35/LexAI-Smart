@@ -1,4 +1,3 @@
-import React from 'react';
 
 // Minimal inline SVG icon set (no icon-library dependency). Stroke-based.
 const PATHS = {

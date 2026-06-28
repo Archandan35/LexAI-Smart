@@ -1,4 +1,3 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 import { settingsCache } from '@/core/settingsCache.js';
 

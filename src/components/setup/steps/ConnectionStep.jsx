@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import Button from '@/components/Button.jsx';
 import { ConnectionManager } from '@/services/setup/ConnectionManager.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -63,7 +62,7 @@ export default function ConnectionStep({ method, onConnected, back }) {
 
   return (
     <div>
-      <p style={{ fontSize: 14, color: 'var(--text-soft)', marginBottom: 16 }}>
+      <p className="wizard-desc">
         {method === 'simple'
           ? 'Select your provider and enter connection details.'
           : 'Enter your database connection details for the selected provider.'}
@@ -71,17 +70,11 @@ export default function ConnectionStep({ method, onConnected, back }) {
 
       {!method && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Database Provider</label>
+          <label className="wizard-form-label" style={{ marginBottom: 6 }}>Database Provider</label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.keys(PROVIDER_FIELDS).map(p => (
               <button key={p} onClick={() => { setProvider(p); setFields({}); setStatus(null); }}
-                style={{
-                  padding: '8px 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
-                  background: provider === p ? 'var(--brand-soft)' : 'var(--surface-2)',
-                  color: provider === p ? 'var(--brand)' : 'var(--text)',
-                  fontWeight: provider === p ? 600 : 400, fontSize: 13, cursor: 'pointer',
-                  transition: 'all 0.15s var(--ease)',
-                }}
+                className={`wizard-provider-btn${provider === p ? ' wizard-provider-btn--active' : ' wizard-provider-btn--inactive'}`}
               >
                 {p.charAt(0).toUpperCase() + p.slice(1)}
               </button>
@@ -90,40 +83,31 @@ export default function ConnectionStep({ method, onConnected, back }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="wizard-form-group">
         {currentFields.map(f => (
           <div key={f.key}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
-              {f.label}
-            </label>
+            <label className="wizard-form-label">{f.label}</label>
             {f.type === 'checkbox' ? (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+              <label className="wizard-form-checkbox">
                 <input type="checkbox" checked={fields[f.key] ?? f.defaultChecked ?? false}
-                  onChange={e => updateField(f.key, e.target.checked)}
-                  style={{ width: 16, height: 16 }} />
+                  onChange={e => updateField(f.key, e.target.checked)} />
                 Enable SSL
               </label>
             ) : f.type === 'select' ? (
               <select value={fields[f.key] || f.defaultValue || ''}
                 onChange={e => updateField(f.key, e.target.value)}
-                style={{
-                  width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border)', fontSize: 14, background: 'var(--surface-2)',
-                }}
+                className="wizard-form-input"
               >
                 {f.options?.map(o => (
                   <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             ) : (
-              <div style={{ position: 'relative' }}>
+              <div>
                 <input value={fields[f.key] || f.defaultValue || ''}
                   onChange={e => updateField(f.key, e.target.value)}
                   type={f.type} placeholder={f.placeholder}
-                  style={{
-                    width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border)', fontSize: 14, background: 'var(--surface-2)',
-                  }} />
+                  className="wizard-form-input" />
               </div>
             )}
           </div>
@@ -131,15 +115,15 @@ export default function ConnectionStep({ method, onConnected, back }) {
       </div>
 
       {status && (
-        <div style={{ marginTop: 16, padding: 14, borderRadius: 'var(--radius-sm)', background: status.ok ? 'var(--green-soft)' : 'var(--red-soft)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className={`wizard-status-box${status.ok ? ' wizard-status-box--green' : ' wizard-status-box--red'}`}>
+          <div className="wizard-status-row">
             <StatusBadge status={status.ok ? 'ok' : 'fail'} label={status.ok ? 'Connected' : 'Failed'} />
-            <span style={{ fontSize: 13, color: 'var(--text)' }}>{status.ok ? 'Connection successful' : status.error}</span>
+            <span className="wizard-status-text">{status.ok ? 'Connection successful' : status.error}</span>
           </div>
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'flex-end' }}>
+      <div className="wizard-actions" style={{ marginTop: 24 }}>
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" icon="bolt" loading={testing} onClick={handleTest} disabled={!allFilled}>
           {testing ? 'Testing...' : 'Test Connection'}

@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 
 export default function SearchableSelect({ value, onChange, options = [], placeholder = 'Select...', style }) {
   const [open, setOpen] = useState(false);

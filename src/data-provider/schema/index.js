@@ -32,6 +32,7 @@ import { SchemaMetaSchema } from './schema_meta.schema.js';
 import { CaseTypesSchema } from './case_types.schema.js';
 import { CourtsSchema } from './courts.schema.js';
 import { BenchTypesSchema } from './bench_types.schema.js';
+import { CauseListTemplatesSchema } from './cause_list_templates.schema.js';
 import { JurisdictionsSchema } from './jurisdictions.schema.js';
 import { ClientsSchema } from './clients.schema.js';
 import { ContactsSchema } from './contacts.schema.js';
@@ -81,6 +82,7 @@ export const schemas = {
   case_types: CaseTypesSchema,
   courts: CourtsSchema,
   bench_types: BenchTypesSchema,
+  cause_list_templates: CauseListTemplatesSchema,
   jurisdictions: JurisdictionsSchema,
   clients: ClientsSchema,
   contacts: ContactsSchema,
@@ -103,7 +105,7 @@ export const schemas = {
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 31;
+export const SCHEMA_VERSION = 32;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

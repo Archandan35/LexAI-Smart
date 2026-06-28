@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import { ConnectionManager } from '@/services/setup/ConnectionManager.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
 
@@ -25,9 +24,9 @@ export default function DetectionStep({ onDetected, back }) {
 
   if (detecting) {
     return (
-      <div style={{ textAlign: 'center', padding: 40 }}>
+      <div className="wizard-center wizard-center--lg">
         <div className="spinner" />
-        <p style={{ marginTop: 16, color: 'var(--text-soft)' }}>Detecting environment...</p>
+        <p className="wizard-loading-text">Detecting environment...</p>
       </div>
     );
   }
@@ -41,14 +40,14 @@ export default function DetectionStep({ onDetected, back }) {
 
   return (
     <div>
-      <p style={{ fontSize: 14, color: 'var(--text-soft)', marginBottom: 16 }}>Environment detected. Review the details below.</p>
-      {error && <div style={{ padding: 12, borderRadius: 8, background: 'var(--red-soft)', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>{error}</div>}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <p className="wizard-desc">Environment detected. Review the details below.</p>
+      {error && <div className="wizard-alert-box wizard-alert-box--red wizard-alert-box--sm wizard-alert-box--mb">{error}</div>}
+      <div className="wizard-info-grid">
         {cards.map(c => (
-          <div key={c.label} style={{ padding: 16, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, marginBottom: 4 }}>{c.label}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16, fontWeight: 700 }}>{c.value}</span>
+          <div key={c.label} className="wizard-info-card">
+            <div className="wizard-info-card__label">{c.label}</div>
+            <div className="wizard-info-card__row">
+              <span className="wizard-info-card__value">{c.value}</span>
               <StatusBadge status={c.status} size="sm" />
             </div>
           </div>

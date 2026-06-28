@@ -1,4 +1,3 @@
-import React from 'react';
 
 const TONE = {
   Active: 'green', Scheduled: 'navy', Adjourned: 'amber', Disposed: 'grey',

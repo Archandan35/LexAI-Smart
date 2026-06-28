@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authLogic } from '@/logic/authLogic.js';
 import { userService } from '@/services/userService.js';
@@ -187,7 +186,7 @@ export default function BootstrapAdmin() {
             )}
           </div>
           <div className="auth-confirm">
-            <div className="auth-confirm__icon">&#x2709;</div>
+            <div className="auth-confirm__icon"><Icon name="mail" size={32} /></div>
             <h1 className="auth-title">Account Created</h1>
             <p className="auth-sub">
               Account created successfully. Please confirm your email before logging in.

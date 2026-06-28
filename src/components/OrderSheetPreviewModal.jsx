@@ -1,4 +1,3 @@
-import React from 'react';
 import Modal from './Modal.jsx';
 import Icon from './Icon.jsx';
 import { formatDate } from '@/utils/format.js';

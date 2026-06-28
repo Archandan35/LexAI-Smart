@@ -1,4 +1,3 @@
-import React from 'react';
 import { Select } from './Field.jsx';
 
 // RoleSelector — dropdown of roles (by code). Reused in Permission Manager,

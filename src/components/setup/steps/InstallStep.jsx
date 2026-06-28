@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { InstallationExecutor } from '@/services/setup/InstallationExecutor.js';
 import { SqlGenerator } from '@/services/setup/SqlGenerator.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -83,22 +82,26 @@ export default function InstallStep({ scanResult, onInstalled, onManualSql }) {
 
   return (
     <div>
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontWeight: 600, fontSize: 14 }}>Installation Progress</span>
+      <div className="wizard-progress">
+        <div className="wizard-progress__header">
+          <span className="wizard-progress__title">Installation Progress</span>
           <StatusBadge status={
             phase === 'done' ? 'ok' : phase === 'failed' ? 'fail' : phase === 'manual' ? 'warn' : 'running'
           } label={
             phase === 'preparing' ? 'Preparing' : phase === 'executing' ? 'Installing...' : phase === 'done' ? 'Complete' : phase === 'failed' ? 'Failed' : 'Manual Required'
           } />
         </div>
-        <div style={{ height: 8, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress.pct}%`, background: phase === 'failed' ? 'var(--red)' : phase === 'done' ? 'var(--green)' : 'var(--brand)', borderRadius: 4, transition: 'width 0.4s var(--ease)' }} />
+        <div className="wizard-progress__track">
+          <div className="wizard-progress__fill"
+            style={{
+              width: `${progress.pct}%`,
+              background: phase === 'failed' ? 'var(--red)' : phase === 'done' ? 'var(--green)' : 'var(--brand)',
+            }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
-          <span style={{ color: 'var(--text-soft)' }}>{progress.label}</span>
+        <div className="wizard-progress__info">
+          <span className="wizard-progress__label">{progress.label}</span>
           {phase === 'executing' && (
-            <span style={{ color: 'var(--text-faint)' }}>
+            <span className="wizard-progress__time">
               {fmtTime(elapsed)}
               {remaining !== null && remaining > 0 && ` / ~${fmtTime(remaining)} remaining`}
             </span>
@@ -107,41 +110,34 @@ export default function InstallStep({ scanResult, onInstalled, onManualSql }) {
       </div>
 
       <button onClick={() => setShowLogs(c => !c)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6, border: 'none',
-          background: 'transparent', cursor: 'pointer', color: 'var(--text-soft)',
-          fontSize: 12, fontWeight: 600, padding: '4px 0', marginBottom: 6,
-        }}
+        className="wizard-log-toggle"
         aria-expanded={showLogs}
       >
         {showLogs ? '▼' : '▶'} {showLogs ? 'Hide' : 'Show'} Execution Log
       </button>
 
       {showLogs && (
-        <div ref={logRef} style={{
-          maxHeight: 240, overflow: 'auto', padding: 12, borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border)', background: 'var(--navy-900)', color: '#b4c2e0',
-          fontSize: 12, fontFamily: 'monospace', lineHeight: 1.7,
-          transition: 'max-height 0.3s var(--ease)',
-        }}>
+        <div ref={logRef} className="wizard-log">
           {logs.map((l, i) => (
-            <div key={i} style={{ color: l.status === 'ok' ? 'var(--green)' : l.status === 'fail' ? 'var(--red)' : l.status === 'warn' ? 'var(--amber)' : '#b4c2e0' }}>
-              <span style={{ opacity: 0.6 }}>[{l.time}]</span> {l.msg}
+            <div key={i} style={{
+              color: l.status === 'ok' ? 'var(--green)' : l.status === 'fail' ? 'var(--red)' : l.status === 'warn' ? 'var(--amber)' : '#b4c2e0',
+            }}>
+              <span className="wizard-log__time">[{l.time}]</span> {l.msg}
             </div>
           ))}
         </div>
       )}
 
       {phase === 'failed' && result && (
-        <div style={{ marginTop: 16, padding: 14, borderRadius: 'var(--radius-sm)', background: 'var(--red-soft)' }}>
-          <div style={{ fontWeight: 600, color: 'var(--red)', marginBottom: 4 }}>Installation Failed</div>
-          <div style={{ fontSize: 13, color: 'var(--text)' }}>{result.error}</div>
+        <div className="wizard-alert-box wizard-alert-box--red wizard-alert-box--mt">
+          <div className="wizard-alert-title">Installation Failed</div>
+          <div className="wizard-alert-text">{result.error}</div>
         </div>
       )}
       {phase === 'manual' && (
-        <div style={{ marginTop: 16, padding: 14, borderRadius: 'var(--radius-sm)', background: 'var(--amber-soft)' }}>
-          <div style={{ fontWeight: 600, color: 'var(--amber)', marginBottom: 4 }}>Manual SQL Required</div>
-          <div style={{ fontSize: 13, color: 'var(--text)' }}>Copy the SQL above and run it in your database SQL editor, then click Verify.</div>
+        <div className="wizard-alert-box wizard-alert-box--amber wizard-alert-box--mt">
+          <div className="wizard-alert-title wizard-alert-title--amber">Manual SQL Required</div>
+          <div className="wizard-alert-text">Copy the SQL above and run it in your database SQL editor, then click Verify.</div>
         </div>
       )}
 

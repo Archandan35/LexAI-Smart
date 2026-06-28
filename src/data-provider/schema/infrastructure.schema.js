@@ -118,6 +118,14 @@ const INFRA_TABLES = [
     fields: { id: 'string', provider: 'string', adapter_name: 'string', adapter_version: 'string', migration_engine: 'string', capabilities: 'json', active: 'boolean', config: 'json', created_at: 'datetime', updated_at: 'datetime' },
     indexes: ['active'],
   },
+  {
+    collection: 'user_role_registry',
+    label: 'User Role Registry',
+    primaryKey: 'user_id',
+    core: false,
+    fields: { user_id: 'string', role_code: 'string', updated_at: 'datetime' },
+    indexes: ['role_code'],
+  },
 ];
 
 INFRA_TABLES.forEach((t) => EntityRegistry.register(t));

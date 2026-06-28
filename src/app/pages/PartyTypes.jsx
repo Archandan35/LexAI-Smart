@@ -1,4 +1,3 @@
-import React, { useState, useCallback, useRef } from 'react';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -55,7 +54,7 @@ function PartyTypeRow({ type, editId, editName, editCode, onEditNameChange, onEd
             <>
               <button className="iconbtn" title="Edit" onClick={() => onStartEdit(type)}><Icon name="edit" size={15} /></button>
               <button className="iconbtn" title="Toggle status" onClick={() => onToggle(type)}>
-                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span className="case-types__toggle-icon">▶</span>}
+                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span className="case-types__toggle-icon"><Icon name="play" size={12} /></span>}
               </button>
               <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => onDelete(type)}><Icon name="trash" size={15} /></button>
             </>

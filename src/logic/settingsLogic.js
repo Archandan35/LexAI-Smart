@@ -1,5 +1,4 @@
 import { settingsService } from '@/services/settingsService.js';
-import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
 const SETTINGS_KEY = 'lexai_settings';

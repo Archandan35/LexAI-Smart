@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import PageHeader from '@/components/PageHeader.jsx';
@@ -52,18 +51,18 @@ export default function Priorities() {
     else { toast.push(res.error, 'error'); }
   };
 
-  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in loading-page"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in">
       <PageHeader icon="flag" title="Priorities" subtitle="Manage case priority levels (Urgent, High, Medium, Low, etc.)." />
 
-      <Card title="Add Priority" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 160px' }}>
+      <Card title="Add Priority" className="mb-16">
+        <div className="flex-row gap-8 items-center flex-wrap">
+          <div className="priorities__input-wrap">
             <Input value={newName} placeholder="Priority name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          <div className="flex-row gap-4 items-center">
             {COLOR_OPTIONS.map((c) => (
               <button
                 key={c}
@@ -82,17 +81,17 @@ export default function Priorities() {
       <Card bodyClass="card__body--flush">
         <table className="table">
           <thead>
-            <tr><th>Order</th><th>Color</th><th>Name</th><th>Status</th><th style={{ width: 110 }}>Actions</th></tr>
+            <tr><th>Order</th><th>Color</th><th>Name</th><th>Status</th><th className="col-actions">Actions</th></tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>No priorities configured.</td></tr>
+              <tr><td colSpan={5} className="empty-table">No priorities configured.</td></tr>
             ) : items.map((item) => (
               <tr key={item.id}>
                 <td><span className="badge">{item.display_order ?? '—'}</span></td>
                 <td>
                   {editId === item.id ? (
-                    <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <div className="priorities__color-picker">
                       {COLOR_OPTIONS.map((c) => (
                         <button
                           key={c}
@@ -112,7 +111,7 @@ export default function Priorities() {
                   {editId === item.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
                   ) : (
-                    <span style={{ fontWeight: 600 }}>{item.name}</span>
+                    <span className="font-medium">{item.name}</span>
                   )}
                 </td>
                 <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status || 'Active'}</span></td>
@@ -130,7 +129,7 @@ export default function Priorities() {
           </tbody>
         </table>
       </Card>
-      <p className="muted" style={{ marginTop: 12, fontSize: 12.5 }}>{items.length} priority level(s) configured.</p>
+      <p className="muted muted--sm mt-12">{items.length} priority level(s) configured.</p>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import React, { useState, useCallback, useRef } from 'react';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -22,7 +21,7 @@ function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEdi
       <td className="case-types__cell case-types__cell--drag case-types__cell--checkbox">
         <input type="checkbox" checked={selected.has(type.id)} onChange={() => onSelect(type.id)} />
       </td>
-      <td className="case-types__cell case-types__cell--drag" style={{ width: 30, cursor: search ? 'default' : 'grab' }}>
+      <td className={`case-types__cell case-types__cell--drag ${search ? 'case-types__cell--no-drag' : ''}`}>
         <span className="case-types__drag-handle">⠿</span>
       </td>
       <td className="case-types__cell">
@@ -56,7 +55,7 @@ function CaseTypeRow({ type, editId, editName, editCode, onEditNameChange, onEdi
             <>
               <button className="iconbtn" title="Edit" onClick={() => onStartEdit(type)}><Icon name="edit" size={15} /></button>
               <button className="iconbtn" title="Toggle status" onClick={() => onToggle(type)}>
-                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span className="case-types__toggle-icon">▶</span>}
+                {type.status === 'Active' ? <Icon name="check" size={15} /> : <span className="case-types__toggle-icon"><Icon name="play" size={12} /></span>}
               </button>
               <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => onDelete(type)}><Icon name="trash" size={15} /></button>
             </>

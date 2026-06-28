@@ -1,5 +1,3 @@
-import React from 'react';
-import Icon from '@/components/Icon.jsx';
 import LibraryPage from '@/components/LibraryPage.jsx';
 import { promptLogic } from '@/logic/promptLogic.js';
 
@@ -29,3 +27,4 @@ export default function PromptLibrary() {
     />
   );
 }
+

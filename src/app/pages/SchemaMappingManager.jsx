@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
 import { SchemaMappingService } from '@/services/schemaMappingService.js';
-import { ProviderCapabilitiesService } from '@/services/providerCapabilitiesService.js';
 import { listSchemas } from '@/data-provider/schema/index.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
@@ -274,21 +272,21 @@ export default function SchemaMappingManager() {
 
           <div className="schema-mapping__rel-row">
             <select value={newRel.fromEntity} onChange={(e) => setNewRel({ ...newRel, fromEntity: e.target.value })}
-              style={{ padding: '4px 8px' }}>
+              className="schema-mapping__select">
               <option value="">From Entity</option>
               {schemas.map((s) => <option key={s.collection} value={s.collection}>{s.collection}</option>)}
             </select>
             <input placeholder="From Field" value={newRel.fromField} onChange={(e) => setNewRel({ ...newRel, fromField: e.target.value })}
-              style={{ padding: '4px 8px', width: 100 }} />
+              className="schema-mapping__input-small" />
             <span>→</span>
             <select value={newRel.toEntity} onChange={(e) => setNewRel({ ...newRel, toEntity: e.target.value })}
-              style={{ padding: '4px 8px' }}>
+              className="schema-mapping__select">
               <option value="">To Entity</option>
               {schemas.map((s) => <option key={s.collection} value={s.collection}>{s.collection}</option>)}
             </select>
             <input placeholder="To Field" value={newRel.toField} onChange={(e) => setNewRel({ ...newRel, toField: e.target.value })}
-              style={{ padding: '4px 8px', width: 100 }} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              className="schema-mapping__input-small" />
+            <label className="flex-row gap-4">
               <input type="checkbox" checked={newRel.cascadeDelete} onChange={(e) => setNewRel({ ...newRel, cascadeDelete: e.target.checked })} />
               Cascade
             </label>

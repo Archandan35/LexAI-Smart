@@ -1,5 +1,3 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { Input } from '@/components/Field.jsx';
@@ -401,7 +399,7 @@ export default function CaseDocuments() {
           </div>
         </div>
         <input ref={fileInputRef} type="file" hidden onChange={handleUpload} accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg,.txt" />
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex-row gap-8">
           <Button variant="primary" icon="upload" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
             {uploading ? 'Uploading…' : '+ Upload Document'}
           </Button>
@@ -442,7 +440,7 @@ export default function CaseDocuments() {
         <aside className="cdoc__sidebar">
           <div className="cdoc__sidebar-head">
             <span className="cdoc__sidebar-title">FOLDERS</span>
-            <div style={{ display: 'flex', gap: 4 }}>
+            <div className="flex-row gap-4">
               <button className="iconbtn" title="Expand / Collapse all" onClick={() => {
                 const allIds = [];
                 const walk = (list) => { list.forEach((f) => { allIds.push(f.id); walk(getChildren(f.id)); }); };
@@ -458,7 +456,7 @@ export default function CaseDocuments() {
 
           {clipboard && (
             <div className="docmgr__clipboard-bar">
-              <span className="muted">{clipboard.type === 'cut' ? '✂️ Move' : '📋 Copy'}: <strong>{clipboard.folder.name}</strong></span>
+              <span className="muted"><Icon name={clipboard.type === 'cut' ? 'scissors' : 'copy'} size={13} /> {clipboard.type === 'cut' ? 'Move' : 'Copy'}: <strong>{clipboard.folder.name}</strong></span>
               <button className="iconbtn" onClick={cancelClipboard}><Icon name="close" size={13} /></button>
             </div>
           )}
@@ -479,7 +477,7 @@ export default function CaseDocuments() {
             <span className="docmgr__count">{docs.length}</span>
           </button>
 
-          {clipboard && <button className="docmgr__paste-btn" onClick={() => pasteHere(null)} style={{ margin: '4px 12px' }}><Icon name="cornerDownRight" size={13} /> Paste to root</button>}
+          {clipboard && <button className="docmgr__paste-btn cdoc__paste-root" onClick={() => pasteHere(null)}><Icon name="cornerDownRight" size={13} /> Paste to root</button>}
 
           {renderTree(filteredRootFolders)}
 
@@ -578,7 +576,7 @@ export default function CaseDocuments() {
                     onClick={() => { if (selectMode) { toggleFolderSelect(f.id); return; } setActiveFolder(f.id); setDocSelected([]); }}
                     onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setCtxMenu({ id: f.id, x: e.clientX, y: e.clientY }); }}
                   >
-                    <div className="cdoc__folder-card-icon" style={{ position: 'relative' }}>
+                    <div className="cdoc__folder-card-icon pos-relative">
                       {selectMode && (
                         <input
                           type="checkbox"
@@ -751,7 +749,7 @@ export default function CaseDocuments() {
             <div className="empty">
               <div className="empty__icon"><Icon name="folder" size={24} /></div>
               <p className="muted">This folder is empty.</p>
-              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <div className="flex-row gap-8 mt-4">
                 <Button size="sm" variant="primary" onClick={() => fileInputRef.current?.click()}>Upload a document</Button>
                 <Button size="sm" variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>Add sub-folder</Button>
               </div>
@@ -760,20 +758,20 @@ export default function CaseDocuments() {
 
           {/* Inline folder creation */}
           {creating && (
-            <div style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="cdoc__create-folder">
               {!bulkAdding ? (
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div className="flex-row gap-6">
                   <Input autoFocus value={newName} placeholder="Folder name..." onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setCreating(false); setBulkAdding(false); } }} />
                   <button className="iconbtn" title="Confirm" onClick={createFolder}><Icon name="check" size={14} /></button>
                   <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="flex-col gap-6">
                   <textarea className="input docmgr__bulk-textarea" autoFocus value={bulkNames} placeholder="Enter folder names, one per line..." onChange={(e) => setBulkNames(e.target.value)} rows={4} />
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div className="flex-row gap-6">
                     <Button size="sm" icon="plus" onClick={bulkAddFolders}>Create All</Button>
                     <Button size="sm" variant="ghost" onClick={() => setBulkAdding(false)}>Single</Button>
-                    <div style={{ flex: 1 }} />
+                    <div className="flex-1" />
                     <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
                   </div>
                 </div>
@@ -789,7 +787,7 @@ export default function CaseDocuments() {
         const f = folders.find((x) => x.id === ctxMenu.id);
         if (!f) return null;
         return (
-          <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: ctxMenu.x, top: ctxMenu.y }}>
+          <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ left: ctxMenu.x, top: ctxMenu.y }}>
             <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); startRename(f); setCtxMenu(null); }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
               Rename
@@ -817,7 +815,7 @@ export default function CaseDocuments() {
 
       {/* Content-panel right-click context menu */}
       {contentCtx && (
-        <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: contentCtx.x, top: contentCtx.y }}>
+        <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ left: contentCtx.x, top: contentCtx.y }}>
           <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setCreating(true); setBulkAdding(false); setNewName(''); setContentCtx(null); }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             Add new folder
@@ -881,7 +879,7 @@ export default function CaseDocuments() {
               <span className="modal__title">{preview.name || 'Document Preview'}</span>
               <button className="modal__close" onClick={() => setPreview(null)}><Icon name="close" size={18} /></button>
             </div>
-            <div className="modal__body" style={{ whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1.7 }}>
+            <div className="modal__body cdoc__preview-body">
               {preview.text || preview.content || 'No preview available.'}
             </div>
           </div>
@@ -891,24 +889,24 @@ export default function CaseDocuments() {
       {/* Folder properties modal */}
       {folderProps && (
         <div className="modal-overlay" onClick={() => setFolderProps(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400 }}>
+          <div className="modal cdoc__props-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal__head">
               <span className="modal__title">
                 <Icon name="folder" size={16} /> {folderProps.name}
               </span>
               <button className="modal__close" onClick={() => setFolderProps(null)}><Icon name="close" size={18} /></button>
             </div>
-            <div className="modal__body" style={{ fontSize: 13, lineHeight: 2 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '4px 12px' }}>
-                <span style={{ color: 'var(--text-faint)' }}>Name</span>
-                <span style={{ fontWeight: 600 }}>{folderProps.name}</span>
-                <span style={{ color: 'var(--text-faint)' }}>Kind</span>
+            <div className="modal__body cdoc__props-body">
+              <div className="cdoc__props-grid">
+                <span className="text-faint">Name</span>
+                <span className="font-medium">{folderProps.name}</span>
+                <span className="text-faint">Kind</span>
                 <span>{folderProps.kind || 'document'}</span>
-                <span style={{ color: 'var(--text-faint)' }}>Sub-folders</span>
+                <span className="text-faint">Sub-folders</span>
                 <span>{getChildren(folderProps.id).length}</span>
-                <span style={{ color: 'var(--text-faint)' }}>Documents</span>
+                <span className="text-faint">Documents</span>
                 <span>{docCounts[folderProps.name] || 0}</span>
-                <span style={{ color: 'var(--text-faint)' }}>Created</span>
+                <span className="text-faint">Created</span>
                 <span>{folderProps.created_at ? formatDate(folderProps.created_at) : '—'}</span>
               </div>
             </div>

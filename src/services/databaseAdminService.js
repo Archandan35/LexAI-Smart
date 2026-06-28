@@ -9,7 +9,7 @@ import { schemaVersionManager } from '@/data-provider/migrations/SchemaVersionMa
 import { SchemaDiffEngine } from '@/data-provider/schema/SchemaDiffEngine.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { config } from '@/config/config.js';
-import { collectionNames, coreCollections, SCHEMA_VERSION } from '@/data-provider/schema/index.js';
+import { collectionNames, coreCollections, listSchemas, SCHEMA_VERSION } from '@/data-provider/schema/index.js';
 
 export const databaseAdminService = {
   // ---- provider info ----
@@ -48,6 +48,21 @@ export const databaseAdminService = {
   getMeta() { return schemaVersionManager.getMeta(); },
   upgrade(target) { return schemaVersionManager.upgrade(target); },
   rollback(target) { return schemaVersionManager.rollback(target); },
+
+  // ---- grant permissions on all collections (setup bootstrap) ----
+  async grantAllCollections() {
+    const db = getDatabaseProvider();
+    if (typeof db.execSql !== 'function') return { ok: true };
+    const tables = [...new Set(listSchemas().map((s) => s.collection).filter(Boolean))];
+    tables.push('_sequences');
+    const sql = tables.map((t) => `
+      alter table if exists "${t}" enable row level security;
+      drop policy if exists "${t}_anon_all" on "${t}";
+      create policy "${t}_anon_all" on "${t}" for all to anon using (true) with check (true);
+      grant insert, select, update, delete on table "${t}" to anon;
+    `).join('\n');
+    return db.execSql(sql).catch(() => ({ ok: false }));
+  },
 
   // ---- data ops (Phase 4) ----
   clearAll() { return seedEngine.clearAll(); },

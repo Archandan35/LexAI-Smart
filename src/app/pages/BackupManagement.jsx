@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBackups } from '@/hooks/useBackups.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -80,7 +79,7 @@ export default function BackupManagement() {
         {STAT_CARDS.map((s) => (
           <div className="stat-card" key={s.label} style={s.wide ? { gridColumn: 'span 1' } : undefined}>
             <div className="stat-card__icon"><Icon name={s.icon} size={20} /></div>
-            <div className="stat-card__value" style={{ fontSize: s.wide ? 16 : 30 }}>{s.value}</div>
+            <div className={`stat-card__value${s.wide ? ' stat-card__value--sm' : ' stat-card__value--lg'}`}>{s.value}</div>
             <div className="stat-card__label">{s.label}</div>
           </div>
         ))}

@@ -1,4 +1,3 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { caseLogic } from '@/logic/caseLogic.js';
 
 // AppDataContext — shares the case list app-wide so dropdowns (order sheet, case

@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
@@ -144,19 +143,19 @@ export default function SchemaManager() {
         </Card>
         <Card>
           <div className="health-cell">
-            <span className="health-cell__value" style={{ color: missingTables ? 'var(--red)' : 'var(--green)' }}>{missingTables}</span>
+            <span className={`health-cell__value${missingTables ? ' health-cell__value--warn' : ' health-cell__value--ok'}`}>{missingTables}</span>
             <span className="health-cell__label">Missing Tables</span>
           </div>
         </Card>
         <Card>
           <div className="health-cell">
-            <span className="health-cell__value" style={{ color: missingCols ? 'var(--amber)' : 'var(--green)' }}>{missingCols}</span>
+            <span className={`health-cell__value${missingCols ? ' health-cell__value--amber' : ' health-cell__value--ok'}`}>{missingCols}</span>
             <span className="health-cell__label">Missing Columns</span>
           </div>
         </Card>
         <Card>
           <div className="health-cell">
-            <span className="health-cell__value" style={{ color: healthScore < 80 ? 'var(--red)' : 'var(--green)' }}>{healthScore}</span>
+            <span className={`health-cell__value${healthScore < 80 ? ' health-cell__value--warn' : ' health-cell__value--ok'}`}>{healthScore}</span>
             <span className="health-cell__label">Health Score</span>
           </div>
         </Card>
@@ -180,7 +179,7 @@ export default function SchemaManager() {
                   {diff.missingTables.map((t) => (
                     <tr key={t.collection}>
                       <td className="fw-600">{t.collection}</td>
-                      <td style={{ color: 'var(--text-soft)', fontSize: 12.5 }}>{t.reason}</td>
+                      <td className="health-cell__detail">{t.reason}</td>
                       <td><Badge tone="amber">Missing</Badge></td>
                     </tr>
                   ))}
@@ -307,7 +306,7 @@ export default function SchemaManager() {
                       </Badge></td>
                       <td><code>{iss.type}</code></td>
                       <td className="fw-600">{iss.collection}</td>
-                    <td style={{ fontSize: 12.5, color: 'var(--text-soft)' }}>{iss.detail}</td>
+                    <td className="health-cell__detail">{iss.detail}</td>
                   </tr>
                 ))}
               </tbody>

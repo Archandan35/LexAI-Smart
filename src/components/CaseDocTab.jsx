@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Icon from './Icon.jsx';
 import Button from './Button.jsx';
 import { Input } from './Field.jsx';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
-import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import storageService from '@/services/storageService.js';
 import { formatDate, bytes } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';

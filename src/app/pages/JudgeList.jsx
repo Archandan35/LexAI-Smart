@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import { Input } from '@/components/Field.jsx';
@@ -55,29 +54,29 @@ export default function JudgeList() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase()) || (i.designation || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in loading-page"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in">
       <PageHeader icon="users" title="Judges" subtitle="Manage judges and presiding officers." />
 
-      <Card title="Add Judge" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+      <Card title="Add Judge" className="mb-16">
+        <div className="flex-row gap-8 flex-wrap">
+          <div className="judge-list__input-name">
             <Input value={newName} placeholder="Judge name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
-          <div style={{ flex: '0 1 100px', minWidth: 0 }}>
+          <div className="judge-list__input-code">
             <Input value={newCode} placeholder="Code…" onChange={(e) => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
-          <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+          <div className="judge-list__input-desig">
             <Input value={newDesignation} placeholder="Designation…" onChange={(e) => setNewDesignation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
           <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
         </div>
       </Card>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <div className="datatable__search" style={{ flex: 1 }}>
+      <div className="judge-list__toolbar">
+        <div className="datatable__search judge-list__search">
           <Icon name="search" size={15} />
           <input value={search} placeholder="Search judges…" onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -86,7 +85,7 @@ export default function JudgeList() {
       <Card bodyClass="card__body--flush">
         <table className="table">
           <thead>
-            <tr><th>Name</th><th>Code</th><th>Designation</th><th>Status</th><th style={{ width: 110 }}>Actions</th></tr>
+            <tr><th>Name</th><th>Code</th><th>Designation</th><th>Status</th><th className="col-actions">Actions</th></tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
@@ -97,7 +96,7 @@ export default function JudgeList() {
                   {editId === item.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
                   ) : (
-                    <span style={{ fontWeight: 600 }}>{item.name}</span>
+                    <span className="font-medium">{item.name}</span>
                   )}
                 </td>
                 <td>
@@ -129,7 +128,7 @@ export default function JudgeList() {
           </tbody>
         </table>
       </Card>
-      <p className="muted" style={{ marginTop: 12, fontSize: 12.5 }}>{items.length} judge(s) configured.</p>
+      <p className="muted muted--sm mt-12">{items.length} judge(s) configured.</p>
     </div>
   );
 }

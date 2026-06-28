@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useCallback } from 'react';
 
 const STEP_LABELS = [
   'Welcome', 'Method', 'Connect', 'Detect', 'Analyze',
@@ -28,51 +27,26 @@ export default function ProgressTimeline({ currentStep, goToStep }) {
     goToStep(idx);
   }, [mobile, goToStep]);
 
-  const sidebarStyle = mobile ? {
-    position: 'fixed', top: 0, left: 0, bottom: 0,
-    width: 220, zIndex: 50,
-    transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
-    transition: 'transform 0.3s var(--ease)',
-    boxShadow: mobileOpen ? '4px 0 30px rgba(0,0,0,0.25)' : 'none',
-  } : {
-    width: collapsed ? 68 : 220, minWidth: collapsed ? 68 : 220,
-    transition: 'width 0.3s var(--ease), min-width 0.3s var(--ease)',
-  };
-
   return (
     <>
       {mobile && mobileOpen && (
-        <div onClick={() => setMobileOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(15,31,61,0.4)', zIndex: 49 }} />
+        <div className="wizard-overlay" onClick={() => setMobileOpen(false)} />
       )}
-      <div style={{
-        padding: collapsed && !mobile ? '28px 8px' : '28px 16px',
-        borderRight: '1px solid var(--border)',
-        background: 'var(--surface)',
-        display: 'flex', flexDirection: 'column', gap: 2,
-        overflow: 'hidden',
-        ...sidebarStyle,
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: collapsed && !mobile ? 20 : 16, padding: collapsed && !mobile ? '0 4px' : '0 8px',
-        }}>
+      <div className={
+        `wizard-sidebar${collapsed && !mobile ? ' wizard-sidebar--collapsed' : ''}` +
+        (mobile ? ` wizard-sidebar--mobile wizard-sidebar--mobile-${mobileOpen ? 'open' : 'closed'}` :
+          ` wizard-sidebar--${collapsed ? 'narrow' : 'expanded'}`)
+      }>
+        <div className={
+          `wizard-sidebar__header${collapsed && !mobile ? ' wizard-sidebar__header--collapsed' : ''}`
+        }>
           {(!collapsed || mobile) && (
-            <div style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.08em', color: 'var(--text-faint)',
-              whiteSpace: 'nowrap', overflow: 'hidden',
-            }}>
+            <div className="wizard-sidebar__label">
               {mobile ? '' : 'Setup Progress'}
             </div>
           )}
           <button onClick={() => { if (mobile) setMobileOpen(false); else setCollapsed(c => !c); }}
-            style={{
-              width: 28, height: 28, border: 'none', borderRadius: 6,
-              background: 'transparent', cursor: 'pointer',
-              color: 'var(--text-soft)', display: 'grid', placeItems: 'center',
-              fontSize: 16, flexShrink: 0,
-            }}
+            className="wizard-sidebar__toggle"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {mobile ? '✕' : collapsed ? '☰' : '◀'}
@@ -83,32 +57,17 @@ export default function ProgressTimeline({ currentStep, goToStep }) {
           const isDone = idx < currentStep;
           const isCurrent = idx === currentStep;
           const isFuture = idx > currentStep;
+          const circleClass = isDone ? 'wizard-step-btn__circle--done' : isCurrent ? 'wizard-step-btn__circle--active' : 'wizard-step-btn__circle--future';
+          const btnClass =
+            `wizard-step-btn${isDone ? ' wizard-step-btn--done' : ''}${isCurrent ? ' wizard-step-btn--active' : ''}${collapsed && !mobile ? ' wizard-step-btn--collapsed' : ''}`;
           return (
             <button key={label}
+              className={btnClass}
               onClick={() => isDone && handleGoToStep(idx)}
               disabled={!isDone}
-              style={{
-                display: 'flex', alignItems: 'center', gap: collapsed && !mobile ? 0 : 10,
-                padding: collapsed && !mobile ? '8px 0' : '8px 10px',
-                justifyContent: collapsed && !mobile ? 'center' : 'flex-start',
-                border: 'none', borderRadius: 8,
-                cursor: isDone ? 'pointer' : 'default',
-                background: isCurrent ? 'var(--brand-soft)' : 'transparent',
-                color: isCurrent ? 'var(--brand)' : isDone ? 'var(--text)' : 'var(--text-faint)',
-                fontWeight: isCurrent ? 600 : 400, fontSize: 13,
-                textAlign: 'left', width: '100%',
-                opacity: isFuture ? 0.45 : 1,
-                transition: 'all 0.2s var(--ease)',
-                whiteSpace: 'nowrap', overflow: 'hidden',
-              }}
+              style={{ opacity: isFuture ? 0.45 : 1 }}
             >
-              <span style={{
-                width: 22, height: 22, borderRadius: '50%',
-                display: 'grid', placeItems: 'center',
-                fontSize: 11, fontWeight: 700, flexShrink: 0,
-                background: isDone ? 'var(--green)' : isCurrent ? 'var(--brand)' : 'var(--border)',
-                color: '#fff',
-              }}>
+              <span className={`wizard-step-btn__circle ${circleClass}`}>
                 {isDone ? '✓' : idx}
               </span>
               {(!collapsed || mobile) && <span>{label}</span>}
@@ -117,17 +76,7 @@ export default function ProgressTimeline({ currentStep, goToStep }) {
         })}
       </div>
       {mobile && !mobileOpen && (
-        <button onClick={() => setMobileOpen(true)}
-          style={{
-            position: 'fixed', top: 12, left: 12, zIndex: 45,
-            width: 38, height: 38, border: '1px solid var(--border)',
-            borderRadius: 10, background: 'var(--surface)',
-            cursor: 'pointer', color: 'var(--text-soft)',
-            display: 'grid', placeItems: 'center', fontSize: 18,
-            boxShadow: 'var(--shadow-sm)',
-          }}
-          aria-label="Open setup menu"
-        >
+        <button className="wizard-hamburger" onClick={() => setMobileOpen(true)} aria-label="Open setup menu">
           ☰
         </button>
       )}
