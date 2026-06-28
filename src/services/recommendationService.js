@@ -36,9 +36,8 @@ export const recommendationService = {
     for (const fn of findings.missingFunctions || []) {
       add({
         id: `create_function_${fn}`, category: 'function', action: 'create', target: fn,
-        label: `Create function "${fn}"`, description: `Required DB function missing.`,
+        label: `Create function "${fn}"`, description: `Run the main installation SQL to create this function with its proper definition.`,
         severity: 'critical',
-        sql: `CREATE OR REPLACE FUNCTION public.${fn}() RETURNS void LANGUAGE plpgsql AS $$ BEGIN NULL; END; $$;`,
       });
     }
 

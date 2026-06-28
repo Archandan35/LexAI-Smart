@@ -378,6 +378,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const [result, setResult] = useState(null);
   const [progress, setProgress] = useState(null);
   const [sql, setSql] = useState('');
+  const [planSql, setPlanSql] = useState('');
   const [plan, setPlan] = useState(null);
   const [installResult, setInstallResult] = useState(null);
   const [validateResult, setValidateResult] = useState(null);
@@ -447,6 +448,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
     setError('');
     setResult(null);
     setSql('');
+    setPlanSql('');
     setPlan(null);
     setInstallResult(null);
     setValidateResult(null);
@@ -515,7 +517,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
         const timeout = new Promise((_, r) => setTimeout(() => r(new Error('Plan generation timed out')), 15000));
         const p = await Promise.race([planPromise, timeout]);
         setPlan(p);
-        if (p?.sql) setSql(p.sql);
+        if (p?.sql) { setSql(p.sql); setPlanSql(p.sql); }
         setProgress({ step: 3, total: 7, label: 'Running comprehensive database scan...', status: 'working' });
         const sc = await runScanAndCompare();
         setPreScan({ comparison: sc.comparison });
@@ -555,8 +557,14 @@ export default function SetupWizard({ detectError: propDetectError }) {
         await handlePostVerify();
         return;
       }
-      const sql = stillMissing.map((r) => safeSql(r)).filter(Boolean).join('\n\n');
-      setSql(sql);
+      const functionItems = stillMissing.filter(r => r.category === 'function');
+      const nonFunctionItems = stillMissing.filter(r => r.category !== 'function');
+      let newSql = nonFunctionItems.map(r => safeSql(r)).filter(Boolean).join('\n\n');
+      if (functionItems.length > 0) {
+        if (newSql) newSql += '\n\n';
+        newSql += `-- ${functionItems.length} function(s) still need definition. Re-run the main SQL (shown above) to create them with their proper signatures.`;
+      }
+      setSql(newSql);
       setBusy(false);
       setError(`Still missing: ${stillMissing.length} item(s). Copy the SQL below, run it in your database, then click Verify again.`);
     } catch (e) {
@@ -749,6 +757,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
       setPlan(p);
       const sqlText = p.sql || '-- No SQL generated for this provider.\n-- Your provider creates collections automatically.';
       setCopySql(sqlText);
+      if (p?.sql) setPlanSql(p.sql);
       if (p.present?.length > 0 && p.missing?.length === 0) {
         setError('All tables already exist. Only system SQL will run.');
       }
@@ -1222,7 +1231,12 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
                     <div className="dm-mt" style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 16, marginTop: 16, background: 'var(--surface-1)' }}>
                       <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px 0' }}>SQL for Selected Items ({selectedIds.size})</h4>
-                      <pre className="code-block wizard-sql" style={{ maxHeight: 300, overflow: 'auto' }}>{sql || recommendations.filter((r) => selectedIds.has(r.id)).map((r) => safeSql(r)).filter(Boolean).join('\n\n')}</pre>
+                      <pre className="code-block wizard-sql" style={{ maxHeight: 300, overflow: 'auto' }}>{(() => {
+                        const supplementary = sql && sql !== planSql;
+                        if (planSql && supplementary) return planSql + '\n\n-- === Additional SQL for Missing Items ===\n\n' + sql;
+                        if (planSql) return planSql;
+                        return sql || recommendations.filter((r) => selectedIds.has(r.id)).map((r) => safeSql(r)).filter(Boolean).join('\n\n');
+                      })()}</pre>
                       <div className="toolbar-row dm-toolbar-mt" style={{ gap: 8 }}>
                         <Button variant="ghost" icon="copy" size="sm" onClick={handleCopySql}>
                           {sqlCopied ? 'Copied!' : 'Copy SQL'}
