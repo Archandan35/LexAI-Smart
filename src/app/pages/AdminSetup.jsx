@@ -14,7 +14,7 @@ import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const TIMEOUT_MS = 10000;
 
-export default function BootstrapAdmin() {
+export default function AdminSetup() {
   const { logs, clearLogs, copyLogs } = useLogCapture();
   const { refreshUser } = useAuth();
   const { settings } = useSettings();
@@ -37,7 +37,7 @@ export default function BootstrapAdmin() {
   }, []);
 
   const initialize = useCallback(async () => {
-    console.log('[Bootstrap] mount');
+    console.log('[AdminSetup] mount');
     setStatus('Loading...');
     setTimedOut(false);
     setLoading(true);
@@ -45,20 +45,20 @@ export default function BootstrapAdmin() {
     const timer = setTimeout(() => {
       if (!mountedRef.current) return;
       timedOutRef.current = true;
-      console.warn('[Bootstrap] TIMEOUT — 10s elapsed');
+      console.warn('[AdminSetup] TIMEOUT — 10s elapsed');
       setTimedOut(true);
       setError('Request timed out. Check that the database provider is reachable and API credentials are correct.');
     }, TIMEOUT_MS);
 
     try {
-      console.log('[Bootstrap] initialize start');
+      console.log('[AdminSetup] initialize start');
 
-      console.log('[Bootstrap] loading users');
+      console.log('[AdminSetup] loading users');
       const users = await userService.list();
-      console.log('[Bootstrap] users count:', users.length);
+      console.log('[AdminSetup] users count:', users.length);
 
       if (users.length > 0) {
-        console.log('[Bootstrap] users exist — redirecting');
+        console.log('[AdminSetup] users exist — redirecting');
         clearTimeout(timer);
         if (mountedRef.current) setLoading(false);
         const session = await authLogic.restore();
@@ -66,33 +66,33 @@ export default function BootstrapAdmin() {
         return;
       }
 
-      console.log('[Bootstrap] loading roles');
+      console.log('[AdminSetup] loading roles');
       const roles = await roleService.list();
-      console.log('[Bootstrap] roles count:', roles.length);
+      console.log('[AdminSetup] roles count:', roles.length);
 
       if (!roles || roles.length === 0) {
-        console.warn('[Bootstrap] NO ROLES FOUND');
+        console.warn('[AdminSetup] NO ROLES FOUND');
         setError('No roles found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
         clearTimeout(timer);
         if (mountedRef.current) setLoading(false);
         return;
       }
 
-      console.log('[Bootstrap] checking Admin role');
+      console.log('[AdminSetup] checking Admin role');
       const hasSuperAdmin = roles.some((r) => r.code === 'Admin');
-      console.log('[Bootstrap] Admin role found:', hasSuperAdmin);
+      console.log('[AdminSetup] Admin role found:', hasSuperAdmin);
 
       if (!hasSuperAdmin) {
-        console.warn('[Bootstrap] Admin role missing');
+        console.warn('[AdminSetup] Admin role missing');
         setError('Admin role not found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
         clearTimeout(timer);
         if (mountedRef.current) setLoading(false);
         return;
       }
 
-      console.log('[Bootstrap] rendering form');
+      console.log('[AdminSetup] rendering form');
     } catch (e) {
-      console.error('[Bootstrap] initialize error:', e);
+      console.error('[AdminSetup] initialize error:', e);
       if (!timedOutRef.current) setError(e.message || 'Failed to initialize.');
     } finally {
       clearTimeout(timer);
@@ -192,7 +192,7 @@ export default function BootstrapAdmin() {
             <p className="auth-sub">
               Account created successfully. Please confirm your email before logging in.
             </p>
-            <p className="auth-sub bootstrap-admin__sub-mt">
+            <p className="auth-sub admin-setup__sub-mt">
               Check <strong>{email}</strong> for a confirmation link from your auth provider.
             </p>
             <div className="dm-toolbar-mt">
