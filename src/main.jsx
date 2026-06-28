@@ -5,9 +5,17 @@ import App from './app/App.jsx';
 import './styles/index.css';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  const { pathname, search, hash } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const id = setTimeout(() => window.scrollTo(0, 0), 50);
+    return () => clearTimeout(id);
+  }, [pathname, search, hash]);
   return null;
+}
+
+if (typeof window !== 'undefined' && 'scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
