@@ -11,10 +11,12 @@ export function usePartyTypes() {
     setLoading(true);
     try {
       const data = await partyTypeLogic.list();
-      const names = (Array.isArray(data) ? data : []).map((p) => p.name);
-      cached = { partyTypes: names, raw: data };
-      setPartyTypes(names);
-    } catch { setPartyTypes([]); }
+      const list = Array.isArray(data) ? data : [];
+      cached = { partyTypes: list };
+      setPartyTypes(list);
+    } catch {
+      setPartyTypes([]);
+    }
     setLoading(false);
   }, []);
 
