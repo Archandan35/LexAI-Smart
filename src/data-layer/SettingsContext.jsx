@@ -1,6 +1,7 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useCallback, useEffect } from 'react';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 import { settingsCache } from '@/core/settingsCache.js';
+
 
 const DEFAULTS = {
   siteTitle: 'LexAI',
