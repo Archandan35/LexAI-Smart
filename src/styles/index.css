@@ -962,6 +962,13 @@ select {
   border-bottom: none;
 }
 
+/* ---------- Setup Wizard ---------- */
+@media (max-width: 767px) {
+  .wizard-content {
+    padding: 60px 16px 40px !important;
+  }
+}
+
 /* ---------- Misc ---------- */
 .page-header {
   display: flex;

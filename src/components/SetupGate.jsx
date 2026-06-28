@@ -18,9 +18,7 @@ async function preGrantAllCollections() {
     create policy "${t}_anon_all" on "${t}" for all to anon using (true) with check (true);
     grant insert, select, update, delete on table "${t}" to anon;
   `).join('\n');
-  console.log('[PreGrant] applying RLS policies for', tables.length, 'tables');
   const res = await db.execSql(sql).catch(() => ({ ok: false }));
-  console.log('[PreGrant] result:', res);
 }
 
 export default function SetupGate({ children }) {
@@ -45,8 +43,6 @@ export default function SetupGate({ children }) {
       }
       setState('ready');
     } catch (e) {
-      console.warn('[LexAI SetupGate] detect threw:', e);
-      setDetectError(`Detection error: ${e.message}. Check browser console for details.`);
       setState('setup');
     }
   };
@@ -57,9 +53,7 @@ export default function SetupGate({ children }) {
   if (state === 'checking') return <div className="auth-shell"><Spinner /></div>;
   if (state === 'setup') return <SetupWizard detectError={detectError} />;
   if (state === 'bootstrap') {
-    if (location.pathname === '/bootstrap-admin') {
-      return children;
-    }
+    if (location.pathname === '/bootstrap-admin') return children;
     return <Navigate to="/bootstrap-admin" replace />;
   }
   return children;
