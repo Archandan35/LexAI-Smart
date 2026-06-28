@@ -208,6 +208,22 @@ const resolveSql = (r) => {
   return null;
 };
 
+const safeSql = (r) => {
+  if (r.sql) return r.sql;
+  const sql = resolveSql(r);
+  if (!sql) return null;
+  if (r.action === 'create' && r.category === 'policy') {
+    return `DO $$ BEGIN CREATE POLICY "${r.target}" ON public.${r.table} FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`;
+  }
+  if (r.action === 'create' && r.category === 'trigger') {
+    return `DROP TRIGGER IF EXISTS ${r.target} ON public.${r.table || 'table_name'};\n${sql}`;
+  }
+  if (r.action === 'create' && r.category === 'foreignKey') {
+    return `DO $$ BEGIN ${sql} EXCEPTION WHEN duplicate_object THEN NULL; END $$;`;
+  }
+  return sql;
+};
+
 function ChangePreview({ recommendations, selectedIds, duplicateActions, duplicateScanResult }) {
   const selected = recommendations.filter((r) => selectedIds.has(r.id));
   const dupRemoves = Object.entries(duplicateActions || {}).filter(([, a]) => a === 'remove');
@@ -234,7 +250,7 @@ function ChangePreview({ recommendations, selectedIds, duplicateActions, duplica
         <div key={cat} className="dm-mt">
           <h4 style={{ fontSize: 14, fontWeight: 600, margin: 0, marginBottom: 6, textTransform: 'capitalize' }}>{cat} ({items.length})</h4>
           {items.map((r) => {
-            const sql = resolveSql(r);
+            const sql = safeSql(r);
             return (
               <div key={r.id} className="wizard-preview-item">
                 <div className="flex-row gap-8" style={{ alignItems: 'center' }}>
@@ -431,7 +447,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
   const getApprovedSql = () => {
     const approved = recommendations.filter((r) => selectedIds.has(r.id));
-    return approved.map((r) => resolveSql(r)).filter(Boolean).join('\n\n');
+    return approved.map((r) => safeSql(r)).filter(Boolean).join('\n\n');
   };
 
   // --- SIMPLE SETUP ---
@@ -479,6 +495,14 @@ export default function SetupWizard({ detectError: propDetectError }) {
       setError('Select at least one item to proceed, or go back.');
       return;
     }
+    const criticalItems = recommendations.filter((r) =>
+      r.severity === 'critical' && (r.category === 'table' || r.category === 'function')
+    );
+    const unselectedCritical = criticalItems.filter((r) => !selectedIds.has(r.id));
+    if (unselectedCritical.length > 0) {
+      setError(`Cannot proceed: ${unselectedCritical.length} critical item(s) must be selected (${unselectedCritical.map((r) => r.target).join(', ')}).`);
+      return;
+    }
     goToStep(5);
   };
 
@@ -489,7 +513,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
       let executed = [];
 
       for (const r of approved) {
-        const sql = resolveSql(r);
+        const sql = safeSql(r);
         if (sql) {
           const res = await InstallationExecutor.executeSql(sql);
           if (res.ok) {
@@ -537,7 +561,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
       setExecPhase('done');
       setInstallResult({ success: executed.every((e) => e.status === 'ok'), steps: executed });
       setBusy(false);
-      if (executed.every((e) => e.status === 'ok' || e.status === 'skipped')) {
+      if (executed.every((e) => e.status === 'ok')) {
         goToStep(6);
         await handlePostVerify();
       } else {
@@ -584,7 +608,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
         if (cmp.summary.missingTables === 0 && cmp.summary.missingFunctions === 0) {
           checks.push({ name: 'Required Tables', status: 'ok', details: 'All required tables present' });
         } else {
-          checks.push({ name: 'Required Tables', status: 'warn', details: `${cmp.summary.missingTables} table(s) missing` });
+          checks.push({ name: 'Required Tables', status: 'fail', details: `${cmp.summary.missingTables} table(s), ${cmp.summary.missingFunctions} function(s) missing — cannot proceed` });
         }
         if (cmp.summary.missingPolicies === 0) {
           checks.push({ name: 'Required Policies', status: 'ok', details: 'All required policies present' });
@@ -594,10 +618,16 @@ export default function SetupWizard({ detectError: propDetectError }) {
       }
 
       const issueCount = checks.filter((c) => c.status === 'warn' || c.status === 'fail').length;
+      const blockCount = checks.filter((c) => c.status === 'fail').length;
       const v = await ValidationEngine.validateInstallation();
-      setValidateResult({ ...v, valid: v.valid && issueCount === 0, issueCount: v.issueCount + issueCount, checks: [...(v.checks || []), ...checks] });
+      const fullyValid = v.valid && blockCount === 0;
+      setValidateResult({ ...v, valid: fullyValid, issueCount: v.issueCount + issueCount, checks: [...(v.checks || []), ...checks] });
       setBusy(false);
-      goToStep(7);
+      if (fullyValid) {
+        goToStep(7);
+      } else {
+        setError(`${blockCount} critical issue(s) must be resolved before proceeding.`);
+      }
     } catch (e) {
       setError(e?.message || 'Verification failed.');
       setBusy(false);
@@ -678,12 +708,20 @@ export default function SetupWizard({ detectError: propDetectError }) {
       const text = copySql || sql;
       if (!text) { setExecSqlError('No SQL to execute.'); setExecSqlBusy(false); return; }
       const pre = await InstallationExecutor.preValidateSql(text);
-      if (pre.conflicts?.length > 0) {
-        setExecSqlError(`${pre.conflicts.length} duplicate object${pre.conflicts.length !== 1 ? 's' : ''} found. Remove from source or use filtered SQL.`);
+      const sqlToRun = pre.allExist ? '' : (pre.filteredSql || text);
+      if (pre.allExist) {
+        setExecSqlDone(true);
+        setExecSqlBusy(false);
+        setExecSqlError('');
+        goToStep(5);
+        handleVerifySql();
+        return;
+      }
+      if (!sqlToRun.length) {
+        setExecSqlError('No SQL to execute — all objects already exist or SQL is empty.');
         setExecSqlBusy(false);
         return;
       }
-      const sqlToRun = pre.filteredSql || text;
       const res = await InstallationExecutor.executeSql(sqlToRun);
       if (!res.ok) {
         setExecSqlError(res.error || 'SQL execution failed.');
@@ -727,10 +765,13 @@ export default function SetupWizard({ detectError: propDetectError }) {
     const res = await databaseManagerLogic.detect();
     setBusy(false);
     if (res.ok && res.data.installed) {
-      goToStep(6);
       const v = await ValidationEngine.validateInstallation();
       setValidateResult(v);
-      if (v.valid) goToStep(6);
+      if (v.valid) {
+        goToStep(6);
+      } else {
+        setError(`${v.issueCount} issue(s) found after SQL execution. Review and fix before continuing.`);
+      }
     } else {
       setError('Installation not detected. Run the SQL and click Verify again.');
     }

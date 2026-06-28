@@ -29,7 +29,7 @@ export const recommendationService = {
         id: `create_policy_${p.name}`, category: 'policy', action: 'create', target: p.name, table: p.table,
         label: `Create policy "${p.name}" on "${p.table}"`, description: `Missing RLS policy.`,
         severity: 'warning',
-        sql: `CREATE POLICY "${p.name}" ON public.${p.table} FOR ALL TO authenticated USING (true) WITH CHECK (true);`,
+        sql: `DO $$ BEGIN CREATE POLICY "${p.name}" ON public.${p.table} FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
       });
     }
 
@@ -48,7 +48,7 @@ export const recommendationService = {
         label: `Create foreign key "${fk.name}"`,
         description: `FK from ${fk.from}.${fk.from_col} to ${fk.to}.`,
         severity: 'warning',
-        sql: `ALTER TABLE public.${fk.from} ADD CONSTRAINT ${fk.name} FOREIGN KEY (${fk.from_col}) REFERENCES public.${fk.to}(id) ON DELETE ${fk.on_delete || 'CASCADE'};`,
+        sql: `DO $$ BEGIN ALTER TABLE public.${fk.from} ADD CONSTRAINT ${fk.name} FOREIGN KEY (${fk.from_col}) REFERENCES public.${fk.to}(id) ON DELETE ${fk.on_delete || 'CASCADE'}; EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
       });
     }
 
@@ -82,10 +82,10 @@ export const recommendationService = {
     for (const trig of findings.missingTriggers || []) {
       const table = guessTriggerTable(trig);
       add({
-        id: `create_trigger_${trig}`, category: 'trigger', action: 'create', target: trig,
+        id: `create_trigger_${trig}`, category: 'trigger', action: 'create', target: trig, table,
         label: `Create trigger "${trig}"`, description: `Missing DB trigger.`,
         severity: 'warning',
-        sql: `CREATE TRIGGER ${trig} AFTER INSERT ON public.${table} FOR EACH ROW EXECUTE FUNCTION public.${trig}();`,
+        sql: `DROP TRIGGER IF EXISTS ${trig} ON public.${table};\nCREATE TRIGGER ${trig} AFTER INSERT ON public.${table} FOR EACH ROW EXECUTE FUNCTION public.${trig}();`,
       });
     }
 

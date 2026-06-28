@@ -261,7 +261,9 @@ export const InstallationExecutor = {
     // Clean up extra blank lines left by removals
     filteredSql = filteredSql.replace(/\n{3,}/g, '\n\n').trim();
 
-    return { ok: true, conflicts, extras, filteredSql };
+    const allExist = conflicts.length > 0 && filteredSql.length === 0;
+
+    return { ok: true, conflicts, extras, filteredSql, allExist };
   },
 
   async executeSql(sql) {
