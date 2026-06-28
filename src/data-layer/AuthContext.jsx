@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useCallback, useEffect, useMemo } from 'react';
 import { authLogic } from '@/logic/authLogic.js';
 import { roleService } from '@/services/roleService.js';
 import { rbacLogic } from '@/logic/rbacLogic.js';
@@ -64,7 +64,7 @@ export function useAuth() {
   return useContext(AuthContext) || {
     user: null, roles: [], booting: false, isAuthenticated: false,
     can: () => false, has: () => false, canViewModule: () => false, isSuperuser: false,
-    login: async () => ({ ok: false }), logout: async () => {}, refreshUser: async () => {}, loadRoles: async () => [],
+    login: async () => ({ ok: false }), logout: async () => { }, refreshUser: async () => { }, loadRoles: async () => [],
     perms: { permissions: new Set(), sourceOf: () => 'none' },
   };
 }
