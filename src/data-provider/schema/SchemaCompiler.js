@@ -575,8 +575,8 @@ function systemSqlForeignKeys({ onlyCollections } = {}) {
     '-- ============================================================',
     '-- All safe_create_fk calls run after registry tables AND application',
     '-- tables are created, so referenced tables/columns are guaranteed to exist.',
+    "alter table roles add constraint if not exists uq_roles_code unique (code);",
     ...lines,
-    "alter table roles add constraint uq_roles_code unique (code);",
   ].join('\n');
 }
 
