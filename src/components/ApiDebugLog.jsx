@@ -28,7 +28,14 @@ export default function ApiDebugLog({ entries, onClear }) {
   const endRef = useRef(null);
 
   useEffect(() => {
-    if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (endRef.current) {
+      const threshold = 150;
+      const scrollBottom = window.innerHeight + window.scrollY;
+      const docHeight = document.documentElement.scrollHeight;
+      if (scrollBottom >= docHeight - threshold) {
+        endRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }, [entries]);
 
   const errorCount = entries.filter((e) => e.type === 'error').length;
