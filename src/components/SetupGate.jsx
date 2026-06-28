@@ -17,7 +17,7 @@ export default function SetupGate({ children }) {
       if (res.data?.authError) {
         setDetectError(`Auth error: ${res.data.authError}. Check the provider API key and ensure it has access to the project.`);
       }
-      if (!res.ok || res.data.needsSetup) {
+      if (!res.ok) {
         setState('setup');
         return;
       }

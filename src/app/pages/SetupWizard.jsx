@@ -85,13 +85,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
   };
 
   const handleLaunch = () => {
-    WizardLogger.info('Restarting setup - completing setup');
-    setStep(1);
-    setMethod(null);
-    setScanResult(null);
-    setSqlText('');
-    setHealth(null);
-    setError('');
+    WizardLogger.info('Setup complete - launching application');
+    window.location.href = '/bootstrap-admin';
   };
 
   const [verifying, setVerifying] = useState(false);
