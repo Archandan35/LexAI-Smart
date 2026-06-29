@@ -4,7 +4,7 @@ import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
 import CaseTypeManager from './CaseTypeManager.jsx';
 import CrudManager from './CrudManager.jsx';
-import Field from './Field.jsx';
+import Field, { Input, Textarea } from './Field.jsx';
 import SearchableSelect from './SearchableSelect.jsx';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
