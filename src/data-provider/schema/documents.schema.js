@@ -9,6 +9,7 @@ export const DocumentsSchema = {
     case_id: 'string',
     name: 'string',
     folder: 'string',
+    folder_id: 'string',
     mime: 'string',
     size: 'number',
     ref: 'string',
@@ -24,7 +25,7 @@ export const DocumentsSchema = {
   relations: [
     { field: 'case_id', references: 'cases', on: 'id' },
   ],
-  indexes: ['case_id', 'folder', 'sync_status'],
+  indexes: ['case_id', 'folder', 'folder_id', 'sync_status'],
 };
 
 export default DocumentsSchema;

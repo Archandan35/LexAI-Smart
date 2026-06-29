@@ -1,29 +1,16 @@
 import { caseFolderService } from '@/services/caseFolderService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
+import { storageService } from '@/services/storageService.js';
 import { draftsRepository } from '@/data-layer/repositories/draftsRepository.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
-import { folderTemplateLogic } from '@/logic/folderTemplateLogic.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
 
 // caseFolderLogic — per-case folder management for documents and drafts.
 export const caseFolderLogic = {
-  // Create the default folder set for a case (called on case creation). Idempotent.
+  // Return existing folders for a case. No auto-creation of template subfolders.
+  // The parent case folder is created in caseLogic.create().
   async ensureForCase(caseId) {
-    const existing = await caseFolderService.list(caseId);
-    if (existing.length) return existing;
-    const allTemplates = await folderTemplateLogic.list();
-    const docTemplates = allTemplates.filter((t) => t.kind === 'document');
-    const draftTemplates = allTemplates.filter((t) => t.kind === 'draft');
-    let order = 0;
-    for (const tpl of docTemplates) {
-      // eslint-disable-next-line no-await-in-loop
-      await caseFolderService.create({ caseId, name: tpl.name, kind: 'document', order: order++, system: true, createdAt: DateEngine.now() });
-    }
-    for (const tpl of draftTemplates) {
-      // eslint-disable-next-line no-await-in-loop
-      await caseFolderService.create({ caseId, name: tpl.name, kind: 'draft', order: order++, system: true, createdAt: DateEngine.now() });
-    }
     return caseFolderService.list(caseId);
   },
 
@@ -31,6 +18,17 @@ export const caseFolderLogic = {
     const rows = await this.ensureForCase(caseId);
     const filtered = kind ? rows.filter((f) => f.kind === kind) : rows;
     return [...filtered].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  },
+
+  async getAllDescendantIds(parentId, allFolders) {
+    const ids = [];
+    if (!allFolders || !allFolders.length) return ids;
+    const walk = (pid) => {
+      const children = allFolders.filter((f) => f.parent_id === pid || f.parentId === pid);
+      for (const c of children) { ids.push(c.id); walk(c.id); }
+    };
+    walk(parentId);
+    return ids;
   },
 
   async create(caseId, name, kind, user, parentId) {
@@ -47,28 +45,65 @@ export const caseFolderLogic = {
   async rename(folder, name, user) {
     const n = (name || '').trim();
     if (!n) return fail('Folder name is required.');
-    // Re-tag any items currently filed under the old name.
+    // Items are linked by folder_id now, so just update the folder name.
+    // For backward compatibility, also update items that still use the old name field.
     const repo = folder.kind === 'draft' ? draftsRepository : documentsRepository;
     const items = await repo.getAll({ caseId: folder.caseId, folder: folder.name });
     for (const it of items) {
-      // eslint-disable-next-line no-await-in-loop
-      await repo.update(it.id, { folder: n });
+      if (it.folder && !it.folder_id) {
+        // eslint-disable-next-line no-await-in-loop
+        await repo.update(it.id, { folder: n });
+      }
     }
     await caseFolderService.update(folder.id, { name: n });
     await caseActivityService.record(folder.caseId, 'folder.rename', `Renamed folder "${folder.name}" → "${n}"`, user);
     return ok(true);
   },
 
+  // Cascade delete: removes folder + all descendants + their documents.
+  // Documents linked by folder_id are deleted; old name-linked docs fall back to parent.
   async remove(folder, { moveTo = 'Miscellaneous' } = {}, user) {
+    const allFolders = await caseFolderService.list(folder.caseId);
+    const descIds = await this.getAllDescendantIds(folder.id, allFolders);
+    const allIds = [...descIds, folder.id];
+
     const repo = folder.kind === 'draft' ? draftsRepository : documentsRepository;
-    const items = await repo.getAll({ caseId: folder.caseId, folder: folder.name });
-    // Reassign items to a fallback folder rather than orphaning them.
-    for (const it of items) {
+
+    // Collect documents from all folders (by folder_id)
+    let allDocs = [];
+    for (const fid of allIds) {
       // eslint-disable-next-line no-await-in-loop
-      await repo.update(it.id, { folder: moveTo });
+      const docs = await repo.getAll({ caseId: folder.caseId, folder_id: fid });
+      allDocs = allDocs.concat(docs);
     }
-    await caseFolderService.remove(folder.id);
-    await caseActivityService.record(folder.caseId, 'folder.delete', `Deleted folder "${folder.name}" (moved ${items.length} item(s) to ${moveTo})`, user);
+
+    // Backward compat: docs linked by old folder name (no folder_id) — move to parent
+    const nameItems = await repo.getAll({ caseId: folder.caseId, folder: folder.name });
+    for (const it of nameItems) {
+      if (it.folder && !it.folder_id) {
+        // eslint-disable-next-line no-await-in-loop
+        await repo.update(it.id, { folder: moveTo });
+      }
+    }
+
+    // Delete document binaries + metadata
+    const uniqueDocs = allDocs.filter((d, i, a) => a.findIndex((x) => x.id === d.id) === i);
+    for (const doc of uniqueDocs) {
+      // eslint-disable-next-line no-await-in-loop
+      if (doc.ref) await storageService.deleteDocument(doc.id, doc.ref);
+    }
+
+    // Delete folders (deepest first)
+    for (const fid of [...allIds].reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await caseFolderService.remove(fid);
+    }
+
+    await caseActivityService.record(
+      folder.caseId, 'folder.delete',
+      `Deleted folder "${folder.name}" and ${uniqueDocs.length} document(s) from ${allIds.length} folder(s)`,
+      user,
+    );
     return ok(true);
   },
 };

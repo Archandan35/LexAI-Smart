@@ -2,6 +2,7 @@ import { caseService } from '@/services/caseService.js';
 import { draftingService } from '@/services/draftingService.js';
 import { citationService } from '@/services/citationService.js';
 import { caseFolderService } from '@/services/caseFolderService.js';
+import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { reminderService } from '@/services/reminderService.js';
@@ -72,7 +73,8 @@ export const caseLogic = {
     if (deleteFolders) {
       const folders = await caseFolderService.list(id);
       for (const f of folders) {
-        await caseFolderService.remove(f.id);
+        // eslint-disable-next-line no-await-in-loop
+        await caseFolderLogic.remove(f, {}, user);
       }
     }
     await caseActivityService.record(id, 'case.delete', 'Case deleted', user);
@@ -82,6 +84,11 @@ export const caseLogic = {
   async bulkRemove(ids, user) {
     for (const id of ids) {
       // eslint-disable-next-line no-await-in-loop
+      const folders = await caseFolderService.list(id);
+      for (const f of folders) {
+        // eslint-disable-next-line no-await-in-loop
+        await caseFolderLogic.remove(f, {}, user);
+      }
       await caseService.deleteCase(id);
     }
     return ok({ count: ids.length });

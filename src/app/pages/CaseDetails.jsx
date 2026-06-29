@@ -632,7 +632,7 @@ export default function CaseDetails() {
                     />
                   ) : (
                     folders.filter((f) => f.kind === 'document').map((f) => {
-                      const count = documents.filter((d) => d.folder === f.name).length;
+                    const count = documents.filter((d) => (d.folder_id || d.folder) === (f.id || f.name)).length;
                       return (
                         <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
                           <div className="list-row__icon"><Icon name="folder" size={15} /></div>

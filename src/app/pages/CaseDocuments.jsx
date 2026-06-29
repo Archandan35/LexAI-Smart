@@ -5,6 +5,8 @@ import { Input } from '@/components/Field.jsx';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
 import storageService from '@/services/storageService.js';
+import { fileLogic } from '@/logic/fileLogic.js';
+import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, bytes } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
@@ -55,6 +57,7 @@ function StatCard({ icon, value, label, sub }) {
 /* ── main ── */
 export default function CaseDocuments() {
   const toast = useToast();
+  const { user } = useAuth();
   const [docs, setDocs] = useState([]);
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -134,7 +137,7 @@ export default function CaseDocuments() {
 
   const docCounts = useMemo(() => {
     const m = {};
-    docs.forEach((d) => { m[d.folder] = (m[d.folder] || 0) + 1; });
+    docs.forEach((d) => { const key = d.folder_id || d.folder; m[key] = (m[key] || 0) + 1; });
     return m;
   }, [docs]);
 
@@ -187,7 +190,7 @@ export default function CaseDocuments() {
 
   const visible = !activeFolder
     ? docs
-    : docs.filter((d) => d.folder === getFolderName(activeFolder));
+    : docs.filter((d) => (d.folder_id || d.folder) === (activeFolder || getFolderName(activeFolder)));
 
   const sorted = useMemo(() => {
     let arr = [...visible];
@@ -249,22 +252,21 @@ export default function CaseDocuments() {
   const cancelRename = () => setEditingId(null);
 
   const deleteFolder = async (f) => {
-    const descIds = getAllDescendantIds(f.id);
-    const allIds = [...descIds.reverse(), f.id];
-    if (!confirm(`Delete "${f.name}"${descIds.length > 0 ? ` and ${descIds.length} sub-folder(s)` : ''}?`)) return;
-    for (const id of allIds) await caseFoldersRepository.delete(id).catch(() => { });
+    if (!confirm(`Delete "${f.name}" and all of its files?`)) return;
+    await fileLogic.deleteFolder(f, {}, user);
     toast.push('Folder deleted.', 'success');
-    if (activeFolder === f.id || descIds.includes(activeFolder)) setActiveFolder(null);
+    if (activeFolder === f.id || getAllDescendantIds(f.id).includes(activeFolder)) setActiveFolder(null);
     await load();
   };
 
   const bulkDeleteFolders = async () => {
     if (!folderSelected.size) return;
-    const allIds = new Set(folderSelected);
-    for (const id of folderSelected) getAllDescendantIds(id).forEach((did) => allIds.add(did));
-    if (!confirm(`Delete ${allIds.size} folder(s)?`)) return;
-    for (const id of [...allIds].reverse()) await caseFoldersRepository.delete(id).catch(() => { });
-    toast.push(`Deleted ${allIds.size} folder(s).`, 'success');
+    if (!confirm(`Delete ${folderSelected.size} folder(s) and all of their files?`)) return;
+    for (const id of folderSelected) {
+      const f = folders.find((x) => x.id === id);
+      if (f) try { await fileLogic.deleteFolder(f, {}, user); } catch {}
+    }
+    toast.push(`Deleted ${folderSelected.size} folder(s).`, 'success');
     setFolderSelected(new Set()); await load();
   };
 
@@ -316,7 +318,7 @@ export default function CaseDocuments() {
     setUploading(true);
     try {
       const folder = activeFolder ? getFolderName(activeFolder) || 'Miscellaneous' : 'Miscellaneous';
-      await storageService.uploadDocument(file, { folder });
+      await storageService.uploadDocument(file, { folder, folderId: activeFolder });
       toast.push('Document uploaded.', 'success');
       await load();
     } catch (err) {
@@ -339,7 +341,7 @@ export default function CaseDocuments() {
     const isSelected = folderSelected.has(f.id);
     const canPaste = clipboard && clipboard.folderId !== f.id && !getAllDescendantIds(f.id).includes(clipboard.folderId);
     const hasChildren = children.length > 0;
-    const count = docCounts[f.name] || 0;
+    const count = docCounts[f.id] || docCounts[f.name] || 0;
 
     const filteredChildren = folderSearch
       ? children.filter((c) => folderMatches(c, folderSearch))
@@ -662,7 +664,7 @@ export default function CaseDocuments() {
                               <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                               </button>
-                              <button className="cdoc__action-btn" title="Download">
+                              <button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                               </button>
                               <div className="cdoc__action-more-wrap" onClick={(e) => e.stopPropagation()}>
@@ -672,11 +674,11 @@ export default function CaseDocuments() {
                                 {docMenuId === d.id && (
                                   <div className="cdoc__doc-menu">
                                     <button className="cdoc__doc-menu-item" onClick={() => { setPreview(d); setDocMenuId(null); }}>Preview</button>
-                                    <button className="cdoc__doc-menu-item">Download</button>
-                                    <button className="cdoc__doc-menu-item">Rename</button>
-                                    <button className="cdoc__doc-menu-item">Move to…</button>
+                                    <button className="cdoc__doc-menu-item" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) { window.open(url, '_blank'); setDocMenuId(null); } }}>Download</button>
+                                    <button className="cdoc__doc-menu-item" onClick={async () => { const n = prompt('Rename document:', d.name); if (n && n.trim()) { await fileLogic.renameDocument(d.id, n.trim()); setDocMenuId(null); await load(); } }}>Rename</button>
+                                    <button className="cdoc__doc-menu-item" onClick={async () => { const n = prompt('Move to folder:'); if (n && n.trim()) { await fileLogic.moveDocument(d, n.trim(), null, user); setDocMenuId(null); await load(); } }}>Move to…</button>
                                     <div className="cdoc__doc-menu-divider" />
-                                    <button className="cdoc__doc-menu-item cdoc__doc-menu-item--danger">Delete</button>
+                                    <button className="cdoc__doc-menu-item cdoc__doc-menu-item--danger" onClick={async () => { if (confirm(`Delete "${d.name}"?`)) { await fileLogic.deleteDocument(d, user); setDocMenuId(null); await load(); } }}>Delete</button>
                                   </div>
                                 )}
                               </div>
@@ -733,7 +735,7 @@ export default function CaseDocuments() {
                           <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                           </button>
-                          <button className="cdoc__action-btn" title="Download">
+                          <button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                           </button>
                         </div>

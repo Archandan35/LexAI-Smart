@@ -9,9 +9,9 @@ import { ok, fail } from '@/utils/result.js';
 // fileLogic — keeps pages/components out of the service layer for document, OCR,
 // folder and sync operations (Pages → Logic → Services → Providers).
 export const fileLogic = {
-  async uploadDocument(file, { caseId, folder } = {}, user) {
+  async uploadDocument(file, { caseId, folder, folderId } = {}, user) {
     try {
-      const rec = await storageService.uploadDocument(file, { caseId, folder });
+      const rec = await storageService.uploadDocument(file, { caseId, folder, folderId });
       await caseActivityService.record(caseId, 'document.upload', `Uploaded "${rec.name}" to ${folder}`, user);
       return ok(rec);
     } catch (e) { return fail(e); }
@@ -22,8 +22,8 @@ export const fileLogic = {
   listDocuments: (caseId) => caseService.listDocuments(caseId),
   extract: (file) => ocrService.extract(file),
 
-  async moveDocument(doc, folder, user) {
-    const row = await storageService.moveDocument(doc.id, folder);
+  async moveDocument(doc, folder, folderId, user) {
+    const row = await storageService.moveDocument(doc.id, folder, folderId);
     await caseActivityService.record(doc.caseId, 'document.move', `Moved "${doc.name}" → ${folder}`, user);
     return ok(row);
   },
@@ -43,10 +43,10 @@ export const fileLogic = {
     if (docs[0]) await caseActivityService.record(docs[0].caseId, 'document.delete', `Deleted ${docs.length} document(s)`, user);
     return ok({ count: docs.length });
   },
-  async bulkMove(docs, folder, user) {
+  async bulkMove(docs, folder, folderId, user) {
     for (const d of docs) {
       // eslint-disable-next-line no-await-in-loop
-      await storageService.moveDocument(d.id, folder);
+      await storageService.moveDocument(d.id, folder, folderId);
     }
     if (docs[0]) await caseActivityService.record(docs[0].caseId, 'document.move', `Moved ${docs.length} document(s) → ${folder}`, user);
     return ok({ count: docs.length });

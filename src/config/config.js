@@ -49,6 +49,8 @@ export const config = {
       clientId: env.VITE_GOOGLE_DRIVE_CLIENT_ID || '',
       // NOTE: secret/refresh token must live on a backend, never in the bundle.
       refreshToken: env.VITE_GOOGLE_DRIVE_REFRESH_TOKEN || '',
+      // Backend proxy URL that holds OAuth secrets and makes Drive API calls.
+      backendUrl: env.VITE_GOOGLE_DRIVE_BACKEND_URL || '',
     },
   },
 };

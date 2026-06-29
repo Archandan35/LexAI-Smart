@@ -1,16 +1,17 @@
-import { getStorageProvider } from '@/providers/storage/index.js';
+import { getFileStorageProvider } from '@/providers/file-storage/index.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { getOCRProvider } from '@/providers/ocr/index.js';
 import { fileSyncService } from './fileSyncService.js';
 import { nowISO } from '@/utils/id.js';
 
 // storageService — the SINGLE entry point the UI/logic use for case & draft
-// files. It persists the binary via the configured StorageProvider, a metadata
-// row via the DatabaseProvider, and triggers cloud sync via fileSyncService.
+// files. It persists the binary via the unified FileStorageProvider interface
+// (which handles primary + Google Drive dual-write automatically), creates a
+// metadata row via the DatabaseProvider, and triggers cloud sync.
 // UI code never imports a provider directly — everything goes through here.
 export const storageService = {
   async upload(file, { caseId, folder = 'Miscellaneous', ocr = false } = {}) {
-    const stored = await getStorageProvider().upload(file);
+    const stored = await getFileStorageProvider().upload(file);
     let text = '';
     if (ocr) {
       try { ({ text } = await getOCRProvider().extract(file)); } catch { text = ''; }
@@ -19,14 +20,16 @@ export const storageService = {
   },
 
   // Upload + create the `documents` metadata row in one step (with OCR).
-  async uploadDocument(file, { caseId, folder = 'Miscellaneous', ocr = true } = {}) {
-    const stored = await getStorageProvider().upload(file);
+  // folderId is the case_folders.id; folder name is resolved by the caller for display.
+  async uploadDocument(file, { caseId, folder = 'Miscellaneous', folderId = null, ocr = true } = {}) {
+    const fileRef = folderId ? `${folderId}/${file.name}` : `${folder}/${file.name}`;
+    const stored = await getFileStorageProvider().upload(file, fileRef);
     let text = '';
     if (ocr) {
       try { ({ text } = await getOCRProvider().extract(file)); } catch { text = ''; }
     }
     return this.createDocumentRecord({
-      caseId: caseId || null, name: stored.name, folder, mime: stored.mime, size: stored.size, ref: stored.ref, text,
+      caseId: caseId || null, name: stored.name, folder, folder_id: folderId, mime: stored.mime, size: stored.size, ref: stored.ref, text,
     });
   },
 
@@ -38,11 +41,11 @@ export const storageService = {
     return synced || record;
   },
 
-  getUrl: (ref) => getStorageProvider().getUrl(ref),
-  download: (ref) => getStorageProvider().download(ref),
+  getUrl: (ref) => getFileStorageProvider().getUrl(ref),
+  download: (ref) => getFileStorageProvider().download(ref),
 
-  async moveDocument(id, folder) {
-    const row = await documentsRepository.update(id, { folder });
+  async moveDocument(id, folder, folderId) {
+    const row = await documentsRepository.update(id, { folder, folder_id: folderId || null });
     await fileSyncService.onChange('move', row);
     return row;
   },
@@ -61,7 +64,7 @@ export const storageService = {
   },
 
   async deleteDocument(id, ref) {
-    if (ref) await getStorageProvider().delete(ref);
+    if (ref) await getFileStorageProvider().delete(ref);
     await fileSyncService.onChange('delete', { id, ref });
     return documentsRepository.delete(id);
   },

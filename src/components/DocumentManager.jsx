@@ -41,11 +41,11 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
   const docFolders = folders.filter((f) => f.kind === 'document');
   const counts = useMemo(() => {
     const m = {};
-    documents.forEach((d) => { m[d.folder] = (m[d.folder] || 0) + 1; });
+    documents.forEach((d) => { const key = d.folder_id || d.folder; m[key] = (m[key] || 0) + 1; });
     return m;
   }, [documents]);
 
-  const visible = activeFolder === 'all' ? documents : documents.filter((d) => d.folder === activeFolder);
+  const visible = activeFolder === 'all' ? documents : documents.filter((d) => (d.folder_id || d.folder) === activeFolder);
 
   const createFolder = async (name) => {
     const res = await fileLogic.createFolder(caseId, name, 'document', user);
@@ -54,7 +54,9 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
 
   const doUpload = async () => {
     if (!pendingFile || !uploadFolder) { toast.push('Pick a file and folder.', 'error'); return; }
-    const res = await fileLogic.uploadDocument(pendingFile, { caseId, folder: uploadFolder }, user);
+    const targetFolder = folders.find((f) => f.id === uploadFolder);
+    const folderName = targetFolder ? targetFolder.name : 'Miscellaneous';
+    const res = await fileLogic.uploadDocument(pendingFile, { caseId, folder: folderName, folderId: uploadFolder }, user);
     if (res.ok) { toast.push('Document uploaded.', 'success'); setUploadOpen(false); setPendingFile(null); setUploadFolder(''); onChanged?.(); }
     else toast.push(res.error, 'error');
   };
@@ -75,8 +77,10 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
 
   const move = async () => {
     if (!moveFolder) return;
-    if (moveTarget === 'bulk') await fileLogic.bulkMove(documents.filter((d) => selected.includes(d.id)), moveFolder, user);
-    else await fileLogic.moveDocument(moveTarget, moveFolder, user);
+    const targetFolder = folders.find((f) => f.id === moveFolder);
+    const folderName = targetFolder ? targetFolder.name : 'Miscellaneous';
+    if (moveTarget === 'bulk') await fileLogic.bulkMove(documents.filter((d) => selected.includes(d.id)), folderName, moveFolder, user);
+    else await fileLogic.moveDocument(moveTarget, folderName, moveFolder, user);
     toast.push('Moved.', 'success'); setMoveTarget(null); setMoveFolder(''); setSelected([]); onChanged?.();
   };
 
@@ -91,7 +95,7 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
     <div className="row-actions">
       <button className="iconbtn" title="View" onClick={() => view1(d)}><Icon name="eye" size={15} /></button>
       <PermissionGate perm="documents.download"><button className="iconbtn" title="Download" onClick={() => downloadDoc(d)}><Icon name="download" size={15} /></button></PermissionGate>
-      <PermissionGate perm="documents.edit"><button className="iconbtn" title="Move" onClick={() => { setMoveTarget(d); setMoveFolder(d.folder); }}><Icon name="move" size={15} /></button></PermissionGate>
+      <PermissionGate perm="documents.edit"><button className="iconbtn" title="Move" onClick={() => { setMoveTarget(d); setMoveFolder(d.folder_id || ''); }}><Icon name="move" size={15} /></button></PermissionGate>
       <PermissionGate perm="documents.create"><button className="iconbtn" title="Copy" onClick={() => copy(d)}><Icon name="copy" size={15} /></button></PermissionGate>
       <PermissionGate perm="documents.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => del(d)}><Icon name="trash" size={15} /></button></PermissionGate>
     </div>
@@ -108,8 +112,8 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
           <Icon name="layers" size={15} /> <span>All</span> <span className="docmgr__count">{documents.length}</span>
         </button>
         {docFolders.map((f) => (
-          <button key={f.id} className={`docmgr__folder ${activeFolder === f.name ? 'active' : ''}`} onClick={() => setActiveFolder(f.name)}>
-            <Icon name="folder" size={15} /> <span>{f.name}</span> <span className="docmgr__count">{counts[f.name] || 0}</span>
+          <button key={f.id} className={`docmgr__folder ${activeFolder === f.id ? 'active' : ''}`} onClick={() => setActiveFolder(f.id)}>
+            <Icon name="folder" size={15} /> <span>{f.name}</span> <span className="docmgr__count">{counts[f.id] || counts[f.name] || 0}</span>
           </button>
         ))}
       </aside>
@@ -142,7 +146,7 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
                     <tr key={d.id} className={selected.includes(d.id) ? 'row--selected' : ''}>
                       <td>{can('documents.bulkDelete') && <input type="checkbox" checked={selected.includes(d.id)} onChange={() => toggle(d.id)} />}</td>
                       <td style={{ fontWeight: 600 }}><Icon name="file" size={14} /> {d.name}</td>
-                      <td><Badge tone="grey">{d.folder}</Badge></td>
+                      <td><Badge tone="grey">{d.folder_id ? (folders.find((f) => f.id === d.folder_id)?.name || d.folder) : d.folder}</Badge></td>
                       <td><SyncStatus status={d.syncStatus} /></td>
                       <td>{bytes(d.size)}</td>
                       <td>{formatDate(d.uploadedAt)}</td>
@@ -163,7 +167,7 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
                 </div>
                 <div className="doccard__icon"><Icon name="file" size={26} /></div>
                 <div className="doccard__name" title={d.name}>{d.name}</div>
-                <div className="doccard__meta"><Badge tone="grey">{d.folder}</Badge> <span>{bytes(d.size)}</span></div>
+                <div className="doccard__meta"><Badge tone="grey">{d.folder_id ? (folders.find((f) => f.id === d.folder_id)?.name || d.folder) : d.folder}</Badge> <span>{bytes(d.size)}</span></div>
                 <div className="doccard__actions">{docActions(d)}</div>
               </div>
             ))}
@@ -208,7 +212,7 @@ export function FolderManagerModal({ open, onClose, caseId, folders, kind, onCha
     if (res.ok) { setName(''); onChanged?.(); } else toast.push(res.error, 'error');
   };
   const save = async (f) => { const res = await fileLogic.renameFolder(f, editName, user); if (res.ok) { setEditId(null); onChanged?.(); } else toast.push(res.error, 'error'); };
-  const del = async (f) => { if (confirm(`Delete folder "${f.name}"? Items move to Miscellaneous.`)) { await fileLogic.deleteFolder(f, { moveTo: 'Miscellaneous' }, user); onChanged?.(); } };
+  const del = async (f) => { if (confirm(`Delete folder "${f.name}" and all of its files?`)) { await fileLogic.deleteFolder(f, {}, user); onChanged?.(); } };
 
   return (
     <Modal open={open} title={`Manage ${kind === 'draft' ? 'Draft' : 'Document'} Folders`} onClose={onClose}>

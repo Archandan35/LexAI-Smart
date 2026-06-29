@@ -12,8 +12,8 @@ export default function FolderPicker({ folders = [], value, onChange, onCreateFo
   const create = async () => {
     const n = name.trim();
     if (!n) return;
-    await onCreateFolder?.(n);
-    onChange?.(n);
+    const result = await onCreateFolder?.(n);
+    onChange?.(result?.id || n);
     setName(''); setCreating(false);
   };
 
@@ -23,7 +23,7 @@ export default function FolderPicker({ folders = [], value, onChange, onCreateFo
         <div style={{ display: 'flex', gap: 8 }}>
           <Select value={value || ''} onChange={(e) => onChange?.(e.target.value)}>
             <option value="">Select folder…</option>
-            {folders.map((f) => <option key={f.id || f.name} value={f.name}>{f.name}</option>)}
+            {folders.map((f) => <option key={f.id || f.name} value={f.id || f.name}>{f.name}</option>)}
           </Select>
           <Button variant="ghost" icon="folderPlus" onClick={() => setCreating(true)}>New</Button>
         </div>

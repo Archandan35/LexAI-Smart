@@ -1,4 +1,5 @@
 import { backupService } from '@/services/backupService.js';
+import { backupFileService } from '@/services/backupFileService.js';
 import { auditService } from '@/services/auditService.js';
 import { sha256Hex } from '@/utils/crypto.js';
 import { downloadFile } from '@/utils/exportData.js';
@@ -108,6 +109,20 @@ export const backupLogic = {
         counts: snap.counts,
         data: snap.data,
       };
+
+      // Optional: store a copy of the UDB in the file storage Backup folder.
+      try {
+        await backupFileService.ensureBackupRoot();
+        const dbResult = await backupFileService.createDatabaseBackup(snap);
+        record.dbBackupRef = dbResult.ref;
+        record.dbBackupFolder = dbResult.folder;
+        const fileResult = await backupFileService.createDatafileBackup();
+        record.fileBackupRef = fileResult.ref;
+        record.fileBackupFolder = fileResult.folder;
+      } catch (fileErr) {
+        // File-storage backup is best-effort; DB backup always succeeds.
+      }
+
       const list = backupService.listBackups();
       list.unshift(record);
       backupService.saveCatalog(list);
@@ -121,7 +136,7 @@ export const backupLogic = {
   },
 
   // FIFO retention: keep newest N non-protected backups; protected ones are
-  // always excluded from cleanup.
+  // always excluded from cleanup. Also removes file-storage backup folders.
   applyRetention(actor) {
     const s = this.getSettings();
     if (!s.autoCleanup || s.retention === 'unlimited') return { removed: [] };
@@ -132,10 +147,17 @@ export const backupLogic = {
     const protectedOnes = list.filter((b) => b.protected);
     const normal = list.filter((b) => !b.protected).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    const keepNormalCount = Math.max(0, limit - 0); // retention counts non-protected slots
+    const keepNormalCount = Math.max(0, limit - 0);
     const keep = normal.slice(0, keepNormalCount);
     const removed = normal.slice(keepNormalCount);
     if (!removed.length) return { removed: [] };
+
+    // Remove file-storage backup folders for removed entries
+    for (const r of removed) {
+      if (r.dbBackupRef || r.fileBackupRef) {
+        backupFileService.deleteBackupPair(r.dbBackupRef, r.fileBackupRef).catch(() => {});
+      }
+    }
 
     const merged = [...protectedOnes, ...keep].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     backupService.saveCatalog(merged);
@@ -158,6 +180,12 @@ export const backupLogic = {
     const b = list.find((x) => x.id === id);
     if (!b) return fail('Backup not found.');
     if (b.protected) return fail('Protected backups must be unprotected before deletion.');
+
+    // Remove file-storage backup folders
+    if (b.dbBackupRef || b.fileBackupRef) {
+      await backupFileService.deleteBackupPair(b.dbBackupRef, b.fileBackupRef).catch(() => {});
+    }
+
     backupService.saveCatalog(list.filter((x) => x.id !== id));
     await auditService.record({ action: 'backup.delete', module: 'backup', user: actor, details: b.name });
     return ok(true);

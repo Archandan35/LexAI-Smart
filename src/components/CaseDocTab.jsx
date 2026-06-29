@@ -5,6 +5,8 @@ import { Input } from './Field.jsx';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
 import storageService from '@/services/storageService.js';
+import { fileLogic } from '@/logic/fileLogic.js';
+import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, bytes } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
@@ -52,6 +54,7 @@ function StatCard({ icon, value, label, sub }) {
 
 export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
   const toast = useToast();
+  const { user } = useAuth();
   const [docs, setDocs] = useState([]);
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -145,7 +148,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
 
   const docCounts = useMemo(() => {
     const m = {};
-    docs.forEach((d) => { m[d.folder] = (m[d.folder] || 0) + 1; });
+    docs.forEach((d) => { const key = d.folder_id || d.folder; m[key] = (m[key] || 0) + 1; });
     return m;
   }, [docs]);
 
@@ -188,8 +191,8 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
   }, [folderSearch, rootFolders, caseFolders]);
 
   const visible = !activeFolder
-    ? docs.filter((d) => caseFolders.some((f) => f.name === d.folder))
-    : docs.filter((d) => d.folder === getFolderName(activeFolder));
+    ? docs.filter((d) => d.folder_id || caseFolders.some((f) => f.name === d.folder))
+    : docs.filter((d) => (d.folder_id || d.folder) === (activeFolder || getFolderName(activeFolder)));
 
   const sorted = useMemo(() => {
     let arr = [...visible];
@@ -244,22 +247,21 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
   const cancelRename = () => setEditingId(null);
 
   const deleteFolder = async (f) => {
-    const descIds = getAllDescendantIds(f.id);
-    const allIds = [...descIds.reverse(), f.id];
-    if (!confirm(`Delete "${f.name}"${descIds.length > 0 ? ` and ${descIds.length} sub-folder(s)` : ''}?`)) return;
-    for (const id of allIds) await caseFoldersRepository.delete(id).catch(() => { });
+    if (!confirm(`Delete "${f.name}" and all of its files?`)) return;
+    await fileLogic.deleteFolder(f, {}, user);
     toast.push('Folder deleted.', 'success');
-    if (activeFolder === f.id || descIds.includes(activeFolder)) setActiveFolder(null);
+    if (activeFolder === f.id || getAllDescendantIds(f.id).includes(activeFolder)) setActiveFolder(null);
     await load();
   };
 
   const bulkDeleteFolders = async () => {
     if (!folderSelected.size) return;
-    const allIds = new Set(folderSelected);
-    for (const id of folderSelected) getAllDescendantIds(id).forEach((did) => allIds.add(did));
-    if (!confirm(`Delete ${allIds.size} folder(s)?`)) return;
-    for (const id of [...allIds].reverse()) await caseFoldersRepository.delete(id).catch(() => { });
-    toast.push(`Deleted ${allIds.size} folder(s).`, 'success');
+    if (!confirm(`Delete ${folderSelected.size} folder(s) and all of their files?`)) return;
+    for (const id of folderSelected) {
+      const f = caseFolders.find((x) => x.id === id);
+      if (f) await fileLogic.deleteFolder(f, {}, user);
+    }
+    toast.push(`Deleted ${folderSelected.size} folder(s).`, 'success');
     setFolderSelected(new Set()); await load();
   };
 
@@ -311,7 +313,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
     setUploading(true);
     try {
       const folder = activeFolder ? getFolderName(activeFolder) || 'Miscellaneous' : 'Miscellaneous';
-      await storageService.uploadDocument(file, { caseId, folder });
+      await storageService.uploadDocument(file, { caseId, folder, folderId: activeFolder });
       toast.push('Document uploaded.', 'success');
       await load();
     } catch (err) {
@@ -323,7 +325,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
 
   const deleteDocument = async (d) => {
     if (!confirm(`Delete "${d.name}"?`)) return;
-    await storageService.deleteDocument(d.id, d.ref).catch(() => { });
+    await fileLogic.deleteDocument(d, user);
     await load();
     toast.push('Document deleted.', 'success');
   };
@@ -447,7 +449,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                     ) : (
                       <span className="cdoc__tree-name" style={{ fontWeight: activeFolder === f.id ? 700 : 450, opacity: isCut ? 0.4 : 1 }}>{f.name}</span>
                     )}
-                    <span className="cdoc__tree-count">{docCounts[f.name] || 0}</span>
+                    <span className="cdoc__tree-count">{docCounts[f.id] || docCounts[f.name] || 0}</span>
                     {hoveredId === f.id && editingId !== f.id && !selectMode && (
                       <span className="cdoc__tree-actions" onClick={(e) => e.stopPropagation()}>
                         <button className="cdoc__tree-act" title="Rename" onClick={() => startRename(f)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></button>
