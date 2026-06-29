@@ -35,6 +35,11 @@ export function bytes(n) {
   return `${(n / 1024 ** i).toFixed(1)} ${units[i]}`;
 }
 
+export function stripHtml(str) {
+  if (!str) return '';
+  return str.replace(/<[^>]*>/g, '');
+}
+
 export function truncate(str, len = 120) {
   if (!str) return '';
   return str.length > len ? `${str.slice(0, len)}…` : str;

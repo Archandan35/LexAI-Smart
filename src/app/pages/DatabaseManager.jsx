@@ -92,7 +92,11 @@ export default function DatabaseManager() {
     else toast.push(res.error || 'Import failed.', 'error');
   };
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <PageHeader icon="database" title="Database Manager" subtitle="Manage database schema, validation, and migration." />
+    );
+  }
 
   const { connection, validation, health, statistics } = data;
   const schemaTone = validation.valid ? 'green' : (connection.connected ? 'amber' : 'red');

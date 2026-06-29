@@ -31,7 +31,7 @@ export default function AuditLogs() {
     auditService.list().then((rows) => {
       setLogs([...rows].sort((a, b) => new Date(b.at) - new Date(a.at)));
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const columns = [

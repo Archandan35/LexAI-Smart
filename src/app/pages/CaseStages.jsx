@@ -28,23 +28,29 @@ export default function CaseStages() {
 
   const add = async () => {
     if (!newName.trim()) return;
-    const res = await caseStageLogic.add(newName.trim());
-    if (res.ok) { setNewName(''); toast.push('Stage added.', 'success'); await load(); }
-    else { toast.push(res.error, 'error'); }
+    try {
+      const res = await caseStageLogic.add(newName.trim());
+      if (res.ok) { setNewName(''); toast.push('Stage added.', 'success'); await load(); }
+      else { toast.push(res.error, 'error'); }
+    } catch (e) { toast.push(e?.message || 'Failed to add stage.', 'error'); }
   };
 
   const saveEdit = async () => {
     if (!editName.trim()) return;
-    const res = await caseStageLogic.rename(editId, editName.trim());
-    if (res.ok) { setEditId(null); toast.push('Stage renamed.', 'success'); await load(); }
-    else { toast.push(res.error, 'error'); }
+    try {
+      const res = await caseStageLogic.rename(editId, editName.trim());
+      if (res.ok) { setEditId(null); toast.push('Stage renamed.', 'success'); await load(); }
+      else { toast.push(res.error, 'error'); }
+    } catch (e) { toast.push(e?.message || 'Failed to rename stage.', 'error'); }
   };
 
   const remove = async (stage) => {
     if (!window.confirm(`Delete stage "${stage.name}"?`)) return;
-    const res = await caseStageLogic.remove(stage.id);
-    if (res.ok) { toast.push('Stage deleted.', 'success'); await load(); }
-    else { toast.push(res.error, 'error'); }
+    try {
+      const res = await caseStageLogic.remove(stage.id);
+      if (res.ok) { toast.push('Stage deleted.', 'success'); await load(); }
+      else { toast.push(res.error, 'error'); }
+    } catch (e) { toast.push(e?.message || 'Failed to delete stage.', 'error'); }
   };
 
   return (

@@ -87,14 +87,18 @@ export default function ManageCases() {
   const save = async (data) => {
     if (!data.caseNumber || !data.title) { toast.push('Case number and title are required.', 'error'); return; }
     setBusy(true);
-    await caseLogic.create(data, user);
+    try {
+      await caseLogic.create(data, user);
+      setOpen(false);
+      toast.push('Case created.', 'success');
+      reload();
+    } catch (e) {
+      toast.push(e?.message || 'Failed to create case.', 'error');
+    }
     setBusy(false);
-    setOpen(false);
-    toast.push('Case created.', 'success');
-    reload();
   };
 
-  const act = async (fn, msg) => { const r = await fn(); if (r?.ok === false) { toast.push(r.error, 'error'); return; } if (msg) toast.push(msg, 'success'); reload(); };
+  const act = async (fn, msg) => { try { const r = await fn(); if (r?.ok === false) { toast.push(r.error, 'error'); return; } if (msg) toast.push(msg, 'success'); } catch (e) { toast.push(e?.message || 'Action failed.', 'error'); } reload(); };
 
   const remove = (c) => { if (confirm(`Delete case ${c.caseNumber}?`)) act(() => caseLogic.remove(c.id, user), 'Case deleted.'); };
   const bulkRemove = () => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } };
@@ -159,7 +163,7 @@ export default function ManageCases() {
               <span><b>{selected.length}</b> selected</span>
               <div className="bulk-bar__spacer" />
               <PermissionGate perm="manageCase.export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('cases_export', cases.filter((c) => selected.includes(c.id)))}>Export</Button></PermissionGate>
-              <PermissionGate perm="manageCase.archive"><Button variant="ghost" size="sm" icon="vault" onClick={() => { selected.forEach((id) => caseLogic.setArchived(id, filters.view !== 'archived', user)); setSelected([]); setTimeout(reload, 200); }}>{filters.view === 'archived' ? 'Restore' : 'Archive'}</Button></PermissionGate>
+              <PermissionGate perm="manageCase.archive"><Button variant="ghost" size="sm" icon="vault" onClick={async () => { try { for (const id of selected) await caseLogic.setArchived(id, filters.view !== 'archived', user); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } setSelected([]); reload(); }}>{filters.view === 'archived' ? 'Restore' : 'Archive'}</Button></PermissionGate>
               <PermissionGate perm="manageCase.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={bulkRemove}>Delete</Button></PermissionGate>
             </div>
           )}

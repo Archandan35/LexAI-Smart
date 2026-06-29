@@ -12,7 +12,7 @@ export default function VersionControl() {
     draftsRepository
       .getAll()
       .then(setDrafts)
-      .catch(() => {})
+      .catch(() => console.warn('VersionControl: failed to load drafts'))
       .finally(() => setLoading(false));
   }, []);
 

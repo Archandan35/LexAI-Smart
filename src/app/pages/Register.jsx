@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { userLogic } from '@/logic/userLogic.js';
@@ -21,7 +21,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (isAuthenticated) { nav('/', { replace: true }); return null; }
+  if (isAuthenticated) return <Navigate to="/" replace />;
 
   const allowRegistration = settingsCache.get('allowRegistration');
   if (!allowRegistration) {

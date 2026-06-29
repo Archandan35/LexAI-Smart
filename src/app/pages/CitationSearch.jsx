@@ -14,7 +14,7 @@ import { useActs } from '@/hooks/useActs.js';
 
 // Citation Search — implements Facts→Issue→Search→Retrieve→Verify→Rank→Display.
 export default function CitationSearch() {
-  const { courtNames } = useCourts();
+  const { courts: courtNames } = useCourts();
   const { acts } = useActs();
   const [q, setQ] = useState({ facts: '', issue: '', keywords: '', act: '', section: '', court: '' });
   const [state, setState] = useState({ loading: false, results: null, issues: [], message: null });

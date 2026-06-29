@@ -69,8 +69,13 @@ export default function SchemaManager() {
     setShowSql(true);
   };
 
-  const copySql = () => {
-    navigator.clipboard.writeText(sql).then(() => toast.push('SQL copied to clipboard.', 'success'));
+  const copySql = async () => {
+    try {
+      await navigator.clipboard.writeText(sql);
+      toast.push('SQL copied to clipboard.', 'success');
+    } catch {
+      toast.push('Could not copy to clipboard.', 'warn');
+    }
   };
 
   const exportSchema = () => {

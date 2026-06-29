@@ -45,7 +45,7 @@ export default function LibraryPage({ title, icon, logic, searchFields, columns,
       <Card title={title}>
         <div className="search-row"><Input className="search-row__input" placeholder={searchPlaceholder} value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
-          <div className="empty-state"><Icon icon={emptyIcon || icon || 'grid'} /><p>{emptyText}</p></div>
+          <div className="empty-state"><Icon name={emptyIcon || icon || 'grid'} /><p>{emptyText}</p></div>
         ) : (
           <table className="data-table">
             <thead><tr>{columns.map((col) => <th key={col.header}>{col.header}</th>)}</tr></thead>

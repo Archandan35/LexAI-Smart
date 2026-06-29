@@ -54,7 +54,7 @@ export default function AdminSetup() {
       console.log('[AdminSetup] initialize start');
 
       console.log('[AdminSetup] loading users');
-      const users = await userService.list();
+      const users = await userService.list() || [];
       console.log('[AdminSetup] users count:', users.length);
 
       if (users.length > 0) {

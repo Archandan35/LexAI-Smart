@@ -19,7 +19,7 @@ export default function DocumentArchive() {
         );
         setDocs(archived);
       })
-      .catch(() => {})
+      .catch(() => console.warn('DocumentArchive: failed to load documents'))
       .finally(() => setLoading(false));
   }, []);
 

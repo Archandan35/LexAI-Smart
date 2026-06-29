@@ -70,8 +70,13 @@ export default function SqlConsole() {
     setShowHistory(false);
   };
 
-  const onCopySql = useCallback(() => {
-    navigator.clipboard.writeText(sql).then(() => toast.push('SQL copied.', 'success'));
+  const onCopySql = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(sql);
+      toast.push('SQL copied.', 'success');
+    } catch {
+      toast.push('Could not copy to clipboard.', 'warn');
+    }
   }, [sql, toast]);
 
   const validCount = validation ? validation.statementCount - validation.errors.length : 0;

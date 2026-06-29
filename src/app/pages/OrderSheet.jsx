@@ -22,9 +22,10 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate } from '@/utils/format.js';
+import { formatDate, stripHtml } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
+import { extractJurisdiction } from '@/utils/caseFormat.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -94,6 +95,12 @@ export default function OrderSheet() {
   const [tplCategory, setTplCategory] = useState('');
   const [tplPage, setTplPage] = useState(1);
 
+  const tplColumns = [
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'category', label: 'Category', sortable: true },
+    { key: 'description', label: 'Description' },
+  ];
+
   // Case History & Timeline views
   const [histCaseId, setHistCaseId] = useState('');
   const [history, setHistory] = useState(null);
@@ -114,8 +121,8 @@ export default function OrderSheet() {
 
   const loadDraftingTemplates = useCallback(async () => {
     const list = await templateLogic.list();
-    setTplList(list);
     const ok = Array.isArray(list) ? list : (list.ok ? list.data : []);
+    setTplList(ok);
     setDraftTemplates(ok);
   }, []);
 
@@ -1232,7 +1239,7 @@ export default function OrderSheet() {
                                 <span className="order-sheet__timeline-v-event-date">{formatDate(h.date)}</span>
                               </div>
                               <div className="order-sheet__timeline-v-desc-col">
-                                <div className="order-sheet__timeline-v-desc" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} />
+                                <div className="order-sheet__timeline-v-desc">{stripHtml(h.notes || '—')}</div>
                               </div>
                               <div className="order-sheet__timeline-v-action-col">
                                 <button className="order-sheet__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
@@ -1448,7 +1455,7 @@ export default function OrderSheet() {
                                     <span className="order-sheet__timeline-event-name">{h.purpose || 'Hearing'}</span>
                                   </div>
                                 </td>
-                                <td className="order-sheet__timeline-event-detail"><div className="order-sheet__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
+                                <td className="order-sheet__timeline-event-detail"><div className="order-sheet__timeline-event-detail-inner">{stripHtml(h.notes || '—')}</div></td>
                                 <td className="text-right">
                                   {h.docRef ? (
                                     <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>

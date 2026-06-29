@@ -69,16 +69,16 @@ export default function HearingNotes() {
             <div className="flex-col gap-16">
               <Card title="Facts">
                 <ol className="hearing-notes__list">
-                  {notes.facts.map((f, i) => <li key={i}>{f}</li>)}
+                  {(notes.facts || []).map((f, i) => <li key={i}>{f}</li>)}
                 </ol>
               </Card>
               <Card title="Issues">
                 <ol className="hearing-notes__list">
-                  {notes.issues.map((q, i) => <li key={i}>{q}</li>)}
+                  {(notes.issues || []).map((q, i) => <li key={i}>{q}</li>)}
                 </ol>
               </Card>
               <Card title="Evidence">
-                {notes.evidence.length === 0 ? <EmptyState icon="file" title="No documents on record." /> : notes.evidence.map((e, i) => (
+                {(!notes.evidence || notes.evidence.length === 0) ? <EmptyState icon="file" title="No documents on record." /> : notes.evidence.map((e, i) => (
                   <div className="list-row" key={i}>
                     <div className="list-row__icon"><Icon name="file" size={15} /></div>
                     <div><div className="list-row__title">{e.exhibit}</div><div className="list-row__meta">{e.folder}</div></div>
@@ -86,7 +86,7 @@ export default function HearingNotes() {
                 ))}
               </Card>
               <Card title="Citations" sub="Verified authorities only">
-                {notes.citations.length === 0 ? (
+                {!notes.citations || notes.citations.length === 0 ? (
                   <div className="alert alert--warn">No verified precedent found.</div>
                 ) : notes.citations.map((c, i) => <CitationCard key={c.id} item={c} rank={i + 1} />)}
               </Card>

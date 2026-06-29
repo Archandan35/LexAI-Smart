@@ -253,10 +253,14 @@ export default function CaseDocuments() {
 
   const deleteFolder = async (f) => {
     if (!confirm(`Delete "${f.name}" and all of its files?`)) return;
-    await fileLogic.deleteFolder(f, {}, user);
-    toast.push('Folder deleted.', 'success');
-    if (activeFolder === f.id || getAllDescendantIds(f.id).includes(activeFolder)) setActiveFolder(null);
-    await load();
+    try {
+      await fileLogic.deleteFolder(f, {}, user);
+      toast.push('Folder deleted.', 'success');
+      if (activeFolder === f.id || getAllDescendantIds(f.id).includes(activeFolder)) setActiveFolder(null);
+      await load();
+    } catch (e) {
+      toast.push(e?.message || 'Failed to delete folder.', 'error');
+    }
   };
 
   const bulkDeleteFolders = async () => {

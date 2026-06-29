@@ -19,7 +19,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
-import { formatDate, formatDateTime } from '@/utils/format.js';
+import { formatDate, formatDateTime, stripHtml } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 
@@ -51,8 +51,12 @@ export default function CaseDetails() {
   }, []);
 
   const load = useCallback(async () => {
-    const res = await caseLogic.vault(id);
-    setVault(res.ok ? res.data : null);
+    try {
+      const res = await caseLogic.vault(id);
+      setVault(res.ok ? res.data : null);
+    } catch {
+      setVault(null);
+    }
     setLoading(false);
     setActivityKey((k) => k + 1);
   }, [id]);
@@ -62,12 +66,16 @@ export default function CaseDetails() {
 
   const saveEdit = async (data) => {
     setBusy(true);
-    await caseLogic.update(id, data, user);
+    try {
+      await caseLogic.update(id, data, user);
+      setEditing(false);
+      if (params.get('edit')) { params.delete('edit'); setParams(params, { replace: true }); }
+      toast.push('Case updated.', 'success');
+      load();
+    } catch (e) {
+      toast.push(e?.message || 'Failed to update case.', 'error');
+    }
     setBusy(false);
-    setEditing(false);
-    if (params.get('edit')) { params.delete('edit'); setParams(params, { replace: true }); }
-    toast.push('Case updated.', 'success');
-    load();
   };
 
   const duplicate = async () => {
@@ -76,11 +84,15 @@ export default function CaseDetails() {
     else toast.push(r.error, 'error');
   };
   const exportCase = async () => exportJson(`case_${vault?.case?.caseNumber}`, await caseLogic.exportBundle(id));
-  const archive = async () => { await caseLogic.setArchived(id, !vault.case.archived, user); toast.push(vault.case.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); };
+  const archive = async () => { try { await caseLogic.setArchived(id, !vault?.case?.archived, user); toast.push(vault?.case?.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } };
   const remove = async (deleteFolders) => {
-    await caseLogic.remove(id, user, deleteFolders);
-    toast.push('Case deleted.', 'info');
-    nav('/cases');
+    try {
+      await caseLogic.remove(id, user, deleteFolders);
+      toast.push('Case deleted.', 'info');
+      nav('/cases');
+    } catch (e) {
+      toast.push(e?.message || 'Failed to delete case.', 'error');
+    }
   };
 
   if (loading) return <Spinner label="Loading case…" />;
@@ -460,7 +472,7 @@ export default function CaseDetails() {
                     <div className="timeline-item" key={h.id}>
                       <div className="timeline-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
                       <div className="timeline-item__event">{h.purpose || '—'}</div>
-                      {h.notes && <div className="timeline-item__source" dangerouslySetInnerHTML={{ __html: h.notes }} />}
+                      {h.notes && <div className="timeline-item__source">{stripHtml(h.notes)}</div>}
                     </div>
                   ))}
                 </div>
@@ -722,7 +734,7 @@ export default function CaseDetails() {
                     <div className="timeline-item" key={h.id}>
                       <div className="timeline-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
                       <div className="timeline-item__event">{h.purpose || '—'}</div>
-                      {h.notes && <div className="timeline-item__source" dangerouslySetInnerHTML={{ __html: h.notes }} />}
+                      {h.notes && <div className="timeline-item__source">{stripHtml(h.notes)}</div>}
                     </div>
                   ))}
                 </div>

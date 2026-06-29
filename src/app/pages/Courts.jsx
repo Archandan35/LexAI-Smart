@@ -100,7 +100,8 @@ export default function Courts() {
     const file = e.target.files?.[0];
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
-    const text = await file.text();
+    let text;
+    try { text = await file.text(); } catch { toast.push('Failed to read file.', 'error'); return; }
     setBulkText(text);
     if (ext === 'csv') setBulkTab('csv');
     else if (ext === 'json') setBulkTab('json');
@@ -202,7 +203,7 @@ export default function Courts() {
     siblings.splice(tgtIdx, 0, source);
     const updates = siblings.map((item, idx) => {
       if (item.display_order !== idx + 1) {
-        return courtsLogic.update(item.id, { display_order: idx + 1 });
+        return courtsLogic.update(item.id, { name: item.name, display_order: idx + 1 });
       }
       return null;
     }).filter(Boolean);

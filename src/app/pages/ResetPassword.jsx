@@ -26,6 +26,7 @@ export default function ResetPassword() {
     if (!password) return setError('New password is required.');
     if (password.length < 6) return setError('Password must be at least 6 characters.');
     if (password !== confirm) return setError('Passwords do not match.');
+    if (!token) return setError('Invalid or missing reset link. Please request a new password reset.');
 
     setBusy(true);
     try {

@@ -32,7 +32,7 @@ export default function Calendar() {
   const reminderStats = {
     pending: reminders.filter((r) => !r.done).length,
     overdue: reminders.filter((r) => !r.done && new Date(r.date) < now).length,
-    completedToday: reminders.filter((r) => r.done && new Date(r.updatedAt || r.updated_at).toDateString() === now.toDateString()).length,
+    completedToday: reminders.filter((r) => r.done && new Date(r.updatedAt || r.updated_at || now).toDateString() === now.toDateString()).length,
     active: reminders.filter((r) => !r.done).length,
   };
 

@@ -55,7 +55,7 @@ export default function Contacts() {
       ]}
       renderForm={(props) => <ContactForm {...props} />}
       renderRowActions={(item, load) => (
-        <button className="btn-icon" onClick={async () => { await contactLogic.remove(item.id); toast.success('Contact removed.'); load(); }} title="Remove"><Icon icon="trash-2" /></button>
+        <button className="btn-icon" onClick={async () => { const r = await contactLogic.remove(item.id); if (r?.ok === false) { toast.error(r.error || 'Failed to remove.'); return; } toast.success('Contact removed.'); load(); }} title="Remove"><Icon name="trash" /></button>
       )}
     />
   );

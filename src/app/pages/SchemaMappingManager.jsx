@@ -366,7 +366,7 @@ export default function SchemaMappingManager() {
             {exportData && (
               <>
                 <pre className="code-block schema-mapping__export-pre">{exportData}</pre>
-                <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(exportData); }}
+                <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(exportData).catch(() => {}); }}
                   className="mt-8">Copy to Clipboard</Button>
               </>
             )}

@@ -52,7 +52,7 @@ export default function LegalNotices() {
       ]}
       renderForm={(props) => <NoticeForm {...props} />}
       renderRowActions={(item, load) => (
-        <button className="btn-icon" onClick={async () => { await legalNoticeLogic.remove(item.id); load(); }} title="Remove"><Icon icon="trash-2" /></button>
+        <button className="btn-icon" onClick={async () => { await legalNoticeLogic.remove(item.id); load(); }} title="Remove"><Icon name="trash" /></button>
       )}
     />
   );

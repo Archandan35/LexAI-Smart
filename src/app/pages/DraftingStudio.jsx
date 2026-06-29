@@ -56,7 +56,7 @@ export default function DraftingStudio() {
   const [busy, setBusy] = useState(false);
   const [saveState, setSaveState] = useState(''); // '', 'saving', 'saved'
   const [lastSaved, setLastSaved] = useState(null);
-  const [autoSave, setAutoSave] = useState(() => preferencesService.get(AUTOSAVE_KEY, 'on') !== 'on');
+  const [autoSave, setAutoSave] = useState(() => preferencesService.get(AUTOSAVE_KEY, 'on') === 'on');
 
   const [form, setForm] = useState({
     type: '', caseId: '', folder: '', fileType: DEFAULT_DRAFT_FILE_TYPE,

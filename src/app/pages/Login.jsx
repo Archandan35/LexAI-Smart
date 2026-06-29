@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { userService } from '@/services/userService.js';
@@ -39,7 +39,7 @@ export default function Login() {
     return () => { active = false; };
   }, []);
 
-  if (isAuthenticated) { nav(from, { replace: true }); return null; }
+  if (isAuthenticated) return <Navigate to={from} replace />;
 
   const submit = async (e) => {
     e.preventDefault();

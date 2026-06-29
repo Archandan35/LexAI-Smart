@@ -44,7 +44,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
         </div>
         {showForm && renderForm({ load, setShowForm })}
         {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
-          <div className="empty-state"><Icon icon={icon} /><p>{emptyText}</p></div>
+          <div className="empty-state"><Icon name={icon} /><p>{emptyText}</p></div>
         ) : (
           <table className="data-table">
             <thead><tr>{columns.map((col) => <th key={col.header}>{col.header}</th>)}</tr></thead>
