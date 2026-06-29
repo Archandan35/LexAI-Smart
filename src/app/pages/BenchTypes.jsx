@@ -7,6 +7,8 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 
+const ENTITY_PREFIX = 'BT';
+
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
   { key: 'edit', label: 'Edit', icon: 'edit', variant: 'secondary' },
@@ -85,15 +87,29 @@ export default function BenchTypes() {
     else toast.push(res.error, 'error');
   };
 
+  const autoCode = (name) => {
+    const slug = name.trim().replace(/\s+/g, '-').toUpperCase();
+    return `${ENTITY_PREFIX}-${slug}`;
+  };
+
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
     let added = 0, skipped = 0;
     for (const line of lines) {
-      const [name, code] = line.split(':').map(s => s.trim());
-      if (!name || !code) { skipped++; continue; }
-      const res = await benchTypeLogic.create({ name, short_code: code.toUpperCase() });
-      if (res.ok) added++; else skipped++;
+      const colonIdx = line.indexOf(':');
+      if (colonIdx === -1) {
+        const name = line;
+        const short_code = autoCode(name);
+        const res = await benchTypeLogic.create({ name, short_code });
+        if (res.ok) added++; else skipped++;
+      } else {
+        const name = line.slice(0, colonIdx).trim();
+        const code = line.slice(colonIdx + 1).trim();
+        if (!name) { skipped++; continue; }
+        const res = await benchTypeLogic.create({ name, short_code: code.toUpperCase() });
+        if (res.ok) added++; else skipped++;
+      }
     }
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
@@ -239,14 +255,14 @@ export default function BenchTypes() {
             {activeAction === 'add' && subMode === 'bulk' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
-                  <label className="bench-types__label">Paste entries — one per line as <code>Name:CODE</code></label>
+                  <label className="bench-types__label">Paste entries — one per line</label>
                   <Textarea
                     value={bulkAddText}
                     onChange={e => setBulkAddText(e.target.value)}
-                    placeholder={'Single Bench:SB\nDivision Bench:DB\nFull Bench:FB'}
+                    placeholder={`Single Bench          → auto: ${ENTITY_PREFIX}-SINGLE-BENCH\nSingle Bench:SB       → manual: SB\nDivision Bench:DB\nFull Bench`}
                     rows={8}
                   />
-                  <span className="bench-types__hint">Blank lines and invalid entries are skipped.</span>
+                  <span className="bench-types__hint">Use <code>Name:CODE</code> for manual codes. Without <code>:CODE</code>, the code auto-generates as <code>{ENTITY_PREFIX}-NAME-IN-HYPHENS</code>.</span>
                 </div>
               </div>
             )}
