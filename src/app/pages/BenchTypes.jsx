@@ -55,6 +55,8 @@ export default function BenchTypes() {
   const [bulkDelSelected, setBulkDelSelected] = useState(new Set());
 
   const [importFile, setImportFile] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
+  const [dragIndex, setDragIndex] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -184,7 +186,40 @@ export default function BenchTypes() {
 
   const filtered = items.filter(i =>
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  );
+  ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+
+  const handleDragStart = (index) => { setDragIndex(index); };
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index || search) return;
+    const updated = [...filtered];
+    const [moved] = updated.splice(dragIndex, 1);
+    updated.splice(index, 0, moved);
+    setDragIndex(index);
+    setItems(updated.map((item, i) => ({ ...item, display_order: i + 1 })));
+  };
+  const handleDragEnd = async () => {
+    setDragIndex(null);
+    if (search) return;
+    for (const item of items) {
+      await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
+    }
+    load();
+  };
+
+  const startEdit = (item) => {
+    setActiveAction('edit');
+    setSubMode('single');
+    setEditId(item.id);
+    setEditName(item.name);
+    setEditCode(item.short_code || '');
+  };
+
+  const startDelete = (item) => {
+    setActiveAction('delete');
+    setSubMode('single');
+    setDelId(item.id);
+  };
 
   if (loading) return <div className="fade-in bench-types__loading"><div className="spinner" /></div>;
 
@@ -379,6 +414,31 @@ export default function BenchTypes() {
         </Card>
       )}
 
+      {viewItem && (
+        <Card className="bench-types__detail">
+          <div className="bench-types__detail-header">
+            <span className="bench-types__detail-title">{viewItem.name}</span>
+            <code className="bench-types__detail-code">{viewItem.short_code}</code>
+            <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
+            <button className="iconbtn bench-types__detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
+          </div>
+          <div className="bench-types__detail-body">
+            <div className="bench-types__detail-row">
+              <span className="bench-types__detail-label">Description</span>
+              <span className="bench-types__detail-value">{viewItem.description || '—'}</span>
+            </div>
+            <div className="bench-types__detail-row">
+              <span className="bench-types__detail-label">Display Order</span>
+              <span className="bench-types__detail-value">{viewItem.display_order ?? '—'}</span>
+            </div>
+            <div className="bench-types__detail-row">
+              <span className="bench-types__detail-label">ID</span>
+              <span className="bench-types__detail-value"><code>{viewItem.id}</code></span>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="bench-types__table-card">
         <div className="bench-types__table-toolbar">
           <div className="bench-types__search">
@@ -390,23 +450,38 @@ export default function BenchTypes() {
         <table className="table bench-types__table">
           <thead>
             <tr>
+              <th style={{ width: 32 }}></th>
               <th>Name</th>
               <th>Code</th>
-              <th>Description</th>
-              <th>Order</th>
               <th>Status</th>
+              <th style={{ width: 130 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr><td className="bench-types__empty" colSpan={5}>No bench types found.</td></tr>
-            ) : filtered.map(item => (
-              <tr key={item.id}>
+            ) : filtered.map((item, idx) => (
+              <tr
+                key={item.id}
+                draggable={!search}
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragEnd={handleDragEnd}
+                className={`bench-types__row${dragIndex === idx ? ' bench-types__row--dragging' : ''}`}
+              >
+                <td className="bench-types__drag-cell">
+                  <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="move" size={15} /></span>
+                </td>
                 <td><span className="bench-types__cell-name">{item.name}</span></td>
                 <td><code className="bench-types__cell-code">{item.short_code}</code></td>
-                <td><span className="bench-types__cell-desc">{item.description || '—'}</span></td>
-                <td>{item.display_order ?? '—'}</td>
                 <td><span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span></td>
+                <td>
+                  <div className="bench-types__row-actions">
+                    <button className="iconbtn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="iconbtn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
