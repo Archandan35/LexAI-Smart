@@ -15,11 +15,11 @@ const TABS = [
   { key: 'import', label: 'Import', icon: 'upload', group: 'import', import: true },
 ];
 
-export default function EntityManager({ open, onClose, title, logic, items: propItems, onChanged, fields }) {
+export default function EntityManager({ open, onClose, title, logic, items: propItems, onChanged, fields, initialTab }) {
   const toast = useToast();
   const hasCode = fields?.includes('code');
 
-  const [tab, setTab] = useState('single-add');
+  const [tab, setTab] = useState(initialTab || 'single-add');
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
