@@ -57,6 +57,7 @@ export default function BenchTypes() {
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
+  const [dropIndex, setDropIndex] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -188,24 +189,28 @@ export default function BenchTypes() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const handleDragStart = (index) => { setDragIndex(index); };
+  const handleDragStart = (index) => { setDragIndex(index); setDropIndex(null); };
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    if (dragIndex === null || dragIndex === index || search) return;
-    const updated = [...filtered];
-    const [moved] = updated.splice(dragIndex, 1);
-    updated.splice(index, 0, moved);
-    setDragIndex(index);
-    setItems(updated.map((item, i) => ({ ...item, display_order: i + 1 })));
+    if (dragIndex === null || index === dragIndex || search) return;
+    setDropIndex(index);
   };
-  const handleDragEnd = async () => {
+  const handleDragLeave = () => { setDropIndex(null); };
+  const handleDrop = async (index) => {
+    if (dragIndex === null || dragIndex === index || search) return;
+    const reordered = [...filtered];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(index, 0, moved);
+    const updated = reordered.map((item, i) => ({ ...item, display_order: i + 1 }));
+    setItems(updated);
     setDragIndex(null);
-    if (search) return;
-    for (const item of items) {
+    setDropIndex(null);
+    for (const item of updated) {
       await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
     }
     load();
   };
+  const handleDragEnd = () => { setDragIndex(null); setDropIndex(null); };
 
   const startEdit = (item) => {
     setActiveAction('edit');
@@ -466,8 +471,10 @@ export default function BenchTypes() {
                 draggable={!search}
                 onDragStart={() => handleDragStart(idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={() => handleDrop(idx)}
                 onDragEnd={handleDragEnd}
-                className={`bench-types__row${dragIndex === idx ? ' bench-types__row--dragging' : ''}`}
+                className={`bench-types__row${dragIndex === idx ? ' bench-types__row--dragging' : ''}${dropIndex === idx && dragIndex !== null ? ' bench-types__row--drop-target' : ''}`}
               >
                 <td className="bench-types__drag-cell">
                   <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="move" size={15} /></span>
