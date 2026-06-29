@@ -50,6 +50,15 @@ export const benchTypeLogic = {
       return ok(await benchTypeService.remove(id));
     } catch (err) { return fail(err); }
   },
+
+  async reorder(orderedIds) {
+    try {
+      for (let i = 0; i < orderedIds.length; i += 1) {
+        await benchTypeService.update(orderedIds[i], { display_order: i });
+      }
+      return ok(true);
+    } catch (err) { return fail(err); }
+  },
 };
 
 export default benchTypeLogic;

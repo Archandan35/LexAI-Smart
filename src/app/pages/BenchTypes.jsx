@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -56,8 +56,8 @@ export default function BenchTypes() {
 
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
-  const [dragIndex, setDragIndex] = useState(null);
-  const [dropIndex, setDropIndex] = useState(null);
+  const [dragIdx, setDragIdx] = useState(null);
+  const dragOrder = useRef(null);
 
   const load = async () => {
     setLoading(true);
@@ -199,38 +199,31 @@ export default function BenchTypes() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const handleDragStart = (e, index) => {
+  const handleDragStart = (e, idx) => {
+    setDragIdx(idx);
+    dragOrder.current = filtered.map((t) => t.id);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', String(index));
-    setDragIndex(index);
-    setDropIndex(null);
+    e.dataTransfer.setData('text/plain', filtered[idx]?.id);
   };
-  const handleDragOver = (e, index) => {
+
+  const handleDragOver = (e, idx) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (dragIndex === null || index === dragIndex || search) return;
-    setDropIndex(index);
+    if (dragIdx === null || dragIdx === idx || !dragOrder.current || search) return;
+    const ids = [...dragOrder.current];
+    const [moved] = ids.splice(dragIdx, 1);
+    ids.splice(idx, 0, moved);
+    dragOrder.current = ids;
+    setDragIdx(idx);
   };
-  const handleDragLeave = () => { setDropIndex(null); };
-  const handleDrop = (e, index) => {
-    e.preventDefault();
-    const from = Number(e.dataTransfer.getData('text/plain'));
-    if (isNaN(from) || from === index || search) return;
-    const reordered = [...filtered];
-    const [moved] = reordered.splice(from, 1);
-    reordered.splice(index, 0, moved);
-    const updated = reordered.map((item, i) => ({ ...item, display_order: i + 1 }));
-    setItems(updated);
-    setDragIndex(null);
-    setDropIndex(null);
-    (async () => {
-      for (const item of updated) {
-        await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
-      }
-      load();
-    })();
+
+  const handleDragEnd = async () => {
+    if (dragIdx === null || !dragOrder.current) { setDragIdx(null); return; }
+    const ids = dragOrder.current;
+    setDragIdx(null);
+    dragOrder.current = null;
+    await benchTypeLogic.reorder(ids);
+    load();
   };
-  const handleDragEnd = () => { setDragIndex(null); setDropIndex(null); };
 
   const startEdit = (item) => {
     setActiveAction('edit');
@@ -490,10 +483,8 @@ export default function BenchTypes() {
                 draggable={!search}
                 onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, idx)}
                 onDragEnd={handleDragEnd}
-                className={`bench-types__row${dragIndex === idx ? ' bench-types__row--dragging' : ''}${dropIndex === idx && dragIndex !== null ? ' bench-types__row--drop-target' : ''}`}
+                className={`bench-types__row${dragIdx === idx ? ' bench-types__row--dragging' : ''}`}
               >
                 <td className="bench-types__drag-cell">
                   <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="move" size={15} /></span>
