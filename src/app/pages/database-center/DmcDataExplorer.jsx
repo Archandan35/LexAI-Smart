@@ -22,7 +22,7 @@ export default function DmcDataExplorer() {
         const all = await documentsRepository.getAll().catch(() => []);
         setRows(all);
       } else if (collection === 'cases') {
-        setRows(await caseService.list().catch(() => []));
+        setRows(await caseService.listCases().catch(() => []));
       } else {
         setRows([]);
       }

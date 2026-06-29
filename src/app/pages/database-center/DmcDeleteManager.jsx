@@ -30,7 +30,7 @@ export default function DmcDeleteManager() {
 
   useEffect(() => {
     userService.list().then(setUsers).catch(() => {});
-    caseService.list().then(setCases).catch(() => {});
+    caseService.listCases().then(setCases).catch(() => {});
   }, []);
 
   const analyze = async () => {

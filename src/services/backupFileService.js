@@ -60,7 +60,7 @@ export const backupFileService = {
     const copied = [];
     const failed = [];
 
-    const cases = await caseService.list();
+    const cases = await caseService.listCases();
     for (const c of cases) {
       const docs = await documentsRepository.getAll({ caseId: c.id });
       if (!docs || !docs.length) continue;
