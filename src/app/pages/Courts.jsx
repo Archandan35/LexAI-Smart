@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
+import { useState, useEffect, useRef, Fragment } from 'react';
+import Button from '@/components/Button.jsx';
 import Card from '@/components/Card.jsx';
 import { Input, Select, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -27,6 +27,7 @@ export default function Courts() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeAction, setActiveAction] = useState('add');
 
   // Add form
   const [mode, setMode] = useState('single');
@@ -128,6 +129,12 @@ export default function Courts() {
     const res = await courtsLogic.update(m.id, { name: m.name, short_code: m.short_code, parent_id: m.parent_id || null, display_order: item?.display_order, status: item?.status });
     if (res.ok) { setEditModal(null); toast.push('Court updated.', 'success'); await load(); }
     else { toast.push(res.error, 'error'); }
+  };
+
+  const handleEditPicker = (id) => {
+    if (!id) { setEditModal(null); return; }
+    const item = items.find((i) => i.id === id);
+    if (item) startEdit(item);
   };
 
   // Delete single
@@ -239,7 +246,7 @@ export default function Courts() {
       const isDropOver = dropTarget === item.id;
 
       return (
-        <React.Fragment key={item.id}>
+        <Fragment key={item.id}>
           <tr
             draggable
             className={isDragging ? 'dragging' : isDropOver ? 'drag-over' : 'courts__row--draggable'}
@@ -278,7 +285,7 @@ export default function Courts() {
             </td>
           </tr>
           {children.length > 0 && renderTree(children, depth + 1)}
-        </React.Fragment>
+        </Fragment>
       );
     });
   };
@@ -287,16 +294,45 @@ export default function Courts() {
 
   return (
     <div className="fade-in">
-      <PageHeader
-        icon="layers"
-        title="Courts"
-        subtitle="Define the hierarchical structure of courts."
-        actions={mode === 'bulk' ? null : (
-          <button className="btn btn--ghost" onClick={() => { setMode('bulk'); setBulkText(''); setBulkTab('text'); }}>
-            <Icon name="upload" size={15} /> Bulk Add
-          </button>
-        )}
-      />
+      <div className="cmp-hero">
+        <div className="cmp-hero-icon"><Icon name="layers" size={30} /></div>
+        <div className="cmp-hero-text">
+          <h2>Courts</h2>
+          <p>Define the hierarchical structure of courts.</p>
+        </div>
+      </div>
+
+      <div className="cmp-toolbar">
+        <Button
+          icon="plus"
+          variant={activeAction === 'add' ? 'primary' : 'ghost'}
+          onClick={() => { setActiveAction('add'); setMode('single'); }}
+        >
+          Add
+        </Button>
+        <Button
+          icon="upload"
+          variant={activeAction === 'bulk' ? 'primary' : 'ghost'}
+          onClick={() => { setActiveAction('bulk'); setMode('bulk'); setBulkText(''); setBulkTab('text'); }}
+        >
+          Bulk Add
+        </Button>
+        <Button
+          icon="edit"
+          variant={activeAction === 'edit' ? 'primary' : 'ghost'}
+          onClick={() => { setActiveAction('edit'); setEditModal({ id: '', name: '', short_code: '', parent_id: '', preview: '' }); }}
+        >
+          Edit
+        </Button>
+        <Button
+          icon="trash"
+          variant={activeAction === 'delete' ? 'danger-outline' : 'ghost'}
+          onClick={() => { setActiveAction(activeAction === 'delete' ? 'add' : 'delete'); }}
+          className={activeAction === 'delete' ? 'btn--danger-outline' : ''}
+        >
+          Delete
+        </Button>
+      </div>
 
       {mode === 'single' ? (
         <Card title="Add Court" className="courts__add-card">
@@ -318,7 +354,7 @@ export default function Courts() {
             <button className={`courts__bulk-tab ${bulkTab === 'csv' ? 'courts__bulk-tab--active' : ''}`} onClick={() => setBulkTab('csv')}>CSV</button>
             <button className={`courts__bulk-tab ${bulkTab === 'json' ? 'courts__bulk-tab--active' : ''}`} onClick={() => setBulkTab('json')}>JSON</button>
             <div className="courts__bulk-spacer" />
-            <button className="btn btn--ghost btn--sm" onClick={() => setMode('single')}>Single Add</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => { setMode('single'); setActiveAction('add'); }}>Single Add</button>
           </div>
 
           {bulkTab === 'text' && (
@@ -362,10 +398,17 @@ export default function Courts() {
         </Card>
       )}
 
-      <div className="search-row">
-        <div className="datatable__search search-row__input">
-          <Icon name="search" size={15} />
+      <div className="cmp-search-row">
+        <div className="cmp-search">
+          <Icon name="search" size={18} />
           <input value={search} placeholder="Search hierarchy…" onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <div className="cmp-stat">
+          <div className="cmp-stat-icon"><Icon name="layers" size={20} /></div>
+          <div>
+            <div className="cmp-stat-label">Total Courts</div>
+            <div className="cmp-stat-value">{items.length}</div>
+          </div>
         </div>
         {selected.size > 0 && (
           <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
@@ -373,7 +416,7 @@ export default function Courts() {
       </div>
 
       <Card bodyClass="card__body--flush">
-        <table className="table courts__table">
+        <table className="cmp-table">
           <thead>
             <tr>
               <th className="courts__th-checkbox"><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
@@ -386,7 +429,7 @@ export default function Courts() {
           </thead>
           <tbody>
             {rootItems.length === 0 ? (
-              <tr><td className="courts__empty" colSpan={6}>No courts defined.</td></tr>
+              <tr><td className="cmp-empty" colSpan={6}>No courts defined.</td></tr>
             ) : renderTree(rootItems)}
           </tbody>
         </table>
@@ -463,15 +506,33 @@ export default function Courts() {
       <Modal
         open={!!editModal}
         onClose={() => setEditModal(null)}
-        title={editModal ? `Edit Court: ${editModal.name}` : 'Edit Court'}
+        title={editModal?.id ? `Edit Court: ${editModal.name}` : 'Edit Court'}
         footer={
-          <>
+          editModal?.id ? (
+            <>
+              <button className="btn btn--ghost" onClick={() => setEditModal(null)}>Cancel</button>
+              <button className="btn btn--primary" onClick={saveEdit}><Icon name="check" size={15} /> Save</button>
+            </>
+          ) : (
             <button className="btn btn--ghost" onClick={() => setEditModal(null)}>Cancel</button>
-            <button className="btn btn--primary" onClick={saveEdit}><Icon name="check" size={15} /> Save</button>
-          </>
+          )
         }
       >
-        {editModal && (
+        {editModal && !editModal.id && (
+          <div className="courts__edit-modal">
+            <div className="flex-col gap-8">
+              <div className="flex-col gap-4">
+                <label className="field-label">Select Court</label>
+                <Select
+                  value=""
+                  onChange={(e) => handleEditPicker(e.target.value)}
+                  options={[{ value: '', label: '— Choose a court —' }, ...liveOptions(null)]}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        {editModal && editModal.id && (
           <div className="courts__edit-modal">
             <div className="flex-col gap-8">
               <div className="flex-col gap-4">

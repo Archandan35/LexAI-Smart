@@ -16275,3 +16275,123 @@ kbd.cmd__kbd {
   .bench-types__form-grid { grid-template-columns: 1fr; }
   .bench-types__toolbar { gap: 6px; }
 }
+
+/* ============================================================
+   Shared Court Management Pages (cmp-*)
+   Used by: Jurisdictions, CaseStatuses, CaseStages, Priorities,
+   JudgeList, CaseTypes, PartyTypes
+   ============================================================ */
+.cmp-toolbar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.cmp-form { margin-bottom: 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.cmp-form-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: var(--bg); border-bottom: 1px solid var(--border); }
+.cmp-form-header-icon { color: var(--brand); display: flex; }
+.cmp-form-header-title { font-weight: 600; font-size: 14px; margin-right: 12px; }
+.cmp-form-close { margin-left: auto; color: var(--text-faint); cursor: pointer; background: none; border: none; display: flex; }
+.cmp-form-close:hover { color: var(--text); }
+.cmp-toggle { display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 2px; gap: 1px; }
+.cmp-toggle-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border: none; background: none; border-radius: 5px; font-size: 12.5px; font-weight: 500; color: var(--text-soft); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.cmp-toggle-btn:hover { color: var(--text); }
+.cmp-toggle-btn.active { background: var(--surface); color: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.cmp-form-body { padding: 20px 18px; }
+.cmp-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cmp-field--full { grid-column: 1 / -1; }
+.cmp-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.cmp-required { color: var(--red); margin-left: 2px; }
+.cmp-optional { color: var(--text-faint); font-weight: 400; font-size: 12px; }
+.cmp-char-count { display: block; text-align: right; font-size: 11.5px; color: var(--text-faint); margin-top: 4px; }
+.cmp-warning { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--red-soft, #fef2f2); border: 1px solid #fecaca; border-radius: 10px; font-size: 13px; color: var(--red, #dc2626); }
+.cmp-form-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--border); background: var(--bg); }
+.cmp-import { text-align: center; padding: 32px 16px; }
+.cmp-import-icon { width: 56px; height: 56px; background: var(--brand-soft); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; color: var(--navy-600); }
+.cmp-import-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: var(--text); }
+.cmp-import-hint { font-size: 13px; color: var(--text-faint); margin-bottom: 20px; }
+.cmp-import-btn { display: inline-flex; }
+.cmp-import-btn .btn { cursor: pointer; }
+.cmp-import-file { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+.cmp-table-card { overflow: hidden; }
+.cmp-table-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.cmp-search { display: flex; align-items: center; gap: 8px; flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-faint); }
+.cmp-search input { border: none; background: none; outline: none; flex: 1; font-size: 13px; color: var(--text); }
+.cmp-search input::placeholder { color: var(--text-faint); }
+.cmp-count { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; }
+.cmp-table { width: 100%; }
+.cmp-row--dragging { opacity: 0.35; background: var(--brand-soft); }
+.cmp-row td { vertical-align: middle; }
+.cmp-drag-cell { text-align: center; }
+.cmp-drag-handle { display: inline-flex; cursor: grab; color: var(--text-faint); padding: 4px; border-radius: 4px; }
+.cmp-drag-handle:hover { color: var(--text); background: var(--bg); }
+.cmp-drag-handle:active { cursor: grabbing; }
+.cmp-cell-name { font-weight: 600; color: var(--text); }
+.cmp-cell-code { font-size: 12px; background: var(--bg); padding: 2px 8px; border-radius: 4px; color: var(--navy-600); }
+.cmp-cell-desc { color: var(--text-soft); font-size: 13px; }
+.cmp-row-actions { display: flex; gap: 4px; }
+.cmp-row-actions .iconbtn { width: 30px; height: 30px; }
+.cmp-detail { margin-bottom: 16px; border: 1px solid var(--border); }
+.cmp-detail-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: var(--bg); border-bottom: 1px solid var(--border); }
+.cmp-detail-title { font-weight: 600; font-size: 14px; }
+.cmp-detail-code { font-size: 12px; background: var(--surface); padding: 1px 8px; border-radius: 4px; color: var(--navy-600); }
+.cmp-detail-close { margin-left: auto; color: var(--text-faint); cursor: pointer; background: none; border: none; display: flex; }
+.cmp-detail-close:hover { color: var(--text); }
+.cmp-detail-body { padding: 14px 18px; display: grid; gap: 10px; }
+.cmp-detail-row { display: flex; gap: 12px; font-size: 13px; }
+.cmp-detail-label { min-width: 120px; color: var(--text-faint); font-weight: 500; }
+.cmp-detail-value { color: var(--text); }
+.cmp-hint { display: block; font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+.cmp-checkbox-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.cmp-checkbox-all { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text); }
+.cmp-checkbox-all input[type="checkbox"] { accent-color: var(--brand); width: 16px; height: 16px; cursor: pointer; }
+.cmp-checkbox-count { font-size: 12px; color: var(--text-faint); margin-left: auto; }
+.cmp-checkbox-list { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.cmp-checkbox-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background 0.1s; border-bottom: 1px solid var(--border); }
+.cmp-checkbox-row:last-child { border-bottom: none; }
+.cmp-checkbox-row:hover { background: var(--bg); }
+.cmp-checkbox-row.checked { background: var(--brand-soft); }
+.cmp-checkbox-row input[type="checkbox"] { accent-color: var(--brand); width: 16px; height: 16px; cursor: pointer; }
+.cmp-checkbox-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+.cmp-checkbox-code { font-size: 11.5px; background: var(--bg); padding: 1px 6px; border-radius: 4px; color: var(--navy-600); }
+.cmp-form-toggle { display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 2px; gap: 1px; margin-left: auto; }
+.cmp-form-toggle-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border: none; background: none; border-radius: 5px; font-size: 12.5px; font-weight: 500; color: var(--text-soft); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.cmp-form-toggle-btn:hover { color: var(--text); }
+.cmp-form-toggle-btn.active { background: var(--surface); color: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.cmp-form-collapse { margin-left: auto; color: var(--text-faint); cursor: pointer; background: none; border: none; display: flex; padding: 4px; border-radius: 4px; }
+.cmp-form-collapse:hover { color: var(--text); background: var(--bg); }
+.cmp-sort { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; color: var(--text-faint); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; user-select: none; }
+.cmp-sort:hover { color: var(--text); }
+.cmp-checkbox-empty { padding: 24px; text-align: center; color: var(--text-faint); font-size: 13px; }
+.cmp-empty { padding: 32px 16px; text-align: center; color: var(--text-faint); font-size: 14px; }
+.cmp-footer { margin-top: 12px; font-size: 12.5px; color: var(--text-faint); }
+.cmp-loading { display: grid; place-items: center; padding: 60px; }
+.cmp-btn-danger-outline { background: #fff; color: var(--red, #dc2626); border: 1px solid #fecaca; }
+.cmp-btn-danger-outline:hover:not(:disabled) { background: #fef2f2; }
+.cmp-hero { display: flex; align-items: center; gap: 16px; padding: 28px 32px; background: linear-gradient(135deg, var(--navy-700, #0b1b3a), var(--navy-800, #07112a)); border-radius: var(--radius); margin-bottom: 24px; }
+.cmp-hero-icon { width: 52px; height: 52px; background: rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--brand-light, #93c5fd); flex-shrink: 0; }
+.cmp-hero-text h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: #fff; }
+.cmp-hero-text p { margin: 0; font-size: 13.5px; color: rgba(255,255,255,0.65); }
+.cmp-name-cell { display: flex; align-items: center; gap: 10px; }
+.cmp-name-avatar { width: 30px; height: 30px; border-radius: 8px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; color: var(--navy-600); flex-shrink: 0; }
+.cmp-code-pill { display: inline-block; font-size: 11.5px; font-family: var(--mono); background: var(--bg); color: var(--navy-600); padding: 2px 10px; border-radius: 999px; font-weight: 600; letter-spacing: 0.3px; }
+.cmp-status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.cmp-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.cmp-status-pill--active { background: #e6f7e6; color: #16a34a; }
+.cmp-status-pill--active .cmp-status-dot { background: #16a34a; }
+.cmp-status-pill--inactive { background: #f1f3f5; color: #6b7280; }
+.cmp-status-pill--inactive .cmp-status-dot { background: #9ca3af; }
+.cmp-actions { display: flex; gap: 2px; }
+.cmp-act-btn { width: 30px; height: 30px; border: none; background: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-faint); transition: all 0.15s; }
+.cmp-act-btn:hover { background: var(--bg); color: var(--text); }
+.cmp-act-btn--edit:hover { color: var(--brand); }
+.cmp-act-btn--del:hover { color: var(--red); background: #fef2f2; }
+.cmp-search-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.cmp-search { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-faint); }
+.cmp-search input { border: none; background: none; outline: none; flex: 1; font-size: 13px; color: var(--text); }
+.cmp-search input::placeholder { color: var(--text-faint); }
+.cmp-stat { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); white-space: nowrap; }
+.cmp-stat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; color: var(--navy-600); }
+.cmp-stat-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+.cmp-stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
+.cmp-table-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-faint); flex-wrap: wrap; gap: 8px; }
+.cmp-pagination { display: flex; gap: 4px; }
+.cmp-page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--text-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.cmp-page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+.cmp-page-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.cmp-page-btn:disabled { opacity: 0.35; cursor: default; }

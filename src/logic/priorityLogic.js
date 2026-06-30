@@ -28,6 +28,15 @@ export const priorityLogic = {
     try { return ok(await priorityService.remove(id)); }
     catch (err) { return fail(err); }
   },
+
+  async reorder(orderedIds) {
+    try {
+      for (let i = 0; i < orderedIds.length; i += 1) {
+        await priorityService.update(orderedIds[i], { display_order: i });
+      }
+      return ok(true);
+    } catch (err) { return fail(err); }
+  },
 };
 
 export default priorityLogic;

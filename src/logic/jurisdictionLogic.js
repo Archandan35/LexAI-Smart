@@ -50,6 +50,15 @@ export const jurisdictionLogic = {
       return ok(await jurisdictionService.remove(id));
     } catch (err) { return fail(err); }
   },
+
+  async reorder(orderedIds) {
+    try {
+      for (let i = 0; i < orderedIds.length; i += 1) {
+        await jurisdictionService.update(orderedIds[i], { display_order: i });
+      }
+      return ok(true);
+    } catch (err) { return fail(err); }
+  },
 };
 
 export default jurisdictionLogic;

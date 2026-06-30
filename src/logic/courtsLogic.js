@@ -200,6 +200,15 @@ export const courtsLogic = {
     const records = lines.map((name) => ({ name, short_code: '', parent_name: '' }));
     return this.bulkCreate(records);
   },
+
+  async reorder(orderedIds) {
+    try {
+      for (let i = 0; i < orderedIds.length; i += 1) {
+        await courtsService.update(orderedIds[i], { display_order: i });
+      }
+      return ok(true);
+    } catch (err) { return fail(err); }
+  },
 };
 
 export default courtsLogic;

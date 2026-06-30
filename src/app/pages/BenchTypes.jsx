@@ -8,12 +8,13 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 
 const ENTITY_PREFIX = 'BT';
+const PER_PAGE = 10;
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
-  { key: 'edit', label: 'Edit', icon: 'edit', variant: 'secondary' },
-  { key: 'delete', label: 'Delete', icon: 'trash', variant: 'danger' },
-  { key: 'import', label: 'Import', icon: 'upload', variant: 'ghost' },
+  { key: 'edit', label: 'Edit', icon: 'edit', variant: 'outline' },
+  { key: 'delete', label: 'Delete', icon: 'trash', variant: 'danger-outline' },
+  { key: 'import', label: 'Import', icon: 'upload', variant: 'outline' },
 ];
 
 const SUB_MODES = {
@@ -38,6 +39,7 @@ export default function BenchTypes() {
   const [search, setSearch] = useState('');
   const [activeAction, setActiveAction] = useState(null);
   const [subMode, setSubMode] = useState('single');
+  const [page, setPage] = useState(1);
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -85,6 +87,7 @@ export default function BenchTypes() {
     setEditId(''); setEditName(''); setEditCode('');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
+    setPage(1);
   };
 
   const activate = (key) => {
@@ -199,6 +202,10 @@ export default function BenchTypes() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+
   const handleDragStart = (e, idx) => {
     setDragIdx(idx);
     dragOrder.current = filtered.map((t) => t.id);
@@ -243,7 +250,13 @@ export default function BenchTypes() {
 
   return (
     <div className="fade-in bench-types">
-      <PageHeader icon="users" title="Bench Types" subtitle="Manage bench compositions (Single Bench, Division Bench, Full Bench, etc.)." />
+      <div className="bench-types__hero">
+        <div className="bench-types__hero-icon"><Icon name="scales" size={30} /></div>
+        <div className="bench-types__hero-text">
+          <h2>Bench Types</h2>
+          <p>Manage bench compositions (Single Bench, Division Bench, Full Bench, etc.).</p>
+        </div>
+      </div>
 
       <div className="bench-types__toolbar">
         {ACTIONS.map(a => (
@@ -252,6 +265,7 @@ export default function BenchTypes() {
             icon={a.icon}
             variant={activeAction === a.key ? a.variant : 'ghost'}
             onClick={() => activate(a.key)}
+            className={a.variant === 'danger-outline' ? 'btn--danger-outline' : ''}
           >
             {a.label}
           </Button>
@@ -261,7 +275,7 @@ export default function BenchTypes() {
       {activeAction && (
         <Card className="bench-types__form">
           <div className="bench-types__form-header">
-            <span className="bench-types__form-header-icon"><Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} /></span>
+            <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
             <span className="bench-types__form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Bench Type</span>
             {SUB_MODES[activeAction] && (
               <div className="bench-types__toggle">
@@ -279,7 +293,6 @@ export default function BenchTypes() {
             )}
             <button className="iconbtn bench-types__form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
-
           <div className="bench-types__form-body">
             {activeAction === 'add' && subMode === 'single' && (
               <div className="bench-types__form-grid">
@@ -309,13 +322,10 @@ export default function BenchTypes() {
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Paste entries — one per line</label>
-                  <Textarea
-                    value={bulkAddText}
-                    onChange={e => setBulkAddText(e.target.value)}
+                  <Textarea value={bulkAddText} onChange={e => setBulkAddText(e.target.value)}
                     placeholder={`Single Bench          → auto: ${ENTITY_PREFIX}-SINGLE-BENCH\nSingle Bench:SB       → manual: SB\nDivision Bench:DB\nFull Bench`}
-                    rows={8}
-                  />
-                  <span className="bench-types__hint">Use <code>Name:CODE</code> for manual codes. Without <code>:CODE</code>, the code auto-generates as <code>{ENTITY_PREFIX}-NAME-IN-HYPHENS</code>.</span>
+                    rows={8} />
+                  <span className="bench-types__hint">Use <code>Name:CODE</code> for manual codes. Without <code>:CODE</code>, code auto-generates as <code>{ENTITY_PREFIX}-NAME-IN-HYPHENS</code>.</span>
                 </div>
               </div>
             )}
@@ -346,12 +356,8 @@ export default function BenchTypes() {
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Format: <code>CurrentName|NewName:NEWCODE</code> — one per line</label>
-                  <Textarea
-                    value={bulkEditText}
-                    onChange={e => setBulkEditText(e.target.value)}
-                    placeholder={'Single Bench|Single Judge Bench:SJB\nDivision Bench|Div Bench:DB'}
-                    rows={8}
-                  />
+                  <Textarea value={bulkEditText} onChange={e => setBulkEditText(e.target.value)}
+                    placeholder={'Single Bench|Single Judge Bench:SJB\nDivision Bench|Div Bench:DB'} rows={8} />
                   <span className="bench-types__hint">Match by name, short code, or id before the pipe.</span>
                 </div>
               </div>
@@ -417,7 +423,6 @@ export default function BenchTypes() {
               </div>
             )}
           </div>
-
           <div className="bench-types__form-footer">
             <Button variant="ghost" onClick={reset}>Cancel</Button>
             {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Bench Type</Button>}
@@ -431,11 +436,25 @@ export default function BenchTypes() {
         </Card>
       )}
 
+      <div className="bench-types__search-row">
+        <div className="bench-types__search">
+          <Icon name="search" size={18} />
+          <input value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+        </div>
+        <div className="bench-types__stat">
+          <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
+          <div>
+            <div className="bench-types__stat-label">Total Bench Types</div>
+            <div className="bench-types__stat-value">{items.length}</div>
+          </div>
+        </div>
+      </div>
+
       {viewItem && (
         <Card className="bench-types__detail">
           <div className="bench-types__detail-header">
             <span className="bench-types__detail-title">{viewItem.name}</span>
-            <code className="bench-types__detail-code">{viewItem.short_code}</code>
+            <span className="bench-types__detail-code">{viewItem.short_code}</span>
             <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
             <button className="iconbtn bench-types__detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
           </div>
@@ -448,63 +467,76 @@ export default function BenchTypes() {
               <span className="bench-types__detail-label">Display Order</span>
               <span className="bench-types__detail-value">{viewItem.display_order ?? '—'}</span>
             </div>
-            <div className="bench-types__detail-row">
-              <span className="bench-types__detail-label">ID</span>
-              <span className="bench-types__detail-value"><code>{viewItem.id}</code></span>
-            </div>
           </div>
         </Card>
       )}
 
-      <Card className="bench-types__table-card">
-        <div className="bench-types__table-toolbar">
-          <div className="bench-types__search">
-            <Icon name="search" size={15} />
-            <input value={search} placeholder="Search bench types…" onChange={e => setSearch(e.target.value)} />
-          </div>
-          <span className="bench-types__count">{filtered.length} of {items.length}</span>
-        </div>
-        <table className="table bench-types__table">
+      <div className="bench-types__table-card">
+        <table className="bench-types__table">
           <thead>
             <tr>
               <th style={{ width: 32 }}></th>
-              <th>Name</th>
-              <th>Code</th>
-              <th>Status</th>
-              <th style={{ width: 130 }}>Actions</th>
+              <th><span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="bench-types__sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="bench-types__sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th style={{ width: 120 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {paged.length === 0 ? (
               <tr><td className="bench-types__empty" colSpan={5}>No bench types found.</td></tr>
-            ) : filtered.map((item, idx) => (
-              <tr
-                key={item.id}
-                draggable={!search}
-                onDragStart={(e) => handleDragStart(e, idx)}
-                onDragOver={(e) => handleDragOver(e, idx)}
+            ) : paged.map((item, idx) => (
+              <tr key={item.id} draggable={!search}
+                onDragStart={(e) => handleDragStart(e, (safePage - 1) * PER_PAGE + idx)}
+                onDragOver={(e) => handleDragOver(e, (safePage - 1) * PER_PAGE + idx)}
                 onDragEnd={handleDragEnd}
-                className={`bench-types__row${dragIdx === idx ? ' bench-types__row--dragging' : ''}`}
+                className={`bench-types__row${dragIdx === (safePage - 1) * PER_PAGE + idx ? ' bench-types__row--dragging' : ''}`}
               >
                 <td className="bench-types__drag-cell">
-                  <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="move" size={15} /></span>
+                  <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
-                <td><span className="bench-types__cell-name">{item.name}</span></td>
-                <td><code className="bench-types__cell-code">{item.short_code}</code></td>
-                <td><span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span></td>
                 <td>
-                  <div className="bench-types__row-actions">
-                    <button className="iconbtn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                    <button className="iconbtn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                  <div className="bench-types__name-cell">
+                    <span className="bench-types__name-avatar"><Icon name="users" size={15} /></span>
+                    <span className="bench-types__cell-name">{item.name}</span>
+                  </div>
+                </td>
+                <td><span className="bench-types__code-pill">{item.short_code}</span></td>
+                <td>
+                  <span className={`bench-types__status-pill bench-types__status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="bench-types__status-dot"></span>
+                    {item.status || 'Active'}
+                  </span>
+                </td>
+                <td>
+                  <div className="bench-types__actions">
+                    <button className="bench-types__act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="bench-types__act-btn bench-types__act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="bench-types__act-btn bench-types__act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </Card>
-      <p className="bench-types__footer">{items.length} bench type(s) configured.</p>
+        <div className="bench-types__table-footer">
+          <div>Showing {(safePage - 1) * PER_PAGE + 1} to {Math.min(safePage * PER_PAGE, filtered.length)} of {filtered.length} bench types</div>
+          {totalPages > 1 && (
+            <div className="bench-types__pagination">
+              <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+                const p = start + i;
+                if (p > totalPages) return null;
+                return (
+                  <button key={p} className={`bench-types__page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+                );
+              })}
+              <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
