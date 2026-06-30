@@ -241,6 +241,10 @@ export default function Courts() {
     (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+
   const rootItems = filtered.filter((i) => !i.parent_id).sort((a, b) => a.display_order - b.display_order);
   const getChildren = (parentId) => filtered.filter((i) => i.parent_id === parentId).sort((a, b) => a.display_order - b.display_order);
 
