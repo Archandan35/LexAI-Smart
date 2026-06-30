@@ -59,6 +59,7 @@ export default function BenchTypes() {
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
+  const [showFilter, setShowFilter] = useState(false);
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
 
@@ -484,7 +485,7 @@ export default function BenchTypes() {
         <div className="bench-types__search">
           <Icon name="search" size={18} />
           <input ref={searchRef} value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-          <button className="bench-types__search-filter" title="Filter" onClick={() => searchRef.current?.focus()}><Icon name="filter" size={18} /></button>
+          <button className={`bench-types__search-filter${showFilter ? ' active' : ''}`} title="Filter" onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}><Icon name="filter" size={18} /></button>
         </div>
         <div className="bench-types__stat bench-types__desktop-only">
           <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
