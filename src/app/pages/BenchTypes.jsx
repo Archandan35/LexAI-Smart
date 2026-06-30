@@ -250,12 +250,71 @@ export default function BenchTypes() {
 
   return (
     <div className="fade-in bench-types">
+      <div className="bench-types__topbar">
+        <div className="bench-types__topbar-left">
+          <button className="bench-types__menu-btn" title="Menu"><Icon name="menu" size={24} /></button>
+          <div className="bench-types__brand-icon"><Icon name="scales" size={24} /></div>
+          <div className="bench-types__brand-text">
+            <h1>LexAI</h1>
+            <p>Your AI Legal Assistant</p>
+          </div>
+        </div>
+        <div className="bench-types__topbar-right">
+          <button className="bench-types__circle-btn" title="Search"><Icon name="search" size={20} /></button>
+          <button className="bench-types__circle-btn" title="Notifications">
+            <span className="bench-types__notif-badge">3</span>
+            <Icon name="bell" size={20} />
+          </button>
+          <div className="bench-types__avatar">AC</div>
+        </div>
+      </div>
+
       <div className="bench-types__hero">
-        <div className="bench-types__hero-icon"><Icon name="scales" size={30} /></div>
+        <div className="bench-types__hero-icon"><Icon name="gavel" size={30} /></div>
         <div className="bench-types__hero-text">
           <h2>Bench Types</h2>
-          <p>Manage bench compositions (Single Bench, Division Bench, Full Bench, etc.).</p>
+          <p>Manage bench compositions (Single Bench, Division Bench, Full Bench, etc.)</p>
         </div>
+        <svg className="bench-types__hero-illus" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="120" cy="205" rx="70" ry="8" fill="#0a1638" opacity="0.08"/>
+          <g fill="#f0b429" opacity="0.85">
+            <path d="M30 40 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z"/>
+            <path d="M205 70 l2.5 6.5 6.5 2.5 -6.5 2.5 -2.5 6.5 -2.5 -6.5 -6.5 -2.5 6.5 -2.5z"/>
+            <path d="M195 25 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/>
+          </g>
+          <g fill="#d6b35a">
+            <ellipse cx="35" cy="180" rx="7" ry="3.5" transform="rotate(-30 35 180)"/>
+            <ellipse cx="30" cy="168" rx="7" ry="3.5" transform="rotate(-15 30 168)"/>
+            <ellipse cx="27" cy="155" rx="7" ry="3.5" transform="rotate(0 27 155)"/>
+            <ellipse cx="27" cy="142" rx="7" ry="3.5" transform="rotate(15 27 142)"/>
+            <ellipse cx="30" cy="129" rx="7" ry="3.5" transform="rotate(30 30 129)"/>
+            <path d="M40 188 Q25 160 32 122" stroke="#caa023" strokeWidth="2" fill="none"/>
+          </g>
+          <g fill="#d6b35a">
+            <ellipse cx="205" cy="180" rx="7" ry="3.5" transform="rotate(30 205 180)"/>
+            <ellipse cx="210" cy="168" rx="7" ry="3.5" transform="rotate(15 210 168)"/>
+            <ellipse cx="213" cy="155" rx="7" ry="3.5" transform="rotate(0 213 155)"/>
+            <ellipse cx="213" cy="142" rx="7" ry="3.5" transform="rotate(-15 213 142)"/>
+            <ellipse cx="210" cy="129" rx="7" ry="3.5" transform="rotate(-30 210 129)"/>
+            <path d="M200 188 Q215 160 208 122" stroke="#caa023" strokeWidth="2" fill="none"/>
+          </g>
+          <rect x="112" y="120" width="16" height="70" rx="3" fill="#16245e"/>
+          <ellipse cx="120" cy="192" rx="46" ry="10" fill="#16245e"/>
+          <ellipse cx="120" cy="192" rx="46" ry="10" fill="none" stroke="#0a1638" strokeWidth="2" opacity="0.3"/>
+          <rect x="116" y="35" width="8" height="95" rx="3" fill="#f0b429"/>
+          <circle cx="120" cy="28" r="9" fill="#f0b429"/>
+          <circle cx="120" cy="28" r="4" fill="#fff7e0"/>
+          <rect x="45" y="44" width="150" height="6" rx="3" fill="#f0b429"/>
+          <circle cx="120" cy="47" r="6" fill="#caa023"/>
+          <line x1="55" y1="47" x2="40" y2="95" stroke="#caa023" strokeWidth="2"/>
+          <line x1="55" y1="47" x2="70" y2="95" stroke="#caa023" strokeWidth="2"/>
+          <path d="M30 95 q10 22 30 0z" fill="#f0b429"/>
+          <ellipse cx="45" cy="96" rx="20" ry="5" fill="#caa023"/>
+          <line x1="185" y1="47" x2="170" y2="95" stroke="#caa023" strokeWidth="2"/>
+          <line x1="185" y1="47" x2="200" y2="95" stroke="#caa023" strokeWidth="2"/>
+          <path d="M160 95 q10 22 30 0z" fill="#f0b429"/>
+          <ellipse cx="175" cy="96" rx="20" ry="5" fill="#caa023"/>
+        </svg>
       </div>
 
       <div className="bench-types__toolbar">
@@ -265,7 +324,7 @@ export default function BenchTypes() {
             icon={a.icon}
             variant={activeAction === a.key ? a.variant : 'ghost'}
             onClick={() => activate(a.key)}
-            className={a.variant === 'danger-outline' ? 'btn--danger-outline' : ''}
+            className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
           >
             {a.label}
           </Button>
@@ -536,6 +595,10 @@ export default function BenchTypes() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="bench-types__per-page">
+        10 / page <Icon name="chevronDown" size={15} />
       </div>
     </div>
   );

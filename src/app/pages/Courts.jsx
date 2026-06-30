@@ -328,7 +328,7 @@ export default function Courts() {
           icon="trash"
           variant={activeAction === 'delete' ? 'danger-outline' : 'ghost'}
           onClick={() => { setActiveAction(activeAction === 'delete' ? 'add' : 'delete'); }}
-          className={activeAction === 'delete' ? 'btn--danger-outline' : ''}
+          className={activeAction === 'delete' ? 'cmp-btn-danger-outline' : ''}
         >
           Delete
         </Button>
