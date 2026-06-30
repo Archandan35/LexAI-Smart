@@ -499,6 +499,7 @@ export default function BenchTypes() {
         <div className="bench-types__search">
           <Icon name="search" size={18} />
           <input value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+          <button className="btn-icon bench-types__search-filter" title="Filter"><Icon name="filter" size={19} /></button>
         </div>
         <div className="bench-types__stat">
           <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
@@ -506,6 +507,7 @@ export default function BenchTypes() {
             <div className="bench-types__stat-label">Total Bench Types</div>
             <div className="bench-types__stat-value">{items.length}</div>
           </div>
+          <span className="bench-types__stat-chevron"><Icon name="chevron" size={20} /></span>
         </div>
       </div>
 
@@ -597,8 +599,49 @@ export default function BenchTypes() {
         </div>
       </div>
 
-      <div className="bench-types__per-page">
-        10 / page <Icon name="chevronDown" size={15} />
+      <div className="bench-types__list-card">
+        {paged.length === 0 ? (
+          <div className="bench-types__list-empty">No bench types found.</div>
+        ) : paged.map((item, idx) => (
+          <div key={item.id} className="bench-types__list-row" draggable={!search}
+            onDragStart={(e) => handleDragStart(e, (safePage - 1) * PER_PAGE + idx)}
+            onDragOver={(e) => handleDragOver(e, (safePage - 1) * PER_PAGE + idx)}
+            onDragEnd={handleDragEnd}
+          >
+            <span className="bench-types__list-drag"><Icon name="grip-vertical" size={17} /></span>
+            <span className="bench-types__list-avatar"><Icon name="users" size={20} /></span>
+            <div className="bench-types__list-main">
+              <div className="bench-types__list-name">{item.name}</div>
+              <span className="bench-types__list-code">{item.short_code}</span>
+            </div>
+            <span className={`bench-types__list-status bench-types__list-status--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+              <span className="bench-types__list-status-dot"></span>
+              {item.status || 'Active'}
+            </span>
+            <div className="bench-types__list-actions">
+              <button className="bench-types__list-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={17} /></button>
+              <button className="bench-types__list-act-btn bench-types__list-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={17} /></button>
+              <button className="bench-types__list-act-btn bench-types__list-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={17} /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="bench-types__mobile-pagination">
+        <div className="bench-types__pagination">
+          <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+            const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+            const p = start + i;
+            if (p > totalPages) return null;
+            return (
+              <button key={p} className={`bench-types__page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+            );
+          })}
+          <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+        </div>
+        <div className="bench-types__per-page">
+          10 / page <Icon name="chevronDown" size={15} />
+        </div>
       </div>
     </div>
   );
