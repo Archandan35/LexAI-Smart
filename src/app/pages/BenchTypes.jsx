@@ -50,6 +50,7 @@ export default function BenchTypes() {
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editStatus, setEditStatus] = useState('Active');
 
   const [delId, setDelId] = useState('');
 
@@ -62,6 +63,7 @@ export default function BenchTypes() {
   const [dragIdx, setDragIdx] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
+  const [busy, setBusy] = useState(false);
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
 
@@ -91,7 +93,7 @@ export default function BenchTypes() {
     setActiveAction(null);
     setSubMode('single');
     setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
-    setEditId(''); setEditName(''); setEditCode('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
     setPage(1);
@@ -109,7 +111,9 @@ export default function BenchTypes() {
   const doAdd = async () => {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
+    setBusy(true);
     const res = await benchTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
+    setBusy(false);
     if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Bench type added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -122,6 +126,7 @@ export default function BenchTypes() {
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let added = 0, skipped = 0;
     for (const line of lines) {
       const colonIdx = line.indexOf(':');
@@ -132,6 +137,7 @@ export default function BenchTypes() {
       const res = await benchTypeLogic.create({ name, short_code: code });
       if (res.ok) added++; else skipped++;
     }
+    setBusy(false);
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
     load();
@@ -140,8 +146,10 @@ export default function BenchTypes() {
   const doEdit = async () => {
     if (!editId) { toast.push('Select a bench type to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
+    setBusy(true);
     const item = items.find(x => x.id === editId);
-    const res = await benchTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: item?.status });
+    const res = await benchTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
+    setBusy(false);
     if (res.ok) { setEditId(''); toast.push('Bench type updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -149,6 +157,7 @@ export default function BenchTypes() {
   const doBulkEdit = async () => {
     const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let updated = 0, skipped = 0;
     for (const line of lines) {
       const [idPart, namePart] = line.split('|').map(s => s.trim());
@@ -158,6 +167,7 @@ export default function BenchTypes() {
       const res = await benchTypeLogic.update(item.id, { name: name || item.name, short_code: code || item.short_code });
       if (res.ok) updated++; else skipped++;
     }
+    setBusy(false);
     setBulkEditText('');
     toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
     load();
@@ -173,7 +183,9 @@ export default function BenchTypes() {
       confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmState(null);
+        setBusy(true);
         const res = await benchTypeLogic.remove(delId);
+        setBusy(false);
         if (res.ok || !res.error) { setDelId(''); toast.push('Bench type deleted.', 'success'); load(); }
         else toast.push(res.error, 'error');
       },
@@ -207,7 +219,9 @@ export default function BenchTypes() {
       confirmLabel: 'Delete All',
       onConfirm: async () => {
         setConfirmState(null);
+        setBusy(true);
         for (const id of bulkDelSelected) await benchTypeLogic.remove(id);
+        setBusy(false);
         setBulkDelSelected(new Set());
         toast.push(`${count} deleted.`, 'success');
         load();
@@ -218,7 +232,9 @@ export default function BenchTypes() {
 
   const doImport = async () => {
     if (!importFile) { toast.push('Select a CSV file.', 'error'); return; }
+    setBusy(true);
     toast.push('CSV import coming soon.', 'info');
+    setBusy(false);
   };
 
   const filtered = items.filter(i =>
@@ -251,7 +267,9 @@ export default function BenchTypes() {
     const ids = dragOrder.current;
     setDragIdx(null);
     dragOrder.current = null;
+    setBusy(true);
     await benchTypeLogic.reorder(ids);
+    setBusy(false);
     load();
   };
 
@@ -261,6 +279,7 @@ export default function BenchTypes() {
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+    setEditStatus(item.status || 'Active');
   };
 
   const startDelete = (item) => {
@@ -277,7 +296,9 @@ export default function BenchTypes() {
       confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmState(null);
+        setBusy(true);
         const res = await benchTypeLogic.remove(item.id);
+        setBusy(false);
         if (res.ok || !res.error) { toast.push('Bench type deleted.', 'success'); load(); }
         else toast.push(res.error, 'error');
       },
@@ -415,7 +436,7 @@ export default function BenchTypes() {
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Select Bench Type <span className="bench-types__required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -429,6 +450,13 @@ export default function BenchTypes() {
                     <div className="bench-types__field">
                       <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
                       <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </Select>
                     </div>
                   </>
                 )}
@@ -506,14 +534,14 @@ export default function BenchTypes() {
             )}
           </div>
           <div className="bench-types__form-footer">
-            <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Bench Type</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
-            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Bench Type'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit} disabled={busy}>{busy ? 'Saving…' : 'Save All Changes'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}
           </div>
         </Card>
       )}
