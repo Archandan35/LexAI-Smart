@@ -16287,6 +16287,32 @@ kbd.cmd__kbd {
 .bench-types__hero-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; color: var(--brand); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
 .bench-types__hero-text h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: var(--navy-dark, #0a1638); }
 .bench-types__hero-text p { margin: 0; font-size: 13.5px; color: #5b6479; }
+.bench-types__search-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.bench-types__stat { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); white-space: nowrap; }
+.bench-types__stat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; color: var(--navy-600); }
+.bench-types__stat-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+.bench-types__stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
+.bench-types__name-cell { display: flex; align-items: center; gap: 10px; }
+.bench-types__name-avatar { width: 30px; height: 30px; border-radius: 8px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; color: var(--navy-600); flex-shrink: 0; }
+.bench-types__sort { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; color: var(--text-faint); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; user-select: none; }
+.bench-types__sort:hover { color: var(--text); }
+.bench-types__actions { display: flex; gap: 2px; }
+.bench-types__act-btn { width: 30px; height: 30px; border: none; background: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-faint); transition: all 0.15s; }
+.bench-types__act-btn:hover { background: var(--bg); color: var(--text); }
+.bench-types__act-btn--edit:hover { color: var(--brand); }
+.bench-types__act-btn--del:hover { color: var(--red); background: #fef2f2; }
+.bench-types__table-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-faint); flex-wrap: wrap; gap: 8px; }
+.bench-types__pagination { display: flex; gap: 4px; }
+.bench-types__page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--text-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.bench-types__page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+.bench-types__page-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.bench-types__page-btn:disabled { opacity: 0.35; cursor: default; }
+.bench-types__status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.bench-types__status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.bench-types__status-pill--active { background: #e6f7e6; color: #16a34a; }
+.bench-types__status-pill--active .bench-types__status-dot { background: #16a34a; }
+.bench-types__status-pill--inactive { background: #f1f3f5; color: #6b7280; }
+.bench-types__status-pill--inactive .bench-types__status-dot { background: #9ca3af; }
 
 /* ============================================================
    Bench Types — Mobile & Tablet responsive overrides
@@ -16473,6 +16499,7 @@ kbd.cmd__kbd {
 .cmp-drag-handle { display: inline-flex; cursor: grab; color: var(--text-faint); padding: 4px; border-radius: 4px; }
 .cmp-drag-handle:hover { color: var(--text); background: var(--bg); }
 .cmp-drag-handle:active { cursor: grabbing; }
+.cmp-drag-hint { font-size: 12px; color: var(--text-faint); font-style: italic; padding: 8px 14px 0; }
 .cmp-cell-name { font-weight: 600; color: var(--text); }
 .cmp-cell-code { font-size: 12px; background: var(--bg); padding: 2px 8px; border-radius: 4px; color: var(--navy-600); }
 .cmp-cell-desc { color: var(--text-soft); font-size: 13px; }
