@@ -301,46 +301,46 @@ export default function Priorities() {
       </div>
 
       <div className="cmp-stats-row">
-        <div className="cmp-stat-card">
-          <div className="cmp-stat-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="layers" size={20} /></div>
-          <div className="cmp-stat-info">
-            <div className="cmp-stat-label">Total</div>
-            <div className="cmp-stat-value">{items.length}</div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="layers" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Total</div>
+            <div className="cmp-statcard-value">{items.length}</div>
           </div>
         </div>
-        <div className="cmp-stat-card">
-          <div className="cmp-stat-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
-          <div className="cmp-stat-info">
-            <div className="cmp-stat-label">Active</div>
-            <div className="cmp-stat-value">{items.filter(i => i.status === 'Active').length}</div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Active</div>
+            <div className="cmp-statcard-value">{items.filter(i => i.status === 'Active').length}</div>
           </div>
         </div>
-        <div className="cmp-stat-card">
-          <div className="cmp-stat-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
-          <div className="cmp-stat-info">
-            <div className="cmp-stat-label">Inactive</div>
-            <div className="cmp-stat-value">{items.filter(i => i.status !== 'Active').length}</div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Inactive</div>
+            <div className="cmp-statcard-value">{items.filter(i => i.status !== 'Active').length}</div>
           </div>
         </div>
-        <div className="cmp-stat-card">
-          <div className="cmp-stat-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={20} /></div>
-          <div className="cmp-stat-info">
-            <div className="cmp-stat-label">Most Used</div>
-            <div className="cmp-stat-value">—</div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Most Used</div>
+            <div className="cmp-statcard-value">—</div>
           </div>
         </div>
-        <div className="cmp-stat-card">
-          <div className="cmp-stat-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={20} /></div>
-          <div className="cmp-stat-info">
-            <div className="cmp-stat-label">Created This Month</div>
-            <div className="cmp-stat-value">{items.filter(i => i.created_at && new Date(i.created_at) >= monthStart).length}</div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Created This Month</div>
+            <div className="cmp-statcard-value">{items.filter(i => i.created_at && new Date(i.created_at) >= monthStart).length}</div>
           </div>
         </div>
-        <div className="cmp-stat-card">
-          <div className="cmp-stat-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={20} /></div>
-          <div className="cmp-stat-info">
-            <div className="cmp-stat-label">Total</div>
-            <div className="cmp-stat-value">{items.length}</div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Total</div>
+            <div className="cmp-statcard-value">{items.length}</div>
           </div>
         </div>
       </div>
