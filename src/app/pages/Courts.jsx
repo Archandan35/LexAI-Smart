@@ -28,6 +28,10 @@ export default function Courts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeAction, setActiveAction] = useState('add');
+  const [showFilter, setShowFilter] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const searchRef = useRef(null);
+  const [perPage, setPerPage] = useState(10);
 
   // Add form
   const [mode, setMode] = useState('single');
@@ -61,6 +65,12 @@ export default function Courts() {
   };
 
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
 
   // Single add
   const add = async () => {
@@ -138,6 +148,7 @@ export default function Courts() {
   };
 
   // Delete single
+  const confirmDeleteItem = (item) => { remove(item); };
   const remove = async (item) => {
     if (!window.confirm(`Delete "${item.name}"?`)) return;
     const res = await courtsLogic.remove(item.id);
@@ -277,10 +288,19 @@ export default function Courts() {
             </td>
             <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
             <td>
-              <div className="row-actions">
-                <button className="iconbtn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                <button className="iconbtn" title="Duplicate" onClick={() => duplicate(item)}><Icon name="layers" size={15} /></button>
-                <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(item)}><Icon name="trash" size={15} /></button>
+              <div className="cmp-actions">
+                <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                <div className="cmp-act-more-wrap">
+                  <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
+                  {moreMenu === item.id && (
+                    <div className="cmp-act-dropdown">
+                      <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); duplicate(item); }}>
+                        <Icon name="copy" size={14} /> Duplicate
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </td>
           </tr>
@@ -294,47 +314,102 @@ export default function Courts() {
 
   return (
     <div className="fade-in">
+      {/* Hero with watermark */}
       <div className="cmp-hero">
-        <div className="cmp-hero-icon"><Icon name="layers" size={30} /></div>
+        <div className="cmp-hero-icon"><Icon name="layers" size={34} /></div>
         <div className="cmp-hero-text">
           <h2>Courts</h2>
           <p>Define the hierarchical structure of courts.</p>
+          <div className="cmp-hero-accent" />
+        </div>
+        <svg className="cmp-hero-watermark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="0" r="6" fill="currentColor"/>
+          <circle cx="50" cy="0" r="3" fill="#fff"/>
+          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
+          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
+          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
+          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
+        </svg>
+      </div>
+
+      {/* 6 Stat Cards */}
+      <div className="cmp-stats-row">
+        {[
+          { label: 'Total Courts', value: items.length, icon: 'layers', bg: '#EEF2FF', color: '#6366F1', sub: 'All courts' },
+          { label: 'Active', value: items.filter(i => (i.status||'Active').toLowerCase()==='active').length, icon: 'check', bg: '#ECFDF5', color: '#22C55E', sub: 'Active courts' },
+          { label: 'Inactive', value: items.filter(i => (i.status||'Active').toLowerCase()!=='active').length, icon: 'close', bg: '#FFF7ED', color: '#F59E0B', sub: 'Inactive courts' },
+          { label: 'Root Courts', value: items.filter(i => !i.parent_id).length, icon: 'home', bg: '#F0F0FF', color: '#8B5CF6', sub: 'Top-level only' },
+          { label: 'With Children', value: items.filter(i => items.some(c => c.parent_id === i.id)).length, icon: 'layers', bg: '#FFF1F2', color: '#F43F5E', sub: 'Parent courts' },
+          { label: 'Max Depth', value: '—', icon: 'maximize', bg: '#F0F9FF', color: '#0EA5E9', sub: 'Deepest level' },
+        ].map((s, i) => (
+          <div key={i} className="cmp-statcard">
+            <div className="cmp-statcard-icon" style={{ background: s.bg, color: s.color }}><Icon name={s.icon} size={20} /></div>
+            <div className="cmp-statcard-body">
+              <div className="cmp-statcard-label">{s.label}</div>
+              <div className="cmp-statcard-value">{s.value}</div>
+              <div className="cmp-statcard-sub">{s.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar with filter */}
+      <div className="cmp-toolbar">
+        <div className="cmp-toolbar-left">
+          <Button
+            icon="plus"
+            variant={activeAction === 'add' ? 'primary' : 'ghost'}
+            onClick={() => { setActiveAction('add'); setShowFilter(true); setMode('single'); }}
+          >
+            Add
+          </Button>
+          <Button
+            icon="upload"
+            variant={activeAction === 'bulk' ? 'primary' : 'ghost'}
+            onClick={() => { setActiveAction('bulk'); setShowFilter(true); setMode('bulk'); setBulkText(''); setBulkTab('text'); }}
+          >
+            Bulk Add
+          </Button>
+          <Button
+            icon="edit"
+            variant={activeAction === 'edit' ? 'primary' : 'ghost'}
+            onClick={() => { setActiveAction('edit'); setEditModal({ id: '', name: '', short_code: '', parent_id: '', preview: '' }); }}
+          >
+            Edit
+          </Button>
+          <Button
+            icon="trash"
+            variant={activeAction === 'delete' ? 'danger-outline' : 'ghost'}
+            onClick={() => { setActiveAction(activeAction === 'delete' ? 'add' : 'delete'); }}
+            className={activeAction === 'delete' ? 'cmp-btn-danger-outline' : ''}
+          >
+            Delete
+          </Button>
+        </div>
+        <div className="cmp-toolbar-right">
+          <button className={`cmp-tb-filter${showFilter ? ' active' : ''}`} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
+            <Icon name="filter" size={16} /><span>Filter</span>
+          </button>
         </div>
       </div>
 
-      <div className="cmp-toolbar">
-        <Button
-          icon="plus"
-          variant={activeAction === 'add' ? 'primary' : 'ghost'}
-          onClick={() => { setActiveAction('add'); setMode('single'); }}
-        >
-          Add
-        </Button>
-        <Button
-          icon="upload"
-          variant={activeAction === 'bulk' ? 'primary' : 'ghost'}
-          onClick={() => { setActiveAction('bulk'); setMode('bulk'); setBulkText(''); setBulkTab('text'); }}
-        >
-          Bulk Add
-        </Button>
-        <Button
-          icon="edit"
-          variant={activeAction === 'edit' ? 'primary' : 'ghost'}
-          onClick={() => { setActiveAction('edit'); setEditModal({ id: '', name: '', short_code: '', parent_id: '', preview: '' }); }}
-        >
-          Edit
-        </Button>
-        <Button
-          icon="trash"
-          variant={activeAction === 'delete' ? 'danger-outline' : 'ghost'}
-          onClick={() => { setActiveAction(activeAction === 'delete' ? 'add' : 'delete'); }}
-          className={activeAction === 'delete' ? 'cmp-btn-danger-outline' : ''}
-        >
-          Delete
-        </Button>
-      </div>
-
-      {mode === 'single' ? (
+      {/* Form Card */}
+      {showFilter && (mode === 'single' ? (
         <Card title="Add Court" className="courts__add-card">
           <div className="courts__add-row">
             <div className="courts__input-wrap">
@@ -396,26 +471,16 @@ export default function Courts() {
             </div>
           </div>
         </Card>
-      )}
+      ))}
 
-      <div className="cmp-search-row">
-        <div className="cmp-search">
-          <Icon name="search" size={18} />
-          <input value={search} placeholder="Search hierarchy…" onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <div className="cmp-stat">
-          <div className="cmp-stat-icon"><Icon name="layers" size={20} /></div>
-          <div>
-            <div className="cmp-stat-label">Total Courts</div>
-            <div className="cmp-stat-value">{items.length}</div>
-          </div>
-        </div>
-        {selected.size > 0 && (
-          <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
-        )}
+      {/* Standalone Search */}
+      <div className="cmp-search">
+        <Icon name="search" size={18} />
+        <input ref={searchRef} value={search} placeholder="Search hierarchy…" autoComplete="off" onChange={e => setSearch(e.target.value)} />
       </div>
 
-      <Card bodyClass="card__body--flush">
+      {/* Table Card */}
+      <div className="cmp-table-card">
         <table className="cmp-table">
           <thead>
             <tr>
@@ -433,8 +498,19 @@ export default function Courts() {
             ) : renderTree(rootItems)}
           </tbody>
         </table>
-      </Card>
-      <p className="muted courts__count">{items.length} court(s) defined.</p>
+        <div className="cmp-table-footer">
+          <div>Showing all {filtered.length} records</div>
+          <span className="cmp-ft-perpage" title="Change per page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
+        </div>
+      </div>
+
+      {selected.size > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
+        </div>
+      )}
 
       {/* Import Summary Modal */}
       <Modal

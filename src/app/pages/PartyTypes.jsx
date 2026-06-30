@@ -7,7 +7,6 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 
 const ENTITY_PREFIX = 'PT';
-const PER_PAGE = 10;
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -39,6 +38,11 @@ export default function PartyTypes() {
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
 
+  const [showFilter, setShowFilter] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const searchRef = useRef(null);
+  const [perPage, setPerPage] = useState(10);
+
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
   const [bulkAddText, setBulkAddText] = useState('');
@@ -56,6 +60,13 @@ export default function PartyTypes() {
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
+
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
 
   const reset = () => {
     setActiveAction(null);
@@ -213,9 +224,16 @@ export default function PartyTypes() {
     (t.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+
+  const createdThisMonth = partyTypes.filter(i => {
+    if (!i.created_at) return false;
+    const d = new Date(i.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
 
   const handleDragStart = useCallback((e, idx) => {
     setDragIdx(idx);
@@ -249,25 +267,101 @@ export default function PartyTypes() {
   return (
     <div className="fade-in">
       <div className="cmp-hero">
-        <div className="cmp-hero-icon"><Icon name="users" size={30} /></div>
+        <div className="cmp-hero-icon"><Icon name="users" size={34} /></div>
         <div className="cmp-hero-text">
           <h2>Party Types</h2>
           <p>Manage party types used in case forms and filters.</p>
+          <div className="cmp-hero-accent" />
+        </div>
+        <svg className="cmp-hero-watermark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="0" r="6" fill="currentColor"/>
+          <circle cx="50" cy="0" r="3" fill="#fff"/>
+          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
+          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
+          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
+          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
+        </svg>
+      </div>
+
+      <div className="cmp-stats-row">
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Total</div>
+            <div className="cmp-statcard-value">{partyTypes.length}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="check-circle" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Active</div>
+            <div className="cmp-statcard-value">{partyTypes.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="x-circle" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Inactive</div>
+            <div className="cmp-statcard-value">{partyTypes.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="bar-chart" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Most Used</div>
+            <div className="cmp-statcard-value">&mdash;</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="calendar" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Created This Month</div>
+            <div className="cmp-statcard-value">{createdThisMonth}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Total</div>
+            <div className="cmp-statcard-value">{partyTypes.length}</div>
+          </div>
         </div>
       </div>
 
       <div className="cmp-toolbar">
-        {ACTIONS.map(a => (
-          <Button
-            key={a.key}
-            icon={a.icon}
-            variant={activeAction === a.key ? a.variant : 'ghost'}
-            onClick={() => activate(a.key)}
-            className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
-          >
-            {a.label}
-          </Button>
-        ))}
+        <div className="cmp-toolbar-left">
+          {ACTIONS.map(a => (
+            <Button
+              key={a.key}
+              icon={a.icon}
+              variant={activeAction === a.key ? a.variant : 'ghost'}
+              onClick={() => activate(a.key)}
+              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+            >
+              {a.label}
+            </Button>
+          ))}
+        </div>
+        <div className="cmp-toolbar-right">
+          <button className={`cmp-tb-filter${showFilter ? ' active' : ''}`} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
+            <Icon name="filter" size={16} /><span>Filter</span>
+          </button>
+        </div>
       </div>
 
       {activeAction && (
@@ -422,18 +516,9 @@ export default function PartyTypes() {
         </div>
       )}
 
-      <div className="cmp-search-row">
-        <div className="cmp-search">
-          <Icon name="search" size={18} />
-          <input value={search} placeholder="Search party types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-        </div>
-        <div className="cmp-stat">
-          <div className="cmp-stat-icon"><Icon name="users" size={20} /></div>
-          <div>
-            <div className="cmp-stat-label">Total Party Types</div>
-            <div className="cmp-stat-value">{partyTypes.length}</div>
-          </div>
-        </div>
+      <div className="cmp-search">
+        <Icon name="search" size={18} />
+        <input ref={searchRef} value={search} placeholder="Search..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
 
       {viewItem && (
@@ -460,92 +545,107 @@ export default function PartyTypes() {
         </div>
       )}
 
-      <table className="cmp-table">
-        <thead>
-          <tr>
-            <th style={{ width: 32 }}></th>
-            <th style={{ width: 32 }}></th>
-            <th><span>NAME</span></th>
-            <th><span>CODE</span></th>
-            <th><span>ORDER</span></th>
-            <th><span>STATUS</span></th>
-            <th style={{ width: 130 }}>ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paged.length === 0 ? (
-            <tr><td className="cmp-empty" colSpan={7}>No party types found.</td></tr>
-          ) : paged.map((item, idx) => (
-            <tr key={item.id}
-              draggable={!search}
-              onDragStart={(e) => handleDragStart(e, (safePage - 1) * PER_PAGE + idx)}
-              onDragOver={(e) => handleDragOver(e, (safePage - 1) * PER_PAGE + idx)}
-              onDragEnd={handleDragEnd}
-              className={`cmp-row${dragIdx === (safePage - 1) * PER_PAGE + idx ? ' cmp-row--dragging' : ''}`}
-            >
-              <td className="cmp-drag-cell">
-                <input type="checkbox" checked={selected.has(item.id)}
-                  onChange={() => {
-                    if (activeAction === 'delete' && subMode === 'bulk') toggleBulkDel(item.id);
-                    else {
-                      setSelected(prev => {
-                        const next = new Set(prev);
-                        if (next.has(item.id)) next.delete(item.id); else next.add(item.id);
-                        return next;
-                      });
-                    }
-                  }} />
-              </td>
-              <td className="cmp-drag-cell">
-                <span className="cmp-drag-handle" title="Drag to reorder">
-                  <Icon name="grip" size={15} />
-                </span>
-              </td>
-              <td>
-                <div className="cmp-name-cell">
-                  <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>
-                  <span className="cmp-cell-name">{item.name}</span>
-                </div>
-              </td>
-              <td><span className="cmp-code-pill">{item.short_code}</span></td>
-              <td><span className="cmp-cell-desc">{item.display_order ?? '—'}</span></td>
-              <td>
-                <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
-                  <span className="cmp-status-dot"></span>
-                  {item.status || 'Active'}
-                </span>
-              </td>
-              <td>
-                <div className="cmp-actions">
-                  <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                  <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                  <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
-                  <button className="cmp-act-btn" title="Toggle status" onClick={() => handleToggle(item)}>
-                    {item.status === 'Active' ? <Icon name="check" size={15} /> : <Icon name="play" size={13} />}
-                  </button>
-                </div>
-              </td>
+      <div className="cmp-table-card">
+        <table className="cmp-table">
+          <thead>
+            <tr>
+              <th style={{ width: 32 }}></th>
+              <th style={{ width: 32 }}></th>
+              <th><span>NAME</span></th>
+              <th><span>CODE</span></th>
+              <th><span>ORDER</span></th>
+              <th><span>STATUS</span></th>
+              <th style={{ width: 130 }}>ACTIONS</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="cmp-table-footer">
-        <div>Showing {(safePage - 1) * PER_PAGE + 1} to {Math.min(safePage * PER_PAGE, filtered.length)} of {filtered.length} party types</div>
-        {totalPages > 1 && (
-          <div className="cmp-pagination">
-            <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevron-left" size={14} /></button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
-              const p = start + i;
-              if (p > totalPages) return null;
-              return (
-                <button key={p} className={`cmp-page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
-              );
-            })}
-            <button className="cmp-page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
-          </div>
-        )}
+          </thead>
+          <tbody>
+            {paged.length === 0 ? (
+              <tr><td className="cmp-empty" colSpan={7}>No party types found.</td></tr>
+            ) : paged.map((item, idx) => (
+              <tr key={item.id}
+                draggable={!search}
+                onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
+                onDragOver={(e) => handleDragOver(e, (safePage - 1) * perPage + idx)}
+                onDragEnd={handleDragEnd}
+                className={`cmp-row${dragIdx === (safePage - 1) * perPage + idx ? ' cmp-row--dragging' : ''}`}
+              >
+                <td className="cmp-drag-cell">
+                  <input type="checkbox" checked={selected.has(item.id)}
+                    onChange={() => {
+                      if (activeAction === 'delete' && subMode === 'bulk') toggleBulkDel(item.id);
+                      else {
+                        setSelected(prev => {
+                          const next = new Set(prev);
+                          if (next.has(item.id)) next.delete(item.id); else next.add(item.id);
+                          return next;
+                        });
+                      }
+                    }} />
+                </td>
+                <td className="cmp-drag-cell">
+                  <span className="cmp-drag-handle" title="Drag to reorder">
+                    <Icon name="grip" size={15} />
+                  </span>
+                </td>
+                <td>
+                  <div className="cmp-name-cell">
+                    <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>
+                    <span className="cmp-cell-name">{item.name}</span>
+                  </div>
+                </td>
+                <td><span className="cmp-code-pill">{item.short_code}</span></td>
+                <td><span className="cmp-cell-desc">{item.display_order ?? '—'}</span></td>
+                <td>
+                  <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="cmp-status-dot"></span>
+                    {item.status || 'Active'}
+                  </span>
+                </td>
+                <td>
+                  <div className="cmp-actions">
+                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                    <div className="cmp-act-more-wrap">
+                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
+                      {moreMenu === item.id && (
+                        <div className="cmp-act-dropdown">
+                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                            <Icon name="copy" size={14} /> Duplicate
+                          </button>
+                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); handleToggle(item); }}>
+                            {item.status === 'Active' ? <Icon name="pause" size={14} /> : <Icon name="play" size={14} />}
+                            {item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="cmp-table-footer">
+          <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} party types</div>
+          <span className="cmp-ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
+          {totalPages > 1 && (
+            <div className="cmp-pagination">
+              <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevron-left" size={14} /></button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+                const p = start + i;
+                if (p > totalPages) return null;
+                return (
+                  <button key={p} className={`cmp-page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+                );
+              })}
+              <button className="cmp-page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+            </div>
+          )}
+        </div>
       </div>
 
       {!search && <div className="cmp-footer">Drag rows to reorder. Order applies to every case form.</div>}

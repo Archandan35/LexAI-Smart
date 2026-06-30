@@ -8,7 +8,6 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 
 const ENTITY_PREFIX = 'CS';
-const PER_PAGE = 10;
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -40,6 +39,9 @@ export default function CaseStatuses() {
   const [activeAction, setActiveAction] = useState(null);
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
+  const [showFilter, setShowFilter] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -60,6 +62,7 @@ export default function CaseStatuses() {
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
+  const searchRef = useRef(null);
 
   const load = async () => {
     setLoading(true);
@@ -79,6 +82,13 @@ export default function CaseStatuses() {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
 
   const reset = () => {
     setActiveAction(null);
@@ -202,9 +212,9 @@ export default function CaseStatuses() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
 
   const handleDragStart = (e, idx) => {
     setDragIdx(idx);
@@ -248,28 +258,107 @@ export default function CaseStatuses() {
 
   if (loading) return <div className="fade-in cmp-loading"><div className="spinner" /></div>;
 
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
   return (
     <div className="fade-in">
       <div className="cmp-hero">
-        <div className="cmp-hero-icon"><Icon name="toggle" size={30} /></div>
+        <div className="cmp-hero-icon"><Icon name="toggle" size={34} /></div>
         <div className="cmp-hero-text">
           <h2>Case Statuses</h2>
           <p>Manage case statuses (Active, Closed, Archived, Transferred, etc.).</p>
+          <div className="cmp-hero-accent" />
+        </div>
+        <svg className="cmp-hero-watermark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="0" r="6" fill="currentColor"/>
+          <circle cx="50" cy="0" r="3" fill="#fff"/>
+          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
+          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
+          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
+          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
+        </svg>
+      </div>
+
+      <div className="cmp-stats-row">
+        <div className="cmp-stat-card">
+          <div className="cmp-stat-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="layers" size={20} /></div>
+          <div className="cmp-stat-info">
+            <div className="cmp-stat-label">Total</div>
+            <div className="cmp-stat-value">{items.length}</div>
+          </div>
+        </div>
+        <div className="cmp-stat-card">
+          <div className="cmp-stat-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
+          <div className="cmp-stat-info">
+            <div className="cmp-stat-label">Active</div>
+            <div className="cmp-stat-value">{items.filter(i => i.status === 'Active').length}</div>
+          </div>
+        </div>
+        <div className="cmp-stat-card">
+          <div className="cmp-stat-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
+          <div className="cmp-stat-info">
+            <div className="cmp-stat-label">Inactive</div>
+            <div className="cmp-stat-value">{items.filter(i => i.status !== 'Active').length}</div>
+          </div>
+        </div>
+        <div className="cmp-stat-card">
+          <div className="cmp-stat-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={20} /></div>
+          <div className="cmp-stat-info">
+            <div className="cmp-stat-label">Most Used</div>
+            <div className="cmp-stat-value">—</div>
+          </div>
+        </div>
+        <div className="cmp-stat-card">
+          <div className="cmp-stat-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={20} /></div>
+          <div className="cmp-stat-info">
+            <div className="cmp-stat-label">Created This Month</div>
+            <div className="cmp-stat-value">{items.filter(i => i.created_at && new Date(i.created_at) >= monthStart).length}</div>
+          </div>
+        </div>
+        <div className="cmp-stat-card">
+          <div className="cmp-stat-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={20} /></div>
+          <div className="cmp-stat-info">
+            <div className="cmp-stat-label">Total</div>
+            <div className="cmp-stat-value">{items.length}</div>
+          </div>
         </div>
       </div>
 
       <div className="cmp-toolbar">
-        {ACTIONS.map(a => (
-          <Button
-            key={a.key}
-            icon={a.icon}
-            variant={activeAction === a.key ? a.variant : 'ghost'}
-            onClick={() => activate(a.key)}
-            className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
-          >
-            {a.label}
-          </Button>
-        ))}
+        <div className="cmp-toolbar-left">
+          {ACTIONS.map(a => (
+            <Button
+              key={a.key}
+              icon={a.icon}
+              variant={activeAction === a.key ? a.variant : 'ghost'}
+              onClick={() => activate(a.key)}
+              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+            >
+              {a.label}
+            </Button>
+          ))}
+        </div>
+        <div className="cmp-toolbar-right">
+          <button className={`cmp-tb-filter${showFilter?' active':''}`} onClick={()=>{setShowFilter(!showFilter);searchRef.current?.focus();}}>
+            <Icon name="filter" size={16} /><span>Filter</span>
+          </button>
+        </div>
       </div>
 
       {activeAction && (
@@ -291,7 +380,7 @@ export default function CaseStatuses() {
                 ))}
               </div>
             )}
-            <button className="iconbtn" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
+            <button className="iconbtn cmp-form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
           <div className="cmp-form-body">
             {activeAction === 'add' && subMode === 'single' && (
@@ -436,18 +525,9 @@ export default function CaseStatuses() {
         </Card>
       )}
 
-      <div className="cmp-search-row">
-        <div className="cmp-search">
-          <Icon name="search" size={18} />
-          <input value={search} placeholder="Search case statuses…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-        </div>
-        <div className="cmp-stat">
-          <div className="cmp-stat-icon"><Icon name="layers" size={20} /></div>
-          <div>
-            <div className="cmp-stat-label">Total Case Statuses</div>
-            <div className="cmp-stat-value">{items.length}</div>
-          </div>
-        </div>
+      <div className="cmp-search">
+        <Icon name="search" size={18} />
+        <input ref={searchRef} value={search} placeholder="Search..." autoComplete="off" onChange={e=>{setSearch(e.target.value);setPage(1);}} />
       </div>
 
       {viewItem && (
@@ -479,7 +559,7 @@ export default function CaseStatuses() {
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 120 }}>ACTIONS</th>
+              <th style={{ width: 180 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -487,10 +567,10 @@ export default function CaseStatuses() {
               <tr><td className="cmp-empty" colSpan={5}>No case statuses found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
-                onDragStart={(e) => handleDragStart(e, (safePage - 1) * PER_PAGE + idx)}
-                onDragOver={(e) => handleDragOver(e, (safePage - 1) * PER_PAGE + idx)}
+                onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
+                onDragOver={(e) => handleDragOver(e, (safePage - 1) * perPage + idx)}
                 onDragEnd={handleDragEnd}
-                className={`cmp-row${dragIdx === (safePage - 1) * PER_PAGE + idx ? ' cmp-row--dragging' : ''}`}
+                className={`cmp-row${dragIdx === (safePage - 1) * perPage + idx ? ' cmp-row--dragging' : ''}`}
               >
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
@@ -510,9 +590,19 @@ export default function CaseStatuses() {
                 </td>
                 <td>
                   <div className="cmp-actions">
-                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                    <div className="cmp-act-more-wrap">
+                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
+                      {moreMenu === item.id && (
+                        <div className="cmp-act-dropdown">
+                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName?.(item.name + ' (copy)'); setActiveAction?.('add'); }}>
+                            <Icon name="copy" size={14} /> Duplicate
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -520,7 +610,10 @@ export default function CaseStatuses() {
           </tbody>
         </table>
         <div className="cmp-table-footer">
-          <div>Showing {(safePage - 1) * PER_PAGE + 1} to {Math.min(safePage * PER_PAGE, filtered.length)} of {filtered.length} case statuses</div>
+          <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} case statuses</div>
+          <span className="cmp-ft-perpage" title="Change per page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
           {totalPages > 1 && (
             <div className="cmp-pagination">
               <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>

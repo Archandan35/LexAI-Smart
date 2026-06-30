@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
+import { useState, useEffect, useRef } from 'react';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -8,7 +7,6 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { judgeLogic } from '@/logic/judgeLogic.js';
 
 const ENTITY_PREFIX = 'J';
-const PER_PAGE = 10;
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -41,6 +39,11 @@ export default function JudgeList() {
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
 
+  const [showFilter, setShowFilter] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const searchRef = useRef(null);
+  const [perPage, setPerPage] = useState(10);
+
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
   const [newDesignation, setNewDesignation] = useState('');
@@ -68,6 +71,13 @@ export default function JudgeList() {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
 
   const reset = () => {
     setActiveAction(null);
@@ -191,9 +201,16 @@ export default function JudgeList() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase()) || (i.designation || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.name || '').localeCompare(b.name));
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+
+  const createdThisMonth = items.filter(i => {
+    if (!i.created_at) return false;
+    const d = new Date(i.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
 
   const startEdit = (item) => {
     setActiveAction('edit');
@@ -215,25 +232,101 @@ export default function JudgeList() {
   return (
     <div className="fade-in">
       <div className="cmp-hero">
-        <div className="cmp-hero-icon"><Icon name="users" size={30} /></div>
+        <div className="cmp-hero-icon"><Icon name="users" size={34} /></div>
         <div className="cmp-hero-text">
           <h2>Judges</h2>
           <p>Manage judges and presiding officers.</p>
+          <div className="cmp-hero-accent" />
+        </div>
+        <svg className="cmp-hero-watermark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="0" r="6" fill="currentColor"/>
+          <circle cx="50" cy="0" r="3" fill="#fff"/>
+          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
+          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
+          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
+          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
+        </svg>
+      </div>
+
+      <div className="cmp-stats-row">
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Total</div>
+            <div className="cmp-statcard-value">{items.length}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="check-circle" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Active</div>
+            <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="x-circle" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Inactive</div>
+            <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="bar-chart" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Most Used</div>
+            <div className="cmp-statcard-value">&mdash;</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="calendar" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Created This Month</div>
+            <div className="cmp-statcard-value">{createdThisMonth}</div>
+          </div>
+        </div>
+        <div className="cmp-statcard">
+          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
+          <div>
+            <div className="cmp-statcard-label">Total</div>
+            <div className="cmp-statcard-value">{items.length}</div>
+          </div>
         </div>
       </div>
 
       <div className="cmp-toolbar">
-        {ACTIONS.map(a => (
-          <Button
-            key={a.key}
-            icon={a.icon}
-            variant={activeAction === a.key ? a.variant : 'ghost'}
-            onClick={() => activate(a.key)}
-            className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
-          >
-            {a.label}
-          </Button>
-        ))}
+        <div className="cmp-toolbar-left">
+          {ACTIONS.map(a => (
+            <Button
+              key={a.key}
+              icon={a.icon}
+              variant={activeAction === a.key ? a.variant : 'ghost'}
+              onClick={() => activate(a.key)}
+              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+            >
+              {a.label}
+            </Button>
+          ))}
+        </div>
+        <div className="cmp-toolbar-right">
+          <button className={`cmp-tb-filter${showFilter ? ' active' : ''}`} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
+            <Icon name="filter" size={16} /><span>Filter</span>
+          </button>
+        </div>
       </div>
 
       {activeAction && (
@@ -396,18 +489,9 @@ export default function JudgeList() {
         </Card>
       )}
 
-      <div className="cmp-search-row">
-        <div className="cmp-search">
-          <Icon name="search" size={18} />
-          <input value={search} placeholder="Search judges…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-        </div>
-        <div className="cmp-stat">
-          <div className="cmp-stat-icon"><Icon name="users" size={20} /></div>
-          <div>
-            <div className="cmp-stat-label">Total Judges</div>
-            <div className="cmp-stat-value">{items.length}</div>
-          </div>
-        </div>
+      <div className="cmp-search">
+        <Icon name="search" size={18} />
+        <input ref={searchRef} value={search} placeholder="Search..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
 
       {viewItem && (
@@ -462,9 +546,19 @@ export default function JudgeList() {
                 </td>
                 <td>
                   <div className="cmp-actions">
-                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                    <div className="cmp-act-more-wrap">
+                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
+                      {moreMenu === item.id && (
+                        <div className="cmp-act-dropdown">
+                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                            <Icon name="copy" size={14} /> Duplicate
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -472,7 +566,10 @@ export default function JudgeList() {
           </tbody>
         </table>
         <div className="cmp-table-footer">
-          <div>Showing {(safePage - 1) * PER_PAGE + 1} to {Math.min(safePage * PER_PAGE, filtered.length)} of {filtered.length} judges</div>
+          <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} judges</div>
+          <span className="cmp-ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
           {totalPages > 1 && (
             <div className="cmp-pagination">
               <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>

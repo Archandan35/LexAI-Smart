@@ -16623,7 +16623,12 @@ kbd.cmd__kbd {
    Used by: Jurisdictions, CaseStatuses, CaseStages, Priorities,
    JudgeList, CaseTypes, PartyTypes
    ============================================================ */
-.cmp-toolbar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.cmp-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.cmp-toolbar-left { display: flex; gap: 8px; flex-wrap: wrap; }
+.cmp-toolbar-right { display: flex; align-items: center; }
+.cmp-tb-filter { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid #E2E8F0; border-radius: 8px; background: #fff; color: #64748B; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.cmp-tb-filter:hover { border-color: #7C3AED; color: #7C3AED; }
+.cmp-tb-filter.active { border-color: #7C3AED; color: #7C3AED; background: #F5F3FF; }
 .cmp-form { margin-bottom: 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .cmp-form-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: var(--bg); border-bottom: 1px solid var(--border); }
 .cmp-form-header-icon { color: var(--brand); display: flex; }
@@ -16650,17 +16655,15 @@ kbd.cmd__kbd {
 .cmp-import-btn { display: inline-flex; }
 .cmp-import-btn .btn { cursor: pointer; }
 .cmp-import-file { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
-.cmp-table-card { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.cmp-table-card { border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; background: #fff; }
 .cmp-table-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-.cmp-search { display: flex; align-items: center; gap: 8px; flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-faint); }
-.cmp-search input { border: none; background: none; outline: none; flex: 1; font-size: 13px; color: var(--text); }
-.cmp-search input::placeholder { color: var(--text-faint); }
 .cmp-count { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; }
 .cmp-table { width: 100%; border-collapse: collapse; }
-.cmp-table thead th { background: var(--bg); padding: 10px 14px; font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-faint); text-align: left; border-bottom: 1px solid var(--border); }
-.cmp-table tbody td { padding: 10px 14px; font-size: 13.5px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+.cmp-table thead { position: sticky; top: 0; z-index: 2; }
+.cmp-table thead th { background: #F8FAFC; padding: 12px 16px; font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: #94A3B8; text-align: left; border-bottom: 1px solid #E2E8F0; }
+.cmp-table tbody td { padding: 14px 16px; font-size: 13.5px; border-bottom: 1px solid #F1F5F9; color: #0F172A; vertical-align: middle; }
 .cmp-table tbody tr:last-child td { border-bottom: none; }
-.cmp-table tbody tr:hover td { background: var(--surface-2); }
+.cmp-table tbody tr:hover td { background: #FAFBFC; }
 .cmp-row--dragging { opacity: 0.35; background: var(--brand-soft); }
 .cmp-drag-cell { text-align: center; }
 .cmp-drag-handle { display: inline-flex; cursor: grab; color: var(--text-faint); padding: 4px; border-radius: 4px; }
@@ -16709,35 +16712,57 @@ kbd.cmd__kbd {
 .cmp-loading { display: grid; place-items: center; padding: 60px; }
 .cmp-btn-danger-outline { background: #fff; color: var(--red, #dc2626); border: 1px solid #fecaca; }
 .cmp-btn-danger-outline:hover:not(:disabled) { background: #fef2f2; }
-.cmp-hero { display: flex; align-items: center; gap: 16px; padding: 28px 32px; background: linear-gradient(120deg, #eaf0ff 0%, #f3eefc 55%, #fdf3e6 100%); border-left: 5px solid var(--brand); border-radius: var(--radius); margin-bottom: 24px; min-height: 80px; }
-.cmp-hero-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; color: var(--brand); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
-.cmp-hero-text h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: var(--navy-dark, #0a1638); }
-.cmp-hero-text p { margin: 0; font-size: 13.5px; color: #5b6479; }
+.cmp-hero { display: flex; align-items: center; gap: 24px; padding: 28px 36px; background: linear-gradient(to right, #EEF2FF 0%, #F5F3FF 50%, #FFF7ED 100%); border-left: 6px solid #7C3AED; border-radius: 16px; margin-bottom: 24px; position: relative; min-height: 120px; overflow: hidden; }
+.cmp-hero-icon { width: 70px; height: 70px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; color: #7C3AED; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.cmp-hero-text h2 { margin: 0 0 6px; font-size: 28px; font-weight: 700; color: #0F172A; }
+.cmp-hero-text p { margin: 0 0 10px; font-size: 14px; color: #64748B; max-width: 500px; }
+.cmp-hero-accent { width: 40px; height: 4px; background: #7C3AED; border-radius: 2px; }
+.cmp-hero-watermark { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); opacity: 0.08; pointer-events: none; color: #7C3AED; }
+.cmp-stats-row { display: flex; gap: 14px; margin-bottom: 24px; }
+.cmp-statcard { flex: 1; background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.cmp-statcard-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cmp-statcard-body { flex: 1; min-width: 0; }
+.cmp-statcard-label { font-size: 9.5px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
+.cmp-statcard-value { font-size: 20px; font-weight: 700; color: #0F172A; line-height: 1.2; }
+.cmp-statcard-value--sm { font-size: 14px; }
+.cmp-statcard-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
 .cmp-name-cell { display: flex; align-items: center; gap: 10px; }
 .cmp-name-avatar { width: 30px; height: 30px; border-radius: 8px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; color: var(--navy-600); flex-shrink: 0; }
 .cmp-code-pill { display: inline-block; font-size: 11.5px; font-family: var(--mono); background: var(--bg); color: var(--navy-600); padding: 2px 10px; border-radius: 999px; font-weight: 600; letter-spacing: 0.3px; }
-.cmp-status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
-.cmp-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-.cmp-status-pill--active { background: #e6f7e6; color: #16a34a; }
-.cmp-status-pill--active .cmp-status-dot { background: #16a34a; }
-.cmp-status-pill--inactive { background: #f1f3f5; color: #6b7280; }
-.cmp-status-pill--inactive .cmp-status-dot { background: #9ca3af; }
-.cmp-actions { display: flex; gap: 2px; }
-.cmp-act-btn { width: 30px; height: 30px; border: none; background: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-faint); transition: all 0.15s; }
-.cmp-act-btn:hover { background: var(--bg); color: var(--text); }
-.cmp-act-btn--edit:hover { color: var(--brand); }
-.cmp-act-btn--del:hover { color: var(--red); background: #fef2f2; }
-.cmp-search-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.cmp-search { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-faint); }
-.cmp-search input { border: none; background: none; outline: none; flex: 1; font-size: 13px; color: var(--text); }
-.cmp-search input::placeholder { color: var(--text-faint); }
-.cmp-stat { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); white-space: nowrap; }
-.cmp-stat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; color: var(--navy-600); }
-.cmp-stat-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
-.cmp-stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
-.cmp-table-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-faint); flex-wrap: wrap; gap: 8px; }
+.cmp-status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; }
+.cmp-status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.cmp-status-pill--active { background: #ECFDF5; color: #16A34A; }
+.cmp-status-pill--active .cmp-status-dot { background: #22C55E; }
+.cmp-status-pill--inactive { background: #FFF7ED; color: #D97706; }
+.cmp-status-pill--inactive .cmp-status-dot { background: #F59E0B; }
+.cmp-actions { display: flex; gap: 4px; align-items: center; }
+.cmp-act-btn { width: 32px; height: 32px; border: none; background: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #94A3B8; transition: all 0.15s; }
+.cmp-act-btn:hover { background: #F1F5F9; color: #0F172A; }
+.cmp-act-btn--view:hover { color: #6366F1; }
+.cmp-act-btn--edit:hover { color: #6366F1; }
+.cmp-act-btn--del:hover { color: #EF4444; background: #FEF2F2; }
+.cmp-act-btn--more:hover { color: #64748B; }
+.cmp-act-more-wrap { position: relative; }
+.cmp-act-dropdown { position: absolute; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; min-width: 130px; padding: 4px; }
+.cmp-act-dropdown-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: none; background: none; font-size: 12.5px; color: #334155; cursor: pointer; border-radius: 6px; font-family: inherit; }
+.cmp-act-dropdown-item:hover { background: #F1F5F9; color: #7C3AED; }
+.cmp-ft-perpage { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; color: #94A3B8; transition: color 0.15s; }
+.cmp-ft-perpage:hover { color: #7C3AED; }
+.cmp-search { display: flex; align-items: center; gap: 8px; flex: 1; padding: 10px 16px; border: 1px solid #E2E8F0; border-radius: 10px; background: #fff; color: #94A3B8; margin-bottom: 16px; }
+.cmp-search input { border: none; background: none; outline: none; flex: 1; font-size: 14px; color: #0F172A; }
+.cmp-search input::placeholder { color: #94A3B8; }
+.cmp-search--filtered { border-color: #7C3AED !important; }
+.cmp-table-footer { display: flex; align-items: center; justify-content: flex-end; padding: 14px 16px; font-size: 12.5px; color: #94A3B8; gap: 16px; border-top: 1px solid #E2E8F0; }
+.cmp-table-footer > div:first-child { margin-right: auto; }
 .cmp-pagination { display: flex; gap: 4px; }
-.cmp-page-btn { min-width: 30px; height: 30px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--text-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.cmp-page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
-.cmp-page-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.cmp-page-btn { min-width: 32px; height: 32px; border: 1px solid #E2E8F0; background: #fff; border-radius: 8px; font-size: 12.5px; font-weight: 500; color: #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.cmp-page-btn:hover:not(:disabled) { border-color: #7C3AED; color: #7C3AED; }
+.cmp-page-btn.active { background: #7C3AED; border-color: #7C3AED; color: #fff; }
 .cmp-page-btn:disabled { opacity: 0.35; cursor: default; }
+
+@media (max-width: 600px) {
+  .cmp-stats-row { display: none; }
+  .cmp-toolbar-right { display: none; }
+  .cmp-hero-watermark { display: none; }
+  .cmp-hero-accent { display: none; }
+}

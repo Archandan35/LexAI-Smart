@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -8,7 +8,6 @@ import Icon from '@/components/Icon.jsx';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const ENTITY_PREFIX = 'CT';
-const PER_PAGE = 10;
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -40,6 +39,10 @@ export default function CaseTypes() {
   const [activeAction, setActiveAction] = useState(null);
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
+  const [showFilter, setShowFilter] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const searchRef = useRef(null);
+  const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -69,9 +72,9 @@ export default function CaseTypes() {
     (t.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
 
   const reset = () => {
     setActiveAction(null);
@@ -239,12 +242,28 @@ export default function CaseTypes() {
     dragOrder.current = null;
   }, [dragIdx, refresh, toast]);
 
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
+
   const startEdit = (item) => {
     setActiveAction('edit');
     setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+  };
+
+  const confirmDeleteItem = async (item) => {
+    if (!window.confirm(`Delete "${item.name}"?`)) return;
+    try {
+      const res = await caseTypeLogic.remove(item.id);
+      if (res.ok || !res.error) { toast.push('Case type deleted.', 'success'); await refresh(); }
+      else { toast.push(res.error, 'error'); }
+    } catch (err) { toast.push(err?.message || 'Failed to delete case type.', 'error'); }
   };
 
   const startDelete = (item) => {
@@ -257,27 +276,82 @@ export default function CaseTypes() {
 
   return (
     <div className="fade-in">
+      {/* Hero with watermark */}
       <div className="cmp-hero">
-        <div className="cmp-hero-icon"><Icon name="grid" size={30} /></div>
+        <div className="cmp-hero-icon"><Icon name="grid" size={34} /></div>
         <div className="cmp-hero-text">
           <h2>Case Types</h2>
           <p>Manage case types used in case forms and filters.</p>
+          <div className="cmp-hero-accent" />
         </div>
+        <svg className="cmp-hero-watermark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="0" r="6" fill="currentColor"/>
+          <circle cx="50" cy="0" r="3" fill="#fff"/>
+          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
+          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
+          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
+          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
+        </svg>
       </div>
 
-      <div className="cmp-toolbar">
-        {ACTIONS.map(a => (
-          <button
-            key={a.key}
-            className={a.variant === 'primary' ? 'btn btn--primary' : a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : 'btn btn--ghost'}
-            onClick={() => activate(a.key)}
-          >
-            <Icon name={a.icon} size={15} /> {a.label}
-          </button>
+      {/* 6 Stat Cards */}
+      <div className="cmp-stats-row">
+        {[
+          { label: 'Total Case Types', value: caseTypes.length, icon: 'grid', bg: '#EEF2FF', color: '#6366F1', sub: 'All case types' },
+          { label: 'Active', value: caseTypes.filter(t => (t.status||'Active').toLowerCase()==='active').length, icon: 'check', bg: '#ECFDF5', color: '#22C55E', sub: 'Active case types' },
+          { label: 'Inactive', value: caseTypes.filter(t => (t.status||'Active').toLowerCase()!=='active').length, icon: 'close', bg: '#FFF7ED', color: '#F59E0B', sub: 'Inactive case types' },
+          { label: 'Most Used', value: '—', icon: 'bar-chart', bg: '#F0F0FF', color: '#8B5CF6', sub: 'Most frequently used' },
+          { label: 'Created This Month', value: caseTypes.filter(t => { const d = new Date(t.created_at); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length, icon: 'calendar', bg: '#FFF1F2', color: '#F43F5E', sub: 'This month' },
+          { label: 'Total', value: caseTypes.length, icon: 'grid', bg: '#F0F9FF', color: '#0EA5E9', sub: 'All case types' },
+        ].map((s, i) => (
+          <div key={i} className="cmp-statcard">
+            <div className="cmp-statcard-icon" style={{ background: s.bg, color: s.color }}><Icon name={s.icon} size={20} /></div>
+            <div className="cmp-statcard-body">
+              <div className="cmp-statcard-label">{s.label}</div>
+              <div className="cmp-statcard-value">{s.value}</div>
+              <div className="cmp-statcard-sub">{s.sub}</div>
+            </div>
+          </div>
         ))}
       </div>
 
-      {activeAction && (
+      {/* Toolbar with filter */}
+      <div className="cmp-toolbar">
+        <div className="cmp-toolbar-left">
+          {ACTIONS.map(a => (
+            <button
+              key={a.key}
+              className={a.variant === 'primary' ? 'btn btn--primary' : a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : 'btn btn--ghost'}
+              onClick={() => { activate(a.key); setShowFilter(true); }}
+            >
+              <Icon name={a.icon} size={15} /> {a.label}
+            </button>
+          ))}
+        </div>
+        <div className="cmp-toolbar-right">
+          <button className={`cmp-tb-filter${showFilter ? ' active' : ''}`} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
+            <Icon name="filter" size={16} /><span>Filter</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Form Card */}
+      {activeAction && showFilter && (
         <Card className="cmp-form">
           <div className="cmp-form-header">
             <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
@@ -435,20 +509,7 @@ export default function CaseTypes() {
         </Card>
       )}
 
-      <div className="cmp-search-row">
-        <div className="cmp-search">
-          <Icon name="search" size={18} />
-          <input value={search} placeholder="Search case types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-        </div>
-        <div className="cmp-stat">
-          <div className="cmp-stat-icon"><Icon name="layers" size={20} /></div>
-          <div>
-            <div className="cmp-stat-label">Total Case Types</div>
-            <div className="cmp-stat-value">{caseTypes.length}</div>
-          </div>
-        </div>
-      </div>
-
+      {/* View Detail Card */}
       {viewItem && (
         <Card className="cmp-detail">
           <div className="cmp-detail-header">
@@ -468,8 +529,15 @@ export default function CaseTypes() {
         </Card>
       )}
 
-      <div className="cmp-table">
-        <table>
+      {/* Standalone Search */}
+      <div className="cmp-search">
+        <Icon name="search" size={18} />
+        <input ref={searchRef} value={search} placeholder="Search case types…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+      </div>
+
+      {/* Table Card */}
+      <div className="cmp-table-card">
+        <table className="cmp-table">
           <thead>
             <tr>
               <th style={{ width: 32 }}></th>
@@ -478,14 +546,14 @@ export default function CaseTypes() {
               <th>CODE</th>
               <th>ORDER</th>
               <th>STATUS</th>
-              <th style={{ width: 140 }}>ACTIONS</th>
+              <th style={{ width: 180 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
               <tr><td className="cmp-empty" colSpan={7}>No case types found.</td></tr>
             ) : paged.map((item, idx) => {
-              const actualIdx = (safePage - 1) * PER_PAGE + idx;
+              const actualIdx = (safePage - 1) * perPage + idx;
               return (
                 <tr key={item.id} draggable={!search}
                   onDragStart={(e) => handleDragStart(e, actualIdx)}
@@ -517,10 +585,20 @@ export default function CaseTypes() {
                     <div className="cmp-actions">
                       <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                       <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                      <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                      <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                       <button className="cmp-act-btn" title={`Toggle to ${item.status === 'Active' ? 'Inactive' : 'Active'}`} onClick={() => handleToggle(item)}>
                         {item.status === 'Active' ? <Icon name="check" size={15} /> : <Icon name="play" size={12} />}
                       </button>
+                      <div className="cmp-act-more-wrap">
+                        <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
+                        {moreMenu === item.id && (
+                          <div className="cmp-act-dropdown">
+                            <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setActiveAction('add'); setSubMode('single'); setFormCollapsed(false); setShowFilter(true); }}>
+                              <Icon name="copy" size={14} /> Duplicate
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -529,7 +607,10 @@ export default function CaseTypes() {
           </tbody>
         </table>
         <div className="cmp-table-footer">
-          <div>Showing {(safePage - 1) * PER_PAGE + 1} to {Math.min(safePage * PER_PAGE, filtered.length)} of {filtered.length} case types</div>
+          <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} case types</div>
+          <span className="cmp-ft-perpage" title="Change per page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
           {totalPages > 1 && (
             <div className="cmp-pagination">
               <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
