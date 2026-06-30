@@ -222,7 +222,8 @@ export default function BenchTypes() {
     setDragIdx(null);
     dragOrder.current = null;
     await benchTypeLogic.reorder(ids);
-    load();
+    const idOrder = new Map(ids.map((id, i) => [id, i]));
+    setItems(prev => [...prev].sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999)));
   };
 
   const startEdit = (item) => {

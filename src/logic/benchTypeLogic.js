@@ -53,9 +53,9 @@ export const benchTypeLogic = {
 
   async reorder(orderedIds) {
     try {
-      for (let i = 0; i < orderedIds.length; i += 1) {
-        await benchTypeService.update(orderedIds[i], { display_order: i });
-      }
+      await Promise.all(orderedIds.map((id, i) =>
+        benchTypeService.update(id, { display_order: i })
+      ));
       return ok(true);
     } catch (err) { return fail(err); }
   },
