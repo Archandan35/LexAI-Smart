@@ -330,6 +330,9 @@ export default function BenchTypes() {
           </Button>
         ))}
       </div>
+      <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={16} /> Import
+      </button>
 
       {activeAction && (
         <Card className="bench-types__form">
@@ -500,12 +503,36 @@ export default function BenchTypes() {
           <Icon name="search" size={18} />
           <input value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <div className="bench-types__stat">
+        <div className="bench-types__stat bench-types__desktop-only">
           <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
           <div>
             <div className="bench-types__stat-label">Total Bench Types</div>
             <div className="bench-types__stat-value">{items.length}</div>
           </div>
+        </div>
+      </div>
+
+      <div className="bench-types__stat-cards bench-types__mobile-only">
+        <div className="bench-types__stat-card bench-types__stat-card--total">
+          <div className="bench-types__stat-card-row1">
+            <div className="bench-types__stat-card-icon"><Icon name="layers" size={18} /></div>
+            <span className="bench-types__stat-card-num">{items.length}</span>
+          </div>
+          <div className="bench-types__stat-card-label">TOTAL TYPES</div>
+        </div>
+        <div className="bench-types__stat-card bench-types__stat-card--active">
+          <div className="bench-types__stat-card-row1">
+            <div className="bench-types__stat-card-icon"><Icon name="check-circle" size={18} /></div>
+            <span className="bench-types__stat-card-num">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</span>
+          </div>
+          <div className="bench-types__stat-card-label">ACTIVE</div>
+        </div>
+        <div className="bench-types__stat-card bench-types__stat-card--inactive">
+          <div className="bench-types__stat-card-row1">
+            <div className="bench-types__stat-card-icon"><Icon name="ban" size={18} /></div>
+            <span className="bench-types__stat-card-num">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</span>
+          </div>
+          <div className="bench-types__stat-card-label">INACTIVE</div>
         </div>
       </div>
 
@@ -600,6 +627,74 @@ export default function BenchTypes() {
       <div className="bench-types__per-page">
         10 / page <Icon name="chevronDown" size={15} />
       </div>
+
+      <div className="bench-types__mobile-section-header bench-types__mobile-only">
+        <span className="bench-types__mobile-section-title">All Bench Types</span>
+        <span className="bench-types__mobile-section-count">1–{Math.min(PER_PAGE, filtered.length)} of {filtered.length}</span>
+      </div>
+      <div className="bench-types__mobile-list bench-types__mobile-only">
+        {paged.length === 0 ? (
+          <div className="bench-types__empty">No bench types found.</div>
+        ) : paged.map((item, idx) => (
+          <div key={item.id} className="bench-types__mobile-card">
+            <div className="bench-types__mobile-card-row1">
+              <span className="bench-types__mobile-drag-handle"><Icon name="grip" size={15} /></span>
+              <span className="bench-types__mobile-avatar"><Icon name="users" size={18} /></span>
+              <div className="bench-types__mobile-card-info">
+                <div className="bench-types__mobile-card-top">
+                  <span className="bench-types__mobile-card-name">{item.name}</span>
+                  <span className={`bench-types__status-pill bench-types__status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="bench-types__status-dot"></span>
+                    {item.status || 'Active'}
+                  </span>
+                </div>
+                <span className="bench-types__mobile-code">{item.short_code}</span>
+              </div>
+            </div>
+            <div className="bench-types__mobile-divider"></div>
+            <div className="bench-types__mobile-card-row2">
+              <button className="bench-types__mobile-action" title="View" onClick={() => setViewItem(item)}>
+                <span className="bench-types__mobile-action-icon"><Icon name="eye" size={15} /></span>
+                <span className="bench-types__mobile-action-label">View</span>
+              </button>
+              <button className="bench-types__mobile-action" title="Edit" onClick={() => startEdit(item)}>
+                <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
+                <span className="bench-types__mobile-action-label">Edit</span>
+              </button>
+              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
+                <span className="bench-types__mobile-action-label">Copy</span>
+              </button>
+              <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => startDelete(item)}>
+                <span className="bench-types__mobile-action-icon"><Icon name="trash" size={15} /></span>
+                <span className="bench-types__mobile-action-label">Delete</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <nav className="bench-types__bottom-nav bench-types__mobile-only">
+        <button className="bench-types__nav-tab bench-types__nav-tab--active">
+          <Icon name="home" size={20} />
+          <span>Dashboard</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="briefcase" size={20} />
+          <span>Matters</span>
+        </button>
+        <button className="bench-types__nav-fab">
+          <Icon name="plus" size={24} />
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="file" size={20} />
+          <span>Order Sheet</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="calendar" size={20} />
+          <span>Calendar</span>
+        </button>
+      </nav>
     </div>
   );
 }
