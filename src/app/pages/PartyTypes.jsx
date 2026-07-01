@@ -6,6 +6,7 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Card from '@/components/Card.jsx';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const ENTITY_PREFIX = 'PT';
