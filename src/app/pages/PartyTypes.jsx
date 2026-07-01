@@ -70,7 +70,7 @@ export default function PartyTypes() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const logs = useLogCapture(lastError, lastResult);
+  const { logs } = useLogCapture(lastError, lastResult);
   const [confirmState, setConfirmState] = useState(null);
 
   const reset = () => {

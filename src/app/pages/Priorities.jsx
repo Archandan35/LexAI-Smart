@@ -75,7 +75,7 @@ export default function Priorities() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const logs = useLogCapture(lastError, lastResult);
+  const { logs } = useLogCapture(lastError, lastResult);
 
   const load = async () => {
     setLoading(true);
