@@ -566,7 +566,8 @@ function systemSqlForeignKeys({ onlyCollections } = {}) {
     if (fk === 'fk_users_role_code') {
       return "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');";
     }
-    return `select safe_create_fk('${from}', 'case_id', '${to}', 'id', '${fk}'${cascade});`;
+    const sourceCol = fk === 'fk_case_folders_parent_id' ? 'parent_id' : 'case_id';
+    return `select safe_create_fk('${from}', '${sourceCol}', '${to}', 'id', '${fk}'${cascade});`;
   });
   const filtered = onlyCollections ? ALL_FKS.filter(({ from, to }) => onlyCollections.includes(from) || onlyCollections.includes(to)) : ALL_FKS;
   const lines = filtered.map(({ from, to, fk }) => {
@@ -574,7 +575,8 @@ function systemSqlForeignKeys({ onlyCollections } = {}) {
       return "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');";
     }
     const cascade = fk === 'fk_audit_logs_user_id' ? ', \'SET NULL\'' : ', \'CASCADE\'';
-    return `select safe_create_fk('${from}', 'case_id', '${to}', 'id', '${fk}'${cascade});`;
+    const sourceCol = fk === 'fk_case_folders_parent_id' ? 'parent_id' : 'case_id';
+    return `select safe_create_fk('${from}', '${sourceCol}', '${to}', 'id', '${fk}'${cascade});`;
   });
   return [
     '-- ============================================================',
