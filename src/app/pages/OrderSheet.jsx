@@ -354,10 +354,13 @@ export default function OrderSheet() {
 
   const saveTpl = async () => {
     if (!tplForm.name || !tplForm.category) { toast.push('Name and category are required.', 'error'); return; }
-    await templateLogic.create(tplForm);
+    const res = tplEditing
+      ? await templateLogic.update(tplEditing, tplForm)
+      : await templateLogic.create(tplForm);
+    if (!res.ok) { toast.push(res.error || 'Failed to save template.', 'error'); return; }
     setTplOpen(false);
     await loadDraftingTemplates();
-    toast.push('Drafting template added.', 'success');
+    toast.push(tplEditing ? 'Template updated.' : 'Drafting template added.', 'success');
   };
 
   // ----- Filtering & Sorting calculations -----
@@ -1495,15 +1498,47 @@ export default function OrderSheet() {
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={() => saveHearing()}>{editing ? 'Update' : 'Add'}</Button></>}
       >
         {smartMode ? (
-          <SmartOrderSheetBuilder
-            hearing={form}
-            partyTypes={partyTypes}
-            caseStatuses={caseStatuses}
-            onSave={saveHearing}
-            onClose={() => { setOpen(false); setSmartMode(false); }}
-            onRefreshPartyTypes={refreshPartyTypes}
-            onRefreshStatuses={refreshStatuses}
-          />
+          <>
+            {/* Smart mode toolbar */}
+            <div className="hearing-modal__import-export-bar">
+              <div className="hearing-modal__ie-left">
+                <button className="btn btn--sm btn--ghost" onClick={() => setSmartMode((v) => !v)}>
+                  <Icon name="compass" size={13} /> Normal Mode
+                </button>
+              </div>
+            </div>
+            {/* Import Template in smart mode — content resolves into notes */}
+            <div className="hearing-modal__template-bar">
+              <div className="hearing-modal__template-bar-left">
+                <Icon name="copy" size={14} />
+                <span>Import Template:</span>
+                <select
+                  className="hearing-modal__template-select"
+                  value={selectedTemplate}
+                  onChange={(e) => { setSelectedTemplate(e.target.value); applyTemplate(e.target.value); }}
+                >
+                  <option value="">— Select a drafting template —</option>
+                  {draftTemplates.filter((t) => t.category === 'Hearing').map((t) => (
+                    <option key={t.id || t._id} value={t.id || t._id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+              {editorContent && (
+                <button className="hearing-modal__clear-btn" onClick={() => { setEditorContent(''); setSelectedTemplate(''); }}>
+                  <Icon name="close" size={12} /> Clear
+                </button>
+              )}
+            </div>
+            <SmartOrderSheetBuilder
+              hearing={form}
+              partyTypes={partyTypes}
+              caseStatuses={caseStatuses}
+              onSave={saveHearing}
+              onClose={() => { setOpen(false); setSmartMode(false); }}
+              onRefreshPartyTypes={refreshPartyTypes}
+              onRefreshStatuses={refreshStatuses}
+            />
+          </>
         ) : (
           <div className="hearing-modal">
             {/* Import / Export toolbar */}
