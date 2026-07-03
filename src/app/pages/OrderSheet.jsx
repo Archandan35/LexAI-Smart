@@ -173,6 +173,7 @@ export default function OrderSheet() {
   const openEdit = async (h) => {
     const res = await orderSheetLogic.getHearing(h.id);
     const record = res.ok ? res.data : FieldMapper.toLexAI('hearings', h);
+    delete record.case; delete record.caseNumber; delete record.parties; delete record.court; delete record.stage;
     setEditing(record);
     setForm({
       ...EMPTY_HEARING,
@@ -200,7 +201,7 @@ export default function OrderSheet() {
   const saveHearing = async (smartFormData) => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
     const payload = { ...form, ...smartFormData, notes: editorContent || form.notes || '' };
-    delete payload.case;
+    delete payload.case; delete payload.caseNumber; delete payload.parties; delete payload.court; delete payload.stage;
     try {
       const r = editing ? await orderSheetLogic.updateHearing(editing.id, payload) : await orderSheetLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
@@ -238,6 +239,8 @@ export default function OrderSheet() {
 
   const duplicateHearing = (h) => {
     const record = FieldMapper.toLexAI('hearings', h);
+    // Strip enrichment fields added by orderSheetLogic.orderSheet()
+    delete record.case; delete record.caseNumber; delete record.parties; delete record.court; delete record.stage;
     setEditing(null);
     setForm({
       ...EMPTY_HEARING,
