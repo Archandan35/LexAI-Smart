@@ -41,6 +41,11 @@ export const userLogic = {
       if (!data.email && !data.username) return fail('Email or username is required.');
       if (!data.password) return fail('Password is required.');
       const password = data.password;
+      const roleCode = data.roleCode;
+
+      const allRoles = await roleService.list();
+      const roleExists = allRoles.some((r) => r.code === roleCode);
+      if (!roleExists) return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
 
       let userId = undefined;
       try {
@@ -60,7 +65,7 @@ export const userLogic = {
         username: (data.username || '').toLowerCase(),
         phone: data.phone,
         address: data.address,
-        roleCode: data.roleCode || 'Client',
+        roleCode,
         extraRoles: data.extraRoles || [],
         grants: [], denies: [],
         status: data.status || 'Active',
@@ -114,6 +119,9 @@ export const userLogic = {
   },
 
   async setRole(id, roleCode, actor) {
+    const allRoles = await roleService.list();
+    const roleExists = allRoles.some((r) => r.code === roleCode);
+    if (!roleExists) return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
     return this.update(id, { roleCode }, actor);
   },
 
