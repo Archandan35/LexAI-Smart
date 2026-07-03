@@ -44,6 +44,14 @@ const SCHEMAS = {
   acts: { ...COMMON },
   contact_types: { ...COMMON },
   templates: { ...COMMON },
+  cause_list_templates: { ...COMMON },
+  contacts: { ...COMMON },
+  judgments: {},
+  legal_notices: { ...COMMON },
+  permissions: {},
+  precedents: { ...COMMON },
+  prompts: { ...COMMON },
+  reports: { ...COMMON },
 };
 
 export function configureFieldMappings() {
