@@ -23,7 +23,6 @@ import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, stripHtml } from '@/utils/format.js';
-import { DateEngine } from '@/core/DateEngine.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 
@@ -612,8 +611,8 @@ export default function OrderSheet() {
                       </div>
                     </div>
                     <div className="flex-row gap-8 mb-10">
-                      <input type="text" placeholder="dd-mm-yyyy" value={dateFrom ? DateEngine.formatDate(dateFrom) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setDateFrom(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} className="order-sheet__date-input" />
-                      <input type="text" placeholder="dd-mm-yyyy" value={dateTo ? DateEngine.formatDate(dateTo) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setDateTo(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} className="order-sheet__date-input" />
+                      <input type="date" value={dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) ? dateFrom : ''} onChange={(e) => setDateFrom(e.target.value)} className="order-sheet__date-input" />
+                      <input type="date" value={dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : ''} onChange={(e) => setDateTo(e.target.value)} className="order-sheet__date-input" />
                     </div>
 
                     {/* Court */}
@@ -924,10 +923,10 @@ export default function OrderSheet() {
                   {showDatePicker && (
                     <div className="order-sheet__datepicker-popover" onClick={(e) => e.stopPropagation()}>
                       <Field label="From Date">
-                        <Input type="text" placeholder="dd-mm-yyyy" value={tempDateFrom ? DateEngine.formatDate(tempDateFrom) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setTempDateFrom(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} />
+                        <Input type="date" value={tempDateFrom && /^\d{4}-\d{2}-\d{2}$/.test(tempDateFrom) ? tempDateFrom : ''} onChange={(e) => setTempDateFrom(e.target.value)} />
                       </Field>
                       <Field label="To Date">
-                        <Input type="text" placeholder="dd-mm-yyyy" value={tempDateTo ? DateEngine.formatDate(tempDateTo) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setTempDateTo(m ? `${m[3]}-${m[2]}-${m[1]}` : v); }} />
+                        <Input type="date" value={tempDateTo && /^\d{4}-\d{2}-\d{2}$/.test(tempDateTo) ? tempDateTo : ''} onChange={(e) => setTempDateTo(e.target.value)} />
                       </Field>
                       <div className="flex gap-8 mt-10">
                         <Button size="sm" variant="ghost" onClick={() => { setTempDateFrom(''); setTempDateTo(''); setDateFrom(''); setDateTo(''); setShowDatePicker(false); }}>Clear</Button>
@@ -1587,10 +1586,9 @@ export default function OrderSheet() {
               <div className="input-row">
                 <Field label="Hearing Date">
                   <Input
-                    type="text"
-                    placeholder="dd-mm-yyyy"
-                    value={form.date ? DateEngine.formatDate(form.date) : ''}
-                    onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setForm({ ...form, date: m ? `${m[3]}-${m[2]}-${m[1]}` : v }); }}
+                    type="date"
+                    value={form.date && /^\d{4}-\d{2}-\d{2}$/.test(form.date) ? form.date : ''}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
                   />
                 </Field>
                 <Field label="Status">
@@ -1610,7 +1608,7 @@ export default function OrderSheet() {
                   <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
                 </Field>
                 <Field label="Next Hearing Date">
-                  <Input type="text" placeholder="dd-mm-yyyy" value={form.nextHearingDate ? DateEngine.formatDate(form.nextHearingDate) : ''} onChange={(e) => { const v = e.target.value; const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/); setForm({ ...form, nextHearingDate: m ? `${m[3]}-${m[2]}-${m[1]}` : v }); }} />
+                  <Input type="date" value={form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate) ? form.nextHearingDate : ''} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
                 </Field>
               </div>
               <div className="input-row">
