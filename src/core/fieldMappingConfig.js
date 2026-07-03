@@ -43,6 +43,7 @@ const SCHEMAS = {
   party_types: { ...COMMON },
   acts: { ...COMMON },
   contact_types: { ...COMMON },
+  templates: { ...COMMON },
 };
 
 export function configureFieldMappings() {

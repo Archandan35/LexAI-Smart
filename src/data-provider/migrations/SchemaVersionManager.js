@@ -67,8 +67,8 @@ export const schemaVersionManager = {
       return provider.update(META, existing.id, {
         version,
         provider: config.providers.database,
-        appVersion: config.app.version,
-        updatedAt: now,
+        app_version: config.app.version,
+        updated_at: now,
         history: [entry, ...(existing.history || [])].slice(0, 50),
       });
     }
@@ -76,9 +76,9 @@ export const schemaVersionManager = {
       id: META_ID,
       version,
       provider: config.providers.database,
-      appVersion: config.app.version,
-      installedAt: now,
-      updatedAt: now,
+      app_version: config.app.version,
+      installed_at: now,
+      updated_at: now,
       history: [entry],
     });
   },

@@ -36,6 +36,7 @@ const DEFAULT_MAPPINGS = {
   reminders: { ...COMMON, caseId: 'case_id', dueAt: 'due_at' },
   drafts: { ...COMMON, caseId: 'case_id' },
   settings: { updatedAt: 'updated_at', updatedBy: 'updated_by' },
+  templates: { ...COMMON },
 };
 
 function ensureInit() {
