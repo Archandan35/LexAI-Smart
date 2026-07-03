@@ -10616,6 +10616,12 @@ kbd.cmd__kbd {
   min-width: 130px;
 }
 
+.order-sheet__filter-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .order-sheet__btn-reset {
   padding: 8px 16px;
   border: 1px solid var(--border);
@@ -10626,6 +10632,7 @@ kbd.cmd__kbd {
   border-radius: var(--radius-sm);
   cursor: pointer;
   min-height: 38px;
+  white-space: nowrap;
 }
 
 .order-sheet__btn-reset:hover {
@@ -10646,6 +10653,7 @@ kbd.cmd__kbd {
   cursor: pointer;
   min-height: 38px;
   transition: opacity 0.2s;
+  white-space: nowrap;
 }
 
 .order-sheet__btn-apply:hover {

@@ -967,10 +967,12 @@ export default function OrderSheet() {
                 </select>
 
                 {/* Filter buttons */}
-                <button className="order-sheet__btn-reset" onClick={resetFilters}>Reset</button>
-                <button className="order-sheet__btn-apply" onClick={loadList}>
-                  <Icon name="gear" size={13} /> Filters
-                </button>
+                <div className="order-sheet__filter-actions">
+                  <button className="order-sheet__btn-reset" onClick={resetFilters}>Reset</button>
+                  <button className="order-sheet__btn-apply" onClick={loadList}>
+                    <Icon name="gear" size={13} /> Filters
+                  </button>
+                </div>
               </div>
 
               {/* Table Header controls */}
@@ -1273,10 +1275,12 @@ export default function OrderSheet() {
                   <option value="Hearing">Hearing</option>
                 </select>
 
-                <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
-                <button className="order-sheet__btn-apply" onClick={openTplNew}>
-                  <Icon name="plus" size={13} /> New Template
-                </button>
+                <div className="order-sheet__filter-actions">
+                  <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
+                  <button className="order-sheet__btn-apply" onClick={openTplNew}>
+                    <Icon name="plus" size={13} /> New Template
+                  </button>
+                </div>
               </div>
 
               {/* Templates list heading */}
