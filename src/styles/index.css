@@ -10696,6 +10696,7 @@ kbd.cmd__kbd {
   font-weight: 600;
   border-radius: 20px;
   display: inline-block;
+  white-space: nowrap;
 }
 
 /* Case Detail Card (History & Timeline) */
