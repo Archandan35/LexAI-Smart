@@ -44,8 +44,9 @@ export default function UserDetails() {
     if (res.ok) { toast.push('Saved.', 'success'); load(); } else toast.push(res.error, 'error');
   };
   const setRole = async (roleCode) => {
-    await userLogic.setRole(id, roleCode, actor);
-    toast.push('Role updated.', 'success'); load();
+    const res = await userLogic.setRole(id, roleCode, actor);
+    if (res.ok) { toast.push('Role updated.', 'success'); load(); }
+    else toast.push(res.error, 'error');
   };
 
   if (loading) return <Spinner label="Loading user…" />;

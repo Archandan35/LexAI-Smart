@@ -114,24 +114,7 @@ export const userLogic = {
   },
 
   async setRole(id, roleCode, actor) {
-    const res = await this.update(id, { roleCode }, actor);
-    if (res.ok) return res;
-    if ((res.error || '').includes('violates foreign key') || (res.error || '').includes('fk_users_role_code')) {
-      const roles = await roleService.list();
-      if (!roles.find((r) => r.code === roleCode)) {
-        const created = await roleService.create({
-          code: roleCode,
-          name: roleCode.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-          description: `${roleCode} role`,
-          permissions: [], all: false,
-          inheritsHierarchy: true, system: false,
-          status: 'Active',
-          createdAt: nowISO(),
-        });
-        if (created && !created.error) return this.update(id, { roleCode }, actor);
-      }
-    }
-    return res;
+    return this.update(id, { roleCode }, actor);
   },
 
   async setStatus(id, status, actor) {
