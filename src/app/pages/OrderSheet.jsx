@@ -199,6 +199,7 @@ export default function OrderSheet() {
   const saveHearing = async (smartFormData) => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
     const payload = { ...form, ...smartFormData, notes: editorContent || form.notes || '' };
+    delete payload.case;
     try {
       const r = editing ? await orderSheetLogic.updateHearing(editing.id, payload) : await orderSheetLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
