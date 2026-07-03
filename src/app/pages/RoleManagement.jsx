@@ -62,7 +62,7 @@ export default function RoleManagement() {
     { key: 'userCount', label: 'Users', sortable: true, width: 80, render: (r) => <Badge tone="navy">{r.userCount}</Badge> },
     { key: 'permissionCount', label: 'Permissions', sortable: true, width: 110, render: (r) => (r.all || r.permissionCount === Infinity ? <Badge tone="green">All</Badge> : r.permissionCount) },
     { key: 'createdAt', label: 'Created', sortable: true, width: 110, render: (r) => formatDate(r.createdAt) },
-    { key: 'status', label: 'Status', width: 90, render: (r) => <Badge tone={(r.status || 'Active') === 'Active' ? 'green' : 'grey'}>{r.status || 'Active'}</Badge> },
+    { key: 'status', label: 'Status', width: 90, render: (r) => <Badge tone={(r.status || 'Active') === 'Active' ? 'green' : 'grey'} dot>{r.status || 'Active'}</Badge> },
     { key: 'actions', label: '', width: 180, render: (r) => (
       <div className="row-actions">
         <button className="iconbtn" title="View / edit permissions" onClick={() => nav(`/admin/roles/${r.id}`)}><Icon name="eye" size={15} /></button>

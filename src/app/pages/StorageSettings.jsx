@@ -51,9 +51,9 @@ export default function StorageSettings() {
       <div className="grid-2 mb-16">
         <Card title="Connected Provider" sub="Provider is selected via environment variables (provider-agnostic).">
           <div className="kv"><span>Current Provider</span><b className="dm-capitalize">{summary.provider.replace('_', ' ')}</b></div>
-          <div className="kv"><span>Connection Status</span><Badge tone={summary.connected ? 'green' : 'amber'}>{summary.connected ? 'Connected' : 'Disconnected'}</Badge></div>
-          <div className="kv"><span>Sync Health</span><Badge tone={health.tone}>{health.label}</Badge></div>
-          <div className="kv"><span>Auto Sync</span><Badge tone={summary.autoSync ? 'green' : 'grey'}>{summary.autoSync ? 'Enabled' : 'Disabled'}</Badge></div>
+          <div className="kv"><span>Connection Status</span><Badge tone={summary.connected ? 'green' : 'amber'} dot>{summary.connected ? 'Connected' : 'Disconnected'}</Badge></div>
+          <div className="kv"><span>Sync Health</span><Badge tone={health.tone} dot>{health.label}</Badge></div>
+          <div className="kv"><span>Auto Sync</span><Badge tone={summary.autoSync ? 'green' : 'grey'} dot>{summary.autoSync ? 'Enabled' : 'Disabled'}</Badge></div>
           <div className="kv"><span>Root Folder</span><span>{summary.rootFolder}</span></div>
           <div className="kv"><span>Last Sync Time</span><span>{summary.lastSync ? formatDateTime(summary.lastSync) : '—'}</span></div>
           {summary.statusMessage && <div className="alert alert--info storage-settings__status-message"><Icon name="bolt" size={15} /><span>{summary.statusMessage}</span></div>}

@@ -193,7 +193,7 @@ export default function ManageCases() {
                         <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
                         <td>{formatDate(c.nextHearing)}</td>
-                        <td><Badge>{c.status}</Badge></td>
+                        <td><Badge dot>{c.status}</Badge></td>
                         <td>
                           <div className="row-actions">
                             <button className="iconbtn" title="View" onClick={() => nav(`/cases/${c.id}`)}><Icon name="eye" size={15} /></button>

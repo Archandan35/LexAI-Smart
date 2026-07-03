@@ -126,7 +126,7 @@ export default function CaseDetails() {
           <div className="case-details-detail-header">
             <div className="case-details-detail-header__top">
               <div className="case-details-detail-header__number">{c.case_display_number || c.caseNumber}</div>
-              <Badge tone={c.archived ? 'amber' : 'green'}>{c.status || (c.archived ? 'Archived' : 'Active')}</Badge>
+              <Badge tone={c.archived ? 'amber' : 'green'} dot>{c.status || (c.archived ? 'Archived' : 'Active')}</Badge>
             </div>
             <div className="case-details-detail-header__title">{c.title}</div>
             <div className="case-details-meta">
@@ -362,7 +362,7 @@ export default function CaseDetails() {
                     <div className="case-detail__hearing-info">
                       <div className="case-detail__hearing-title">{c.case_display_number || c.caseNumber || upcomingHearing.purpose || 'Hearing'}</div>
                       <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
-                      <div className="mt-8"><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
+                      <div className="mt-8"><Badge tone="navy" dot>{upcomingHearing.status || 'Scheduled'}</Badge></div>
                     </div>
                   </div>
                 )}
@@ -470,7 +470,7 @@ export default function CaseDetails() {
                 <div className="timeline">
                   {hearings.map((h) => (
                     <div className="timeline-item" key={h.id}>
-                      <div className="timeline-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
+                      <div className="timeline-item__date">{formatDate(h.date)} <Badge dot>{h.status}</Badge></div>
                       <div className="timeline-item__event">{h.purpose || '—'}</div>
                       {h.notes && <div className="timeline-item__source">{stripHtml(h.notes)}</div>}
                     </div>
@@ -497,7 +497,7 @@ export default function CaseDetails() {
             <div className="page-header__text flex-1 min-w-0">
               <div className="case-detail__head-top">
                 {c.archived && <Badge tone="amber">Archived</Badge>}
-                <Badge tone="green">{c.status}</Badge>
+                <Badge tone="green" dot>{c.status}</Badge>
               </div>
               <h1>{c.case_display_number || c.caseNumber}</h1>
               <p>{c.title}</p>
@@ -623,7 +623,7 @@ export default function CaseDetails() {
                       <div className="case-detail__hearing-info">
                         <div className="case-detail__hearing-title">{c.case_display_number || c.caseNumber || upcomingHearing.purpose || 'Hearing'}</div>
                         <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
-                      <div className="mt-8"><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
+                      <div className="mt-8"><Badge tone="navy" dot>{upcomingHearing.status || 'Scheduled'}</Badge></div>
                       </div>
                     </div>
                   )}
@@ -732,7 +732,7 @@ export default function CaseDetails() {
                 <div className="timeline">
                   {hearings.map((h) => (
                     <div className="timeline-item" key={h.id}>
-                      <div className="timeline-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
+                      <div className="timeline-item__date">{formatDate(h.date)} <Badge dot>{h.status}</Badge></div>
                       <div className="timeline-item__event">{h.purpose || '—'}</div>
                       {h.notes && <div className="timeline-item__source">{stripHtml(h.notes)}</div>}
                     </div>

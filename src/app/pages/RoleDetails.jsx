@@ -116,7 +116,7 @@ export default function RoleDetails() {
       <div className="grid-3 mb-20">
         <Card title="Role">
           <div className="kv"><span>Code</span><b>{role.code}</b></div>
-          <div className="kv"><span>Status</span><Badge tone={(role.status || 'Active') === 'Active' ? 'green' : 'grey'}>{role.status || 'Active'}</Badge></div>
+          <div className="kv"><span>Status</span><Badge tone={(role.status || 'Active') === 'Active' ? 'green' : 'grey'} dot>{role.status || 'Active'}</Badge></div>
           <div className="kv"><span>Type</span><span>{role.system ? 'System' : 'Custom'}</span></div>
           <div className="kv"><span>Updated</span><span>{formatDateTime(role.updatedAt || role.createdAt)}</span></div>
         </Card>

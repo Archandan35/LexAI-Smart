@@ -85,7 +85,7 @@ export default function CaseHistory({ caseId, onChanged }) {
               return (
                 <div className="timeline-item" key={h.id}>
                   <div className="timeline-item__date">
-                    {formatDate(h.date)} {h.status && <Badge>{h.status}</Badge>}
+                    {formatDate(h.date)} {h.status && <Badge dot>{h.status}</Badge>}
                     {h.source === 'order-sheet' && <Badge tone="grey">order sheet</Badge>}
                     <span style={{ flex: 1 }} />
                   </div>

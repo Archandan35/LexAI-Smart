@@ -27,7 +27,7 @@ export default function CitationCard({ item, rank }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               {rank && <span className="tag tag--key" style={{ margin: 0 }}>#{rank}</span>}
               <strong style={{ fontSize: 14.5, color: 'var(--navy-900)' }}>{item.citation}</strong>
-              <Badge>{citationLogic.statusLabel(item.verification || 'verified')}</Badge>
+              <Badge dot>{citationLogic.statusLabel(item.verification || 'verified')}</Badge>
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--text-soft)', marginTop: 5 }}>
               {item.court} · {formatDate(item.date)}

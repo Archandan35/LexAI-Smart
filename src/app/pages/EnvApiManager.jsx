@@ -103,7 +103,7 @@ export default function EnvApiManager() {
                       <td className="env-api__var-name">{r.name}</td>
                       <td><Badge tone="grey">{r.category}</Badge></td>
                       <td>{display(r)}</td>
-                      <td><Badge tone={r.status === 'enabled' ? 'green' : r.status === 'disabled' ? 'amber' : 'grey'}>{r.status}</Badge></td>
+                      <td><Badge tone={r.status === 'enabled' ? 'green' : r.status === 'disabled' ? 'amber' : 'grey'} dot>{r.status}</Badge></td>
                       <td>{r.updatedAt ? formatDateTime(r.updatedAt) : '—'}</td>
                       <td>{r.updatedBy || '—'}</td>
                       <td>
@@ -140,7 +140,7 @@ export default function EnvApiManager() {
                     <tr key={a.name}>
                       <td className="font-medium">{a.name}</td>
                     <td>{a.provider}</td>
-                    <td><Badge tone={a.status === 'connected' ? 'green' : 'amber'}>{a.status}</Badge></td>
+                    <td><Badge tone={a.status === 'connected' ? 'green' : 'amber'} dot>{a.status}</Badge></td>
                     <td><code>{a.keyVar}</code></td>
                     <td><PermissionGate perm="api.test"><Button size="sm" variant="ghost" icon="bolt" onClick={() => testApi(a)}>Test</Button></PermissionGate></td>
                   </tr>

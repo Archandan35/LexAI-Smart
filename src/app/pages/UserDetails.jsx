@@ -80,7 +80,7 @@ export default function UserDetails() {
             <Field label="Primary role">
               <RoleSelector roles={roles} value={u.roleCode} onChange={setRole} {...(!can('users.assign') ? { disabled: true } : {})} />
             </Field>
-            <div className="kv"><span>Status</span><Badge tone={u.status === 'Active' ? 'green' : 'grey'}>{u.status}</Badge></div>
+            <div className="kv"><span>Status</span><Badge tone={u.status === 'Active' ? 'green' : 'grey'} dot>{u.status}</Badge></div>
             <div className="kv"><span>Effective perms</span><b>{resolved?.permissions.size}</b></div>
             <div className="kv"><span>Custom grants</span><b>{u.grants?.length || 0}</b></div>
             <div className="kv"><span>Denied</span><b>{u.denies?.length || 0}</b></div>

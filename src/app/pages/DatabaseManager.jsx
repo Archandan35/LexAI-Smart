@@ -158,14 +158,14 @@ export default function DatabaseManager() {
       <div className="grid-2 dm-section">
         <Card title="Overview" sub="Provider selected via environment variable.">
           <div className="kv"><span>Provider</span><b className="dm-capitalize">{data.provider}</b></div>
-          <div className="kv"><span>Connection</span><Badge tone={connection.connected ? 'green' : 'red'}>{connection.connected ? 'Connected' : 'Disconnected'}</Badge></div>
+          <div className="kv"><span>Connection</span><Badge tone={connection.connected ? 'green' : 'red'} dot>{connection.connected ? 'Connected' : 'Disconnected'}</Badge></div>
           <div className="kv"><span>Database Version</span>
             <span>{data.databaseVersion || 'not installed'}
               {data.databaseVersion && data.databaseVersion !== data.targetVersion ? ` → ${data.targetVersion}` : ''}
             </span>
           </div>
           <div className="kv"><span>Schema Version</span><span>{data.schemaVersion}</span></div>
-          <div className="kv"><span>Health</span><Badge tone={healthTone}>{healthLabel}</Badge></div>
+          <div className="kv"><span>Health</span><Badge tone={healthTone} dot>{healthLabel}</Badge></div>
           <div className="kv"><span>UDB Format</span><span>v{data.udbVersion}</span></div>
           {connection.error && (
             <div className="alert alert--warn dm-mt">
@@ -188,7 +188,7 @@ export default function DatabaseManager() {
 
       {/* Health */}
       <Card title="Health" sub="Schema issues and repair suggestions." className="dm-section">
-        <div className="kv"><span>Health Score</span><Badge tone={healthTone}>{healthLabel}</Badge></div>
+        <div className="kv"><span>Health Score</span><Badge tone={healthTone} dot>{healthLabel}</Badge></div>
         {health && (
           <div className="chips dm-chips-mt">
             <span className="tag">Critical: <b className="dm-chip-count">{health.summary.critical}</b></span>
@@ -271,7 +271,7 @@ export default function DatabaseManager() {
       {/* Schema + Migration */}
       <div className="grid-2 dm-section">
         <Card title="Schema">
-          <div className="kv"><span>Status</span><Badge tone={schemaTone}>{schemaLabel}</Badge></div>
+          <div className="kv"><span>Status</span><Badge tone={schemaTone} dot>{schemaLabel}</Badge></div>
           <div className="kv"><span>Tables / Collections</span>
             <span>{validation.present?.length || 0} / {data.known.length}</span>
           </div>

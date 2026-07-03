@@ -253,7 +253,7 @@ export default function Dashboard() {
                     <td><span className="dash-case-title">{c.title || c.caseNumber}</span></td>
                     <td><span className="dash-case-num">{c.caseNumber}</span></td>
                     <td className="dash-cases__client">{c.client || '—'}</td>
-                    <td><Badge tone={c.status === 'Active' ? 'green' : c.status === 'On Hold' ? 'amber' : 'grey'}>{c.status || 'Active'}</Badge></td>
+                    <td><Badge tone={c.status === 'Active' ? 'green' : c.status === 'On Hold' ? 'amber' : 'grey'} dot>{c.status || 'Active'}</Badge></td>
                     <td className="dash-cases__date">{formatDate(c.updatedAt || c.createdAt)}</td>
                   </tr>
                 ))}

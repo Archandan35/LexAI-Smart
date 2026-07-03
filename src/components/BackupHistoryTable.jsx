@@ -32,7 +32,7 @@ export default function BackupHistoryTable({ backups, actor, can, onChanged, onR
     { key: 'createdAt', label: 'Date', sortable: true, width: 110, render: (b) => formatDate(b.createdAt) },
     { key: 'time', label: 'Time', width: 100, render: (b) => timeOnly(b.createdAt) },
     { key: 'size', label: 'Size', sortable: true, width: 90, render: (b) => bytes(b.size) },
-    { key: 'status', label: 'Status', width: 100, render: (b) => <Badge tone={b.status === 'Completed' ? 'green' : 'amber'}>{b.status}</Badge> },
+    { key: 'status', label: 'Status', width: 100, render: (b) => <Badge tone={b.status === 'Completed' ? 'green' : 'amber'} dot>{b.status}</Badge> },
     { key: 'protected', label: 'Protected', width: 90, render: (b) => (b.protected ? <Badge tone="navy" dot>Yes</Badge> : <span style={{ color: 'var(--text-faint)' }}>No</span>) },
     { key: 'actions', label: 'Actions', width: 200, render: (b) => (
       <div className="row-actions">

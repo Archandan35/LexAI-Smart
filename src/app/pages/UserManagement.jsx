@@ -132,7 +132,7 @@ export default function UserManagement() {
     { key: 'permissionCount', label: 'Perms', sortable: true, width: 80, render: (u) => <Badge tone="grey">{u.permissionCount}</Badge> },
     { key: 'lastLoginAt', label: 'Last login', sortable: true, width: 120, render: (u) => (u.lastLoginAt ? fromNow(u.lastLoginAt) : '—') },
     { key: 'createdAt', label: 'Created', sortable: true, width: 110, render: (u) => formatDate(u.createdAt) },
-    { key: 'status', label: 'Status', width: 90, render: (u) => <Badge tone={u.status === 'Active' ? 'green' : 'grey'}>{u.status}</Badge> },
+    { key: 'status', label: 'Status', width: 90, render: (u) => <Badge tone={u.status === 'Active' ? 'green' : 'grey'} dot>{u.status}</Badge> },
     { key: 'actions', label: '', width: 200, render: (u) => (
       <div className="row-actions">
         <button className="iconbtn" title="View" onClick={() => nav(`/admin/users/${u.id}`)}><Icon name="eye" size={15} /></button>
