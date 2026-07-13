@@ -90,8 +90,9 @@ export default function CaseDetails() {
       load();
     } catch (e) {
       toast.push(e?.message || 'Failed to update case.', 'error');
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   };
 
   const duplicate = async () => {

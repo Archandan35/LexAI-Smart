@@ -17,6 +17,7 @@ import { usePermissions } from '@/hooks/usePermissions.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
+import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate } from '@/utils/format.js';
@@ -66,6 +67,25 @@ export default function ManageCases() {
   const { user } = useAuth();
   const { names: stageNames } = useCaseStages();
   const { statuses } = useCaseStatuses();
+  const { caseTypes } = useCaseTypes();
+
+  const caseTypeMap = useMemo(() => {
+    const map = {};
+    caseTypes.forEach((t) => {
+      if (t.name) map[t.name.toLowerCase()] = t.name;
+      if (t.short_code) map[t.short_code.toLowerCase()] = t.name;
+    });
+    return map;
+  }, [caseTypes]);
+
+  const formatCaseNum = (c) => {
+    const ct = c.case_type ? (caseTypeMap[c.case_type.toLowerCase()] || '') : '';
+    const cn = c.case_number || c.caseNumber;
+    const cy = c.case_year;
+    if (ct && cn && cy) return `${ct} No. ${cn} of ${cy}`;
+    if (cn && cy) return `No. ${cn} of ${cy}`;
+    return c.case_display_number || c.caseNumber || '';
+  };
 
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -188,7 +208,7 @@ export default function ManageCases() {
                             <Icon name="star" size={15} className={c.watch ? 'star--on' : ''} fill={c.watch} />
                           </button>
                         </td>
-                        <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
+                        <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{formatCaseNum(c)}</td>
                         <td className="manage-cases__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
                         <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
@@ -302,7 +322,7 @@ export default function ManageCases() {
                         <Icon name="star" size={17} fill={c.watch} className={c.watch ? 'star--on' : ''} />
                       </button>
                       <div className="cv-case-card__title-row">
-                        <span className="cv-case-card__title">{c.case_display_number || c.caseNumber}</span>
+                        <span className="cv-case-card__title">{formatCaseNum(c)}</span>
                       </div>
                     </div>
                     <div className="cv-case-card__right">

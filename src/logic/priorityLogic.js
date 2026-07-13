@@ -2,6 +2,13 @@ import { priorityService } from '@/services/priorityService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
+const SHORT_CODE_PREFIX = 'PRIT';
+
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 export const priorityLogic = {
   async list() {
     try {
@@ -14,7 +21,7 @@ export const priorityLogic = {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Priority name is required.');
-      return ok(await priorityService.create({ name, short_code: data.short_code, display_order: data.display_order ?? 0, color: data.color || '#6b7280', status: data.status || 'Active', description: data.description, createdAt: nowISO() }));
+      return ok(await priorityService.create({ name, short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name), display_order: data.display_order ?? 0, color: data.color || '#6b7280', status: data.status || 'Active', description: data.description, createdAt: nowISO() }));
     } catch (err) { return fail(err); }
   },
 

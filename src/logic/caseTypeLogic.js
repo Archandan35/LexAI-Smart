@@ -2,6 +2,13 @@ import { caseTypeService } from '@/services/caseTypeService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
+const SHORT_CODE_PREFIX = 'CAST';
+
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 export const caseTypeLogic = {
   async list() {
     try {
@@ -19,8 +26,9 @@ export const caseTypeLogic = {
   async create(data) {
     try {
       const name = (data.name || '').trim();
-      const shortCode = (data.short_code || '').trim();
+      let shortCode = (data.short_code || '').trim();
       if (!name) return fail('Case type name is required.');
+      if (!shortCode) shortCode = autoShortCode(name);
       if (!shortCode) return fail('Short code is required.');
       const existing = await caseTypeService.list();
       if (existing.some((t) => t.short_code.toLowerCase() === shortCode.toLowerCase())) {
@@ -43,8 +51,9 @@ export const caseTypeLogic = {
   async update(id, data) {
     try {
       const name = (data.name || '').trim();
-      const shortCode = (data.short_code || '').trim();
+      let shortCode = (data.short_code || '').trim();
       if (!name) return fail('Case type name is required.');
+      if (!shortCode) shortCode = autoShortCode(name);
       const existing = await caseTypeService.list();
       if (existing.some((t) => t.id !== id && t.name.toLowerCase() === name.toLowerCase())) {
         return fail(`A case type with name "${name}" already exists.`);
@@ -91,8 +100,10 @@ export const caseTypeLogic = {
 
       const pending = records.map((r) => {
         const name = (r.name || '').trim();
-        const shortCode = (r.short_code || '').trim();
-        if (!name || !shortCode) return null;
+        let shortCode = (r.short_code || '').trim();
+        if (!name) return null;
+        if (!shortCode) shortCode = autoShortCode(name);
+        if (!shortCode) return null;
         if (existingCodes.has(shortCode.toLowerCase())) return null;
         if (existingNames.has(name.toLowerCase())) return null;
         existingCodes.add(shortCode.toLowerCase());

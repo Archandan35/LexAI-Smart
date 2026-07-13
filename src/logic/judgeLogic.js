@@ -2,6 +2,13 @@ import { judgeService } from '@/services/judgeService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
+const SHORT_CODE_PREFIX = 'JUDG';
+
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 export const judgeLogic = {
   async list() {
     try {
@@ -22,7 +29,7 @@ export const judgeLogic = {
       if (!name) return fail('Judge name is required.');
       return ok(await judgeService.create({
         name,
-        short_code: (data.short_code || '').trim().toUpperCase(),
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         designation: (data.designation || '').trim(),
         court: (data.court || '').trim(),
         status: data.status || 'Active',
@@ -38,7 +45,7 @@ export const judgeLogic = {
       if (!name) return fail('Judge name is required.');
       return ok(await judgeService.update(id, {
         name,
-        short_code: (data.short_code || '').trim().toUpperCase(),
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         designation: (data.designation || '').trim(),
         court: (data.court || '').trim(),
         status: data.status,

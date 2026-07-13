@@ -263,8 +263,8 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const summaryLen = (form.case_summary || '').length;
   const notesLen = (form.internal_notes || '').length;
 
-  const submit = () => {
-    if (!form.case_number.trim()) { return; }
+  const submit = async () => {
+    if (!form.case_number?.trim()) { return; }
     const payload = {
       ...form,
       plaintiff: form.plaintiffs.join(', '),
@@ -282,7 +282,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     Object.keys(payload).forEach((k) => {
       if (payload[k] === '' || payload[k] === null || payload[k] === undefined) delete payload[k];
     });
-    onSubmit?.(payload);
+    await onSubmit?.(payload);
   };
 
   return (

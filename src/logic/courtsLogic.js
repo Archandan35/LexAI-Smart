@@ -2,30 +2,11 @@ import { courtsService } from '@/services/courtsService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
-const STOP_WORDS = new Set(['of', 'and', 'the', 'in', 'at', 'a', 'an', 'for', 'to']);
+const SHORT_CODE_PREFIX = 'COUT';
 
-function slugShortCode(name = '') {
-  const cleaned = String(name).trim();
-  if (!cleaned) return '';
-
-  const parenMatch = cleaned.match(/\(([^)]+)\)/);
-  const parenPart = parenMatch ? parenMatch[1] : '';
-
-  let mainName = cleaned.replace(/\([^)]*\)/g, '').trim();
-
-  const mainWords = mainName.split(/\s+/).filter(Boolean);
-  const mainAbbrev = mainWords
-    .filter((w) => !STOP_WORDS.has(w.toLowerCase()))
-    .map((w) => w[0].toUpperCase())
-    .join('');
-
-  const parenWords = parenPart.split(/\s+/).filter(Boolean);
-  const parenAbbrev = parenWords
-    .filter((w) => !STOP_WORDS.has(w.toLowerCase()))
-    .map((w) => w[0].toUpperCase())
-    .join('');
-
-  return (mainAbbrev + parenAbbrev).toUpperCase();
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
 }
 
 async function resolveParentId({ parent_id, parent_name }, courtsService) {
@@ -62,7 +43,7 @@ export const courtsLogic = {
         courtsService
       );
 
-      const short_code = (data.short_code || '').trim() || slugShortCode(name);
+      const short_code = (data.short_code || '').trim() || autoShortCode(name);
 
       return ok(await courtsService.create({
         name,
@@ -88,7 +69,7 @@ export const courtsLogic = {
 
       const short_code =
         (data.short_code ?? '').toString().trim() ||
-        slugShortCode(name);
+        autoShortCode(name);
 
       return ok(await courtsService.update(id, {
         name,
@@ -133,7 +114,7 @@ export const courtsLogic = {
             courtsService
           );
 
-          const short_code = (r.short_code || '').trim() || slugShortCode(name);
+          const short_code = (r.short_code || '').trim() || autoShortCode(name);
 
           maxOrder += 1;
           const result = await courtsService.create({

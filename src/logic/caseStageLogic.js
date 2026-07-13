@@ -2,6 +2,13 @@ import { caseStageService } from '@/services/caseStageService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO } from '@/utils/id.js';
 
+const SHORT_CODE_PREFIX = 'CSTT';
+
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 // caseStageLogic — dynamic case-stage management (Stage Manager).
 export const caseStageLogic = {
   async list() {
@@ -22,7 +29,7 @@ export const caseStageLogic = {
     const order = rows.reduce((m, s) => Math.max(m, s.order ?? 0), 0) + 1;
     return ok(await caseStageService.create({
       name: n,
-      short_code: (data.short_code || '').trim().toUpperCase(),
+      short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(n),
       description: (data.description || '').trim(),
       display_order: data.display_order ?? order,
       status: data.status || 'Active',
@@ -39,7 +46,7 @@ export const caseStageLogic = {
   async update(id, data) {
     return ok(await caseStageService.update(id, {
       name: data.name,
-      short_code: (data.short_code || '').trim().toUpperCase(),
+      short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(data.name || ''),
       description: (data.description || '').trim(),
       status: data.status,
     }));

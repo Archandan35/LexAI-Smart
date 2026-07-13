@@ -2,6 +2,13 @@ import { partyTypeService } from '@/services/partyTypeService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
 
+const SHORT_CODE_PREFIX = 'PART';
+
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 export const partyTypeLogic = {
   async list() {
     const rows = await partyTypeService.list();
@@ -10,7 +17,12 @@ export const partyTypeLogic = {
 
   async create(data) {
     try {
-      const row = await partyTypeService.create({ ...data, id: uid('pty'), created_at: nowISO() });
+      const name = (data.name || '').trim();
+      const row = await partyTypeService.create({
+        ...data, name,
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
+        id: uid('pty'), created_at: nowISO(),
+      });
       return ok(row);
     } catch (e) {
       return fail(e);
@@ -19,7 +31,12 @@ export const partyTypeLogic = {
 
   async update(id, data) {
     try {
-      const row = await partyTypeService.update(id, { ...data, updated_at: nowISO() });
+      const name = (data.name || '').trim();
+      const row = await partyTypeService.update(id, {
+        ...data, name,
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
+        updated_at: nowISO(),
+      });
       return ok(row);
     } catch (e) {
       return fail(e);

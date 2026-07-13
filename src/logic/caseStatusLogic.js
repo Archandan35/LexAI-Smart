@@ -2,6 +2,13 @@ import { caseStatusService } from '@/services/caseStatusService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
+const SHORT_CODE_PREFIX = 'CASS';
+
+function autoShortCode(name = '') {
+  const slug = String(name).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 export const caseStatusLogic = {
   async list() {
     try {
@@ -16,7 +23,7 @@ export const caseStatusLogic = {
       if (!name) return fail('Status name is required.');
       return ok(await caseStatusService.create({
         name,
-        short_code: (data.short_code || '').trim().toUpperCase(),
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         description: (data.description || '').trim(),
         display_order: data.display_order ?? 0,
         status: data.status || 'Active',
