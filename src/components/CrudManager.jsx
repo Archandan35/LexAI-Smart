@@ -497,6 +497,7 @@ function BulkDelete({ config, entity }) {
   const [errors, setErrors] = useState([]);
 
   const toggle = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+  const toggleAll = () => setSelected((p) => p.length === items.length ? [] : items.map((i) => i.id));
 
   const submit = async () => {
     setSaving(true); setMsg(null); setErrors([]);
