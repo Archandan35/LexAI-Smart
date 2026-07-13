@@ -264,7 +264,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const notesLen = (form.internal_notes || '').length;
 
   const submit = async () => {
-    if (!form.case_number?.trim()) { return; }
+    if (!String(form.case_number ?? '').trim()) { return; }
     const payload = {
       ...form,
       plaintiff: form.plaintiffs.join(', '),
