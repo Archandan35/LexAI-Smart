@@ -50,7 +50,7 @@ export default function CommandBar({ open, onClose }) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKey}
           />
-          {loading && <span className="spinner" style={{ width: 15, height: 15 }} />}
+          {loading && <span className="spinner spinner--sm" />}
           <kbd className="cmd__kbd">Esc</kbd>
         </div>
         <div className="cmd__results">

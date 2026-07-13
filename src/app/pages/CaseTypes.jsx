@@ -548,7 +548,7 @@ export default function CaseTypes() {
                         <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                           <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                           <span className="cmp-checkbox-name">{item.name}</span>
-                          <span className="cmp-code-pill" style={{ marginLeft: 8 }}>{item.short_code}</span>
+                          <span className="cmp-code-pill cmp-code-pill--ml8">{item.short_code}</span>
                           <span className="cmp-checkbox-status">{item.status || 'Active'}</span>
                         </label>
                       ))}
@@ -568,7 +568,7 @@ export default function CaseTypes() {
                   <div className="cmp-import-title">Import from CSV</div>
                   <div className="cmp-import-hint">CSV columns: name, short_code, status (optional)</div>
                   <label className="cmp-import-btn">
-                    <input type="file" accept=".csv" style={{ display: 'none' }} onChange={e => setImportFile(e.target.files[0])} />
+                    <input type="file" accept=".csv" className="cmp-file-input" onChange={e => setImportFile(e.target.files[0])} />
                     <span className="btn btn--ghost">{importFile ? importFile.name : 'Choose CSV file'}</span>
                   </label>
                   {importFile && <div className="cmp-import-file">Selected: {importFile.name}</div>}
@@ -636,13 +636,13 @@ export default function CaseTypes() {
         <table className="cmp-table">
           <thead>
             <tr>
-              <th style={{ width: 32 }}></th>
-              <th style={{ width: 32 }}></th>
+              <th className="cmp-th--w32"></th>
+              <th className="cmp-th--w32"></th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">ORDER <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 200 }}>ACTIONS</th>
+              <th className="cmp-th--w200">ACTIONS</th>
             </tr>
           </thead>
           <tbody>

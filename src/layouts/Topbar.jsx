@@ -52,7 +52,7 @@ export default function Topbar({ onToggle }) {
 
       <button className="topbar__search topbar__search--btn" onClick={() => setCmdOpen(true)}>
         <Icon name="search" size={16} />
-        <span style={{ flex: 1, textAlign: 'left' }}>Search cases, drafts, citations…</span>
+        <span className="topbar__search-text">Search cases, drafts, citations…</span>
         <kbd className="cmd__kbd">⌘K</kbd>
       </button>
 
@@ -65,7 +65,7 @@ export default function Topbar({ onToggle }) {
             <div className="usermenu__head">
               <div className="usermenu__name">{user?.name}</div>
               <div className="usermenu__meta">{user?.email || user?.username}</div>
-              <div className="badge badge--navy" style={{ marginTop: 6 }}>{roleName}</div>
+              <div className="badge badge--navy topbar__role-badge">{roleName}</div>
             </div>
             {canViewModule('users') && (
               <button className="usermenu__item" onClick={() => { setMenuOpen(false); nav(`/admin/users/${user?.id}`); }}>

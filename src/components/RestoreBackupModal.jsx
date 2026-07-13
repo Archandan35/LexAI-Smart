@@ -36,7 +36,7 @@ export default function RestoreBackupModal({ backup, open, onClose, onRestored, 
         </>
       )}
     >
-      <div className="alert alert--warn" style={{ marginBottom: 16 }}>
+      <div className="alert alert--warn restore-alert">
         <Icon name="alert" size={16} />
         <span>The current database will be <b>completely replaced</b> with this snapshot. Existing unsaved data will be lost. Other backups are preserved.</span>
       </div>
@@ -45,16 +45,16 @@ export default function RestoreBackupModal({ backup, open, onClose, onRestored, 
       <div className="kv"><span>Created</span><span>{formatDateTime(backup.createdAt)}</span></div>
       <div className="kv"><span>App / Schema</span><span>v{backup.appVersion} · schema {backup.schemaVersion}</span></div>
 
-      <div style={{ marginTop: 12, marginBottom: 6, fontWeight: 650, fontSize: 13 }}>Restore preview</div>
+      <div className="restore-preview-title">Restore preview</div>
       <div className="chips">
         {Object.entries(backup.counts || {}).map(([k, v]) => (
-          <span key={k} className="tag">{k}: <b style={{ marginLeft: 4 }}>{v}</b></span>
+          <span key={k} className="tag">{k}: <b className="restore-count">{v}</b></span>
         ))}
       </div>
 
-      <div style={{ marginTop: 14 }}>
+      <div className="restore-checks">
         {!integrity ? (
-          <div className="loading-block" style={{ padding: 12 }}><span className="spinner" /> Verifying integrity…</div>
+          <div className="loading-block restore-loading"><span className="spinner" /> Verifying integrity…</div>
         ) : (
           <div className={`alert ${integrity.valid ? 'alert--success' : 'alert--danger'}`}>
             <Icon name={integrity.valid ? 'check' : 'alert'} size={16} />

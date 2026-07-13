@@ -48,7 +48,7 @@ export default function DmcDataExplorer() {
     if (f === 'size') return bytes(r[f] || 0);
     if (f === 'uploadedAt' || f === 'createdAt') return formatDate(r[f] || r.uploaded_at || r.created_at);
     if (f === 'name' && collection === 'documents') {
-      return <a href="#" onClick={(e) => { e.preventDefault(); setPreviewDoc(r); }} style={{ color: 'var(--brand)', textDecoration: 'none' }}>{r[f] || r.title}</a>;
+      return <a href="#" onClick={(e) => { e.preventDefault(); setPreviewDoc(r); }} className="dmc-explorer-link">{r[f] || r.title}</a>;
     }
     return r[f] || r[f.replace(/^[a-z]/, (c) => c.toUpperCase())] || '—';
   };
@@ -65,26 +65,26 @@ export default function DmcDataExplorer() {
           <input className="dmc-search" placeholder="Search records…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="dmc-toolbar__right">
-          <span style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>{filtered.length} record(s)</span>
+          <span className="dmc-record-count">{filtered.length} record(s)</span>
         </div>
       </div>
 
       {previewDoc && (
-        <div className="dmc-card" style={{ marginBottom: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div className="dmc-card dmc-preview-card">
+          <div className="dmc-preview-header">
             <strong>{previewDoc.name || previewDoc.title}</strong>
             <button className="iconbtn" onClick={() => setPreviewDoc(null)}><Icon name="close" size={16} /></button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 13 }}>
-            <div><span style={{ color: 'var(--text-faint)' }}>ID:</span> {previewDoc.id}</div>
-            <div><span style={{ color: 'var(--text-faint)' }}>Folder:</span> {previewDoc.folder || '—'}</div>
-            <div><span style={{ color: 'var(--text-faint)' }}>Size:</span> {bytes(previewDoc.size || 0)}</div>
-            <div><span style={{ color: 'var(--text-faint)' }}>Type:</span> {previewDoc.mime || '—'}</div>
-            <div><span style={{ color: 'var(--text-faint)' }}>Uploaded:</span> {formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)}</div>
-            <div><span style={{ color: 'var(--text-faint)' }}>Sync:</span> {previewDoc.syncStatus || '—'}</div>
+          <div className="dmc-preview-grid">
+            <div><span className="dmc-label-faint">ID:</span> {previewDoc.id}</div>
+            <div><span className="dmc-label-faint">Folder:</span> {previewDoc.folder || '—'}</div>
+            <div><span className="dmc-label-faint">Size:</span> {bytes(previewDoc.size || 0)}</div>
+            <div><span className="dmc-label-faint">Type:</span> {previewDoc.mime || '—'}</div>
+            <div><span className="dmc-label-faint">Uploaded:</span> {formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)}</div>
+            <div><span className="dmc-label-faint">Sync:</span> {previewDoc.syncStatus || '—'}</div>
           </div>
           {previewDoc.ref && (
-            <div style={{ marginTop: 10 }}>
+            <div className="dmc-preview-actions">
               <button className="btn btn--sm btn--ghost" onClick={() => storageService.getUrl(previewDoc.ref).then((url) => url && window.open(url, '_blank'))}>
                 <Icon name="eye" size={14} /> View File
               </button>
@@ -99,7 +99,7 @@ export default function DmcDataExplorer() {
         </thead>
         <tbody>
           {filtered.length === 0 ? (
-            <tr><td colSpan={fields.length} style={{ textAlign: 'center', padding: 32, color: 'var(--text-faint)' }}>{loading ? 'Loading…' : 'No records found.'}</td></tr>
+            <tr><td colSpan={fields.length} className="dmc-empty-cell">{loading ? 'Loading…' : 'No records found.'}</td></tr>
           ) : (
             filtered.slice(0, 50).map((r) => (
               <tr key={r.id}>

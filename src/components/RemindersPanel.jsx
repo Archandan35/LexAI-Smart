@@ -90,7 +90,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
                 <button className="iconbtn" title={r.done ? 'Mark pending' : 'Mark done'} onClick={() => toggle(r)}>
                   <Icon name={r.done ? 'check' : 'clock'} size={15} />
                 </button>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="reminder-row__content">
                   <div className="reminder-row__title">{r.title}</div>
                   <div className="list-row__meta">{r.type} · {formatDate(r.date)}</div>
                 </div>
@@ -106,12 +106,11 @@ export default function RemindersPanel({ caseId, onChanged }) {
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={add}>Add</Button></>}>
         <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. File written statement" autoFocus /></Field>
         <Field label="Type">
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="reminder-form__type-row">
             <select
-              className="select"
+              className="select reminder-form__type-select"
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
-              style={{ flex: 1 }}
             >
               <option value="">Select type…</option>
               {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}

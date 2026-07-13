@@ -533,11 +533,11 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           </Field>
           <Field label="Attached Files">
             {caseDocuments && caseDocuments.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div className="case-form__docs">
                 {caseDocuments.map((d) => (
-                  <div key={d.id} className="list-row" style={{ borderRadius: 8, border: '1px solid var(--border)', padding: '8px 12px', background: 'var(--surface-2)' }}>
+                  <div key={d.id} className="list-row case-form__doc-row">
                     <div className="list-row__icon"><Icon name="file" size={15} /></div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="case-form__doc-info">
                       <div className="list-row__title">{d.name}</div>
                       <div className="list-row__meta">{d.folder || '—'}</div>
                     </div>
@@ -554,7 +554,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
         </div>
       </SectionCard>
 
-      <div className="modal__foot" style={{ padding: '8px 0 0', borderTop: 'none' }}>
+      <div className="modal__foot case-form__foot">
         <Button variant="ghost" onClick={onCancel} disabled={busy}>Cancel</Button>
         <Button variant="primary" icon="save" loading={busy} onClick={submit}>{submitLabel}</Button>
       </div>

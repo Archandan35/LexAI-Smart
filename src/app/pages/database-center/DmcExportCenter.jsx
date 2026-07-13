@@ -71,16 +71,16 @@ export default function DmcExportCenter() {
 
       <div className="dmc-section">
         <div className="dmc-section__title"><Icon name="layers" size={17} /> Export Options</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 600 }}>
+        <div className="dmc-export-grid">
           <div>
-            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-soft)', marginBottom: 4 }}>Format</label>
-            <select className="dmc-select" value={format} onChange={(e) => setFormat(e.target.value)} style={{ width: '100%' }}>
+            <label className="dmc-field-label">Format</label>
+            <select className="dmc-select dmc-select-full" value={format} onChange={(e) => setFormat(e.target.value)}>
               {FORMATS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-soft)', marginBottom: 4 }}>Scope</label>
-            <select className="dmc-select" value={scope} onChange={(e) => setScope(e.target.value)} style={{ width: '100%' }}>
+            <label className="dmc-field-label">Scope</label>
+            <select className="dmc-select dmc-select-full" value={scope} onChange={(e) => setScope(e.target.value)}>
               <option value="full">Full Database</option>
               <option value="schema">Schema Only</option>
               <option value="data">Data Only</option>
@@ -88,32 +88,32 @@ export default function DmcExportCenter() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 16, marginTop: 14, flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+        <div className="dmc-export-checkboxes">
+          <label className="dmc-checkbox-label">
             <input type="checkbox" checked={includeAttachments} onChange={() => setIncludeAttachments(!includeAttachments)} /> Include file metadata
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+          <label className="dmc-checkbox-label">
             <input type="checkbox" checked={includeMetadata} onChange={() => setIncludeMetadata(!includeMetadata)} /> Include audit logs
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+          <label className="dmc-checkbox-label">
             <input type="checkbox" checked={compress} onChange={() => setCompress(!compress)} /> Compress archive
           </label>
         </div>
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+        <div className="dmc-export-actions">
           <Button variant="ghost" size="sm" onClick={estimateSize}>Estimate Size</Button>
           <Button variant="primary" onClick={generate} disabled={generating}>{generating ? 'Generating…' : 'Generate Export'}</Button>
           {done && <Button variant="ghost" onClick={reset}>New Export</Button>}
         </div>
 
         {estimate && (
-          <div style={{ marginTop: 14, fontSize: 13, color: 'var(--text-soft)' }}>
+          <div className="dmc-export-estimate">
             Estimated: {bytes(estimate.size)} · {estimate.collections} collections
           </div>
         )}
 
         {done && (
-          <div style={{ marginTop: 16, padding: 14, background: 'var(--green-soft)', borderRadius: 'var(--radius-sm)', color: 'var(--green)', fontSize: 13 }}>
+          <div className="dmc-export-complete">
             <Icon name="check" size={15} /> Export complete. File download started.
           </div>
         )}

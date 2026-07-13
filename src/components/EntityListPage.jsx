@@ -54,26 +54,26 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in entity-list__loading"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in">
       <PageHeader icon={icon} title={title} subtitle={subtitle} />
 
-      <Card title={`Add ${entityLabel}`} style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+      <Card title={`Add ${entityLabel}`} className="entity-list__add-card">
+        <div className="entity-list__add-row">
+          <div className="entity-list__name-field">
             <Input value={newName} placeholder="Name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
-          <div style={{ flex: '0 1 100px', minWidth: 0 }}>
+          <div className="entity-list__code-field">
             <Input value={newCode} placeholder="Code…" onChange={(e) => setNewCode(e.target.value.toUpperCase().slice(0, codeMaxLength))} onKeyDown={(e) => e.key === 'Enter' && add()} />
           </div>
           <button className="btn btn--primary" onClick={add}><Icon name="plus" size={15} /> Add</button>
         </div>
       </Card>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <div className="datatable__search" style={{ flex: 1 }}>
+      <div className="entity-list__toolbar">
+        <div className="datatable__search entity-list__search-wrapper">
           <Icon name="search" size={15} />
           <input value={search} placeholder={`Search ${entityLabel}s…`} onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -82,7 +82,7 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
       <Card bodyClass="card__body--flush">
         <table className="table">
           <thead>
-            <tr><th>Name</th><th>Code</th><th>Description</th><th>Order</th><th>Status</th><th style={{ width: 110 }}>Actions</th></tr>
+            <tr><th>Name</th><th>Code</th><th>Description</th><th>Order</th><th>Status</th><th className="entity-list__th-actions">Actions</th></tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
@@ -93,7 +93,7 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
                   {editId === item.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
                   ) : (
-                    <span style={{ fontWeight: 600 }}>{item.name}</span>
+                    <span className="entity-list__item-name">{item.name}</span>
                   )}
                 </td>
                 <td>
@@ -126,7 +126,7 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
           </tbody>
         </table>
       </Card>
-      <p className="muted" style={{ marginTop: 12, fontSize: 12.5 }}>{items.length} {entityLabel}(s) configured.</p>
+      <p className="muted entity-list__footer">{items.length} {entityLabel}(s) configured.</p>
     </div>
   );
 }

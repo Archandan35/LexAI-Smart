@@ -86,14 +86,14 @@ function renderField(f, values, setValues) {
 
   if (f.type === 'color') {
     return (
-      <div key={f.key} style={{ marginBottom: 16 }}>
+      <div key={f.key} className="crud-field-group">
         <div className="crud-field-label">
           <span>{f.label}</span>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <input type="color" className="input" style={{ width: 56, height: 40, padding: 4, cursor: 'pointer' }}
+        <div className="crud-field-row">
+          <input type="color" className="input crud-color-input"
             value={val || f.default || '#6b7280'} onChange={(e) => set(e.target.value)} />
-          <span style={{ fontSize: 13, color: 'var(--text-soft)' }}>{val || f.default || '#6b7280'}</span>
+          <span className="crud-color-value">{val || f.default || '#6b7280'}</span>
         </div>
       </div>
     );
@@ -102,7 +102,7 @@ function renderField(f, values, setValues) {
   if (f.key === 'status') {
     const active = val === 'Active' || val === '';
     return (
-      <div key={f.key} style={{ marginBottom: 16 }}>
+      <div key={f.key} className="crud-field-group">
         <div className="crud-field-label">
           <span>{f.label}</span><span className="req">*</span>
         </div>
@@ -122,18 +122,17 @@ function renderField(f, values, setValues) {
   const charMax = isDesc ? 250 : null;
 
   return (
-    <div key={f.key} style={{ marginBottom: 16 }}>
+    <div key={f.key} className="crud-field-group">
       <div className="crud-field-label">
         <span>{f.label}</span>
         {f.required !== false && <span className="req">*</span>}
-        {f.optional && <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>&nbsp;(Optional)</span>}
+        {f.optional && <span className="crud-optional-label">&nbsp;(Optional)</span>}
       </div>
       {isDesc ? (
         <div className={`crud-input-icon crud-input-icon--top`}>
           <span className="crud-input-icon__ico"><Icon name="file" size={15} /></span>
           <textarea
-            className="textarea"
-            style={{ paddingLeft: 38, minHeight: 90, resize: 'vertical' }}
+            className="textarea crud-textarea-field"
             value={val}
             placeholder={f.placeholder || f.label}
             maxLength={charMax}
@@ -149,7 +148,7 @@ function renderField(f, values, setValues) {
         <div className="crud-input-icon">
           <span className="crud-input-icon__ico">
             {f.key === 'short_code'
-              ? <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--navy-600)' }}>Aa</span>
+              ? <span className="crud-shortcode-label">Aa</span>
               : <Icon name="notes" size={15} />}
           </span>
           <Input
@@ -162,7 +161,7 @@ function renderField(f, values, setValues) {
       )}
       {f.hint && <div className="crud-field-hint">{f.hint}</div>}
       {isDesc && (
-        <div className="crud-field-hint" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className="crud-field-hint crud-hint-row">
           <span>Maximum {charMax} characters</span>
           <span>{val.length} / {charMax}</span>
         </div>
@@ -247,7 +246,7 @@ function SingleEdit({ config, entity }) {
   return (
     <>
       <Feedback msg={msg} />
-      <div style={{ marginBottom: 18 }}>
+      <div className="crud-select-group">
         <div className="crud-field-label"><span>Select {entity} to Edit</span><span className="req">*</span></div>
         <Select value={selected} onChange={(e) => pick(e.target.value)}>
           <option value="">— choose one —</option>
@@ -300,7 +299,7 @@ function SingleDelete({ config, entity }) {
   return (
     <>
       <Feedback msg={msg} />
-      <div style={{ marginBottom: 16 }}>
+      <div className="crud-field-group">
         <div className="crud-field-label"><span>Select {entity} to Delete</span><span className="req">*</span></div>
         <Select value={selected} onChange={(e) => { setSelected(e.target.value); setConfirming(false); }}>
           <option value="">— choose one —</option>
@@ -315,7 +314,7 @@ function SingleDelete({ config, entity }) {
       {confirming && (
         <div className="crud-confirm">
           <p>This action cannot be undone. Are you sure you want to delete this {entity}?</p>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="crud-confirm-actions">
             <Button variant="danger" onClick={submit} disabled={saving}>{saving ? 'Deleting...' : 'Yes, Delete'}</Button>
             <Button variant="ghost" onClick={() => setConfirming(false)}>Cancel</Button>
           </div>
@@ -375,7 +374,7 @@ function BulkAdd({ config, entity }) {
     <>
       <Feedback msg={msg} />
       {saving && <ProgressBar current={progress.current} total={progress.total} />}
-      <div style={{ marginBottom: 4 }}>
+      <div className="crud-bulk-label">
         <div className="crud-field-label">
           {hasCode ? `Paste entries — Name:CODE per line` : `Paste names — one per line`}
         </div>
@@ -453,8 +452,8 @@ function BulkEdit({ config, entity }) {
           {errors.map((e, i) => <div key={i} className="crud-error-log__item">{e}</div>)}
         </div>
       )}
-      <div style={{ marginBottom: 16 }}>
-        <div className="crud-field-label">Select {entity}s to edit <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
+      <div className="crud-field-group">
+        <div className="crud-field-label">Select {entity}s to edit <span className="crud-optional-label">({selected.length} selected)</span></div>
         <div className="crud-checkbox-list">
           {items.map((i) => (
             <label key={i.id} className="crud-checkbox-row">
@@ -534,8 +533,8 @@ function BulkDelete({ config, entity }) {
           {errors.map((e, i) => <div key={i} className="crud-error-log__item">{e}</div>)}
         </div>
       )}
-      <div style={{ marginBottom: 16 }}>
-        <div className="crud-field-label">Select {entity}s to delete <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
+      <div className="crud-field-group">
+        <div className="crud-field-label">Select {entity}s to delete <span className="crud-optional-label">({selected.length} selected)</span></div>
         <div className="crud-checkbox-toolbar">
           <label className="crud-checkbox-all">
             <input type="checkbox" checked={selected.length === items.length && items.length > 0} onChange={toggleAll} disabled={saving} />
@@ -561,7 +560,7 @@ function BulkDelete({ config, entity }) {
       {confirming && (
         <div className="crud-confirm">
           <p>Delete {selected.length} {entity}(s)? This cannot be undone.</p>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="crud-confirm-actions">
             <Button variant="danger" onClick={submit} disabled={saving}>{saving ? `Deleting... ${progress.current}/${progress.total}` : 'Yes, Delete All'}</Button>
             <Button variant="ghost" onClick={() => setConfirming(false)} disabled={saving}>Cancel</Button>
           </div>
@@ -646,14 +645,14 @@ function BulkImport({ config, entity }) {
       <div className="crud-import-zone">
         <div className="crud-import-zone__icon"><Icon name="upload" size={24} /></div>
         <div className="crud-import-zone__title">Import from CSV</div>
-        <div className="crud-import-zone__sub">CSV columns: <code style={{ fontSize: 12 }}>{colNames}</code></div>
-        <label style={{ cursor: 'pointer' }}>
-          <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={handleFile} disabled={saving} />
+        <div className="crud-import-zone__sub">CSV columns: <code className="crud-import-code">{colNames}</code></div>
+        <label className="crud-import-label">
+          <input type="file" accept=".csv,.txt" className="crud-hidden-input" onChange={handleFile} disabled={saving} />
           <span className="btn btn--ghost">{file ? file.name : 'Choose CSV file'}</span>
         </label>
       </div>
       {preview.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
+        <div className="crud-field-group">
           <div className="crud-field-label">Preview (first {preview.length} rows)</div>
           <div className="crud-preview">
             {preview.map((row, i) => <div key={i}>{JSON.stringify(row)}</div>)}

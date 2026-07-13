@@ -35,7 +35,7 @@ export default function CaseTimeline({ caseId, refreshKey }) {
           {items.map((a) => (
             <div className="timeline-item" key={a.id}>
               <div className="timeline-item__date">
-                <span className="list-row__icon" style={{ width: 26, height: 26, display: 'inline-grid' }}><Icon name={ICONS[a.type] || 'bolt'} size={13} /></span>
+                <span className="list-row__icon timeline-item__icon"><Icon name={ICONS[a.type] || 'bolt'} size={13} /></span>
                 {formatDate(a.at)} · {timeOnly(a.at)}
               </div>
               <div className="timeline-item__event">{a.text}</div>

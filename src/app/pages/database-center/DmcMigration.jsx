@@ -82,9 +82,9 @@ export default function DmcMigration() {
         <div className="dmc-wizard__content">
           {step === 0 && (
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Source Provider</label>
-              <p style={{ fontSize: 12.5, color: 'var(--text-soft)', marginBottom: 12 }}>The current database provider containing your data.</p>
-              <select className="dmc-select" value={sourceProvider} onChange={(e) => setSourceProvider(e.target.value)} style={{ width: '100%', maxWidth: 400 }}>
+              <label className="dmc-migration-label">Source Provider</label>
+              <p className="dmc-migration-desc">The current database provider containing your data.</p>
+              <select className="dmc-select dmc-migration-select" value={sourceProvider} onChange={(e) => setSourceProvider(e.target.value)}>
                 <option value="">Select source provider…</option>
                 {PROVIDERS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
@@ -93,9 +93,9 @@ export default function DmcMigration() {
 
           {step === 1 && (
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Target Provider</label>
-              <p style={{ fontSize: 12.5, color: 'var(--text-soft)', marginBottom: 12 }}>The destination provider. Must differ from the source.</p>
-              <select className="dmc-select" value={targetProvider} onChange={(e) => setTargetProvider(e.target.value)} style={{ width: '100%', maxWidth: 400 }}>
+              <label className="dmc-migration-label">Target Provider</label>
+              <p className="dmc-migration-desc">The destination provider. Must differ from the source.</p>
+              <select className="dmc-select dmc-migration-select" value={targetProvider} onChange={(e) => setTargetProvider(e.target.value)}>
                 <option value="">Select target provider…</option>
                 {PROVIDERS.filter((p) => p.value !== sourceProvider).map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
@@ -104,9 +104,9 @@ export default function DmcMigration() {
 
           {step === 2 && (
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Schema Mapping</label>
-              <p style={{ fontSize: 12.5, color: 'var(--text-soft)', marginBottom: 12 }}>Review and confirm the field type mapping between {sourceProvider} and {targetProvider}.</p>
-              <table className="dmc-table" style={{ marginBottom: 14 }}>
+              <label className="dmc-migration-label">Schema Mapping</label>
+              <p className="dmc-migration-desc">Review and confirm the field type mapping between {sourceProvider} and {targetProvider}.</p>
+              <table className="dmc-table dmc-migration-table">
                 <thead><tr><th>Source Type</th><th>Target Type</th><th>Status</th></tr></thead>
                 <tbody>
                   <tr><td>String / Text</td><td>String / Text</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
@@ -122,9 +122,9 @@ export default function DmcMigration() {
 
           {step === 3 && (
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Validation Report</label>
+              <label className="dmc-migration-label">Validation Report</label>
               {report ? (
-                <table className="dmc-table" style={{ marginBottom: 14 }}>
+                <table className="dmc-table dmc-migration-table">
                   <thead><tr><th>Metric</th><th>Value</th></tr></thead>
                   <tbody>
                     <tr><td>Source</td><td>{report.source}</td></tr>
@@ -135,18 +135,18 @@ export default function DmcMigration() {
                   </tbody>
                 </table>
               ) : (
-                <p style={{ color: 'var(--text-faint)' }}>Run validation from the previous step.</p>
+                <p className="dmc-migration-hint">Run validation from the previous step.</p>
               )}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer', marginTop: 10 }}>
+              <label className="dmc-migration-check-label">
                 <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview without applying)
               </label>
             </div>
           )}
 
           {step === 4 && (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <p style={{ fontWeight: 600, marginBottom: 8 }}>Ready to {dryRun ? 'simulate' : 'execute'} migration</p>
-              <p style={{ fontSize: 12.5, color: 'var(--text-soft)', marginBottom: 16 }}>{sourceProvider} → {targetProvider}</p>
+            <div className="dmc-migration-center">
+              <p className="dmc-migration-ready-text">Ready to {dryRun ? 'simulate' : 'execute'} migration</p>
+              <p className="dmc-migration-provider-info">{sourceProvider} → {targetProvider}</p>
               <Button variant="danger" onClick={doMigrate} disabled={migrating}>
                 {migrating ? 'Processing…' : dryRun ? 'Start Dry Run' : 'Execute Migration'}
               </Button>
@@ -154,18 +154,18 @@ export default function DmcMigration() {
           )}
 
           {step === 5 && (
-            <div style={{ textAlign: 'center', padding: 16 }}>
+            <div className="dmc-migration-result">
               {result?.ok ? (
                 <>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}><Icon name="check" size={32} style={{ color: 'var(--green)' }} /></div>
-                  <p style={{ fontWeight: 600 }}>{result.dryRun ? 'Dry Run Passed' : 'Migration Complete'}</p>
-                  <p style={{ color: 'var(--text-soft)', fontSize: 13 }}>{result.message}</p>
+                  <div className="dmc-result-icon-lg"><Icon name="check" size={32} className="dmc-result-icon-green" /></div>
+                  <p className="dmc-result-text-bold">{result.dryRun ? 'Dry Run Passed' : 'Migration Complete'}</p>
+                  <p className="dmc-result-text-soft">{result.message}</p>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}><Icon name="alert" size={32} style={{ color: 'var(--red)' }} /></div>
-                  <p style={{ fontWeight: 600 }}>Migration Failed</p>
-                  <p style={{ color: 'var(--text-soft)', fontSize: 13 }}>{result?.message || 'Unknown error'}</p>
+                  <div className="dmc-result-icon-lg"><Icon name="alert" size={32} className="dmc-result-icon-red" /></div>
+                  <p className="dmc-result-text-bold">Migration Failed</p>
+                  <p className="dmc-result-text-soft">{result?.message || 'Unknown error'}</p>
                 </>
               )}
             </div>

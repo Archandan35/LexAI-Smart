@@ -68,72 +68,60 @@ export default function DebugPanel({ logs, error, result, onClear, onCopy, colla
   if (collapsed) {
     const hasError = logs.some((l) => l.level === 'error') || !!error;
     return (
-      <div className="dm-mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+      <div className="dm-mt debug-panel__collapsed-bar">
         <button
           onClick={() => setCollapsed(false)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}
+          className="debug-panel__toggle-btn"
         >
           <Icon name={hasError ? 'alert' : 'info'} size={12} />
           <span>Debug {hasError ? '(errors)' : ''} — {logs.length} log{logs.length !== 1 ? 's' : ''}</span>
-          <span style={{ marginLeft: 'auto' }}>{'\u25BC'}</span>
+          <span className="debug-panel__toggle-arrow">{'\u25BC'}</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="dm-mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+    <div className="dm-mt debug-panel__collapsed-bar">
+      <div className="debug-panel__toolbar">
         <button
           onClick={() => setCollapsed(true)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+          className="debug-panel__toggle-expanded"
         >
           <Icon name="info" size={12} />
           <span>Debug Log ({logs.length})</span>
           <span>{'\u25B2'}</span>
         </button>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+        <div className="debug-panel__toolbar-actions">
           {onCopy && <Button variant="ghost" size="sm" icon="copy" onClick={onCopy}>Copy</Button>}
           {onClear && <Button variant="ghost" size="sm" icon="close" onClick={onClear}>Clear</Button>}
         </div>
       </div>
 
       {error && (
-        <div className="alert alert--danger" style={{ marginBottom: 8, fontSize: 13, wordBreak: 'break-all' }}>
+        <div className="alert alert--danger debug-panel__alert">
           <Icon name="alert" size={14} />
           <span>{typeof error === 'string' ? error : error?.message || JSON.stringify(error)}</span>
         </div>
       )}
 
       {result && (
-        <div className="alert alert--success" style={{ marginBottom: 8, fontSize: 13, wordBreak: 'break-all' }}>
+        <div className="alert alert--success debug-panel__alert">
           <Icon name="check" size={14} />
-          <span style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 12 }}>{JSON.stringify(result, null, 2)}</span>
+          <span className="debug-panel__result-json">{JSON.stringify(result, null, 2)}</span>
         </div>
       )}
 
       <pre
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 6,
-          padding: 8,
-          fontSize: 11,
-          lineHeight: 1.5,
-          maxHeight: 300,
-          overflowY: 'auto',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-all',
-          color: 'var(--text)',
-        }}
+        className="debug-panel__log-pre"
       >
-        {logs.length === 0 && <span style={{ color: 'var(--text-muted)' }}>No logs captured yet.</span>}
+        {logs.length === 0 && <span className="debug-panel__empty-msg">No logs captured yet.</span>}
         {logs.map((l, i) => (
           <div key={i} style={{
             color: l.level === 'error' ? 'var(--error)' : l.level === 'warn' ? 'var(--warning)' : 'var(--text)',
             marginBottom: 2,
           }}>
-            <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>{DateEngine.formatTime(l.t)}</span>
+            <span className="debug-panel__log-time">{DateEngine.formatTime(l.t)}</span>
             <span style={{ fontWeight: l.level === 'error' ? 600 : 400 }}>{l.level.toUpperCase()}</span>
             <span>{' '}{l.msg}</span>
           </div>

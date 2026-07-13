@@ -28,7 +28,7 @@ export default function StoreInCaseModal({ open, draft, lockedCaseId, onClose, o
   return (
     <Modal open={open} title="Store Draft in Case" onClose={onClose}
       footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button icon="save" disabled={!caseId || !folder} onClick={() => onStore?.({ caseId, folder })}>Store in Case</Button></>}>
-      <div className="alert alert--info" style={{ marginBottom: 14 }}>
+      <div className="alert alert--info store-modal__alert">
         <Icon name="save" size={15} />
         <span>The draft <b>{draft?.title}</b> will be moved into the chosen case folder and removed from the Draft Workspace.</span>
       </div>

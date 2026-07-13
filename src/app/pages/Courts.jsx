@@ -716,7 +716,7 @@ export default function Courts() {
                 <div className="cmp-import-title">Import from CSV</div>
                 <div className="cmp-import-hint">CSV columns: name, short_code, parent_id, status (optional)</div>
                 <label className="cmp-import-btn">
-                  <input type="file" accept=".csv" style={{ display: 'none' }} onChange={e => setImportFile(e.target.files[0])} />
+                  <input type="file" accept=".csv" className="cmp-file-input" onChange={e => setImportFile(e.target.files[0])} />
                   <span className="btn btn--ghost">{importFile ? importFile.name : 'Choose CSV file'}</span>
                 </label>
                 {importFile && <div className="cmp-import-file">Selected: {importFile.name}</div>}
@@ -820,7 +820,7 @@ export default function Courts() {
         <table className="cmp-table">
           <thead>
             <tr>
-              <th style={{ width: 32 }}></th>
+              <th className="cmp-th--w32"></th>
               <th className="courts__th-checkbox"><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
               <th>Court Name</th>
               <th>Shortcode</th>
@@ -858,7 +858,7 @@ export default function Courts() {
       </div>
 
       {selected.size > 0 && (
-        <div style={{ marginTop: 8 }}>
+        <div className="cmp-mt8">
           <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
         </div>
       )}

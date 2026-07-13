@@ -80,24 +80,24 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
   return (
     <Modal open={open} title="Manage Case Stages" onClose={onClose} size="lg">
       {mode === 'single' ? (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        <div className="sm-row">
           <Input value={newName} placeholder="New stage name…" onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
           <Button icon="plus" onClick={add}>Add Stage</Button>
           <Button variant="ghost" size="sm" onClick={() => { setMode('bulk'); setBulkText(''); }}>Bulk Add</Button>
         </div>
       ) : (
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-            <span style={{ fontWeight: 600, fontSize: 13 }}>Bulk Add — one stage per line</span>
+        <div className="sm-section">
+          <div className="sm-bulk-header">
+            <span className="sm-bulk-title">Bulk Add — one stage per line</span>
             <Button variant="ghost" size="sm" onClick={() => setMode('single')}>Single Add</Button>
           </div>
           <Textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)} placeholder={`Filing\nAdmission\nNotice\nWritten Statement`} rows={5} />
-          <Button icon="plus" onClick={addBulk} style={{ marginTop: 8 }}>Add All</Button>
+          <Button icon="plus" onClick={addBulk} className="sm-mt-8">Add All</Button>
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <div className="datatable__search" style={{ flex: 1 }}>
+      <div className="sm-toolbar">
+        <div className="datatable__search sm-search">
           <Icon name="search" size={15} />
           <input value={search} placeholder="Search stages…" onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -106,13 +106,13 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
         )}
       </div>
 
-      <div className="table-scroll" style={{ maxHeight: '46vh' }}>
+      <div className="table-scroll sm-table-scroll">
         <table className="table">
           <thead><tr>
-            <th style={{ width: 30 }}><input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} /></th>
-            <th style={{ width: 30 }} />
+            <th className="sm-th-sm"><input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} /></th>
+            <th className="sm-th-sm" />
             <th>Stage Name</th>
-            <th style={{ width: 110 }} />
+            <th className="sm-th-action" />
           </tr></thead>
           <tbody>
             {visible.map((s) => (
@@ -129,7 +129,7 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
                 <td>
                   {editId === s.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />
-                  ) : <span style={{ fontWeight: 600 }}>{s.name}</span>}
+                  ) : <span className="sm-stage-name">{s.name}</span>}
                 </td>
                 <td>
                   <div className="row-actions">
@@ -151,7 +151,7 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
           </tbody>
         </table>
       </div>
-      {!search && <div className="muted" style={{ marginTop: 10 }}>Drag rows to reorder. Order applies to every case form.</div>}
+      {!search && <div className="muted sm-mt-10">Drag rows to reorder. Order applies to every case form.</div>}
     </Modal>
   );
 }

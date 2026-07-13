@@ -376,7 +376,7 @@ export default function CaseStatuses() {
 
       <div className="cmp-stats-row">
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="layers" size={20} /></div>
+          <div className="cmp-statcard-icon cmp-statcard-icon--total"><Icon name="layers" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{items.length}</div>
@@ -384,7 +384,7 @@ export default function CaseStatuses() {
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
+          <div className="cmp-statcard-icon cmp-statcard-icon--active"><Icon name="check-circle" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Active</div>
             <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
@@ -392,7 +392,7 @@ export default function CaseStatuses() {
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
+          <div className="cmp-statcard-icon cmp-statcard-icon--inactive"><Icon name="ban" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Inactive</div>
             <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
@@ -400,7 +400,7 @@ export default function CaseStatuses() {
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={20} /></div>
+          <div className="cmp-statcard-icon cmp-statcard-icon--most-used"><Icon name="bar-chart" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Most Used</div>
             <div className="cmp-statcard-value">—</div>
@@ -408,7 +408,7 @@ export default function CaseStatuses() {
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={20} /></div>
+          <div className="cmp-statcard-icon cmp-statcard-icon--created-month"><Icon name="calendar" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Created This Month</div>
             <div className="cmp-statcard-value">{items.filter(i => i.created_at && new Date(i.created_at) >= monthStart).length}</div>
@@ -416,7 +416,7 @@ export default function CaseStatuses() {
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={20} /></div>
+          <div className="cmp-statcard-icon cmp-statcard-icon--assignments"><Icon name="briefcase" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{items.length}</div>
@@ -601,7 +601,7 @@ export default function CaseStatuses() {
                 <div className="cmp-import-title">Import from CSV</div>
                 <div className="cmp-import-hint">CSV columns: name, short_code, status (optional)</div>
                 <label className="cmp-import-btn">
-                  <input type="file" accept=".csv" style={{ display: 'none' }} onChange={e => setImportFile(e.target.files[0])} />
+                  <input type="file" accept=".csv" className="cmp-file-input" onChange={e => setImportFile(e.target.files[0])} />
                   <span className="btn btn--ghost">{importFile ? importFile.name : 'Choose CSV file'}</span>
                 </label>
                 {importFile && <div className="cmp-import-file">Selected: {importFile.name}</div>}
@@ -651,11 +651,11 @@ export default function CaseStatuses() {
         <table className="cmp-table">
           <thead>
             <tr>
-              <th style={{ width: 32 }}></th>
+              <th className="cmp-th--w32"></th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 180 }}>ACTIONS</th>
+              <th className="cmp-th--w180">ACTIONS</th>
             </tr>
           </thead>
           <tbody>

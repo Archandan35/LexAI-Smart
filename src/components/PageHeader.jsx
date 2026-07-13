@@ -4,7 +4,7 @@ export default function PageHeader({ icon, title, subtitle, actions }) {
   return (
     <div className="page-header">
       {icon && (
-        <div className="stat-card__icon" style={{ margin: 0, width: 48, height: 48 }}>
+        <div className="stat-card__icon page-header__icon">
           <Icon name={icon} size={22} />
         </div>
       )}

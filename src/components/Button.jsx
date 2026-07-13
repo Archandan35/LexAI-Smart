@@ -9,7 +9,7 @@ export default function Button({
       disabled={loading || disabled}
       {...rest}
     >
-      {loading ? <span className="spinner" style={{ width: 15, height: 15 }} /> : icon && <Icon name={icon} size={size === 'sm' ? 15 : 17} />}
+      {loading ? <span className="spinner spinner--sm" /> : icon && <Icon name={icon} size={size === 'sm' ? 15 : 17} />}
       {children}
     </button>
   );

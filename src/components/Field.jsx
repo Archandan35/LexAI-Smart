@@ -4,7 +4,7 @@ export function Field({ label, children, hint }) {
     <div className="field">
       {label && <label className="field__label">{label}</label>}
       {children}
-      {hint && <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 5 }}>{hint}</div>}
+      {hint && <div className="field__hint">{hint}</div>}
     </div>
   );
 }

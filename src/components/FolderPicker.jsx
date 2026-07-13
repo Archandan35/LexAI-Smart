@@ -20,7 +20,7 @@ export default function FolderPicker({ folders = [], value, onChange, onCreateFo
   return (
     <Field label={label}>
       {!creating ? (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="folder-picker__row">
           <Select value={value || ''} onChange={(e) => onChange?.(e.target.value)}>
             <option value="">Select folder…</option>
             {folders.map((f) => <option key={f.id || f.name} value={f.id || f.name}>{f.name}</option>)}
@@ -28,7 +28,7 @@ export default function FolderPicker({ folders = [], value, onChange, onCreateFo
           <Button variant="ghost" icon="folderPlus" onClick={() => setCreating(true)}>New</Button>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="folder-picker__row">
           <Input autoFocus value={name} placeholder="New folder name…" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && create()} />
           <Button variant="primary" icon="check" onClick={create}>Create</Button>
           <Button variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>

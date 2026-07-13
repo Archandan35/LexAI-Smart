@@ -44,23 +44,23 @@ export default function DmcMaintenance() {
       <PageHeader icon="wrench" title="Maintenance" subtitle="Optimize, repair, and clean up your database." />
 
       <div className="dmc-grid">
-        <div className="dmc-card" onClick={() => run('validate')} style={{ cursor: 'pointer' }}>
+        <div className="dmc-card" onClick={() => run('validate')} className="dmc-card-clickable">
           <div className="dmc-card__header">
             <span className="dmc-card__label">Health Check</span>
             {results.validate && <span className={`dmc-badge dmc-badge--${results.validate.ok ? 'green' : 'red'}`}>{results.validate.ok ? 'Pass' : 'Fail'}</span>}
           </div>
-          <div className="dmc-card__value" style={{ fontSize: 18 }}>{running === 'validate' ? 'Running…' : 'Run Health Check'}</div>
+          <div className="dmc-card__value" className="dmc-card-value-lg">{running === 'validate' ? 'Running…' : 'Run Health Check'}</div>
           <div className="dmc-card__sub">Validate schema integrity and connection status</div>
           {results.validate && <div style={{ fontSize: 12, marginTop: 6, color: results.validate.ok ? 'var(--green)' : 'var(--red)' }}>{results.validate.message}</div>}
         </div>
 
         {TASKS.map((t) => (
-          <div key={t.id} className="dmc-card" onClick={() => run(t.id)} style={{ cursor: 'pointer' }}>
+          <div key={t.id} className="dmc-card" onClick={() => run(t.id)} className="dmc-card-clickable">
             <div className="dmc-card__header">
               <span className="dmc-card__label"><Icon name={t.icon} size={14} /> {t.label}</span>
               {results[t.id] && <span className={`dmc-badge dmc-badge--${results[t.id].ok ? 'green' : 'red'}`}>{results[t.id].ok ? 'Done' : 'Error'}</span>}
             </div>
-            <div className="dmc-card__value" style={{ fontSize: 18 }}>{running === t.id ? 'Running…' : 'Run Task'}</div>
+            <div className="dmc-card__value" className="dmc-card-value-lg">{running === t.id ? 'Running…' : 'Run Task'}</div>
             <div className="dmc-card__sub">{t.desc}</div>
             {results[t.id] && <div style={{ fontSize: 12, marginTop: 6, color: results[t.id].ok ? 'var(--green)' : 'var(--red)' }}>{results[t.id].message}</div>}
           </div>
@@ -69,7 +69,7 @@ export default function DmcMaintenance() {
 
       <div className="dmc-section">
         <div className="dmc-section__title"><Icon name="info" size={17} /> Maintenance Log</div>
-        <div className="dmc-empty" style={{ padding: 24 }}>
+        <div className="dmc-empty dmc-empty-padded">
           <div className="dmc-empty__hint">Completed tasks appear above with status indicators. No persistent log stored.</div>
         </div>
       </div>

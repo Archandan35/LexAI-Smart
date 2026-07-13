@@ -44,7 +44,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
             <div className="sosb-icon-badge sosb-icon-badge--blue"><Icon name="doc" size={16} strokeWidth={1.8} /></div>
             <h3>2. PETITION / APPLICATION DETAILS</h3>
           </div>
-          <div className="sosb-field" style={{ marginBottom: 14 }}>
+          <div className="sosb-field sosb-mb-14">
             <label className="sosb-lbl">Filed By <span className="sosb-req">*</span></label>
             <div className="sosb-dropdown-row">
               <select className="sosb-select sosb-select--grow" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
@@ -56,7 +56,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
               </button>
             </div>
           </div>
-          <div className="sosb-field" style={{ marginBottom: 8 }}>
+          <div className="sosb-field sosb-mb-8">
             <div className="sosb-field-title-row">
               <label className="sosb-lbl">Petition Name / Title <span className="sosb-req">*</span></label>
               <div className="sosb-clear-action" onClick={(e) => { e.stopPropagation(); set('petitionName', ''); }}>
@@ -64,8 +64,8 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
               </div>
             </div>
           </div>
-          <div className="sosb-field" style={{ marginBottom: 14 }}>
-            <textarea className="sosb-textarea" style={{ minHeight: 60 }} value={form.petitionDetails} onChange={(e) => set('petitionDetails', e.target.value)} placeholder="Enter petition details..." />
+          <div className="sosb-field sosb-mb-14">
+            <textarea className="sosb-textarea sosb-textarea--minh60" value={form.petitionDetails} onChange={(e) => set('petitionDetails', e.target.value)} placeholder="Enter petition details..." />
             <span className="sosb-charcount">{charCount(form.petitionDetails)}</span>
           </div>
           <div className="sosb-row2">
@@ -86,7 +86,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
               </div>
             </div>
           </div>
-          <div className="sosb-field" style={{ marginBottom: 14 }}>
+          <div className="sosb-field sosb-mb-14">
             <label className="sosb-lbl">Description / Details (Optional)</label>
             <textarea className="sosb-textarea" value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Enter description or details here..." />
             <span className="sosb-charcount">{charCount(form.description)}</span>
@@ -103,7 +103,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
             <h3>3. OBJECTION</h3>
           </div>
           <label className="sosb-lbl">Objection Status <span className="sosb-req">*</span></label>
-          <div className="sosb-dropdown-row" style={{ marginBottom: 14 }}>
+          <div className="sosb-dropdown-row sosb-mb-14">
             <select className="sosb-select sosb-select--grow" value={form.objectionStatus} onChange={(e) => set('objectionStatus', e.target.value)}>
               {OBJECTION_STATUSES.map((o) => (
                 <option key={o} value={o}>{o}</option>
@@ -128,7 +128,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
             <div className="sosb-icon-badge sosb-icon-badge--orange"><Icon name="compass" size={16} strokeWidth={1.8} /></div>
             <h3>4. TODAY'S MATTER / HEARING</h3>
           </div>
-          <textarea className="sosb-textarea" style={{ minHeight: 54 }} value={form.todaysMatter} onChange={(e) => set('todaysMatter', e.target.value)} placeholder="Describe today's hearing matter..." />
+          <textarea className="sosb-textarea sosb-textarea--minh54" value={form.todaysMatter} onChange={(e) => set('todaysMatter', e.target.value)} placeholder="Describe today's hearing matter..." />
           <span className="sosb-charcount sosb-charcount--static">{charCount(form.todaysMatter)}</span>
         </>
       )}
@@ -138,7 +138,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
             <div className="sosb-icon-badge sosb-icon-badge--teal"><Icon name="building" size={16} strokeWidth={1.8} /></div>
             <h3>5. COURT OBSERVATION <span className="sosb-opt">(Optional)</span></h3>
           </div>
-          <textarea className="sosb-textarea" style={{ minHeight: 44 }} value={form.courtObservation} onChange={(e) => set('courtObservation', e.target.value)} placeholder="Enter court observation if any..." />
+          <textarea className="sosb-textarea sosb-textarea--minh44" value={form.courtObservation} onChange={(e) => set('courtObservation', e.target.value)} placeholder="Enter court observation if any..." />
           <span className="sosb-charcount sosb-charcount--static">{charCount(form.courtObservation)}</span>
         </>
       )}
@@ -188,7 +188,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
             {form.putUpFor || 'Put up for order and any requisite notice to the respondent party of petition dated...'}
             <span className="sosb-charcount">{charCount(form.putUpFor)}</span>
           </div>
-          <textarea className="sosb-textarea" style={{ marginTop: 12, minHeight: 44 }} value={form.putUpFor} onChange={(e) => set('putUpFor', e.target.value)} placeholder="Enter final order line..." />
+          <textarea className="sosb-textarea sosb-textarea--mt12-minh44" value={form.putUpFor} onChange={(e) => set('putUpFor', e.target.value)} placeholder="Enter final order line..." />
         </>
       )}
     </div>
@@ -376,9 +376,9 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
           <div className="sosb-toolbar">
             <div className="sosb-tb-select">Paragraph <Icon name="chevronDown" size={10} strokeWidth={2} /></div>
             <div className="sosb-tb-divider"></div>
-            <div className="sosb-tb-btn"><b style={{ fontSize: 13 }}>B</b></div>
-            <div className="sosb-tb-btn"><i style={{ fontSize: 13 }}>I</i></div>
-            <div className="sosb-tb-btn"><u style={{ fontSize: 13 }}>U</u></div>
+            <div className="sosb-tb-btn"><b>B</b></div>
+            <div className="sosb-tb-btn"><i>I</i></div>
+            <div className="sosb-tb-btn"><u>U</u></div>
             <div className="sosb-tb-divider"></div>
             <div className="sosb-tb-btn sosb-tb-btn--active"><Icon name="menu" size={15} strokeWidth={2} /></div>
             <div className="sosb-tb-divider"></div>

@@ -25,15 +25,15 @@ export default function BackupHistoryTable({ backups, actor, can, onChanged, onR
   const columns = [
     { key: 'name', label: 'Backup Name', sortable: true, render: (b) => (
       <div>
-        <div style={{ fontWeight: 620, fontFamily: 'monospace', fontSize: 12.5 }}>{b.name}</div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>{b.type} · schema {b.schemaVersion}</div>
+        <div className="backup-name">{b.name}</div>
+        <div className="backup-meta">{b.type} · schema {b.schemaVersion}</div>
       </div>
     ) },
     { key: 'createdAt', label: 'Date', sortable: true, width: 110, render: (b) => formatDate(b.createdAt) },
     { key: 'time', label: 'Time', width: 100, render: (b) => timeOnly(b.createdAt) },
     { key: 'size', label: 'Size', sortable: true, width: 90, render: (b) => bytes(b.size) },
     { key: 'status', label: 'Status', width: 100, render: (b) => <Badge tone={b.status === 'Completed' ? 'green' : 'amber'} dot>{b.status}</Badge> },
-    { key: 'protected', label: 'Protected', width: 90, render: (b) => (b.protected ? <Badge tone="navy" dot>Yes</Badge> : <span style={{ color: 'var(--text-faint)' }}>No</span>) },
+    { key: 'protected', label: 'Protected', width: 90, render: (b) => (b.protected ? <Badge tone="navy" dot>Yes</Badge> : <span className="backup-faint">No</span>) },
     { key: 'actions', label: 'Actions', width: 200, render: (b) => (
       <div className="row-actions">
         <PermissionGate perm="backup.restore">

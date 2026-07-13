@@ -353,10 +353,10 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
 
   if (showMissingWarning && rootFolders.length === 0) {
     return (
-      <div className="empty" style={{ padding: 60, textAlign: 'center' }}>
-        <div style={{ marginBottom: 16 }}><Icon name="folder" size={48} style={{ color: 'var(--text-faint)' }} /></div>
-        <h3 style={{ margin: '0 0 8px', color: 'var(--navy-900)' }}>No document folder has been created for this case.</h3>
-        <p style={{ color: 'var(--text-soft)', margin: '0 0 24px', fontSize: 14, lineHeight: 1.5 }}>
+      <div className="empty cdoc__empty--lg">
+        <div className="cdoc__empty-icon-row"><Icon name="folder" size={48} className="cdoc__empty-icon" /></div>
+        <h3 className="cdoc__empty-heading">No document folder has been created for this case.</h3>
+        <p className="cdoc__empty-desc">
           Create the case document folder and default subfolders to start managing documents.
         </p>
         <Button icon="plus" loading={creatingStructure} onClick={handleCreateStructure}>Create Folder Structure</Button>
@@ -402,20 +402,20 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
       <aside className="cdoc__sidebar">
         <div className="cdoc__sidebar-head">
           <span className="cdoc__sidebar-title">FOLDERS</span>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          <div className="cdoc__sidebar-head-actions">
             <button className="cdoc__sidebar-btn" title="Expand all" onClick={() => { const all = {}; const walk = (list) => { list.forEach((f) => { all[f.id] = true; walk(getChildren(f.id)); }); }; walk(rootFolders); setExpanded(all); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg></button>
             <button className="cdoc__sidebar-btn" title="Collapse all" onClick={() => setExpanded({})}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15" /></svg></button>
           </div>
         </div>
 
         <div className="cdoc__sidebar-search">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-faint)', flexShrink: 0 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-          <input type="text" placeholder="Search folders…" value={folderSearch} onChange={(e) => setFolderSearch(e.target.value)} style={{ border: 'none', background: 'none', outline: 'none', flex: 1, fontSize: 12 }} />
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cdoc__sidebar-search-icon"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <input type="text" placeholder="Search folders…" value={folderSearch} onChange={(e) => setFolderSearch(e.target.value)} className="cdoc__sidebar-search-input" />
         </div>
 
         <div className="cdoc__tree">
           {filteredRootFolders.length === 0 ? (
-            <div className="empty" style={{ padding: 16 }}><p className="muted" style={{ fontSize: 12 }}>No folders</p></div>
+            <div className="empty cdoc__tree-empty"><p className="muted cdoc__tree-empty-text">No folders</p></div>
           ) : (function renderTree(list, depth = 0) {
             return list.map((f, i) => {
               const isLast = i === list.length - 1;
@@ -440,12 +440,12 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                       </span>
                     )}
                     {children.length === 0 && <span className="cdoc__tree-spacer" />}
-                    {selectMode && <input type="checkbox" checked={folderSelected.has(f.id)} onChange={() => toggleFolderSelect(f.id)} onClick={(e) => e.stopPropagation()} style={{ marginRight: 4 }} />}
+                    {selectMode && <input type="checkbox" checked={folderSelected.has(f.id)} onChange={() => toggleFolderSelect(f.id)} onClick={(e) => e.stopPropagation()} className="cdoc__tree-checkbox" />}
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="cdoc__tree-icon">
                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                     </svg>
                     {editingId === f.id ? (
-                      <input className="cdoc__rename-input" value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }} onBlur={saveRename} autoFocus onClick={(e) => e.stopPropagation()} style={{ flex: 1, fontSize: 12, padding: '1px 4px' }} />
+                      <input className="cdoc__rename-input" value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }} onBlur={saveRename} autoFocus onClick={(e) => e.stopPropagation()} />
                     ) : (
                       <span className="cdoc__tree-name" style={{ fontWeight: activeFolder === f.id ? 700 : 450, opacity: isCut ? 0.4 : 1 }}>{f.name}</span>
                     )}
@@ -471,7 +471,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
 
         {clipboard && (
           <div className="cdoc__clipboard-bar">
-            <span style={{ fontSize: 12, color: 'var(--text-soft)' }}>
+            <span className="cdoc__clipboard-text">
               {clipboard.type === 'cut' ? 'Move:' : 'Copy:'} {clipboard.folder.name}
             </span>
             <button className="cdoc__clipboard-close" onClick={cancelClipboard}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
@@ -479,30 +479,30 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
         )}
 
         <div className="cdoc__sidebar-actions">
-          <button className="cdoc__sidebar-btn" onClick={() => { setCreating(!creating); setBulkAdding(false); }} style={{ width: '100%', justifyContent: 'flex-start', gap: 6, padding: '6px 10px' }}>
+          <button className="cdoc__sidebar-btn cdoc__sidebar-btn--block" onClick={() => { setCreating(!creating); setBulkAdding(false); }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             Add Folder
           </button>
-          <button className="cdoc__sidebar-btn" onClick={() => setSelectMode(!selectMode)} style={{ width: '100%', justifyContent: 'flex-start', gap: 6, padding: '6px 10px' }}>
+          <button className="cdoc__sidebar-btn cdoc__sidebar-btn--block" onClick={() => setSelectMode(!selectMode)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
             {selectMode ? 'Done' : 'Select'}
           </button>
         </div>
 
         {creating && (
-          <div className="cdoc__create-panel" style={{ padding: '8px 10px', borderTop: '1px solid var(--border)' }}>
-            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Folder name…" onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); }} style={{ fontSize: 12, marginBottom: 6 }} autoFocus />
-            <div style={{ display: 'flex', gap: 4 }}>
+          <div className="cdoc__create-panel">
+            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Folder name…" onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); }} className="cdoc__create-input" autoFocus />
+            <div className="cdoc__create-actions">
               <Button size="sm" onClick={createFolder}>Create</Button>
               <Button size="sm" variant="ghost" onClick={() => { setCreating(false); setNewName(''); }}>Cancel</Button>
             </div>
-            <div style={{ marginTop: 6 }}>
-              <span className="cdoc__bulk-link" onClick={() => setBulkAdding(true)} style={{ fontSize: 11, color: 'var(--brand)', cursor: 'pointer' }}>Add multiple folders</span>
+            <div className="cdoc__create-bulk-link">
+              <span className="cdoc__bulk-link" onClick={() => setBulkAdding(true)}>Add multiple folders</span>
             </div>
             {bulkAdding && (
-              <div style={{ marginTop: 6 }}>
-                <textarea className="textarea" rows={3} value={bulkNames} onChange={(e) => setBulkNames(e.target.value)} placeholder="One folder per line" style={{ fontSize: 12, marginBottom: 4 }} />
-                <div style={{ display: 'flex', gap: 4 }}>
+              <div className="cdoc__bulk-add-area">
+                <textarea className="textarea cdoc__bulk-textarea" rows={3} value={bulkNames} onChange={(e) => setBulkNames(e.target.value)} placeholder="One folder per line" />
+                <div className="cdoc__create-actions">
                   <Button size="sm" onClick={bulkAddFolders}>Create All</Button>
                   <Button size="sm" variant="ghost" onClick={() => { setBulkAdding(false); setBulkNames(''); }}>Cancel</Button>
                 </div>
@@ -512,9 +512,9 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
         )}
 
         {selectMode && folderSelected.size > 0 && (
-          <div className="cdoc__bulk-bar" style={{ padding: '8px 10px', borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 12 }}>{folderSelected.size} selected</span>
-            <button className="cdoc__sidebar-btn" onClick={bulkDeleteFolders} style={{ color: 'var(--red)' }}>Delete selected</button>
+          <div className="cdoc__bulk-bar">
+            <span className="cdoc__bulk-count">{folderSelected.size} selected</span>
+            <button className="cdoc__sidebar-btn cdoc__sidebar-btn--danger" onClick={bulkDeleteFolders}>Delete selected</button>
           </div>
         )}
       </aside>
@@ -539,8 +539,8 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
             {isFileView && (
               <>
                 <div className="cdoc__search-wrap">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-faint)', flexShrink: 0 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                  <input type="text" placeholder="Search documents…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ border: 'none', background: 'none', outline: 'none', flex: 1, fontSize: 13 }} />
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cdoc__search-icon"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                  <input type="text" placeholder="Search documents…" value={search} onChange={(e) => setSearch(e.target.value)} className="cdoc__search-input" />
                 </div>
                 <div className="cdoc__filter-wrap">
                   <button className={`cdoc__toolbtn${fileExtFilter.length > 0 ? ' cdoc__toolbtn--active' : ''}`} onClick={() => setShowFilter(!showFilter)}>
@@ -593,7 +593,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
 
         {/* folder grid when viewing parent */}
         {(!activeFolder || getChildren(activeFolder).length > 0) && (
-          <div className="docmgr__folder-grid" style={{ marginTop: 12 }}>
+          <div className="docmgr__folder-grid">
             {(activeFolder === null ? rootFolders : getChildren(activeFolder)).map((f) => {
               const childCount = getChildren(f.id).length;
               const fileCount = docCounts[f.name] || 0;
@@ -618,27 +618,27 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
         {/* document view */}
         {isFileView && (
           sorted.length === 0 ? (
-            <div className="empty" style={{ marginTop: 20, textAlign: 'center', padding: 40 }}>
-              <div className="empty__icon" style={{ marginBottom: 8 }}><Icon name="folder" size={24} /></div>
-              <p className="muted" style={{ margin: 0 }}>No documents in this folder.</p>
-              <div style={{ marginTop: 12 }}>
+            <div className="empty cdoc__empty-docs">
+              <div className="empty__icon cdoc__empty-docs-icon"><Icon name="folder" size={24} /></div>
+              <p className="muted cdoc__empty-docs-text">No documents in this folder.</p>
+              <div className="cdoc__empty-docs-actions">
                 <button className="btn btn--ghost btn--sm" onClick={() => fileInputRef.current?.click()}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cdoc__upload-btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                   Upload Document
                 </button>
               </div>
             </div>
           ) : viewMode === 'list' ? (
-            <div className="cdoc__table-wrap" style={{ marginTop: 12 }}>
+            <div className="cdoc__table-wrap">
               <table className="cdoc__table">
                 <thead>
                   <tr>
-                    <th style={{ width: 30 }}><input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} /></th>
+                    <th className="cdoc__th-checkbox"><input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} /></th>
                     <th className="cdoc__th cdoc__th--name">Name</th>
                     <th className="cdoc__th">Type</th>
                     <th className="cdoc__th">Size</th>
                     <th className="cdoc__th">Uploaded On</th>
-                    <th className="cdoc__th" style={{ textAlign: 'right' }}>Actions</th>
+                    <th className="cdoc__th cdoc__th--right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -690,19 +690,19 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
               )}
             </div>
           ) : (
-            <div className="docgrid" style={{ marginTop: 12 }}>
+            <div className="docgrid">
               {paginated.map((d) => {
                 const name = d.name || d.title || 'Untitled';
                 return (
-                  <div key={d.id} className="doccard" style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 6, left: 6 }}><input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} /></div>
+                  <div key={d.id} className="doccard">
+                    <div className="cdoc__doccard-checkbox"><input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} /></div>
                     <div className="doccard__icon"><FileTypeIcon name={name} /></div>
                     <div className="doccard__name" title={name}>{name}</div>
                     <div className="doccard__meta">
                       <ExtBadge name={name} />
                       <span>{bytes(d.size)}</span>
                     </div>
-                    <div className="doccard__actions" style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                    <div className="doccard__actions">
                       <button className="cdoc__doc-action" title="Preview" onClick={() => setPreview(d)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg></button>
                       <button className="cdoc__doc-action" title="Download" onClick={async () => { const url = await storageService.getUrl(d.ref); if (url) window.open(url, '_blank'); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg></button>
                       <button className="cdoc__doc-action cdoc__doc-action--danger" title="Delete" onClick={() => deleteDocument(d)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>
@@ -725,7 +725,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
             </header>
             <div className="modal__body">
               {preview.text ? (
-                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'serif', fontSize: 14, lineHeight: 1.7, margin: 0 }}>{preview.text}</pre>
+                <pre className="cdoc__preview-text">{preview.text}</pre>
               ) : (
                 <div className="empty"><p className="muted">No preview available.</p></div>
               )}
@@ -743,12 +743,12 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
               <button className="modal__close" onClick={() => setFolderProps(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
             </header>
             <div className="modal__body">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div><strong style={{ color: 'var(--text-soft)', fontSize: 12, display: 'block', marginBottom: 2 }}>Name</strong><span style={{ fontSize: 14 }}>{folderProps.name}</span></div>
-                <div><strong style={{ color: 'var(--text-soft)', fontSize: 12, display: 'block', marginBottom: 2 }}>Kind</strong><span style={{ fontSize: 14 }}>{folderProps.kind || 'document'}</span></div>
-                <div><strong style={{ color: 'var(--text-soft)', fontSize: 12, display: 'block', marginBottom: 2 }}>Sub-folders</strong><span style={{ fontSize: 14 }}>{getChildren(folderProps.id).length}</span></div>
-                <div><strong style={{ color: 'var(--text-soft)', fontSize: 12, display: 'block', marginBottom: 2 }}>Documents</strong><span style={{ fontSize: 14 }}>{docCounts[folderProps.name] || 0}</span></div>
-                <div><strong style={{ color: 'var(--text-soft)', fontSize: 12, display: 'block', marginBottom: 2 }}>Created</strong><span style={{ fontSize: 14 }}>{formatDate(folderProps.created_at)}</span></div>
+              <div className="cdoc__props-grid">
+                <div><strong className="cdoc__props-label">Name</strong><span className="cdoc__props-value">{folderProps.name}</span></div>
+                <div><strong className="cdoc__props-label">Kind</strong><span className="cdoc__props-value">{folderProps.kind || 'document'}</span></div>
+                <div><strong className="cdoc__props-label">Sub-folders</strong><span className="cdoc__props-value">{getChildren(folderProps.id).length}</span></div>
+                <div><strong className="cdoc__props-label">Documents</strong><span className="cdoc__props-value">{docCounts[folderProps.name] || 0}</span></div>
+                <div><strong className="cdoc__props-label">Created</strong><span className="cdoc__props-value">{formatDate(folderProps.created_at)}</span></div>
               </div>
             </div>
           </div>

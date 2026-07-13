@@ -40,7 +40,7 @@ export default function DmcAuditActivity() {
       <div className="dmc-toolbar">
         <div className="dmc-toolbar__left">
           {tabs.map((t) => (
-            <button key={t.key} className={`dmc-tab${filter === t.key ? ' dmc-tab--active' : ''}`} onClick={() => setFilter(t.key)} style={{ padding: '8px 14px', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', fontSize: 13 }}>{t.label}</button>
+            <button key={t.key} className={`dmc-tab dmc-tab-btn${filter === t.key ? ' dmc-tab--active' : ''}`} onClick={() => setFilter(t.key)}>{t.label}</button>
           ))}
         </div>
         <div className="dmc-toolbar__right">
@@ -54,7 +54,7 @@ export default function DmcAuditActivity() {
         </thead>
         <tbody>
           {filtered.length === 0 ? (
-            <tr><td colSpan={5} style={{ textAlign: 'center', padding: 32, color: 'var(--text-faint)' }}>No audit events found.</td></tr>
+            <tr><td colSpan={5} className="dmc-empty-cell">No audit events found.</td></tr>
           ) : (
             filtered.slice(0, 100).map((l, i) => {
               const actionColor = l.action?.startsWith('backup') ? 'green' : l.action?.startsWith('restore') ? 'navy' : l.action?.startsWith('delete') ? 'red' : l.action?.startsWith('import') ? 'amber' : 'navy';
@@ -64,7 +64,7 @@ export default function DmcAuditActivity() {
                   <td>{l.user || l.userName || 'system'}</td>
                   <td>{l.module || '—'}</td>
                   <td>{formatDate(l.createdAt || l.created_at || l.timestamp)}</td>
-                  <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.details || l.description || '—'}</td>
+                  <td className="dmc-cell-truncate">{l.details || l.description || '—'}</td>
                 </tr>
               );
             })
@@ -72,7 +72,7 @@ export default function DmcAuditActivity() {
         </tbody>
       </table>
 
-      <div style={{ marginTop: 12, fontSize: 12, color: 'var(--text-faint)', textAlign: 'right' }}>
+      <div className="dmc-table-footer">
         Showing {Math.min(filtered.length, 100)} of {filtered.length} event(s)
       </div>
     </>

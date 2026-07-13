@@ -141,7 +141,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
               <div>
                 <div className="em-field-label"><span>Short Code</span><span className="required-star">*</span></div>
                 <div className="em-input-icon">
-                  <span className="em-input-icon__ico" style={{ fontWeight: 700, fontSize: 12, color: 'var(--navy-600)' }}>Aa</span>
+                  <span className="em-input-icon__ico em-input-icon__ico--code">Aa</span>
                   <Input className="input" value={newCode} placeholder="e.g., CIV" onChange={(e) => setNewCode(e.target.value.toUpperCase().slice(0, 10))} onKeyDown={(e) => e.key === 'Enter' && add()} />
                 </div>
                 <div className="em-field-hint">Short code or abbreviation (max 10 characters)</div>
@@ -162,19 +162,18 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
             )}
             {hasCode && (
               <div>
-                <div className="em-field-label"><span>Description</span> <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>(Optional)</span></div>
+                <div className="em-field-label"><span>Description</span> <span className="em-field-label__optional">(Optional)</span></div>
                 <div className="em-input-icon">
-                  <span className="em-input-icon__ico" style={{ top: 14, transform: 'none' }}><Icon name="file" size={15} /></span>
+                  <span className="em-input-icon__ico em-input-icon__ico--textarea"><Icon name="file" size={15} /></span>
                   <textarea
-                    className="textarea"
-                    style={{ paddingLeft: 38, minHeight: 90, resize: 'vertical' }}
+                    className="textarea em-textarea--desc"
                     value={newDesc}
                     placeholder={`Enter a brief description about this ${title.toLowerCase().replace(/s$/, '')}...`}
                     maxLength={250}
                     onChange={(e) => setNewDesc(e.target.value)}
                   />
                 </div>
-                <div className="em-field-hint" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="em-field-hint em-field-hint--row">
                   <span>Maximum 250 characters</span>
                   <span>{newDesc.length} / 250</span>
                 </div>
@@ -236,7 +235,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
 
       case 'single-delete': return (
         <>
-          <div style={{ marginBottom: 20 }}>
+          <div className="em-delete-section">
             <div className="em-field-label"><span>Select {title.replace(/s$/, '')} to Delete</span><span className="required-star">*</span></div>
             <Select className="select" value={delId} onChange={(e) => setDelId(e.target.value)}>
               <option value="">— choose one —</option>
@@ -245,7 +244,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
               ))}
             </Select>
             {delId && (
-              <div style={{ marginTop: 14, padding: '12px 16px', background: 'var(--red-soft)', border: '1px solid #f5c6c4', borderRadius: 10, fontSize: 13, color: 'var(--red)' }}>
+              <div className="em-warning-box">
                 <strong>Warning:</strong> This action cannot be undone.
               </div>
             )}
@@ -260,7 +259,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
 
       case 'bulk-add': return (
         <>
-          <div style={{ marginBottom: 6 }}>
+          <div className="em-bulk-section">
             <div className="em-field-label">
               {hasCode ? `Paste entries — one per line as Name:CODE` : `Paste names — one per line`}
             </div>
@@ -281,9 +280,9 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
 
       case 'bulk-edit': return (
         <>
-          <div style={{ marginBottom: 6 }}>
+          <div className="em-bulk-section">
             <div className="em-field-label">
-              Format: <code style={{ fontSize: 12, background: 'var(--bg)', padding: '1px 6px', borderRadius: 5 }}>OldName|NewName{hasCode ? ':NEWCODE' : ''}</code> — one per line
+              Format: <code className="em-code-inline">OldName|NewName{hasCode ? ':NEWCODE' : ''}</code> — one per line
             </div>
             <Textarea
               value={bulkEditText}
@@ -300,7 +299,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
 
       case 'bulk-delete': return (
         <>
-          <div style={{ marginBottom: 6 }}>
+          <div className="em-bulk-section">
             <div className="em-field-label">Paste names{hasCode ? ' or short codes' : ''} to delete — one per line</div>
             <Textarea
               value={bulkDelText}
@@ -308,7 +307,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
               placeholder={hasCode ? `Civil Suit\nCIV\nCriminal Case` : `Court Name 1\nCourt Name 2`}
               rows={8}
             />
-            <div style={{ marginTop: 10, padding: '12px 16px', background: 'var(--red-soft)', border: '1px solid #f5c6c4', borderRadius: 10, fontSize: 13, color: 'var(--red)' }}>
+            <div className="em-warning-box">
               <strong>Warning:</strong> All matched items will be permanently deleted.
             </div>
           </div>
@@ -320,20 +319,20 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
 
       case 'import': return (
         <>
-          <div style={{ textAlign: 'center', padding: '32px 0' }}>
-            <div style={{ width: 56, height: 56, background: 'var(--brand-soft)', borderRadius: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, color: 'var(--navy-600)' }}>
+          <div className="em-import-section">
+            <div className="em-import-icon-box">
               <Icon name="upload" size={24} />
             </div>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Import from CSV</div>
-            <div style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 20 }}>
+            <div className="em-import-title">Import from CSV</div>
+            <div className="em-import-subtitle">
               {hasCode ? 'CSV columns: name, short_code, status (optional)' : 'CSV columns: name'}
             </div>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input type="file" accept=".csv" style={{ display: 'none' }} onChange={(e) => setImportFile(e.target.files[0])} />
+            <label className="em-import-label">
+              <input type="file" accept=".csv" className="em-import-input-hidden" onChange={(e) => setImportFile(e.target.files[0])} />
               <span className="btn btn--ghost">{importFile ? importFile.name : 'Choose CSV file'}</span>
             </label>
             {importFile && (
-              <div style={{ marginTop: 18 }}>
+              <div className="em-import-button-section">
                 <Button icon="upload" onClick={() => toast.push('CSV import coming soon.', 'info')}>Import</Button>
               </div>
             )}

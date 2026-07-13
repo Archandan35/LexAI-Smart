@@ -9,7 +9,7 @@ export default function Badge({ children, tone, dot }) {
   const cls = tone || TONE[children] || 'grey';
   return (
     <span className={`badge badge--${cls}`}>
-      {dot && <span className="dot" style={{ background: 'currentColor' }} />}
+      {dot && <span className="dot" />}
       {children}
     </span>
   );

@@ -32,9 +32,9 @@ export default function RoleForm({ initial, onSubmit, onCancel, busy }) {
         </Field>
       </div>
       <Field label="Description">
-        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} style={{ minHeight: 80 }} placeholder="What this role is for…" />
+        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="role-form__textarea" placeholder="What this role is for…" />
       </Field>
-      <div className="modal__foot" style={{ padding: '8px 0 0', borderTop: 'none' }}>
+      <div className="modal__foot role-form__footer">
         <Button variant="ghost" onClick={onCancel} disabled={busy}>Cancel</Button>
         {!isEdit && <Button variant="ghost" icon="plus" onClick={() => submit(true)} loading={busy}>Save &amp; Continue</Button>}
         <Button variant="primary" icon="save" onClick={() => submit(false)} loading={busy}>{isEdit ? 'Save changes' : 'Save role'}</Button>

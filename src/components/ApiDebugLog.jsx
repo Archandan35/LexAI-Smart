@@ -41,37 +41,31 @@ export default function ApiDebugLog({ entries, onClear }) {
   const errorCount = entries.filter((e) => e.type === 'error').length;
 
   return (
-    <div style={{
-      marginTop: 16, border: '1px solid var(--border)', borderRadius: 8,
-      background: '#0f172a', color: '#e2e8f0', fontFamily: 'monospace', fontSize: 12,
-    }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
-        borderBottom: '1px solid #334155', cursor: 'pointer', userSelect: 'none',
-      }} onClick={() => setOpen((o) => !o)}>
+    <div className="api-debug-log">
+      <div className="api-debug-log__header" onClick={() => setOpen((o) => !o)}>
         <Icon name={open ? 'chevron-down' : 'chevron-right'} size={12} />
-        <span style={{ fontWeight: 600 }}>API Debug Log</span>
-        <span style={{ color: '#64748b' }}>({entries.length})</span>
+        <span className="api-debug-log__title">API Debug Log</span>
+        <span className="api-debug-log__count">({entries.length})</span>
         {errorCount > 0 && (
-          <span style={{ color: '#ef4444', fontWeight: 600 }}>⚠ {errorCount} error{errorCount > 1 ? 's' : ''}</span>
+          <span className="api-debug-log__error">⚠ {errorCount} error{errorCount > 1 ? 's' : ''}</span>
         )}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+        <div className="api-debug-log__spacer">
           {onClear && (
             <button
               onClick={(e) => { e.stopPropagation(); onClear(); }}
-              style={{ background: '#334155', border: 'none', color: '#e2e8f0', cursor: 'pointer', fontSize: 11, padding: '2px 8px', borderRadius: 4 }}
+              className="api-debug-log__clear-btn"
             >Clear</button>
           )}
         </div>
       </div>
       {open && (
-        <div style={{ maxHeight: 400, overflow: 'auto', padding: 8 }}>
+        <div className="api-debug-log__body">
           {entries.length === 0 ? (
-            <div style={{ color: '#64748b', padding: 8 }}>No API calls recorded yet.</div>
+            <div className="api-debug-log__empty">No API calls recorded yet.</div>
           ) : entries.map((e) => (
-            <div key={e.id} style={{ marginBottom: 4, padding: '4px 6px', borderRadius: 4, background: '#1e293b' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: '#475569', fontSize: 10, whiteSpace: 'nowrap' }}>
+            <div key={e.id} className="api-debug-log__entry">
+              <div className="api-debug-log__entry-row">
+                <span className="api-debug-log__time">
                   {DateEngine.formatTime(e.ts, '24h')}
                 </span>
                 <span style={{
@@ -84,7 +78,7 @@ export default function ApiDebugLog({ entries, onClear }) {
                 <span style={{ wordBreak: 'break-all', color: e.type === 'error' ? '#fca5a5' : '#e2e8f0' }}>{e.msg}</span>
               </div>
               {e.detail && (
-                <pre style={{ margin: '4px 0 0 0', fontSize: 10, color: '#94a3b8', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                <pre className="api-debug-log__detail">
                   {typeof e.detail === 'string' ? e.detail : JSON.stringify(e.detail, null, 2)}
                 </pre>
               )}

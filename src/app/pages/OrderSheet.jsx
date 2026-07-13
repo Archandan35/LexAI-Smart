@@ -101,7 +101,7 @@ export default function OrderSheet() {
     { key: 'category', label: 'Category', sortable: true },
     { key: 'description', label: 'Description' },
     { key: 'actions', label: '', width: 120, render: (row) => (
-      <div style={{ display: 'flex', gap: 2 }}>
+      <div className="order-sheet__tpl-actions">
         <button className="order-sheet__tpl-action" title="View" onClick={(e) => { e.stopPropagation(); openTplView(row); }}><Icon name="eye" size={13} /></button>
         <button className="order-sheet__tpl-action" title="Edit" onClick={(e) => { e.stopPropagation(); openTplEdit(row); }}><Icon name="edit" size={13} /></button>
         <button className="order-sheet__tpl-action" title="Duplicate" onClick={(e) => { e.stopPropagation(); duplicateTpl(row); }}><Icon name="copy" size={13} /></button>

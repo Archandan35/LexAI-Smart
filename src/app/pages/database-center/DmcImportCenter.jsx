@@ -105,17 +105,17 @@ export default function DmcImportCenter() {
 
         <div className="dmc-wizard__content">
           {step === 0 && (
-            <div style={{ textAlign: 'center', padding: '32px 0' }}>
-              <div style={{ marginBottom: 16, opacity: 0.3 }}><Icon name="upload" size={48} /></div>
-              <p style={{ marginBottom: 16, color: 'var(--text-soft)' }}>Upload a file to import. Supported formats: {FORMATS.join(', ')}</p>
-              <input ref={fileRef} type="file" accept=".udb,.json,.csv,.sql,.xlsx,.xls,.xml,.bson" onChange={handleFile} style={{ display: 'none' }} />
+            <div className="dmc-import-upload-area">
+              <div className="dmc-import-icon"><Icon name="upload" size={48} /></div>
+              <p className="dmc-import-text">Upload a file to import. Supported formats: {FORMATS.join(', ')}</p>
+              <input ref={fileRef} type="file" accept=".udb,.json,.csv,.sql,.xlsx,.xls,.xml,.bson" onChange={handleFile} className="dmc-hidden-input" />
               <Button variant="primary" onClick={() => fileRef.current?.click()}>Choose File</Button>
             </div>
           )}
 
           {step >= 1 && (
             <div>
-              <table className="dmc-table" style={{ marginBottom: 18 }}>
+              <table className="dmc-table dmc-wizard-table">
                 <thead><tr><th>Property</th><th>Value</th></tr></thead>
                 <tbody>
                   <tr><td>File</td><td>{fileName}</td></tr>
@@ -148,28 +148,28 @@ export default function DmcImportCenter() {
               )}
 
               {step === 4 && (
-                <div className="dmc-wizard__actions" style={{ justifyContent: 'flex-end' }}>
+                <div className="dmc-wizard__actions dmc-wizard-actions-end">
                   <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
                   <Button variant="danger" onClick={doImport} disabled={importing}>{importing ? 'Importing…' : 'Import Data'}</Button>
                 </div>
               )}
 
               {step === 5 && (
-                <div style={{ textAlign: 'center', padding: 16 }}>
+                <div className="dmc-import-result">
                   {result?.success ? (
                     <>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}><Icon name="check" size={32} style={{ color: 'var(--green)' }} /></div>
-                      <p style={{ fontWeight: 600 }}>Import Complete</p>
-                      <p style={{ color: 'var(--text-soft)', fontSize: 13 }}>{result.name} imported successfully.</p>
+                      <div className="dmc-result-icon-lg"><Icon name="check" size={32} className="dmc-result-icon-green" /></div>
+                      <p className="dmc-result-text-bold">Import Complete</p>
+                      <p className="dmc-result-text-soft">{result.name} imported successfully.</p>
                     </>
                   ) : (
                     <>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}><Icon name="alert" size={32} style={{ color: 'var(--red)' }} /></div>
-                      <p style={{ fontWeight: 600 }}>Import Failed</p>
-                      <p style={{ color: 'var(--text-soft)', fontSize: 13 }}>{result?.error || 'Unknown error'}</p>
+                      <div className="dmc-result-icon-lg"><Icon name="alert" size={32} className="dmc-result-icon-red" /></div>
+                      <p className="dmc-result-text-bold">Import Failed</p>
+                      <p className="dmc-result-text-soft">{result?.error || 'Unknown error'}</p>
                     </>
                   )}
-                  <div style={{ marginTop: 16 }}><Button variant="primary" onClick={reset}>Import Another File</Button></div>
+                  <div className="dmc-import-new-btn"><Button variant="primary" onClick={reset}>Import Another File</Button></div>
                 </div>
               )}
             </div>

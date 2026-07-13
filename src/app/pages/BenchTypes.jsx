@@ -374,7 +374,7 @@ export default function BenchTypes() {
       {/* ── Desktop 6-stat row ── */}
       <div className="bench-types__stats-row">
         <div className="bench-types__statcard">
-          <div className="bench-types__statcard-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="layers" size={16} /></div>
+          <div className="bench-types__statcard-icon bench-types__statcard-icon--total"><Icon name="layers" size={16} /></div>
           <div className="bench-types__statcard-body">
             <div className="bench-types__statcard-label">Total</div>
             <div className="bench-types__statcard-value">{items.length}</div>
@@ -382,7 +382,7 @@ export default function BenchTypes() {
           </div>
         </div>
         <div className="bench-types__statcard">
-          <div className="bench-types__statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={16} /></div>
+          <div className="bench-types__statcard-icon bench-types__statcard-icon--active"><Icon name="check-circle" size={16} /></div>
           <div className="bench-types__statcard-body">
             <div className="bench-types__statcard-label">Active</div>
             <div className="bench-types__statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
@@ -390,7 +390,7 @@ export default function BenchTypes() {
           </div>
         </div>
         <div className="bench-types__statcard">
-          <div className="bench-types__statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={16} /></div>
+          <div className="bench-types__statcard-icon bench-types__statcard-icon--inactive"><Icon name="ban" size={16} /></div>
           <div className="bench-types__statcard-body">
             <div className="bench-types__statcard-label">Inactive</div>
             <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
@@ -398,7 +398,7 @@ export default function BenchTypes() {
           </div>
         </div>
         <div className="bench-types__statcard">
-          <div className="bench-types__statcard-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={16} /></div>
+          <div className="bench-types__statcard-icon bench-types__statcard-icon--most-used"><Icon name="bar-chart" size={16} /></div>
           <div className="bench-types__statcard-body">
             <div className="bench-types__statcard-label">Most Used</div>
             <div className="bench-types__statcard-value bench-types__statcard-value--sm">—</div>
@@ -406,7 +406,7 @@ export default function BenchTypes() {
           </div>
         </div>
         <div className="bench-types__statcard">
-          <div className="bench-types__statcard-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={16} /></div>
+          <div className="bench-types__statcard-icon bench-types__statcard-icon--created-month"><Icon name="calendar" size={16} /></div>
           <div className="bench-types__statcard-body">
             <div className="bench-types__statcard-label">Created This Month</div>
             <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(i => { if (!i.created_at) return false; const d = new Date(i.created_at); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length}</div>
@@ -414,7 +414,7 @@ export default function BenchTypes() {
           </div>
         </div>
         <div className="bench-types__statcard">
-          <div className="bench-types__statcard-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={16} /></div>
+          <div className="bench-types__statcard-icon bench-types__statcard-icon--assignments"><Icon name="briefcase" size={16} /></div>
           <div className="bench-types__statcard-body">
             <div className="bench-types__statcard-label">Total Assignments</div>
             <div className="bench-types__statcard-value bench-types__statcard-value--sm">—</div>
@@ -599,7 +599,7 @@ export default function BenchTypes() {
                 <div className="bench-types__import-title">Import from CSV</div>
                 <div className="bench-types__import-hint">CSV columns: name, short_code, status (optional)</div>
                 <label className="bench-types__import-btn">
-                  <input type="file" accept=".csv" style={{ display: 'none' }} onChange={e => setImportFile(e.target.files[0])} />
+                  <input type="file" accept=".csv" className="bench-types__file-input" onChange={e => setImportFile(e.target.files[0])} />
                   <span className="btn btn--ghost">{importFile ? importFile.name : 'Choose CSV file'}</span>
                 </label>
                 {importFile && <div className="bench-types__import-file">Selected: {importFile.name}</div>}
@@ -673,11 +673,11 @@ export default function BenchTypes() {
         <table className="bench-types__table">
           <thead>
             <tr>
-              <th style={{ width: 32 }}></th>
+              <th className="bench-types__th--w32"></th>
               <th><span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="bench-types__sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="bench-types__sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 136 }}>ACTIONS</th>
+              <th className="bench-types__th--w136">ACTIONS</th>
             </tr>
           </thead>
           <tbody>

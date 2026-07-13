@@ -47,8 +47,8 @@ export default function NotesPanel({ caseId, notes, onChanged }) {
     <Card title={`Case Notes (${notes.length})`} actions={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={openNew}>Add Note</Button></PermissionGate>}>
       {notes.length === 0 ? <EmptyState icon="notes" title="No notes." /> : notes.map((n) => (
         <div key={n.id} className="qa-card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <strong style={{ flex: 1 }}>{n.title}</strong>
+          <div className="notes-panel__header">
+            <strong className="notes-panel__title">{n.title}</strong>
             <span className="muted">{formatDate(n.createdAt)}</span>
             <div className="row-actions">
               <button className="iconbtn" title="View" onClick={() => setViewing(n)}><Icon name="eye" size={14} /></button>
@@ -56,18 +56,18 @@ export default function NotesPanel({ caseId, notes, onChanged }) {
               <PermissionGate perm="manageCase.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(n)}><Icon name="trash" size={14} /></button></PermissionGate>
             </div>
           </div>
-          <div style={{ fontSize: 13, marginTop: 6, color: 'var(--text-soft)', whiteSpace: 'pre-wrap', maxHeight: 60, overflow: 'hidden' }}>{n.body}</div>
+          <div className="notes-panel__body">{n.body}</div>
         </div>
       ))}
 
       <Modal open={!!editing} title={editing?.id ? 'Edit Note' : 'Add Note'} onClose={() => setEditing(null)}
         footer={<><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button><Button icon="save" onClick={save}>Save</Button></>}>
         <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} autoFocus /></Field>
-        <Field label="Note"><Textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} style={{ minHeight: 160 }} /></Field>
+        <Field label="Note"><Textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} className="notes-panel__textarea" /></Field>
       </Modal>
 
       <Modal open={!!viewing} title={viewing?.title} onClose={() => setViewing(null)}>
-        <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.7, color: 'var(--text)' }}>{viewing?.body}</div>
+        <div className="notes-panel__view">{viewing?.body}</div>
       </Modal>
     </Card>
   );

@@ -92,23 +92,23 @@ export default function DmcDeleteManager() {
 
       <div className="dmc-section">
         <div className="dmc-section__title"><Icon name="layers" size={17} /> Delete Scope</div>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-          <label className="dmc-select" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', cursor: 'pointer' }}>
+        <div className="dmc-delete-scope">
+          <label className="dmc-select dmc-radio-label">
             <input type="radio" name="scope" checked={scope === 'collection'} onChange={() => setScope('collection')} /> Collection Cleanup
           </label>
-          <label className="dmc-select" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', cursor: 'pointer' }}>
+          <label className="dmc-select dmc-radio-label">
             <input type="radio" name="scope" checked={scope === 'user'} onChange={() => setScope('user')} /> User Data Cleanup
           </label>
         </div>
 
         {scope === 'user' && (
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
-            <select className="dmc-select" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)} style={{ minWidth: 200 }}>
+          <div className="dmc-delete-row">
+            <select className="dmc-select dmc-select-minw" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
               <option value="">Select user…</option>
               {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             {selectedUserId && (
-              <span style={{ fontSize: 12.5, color: 'var(--text-soft)' }}>
+              <span className="dmc-related-info">
                 Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
               </span>
             )}
@@ -116,18 +116,18 @@ export default function DmcDeleteManager() {
         )}
 
         {scope === 'collection' && (
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
-            <select className="dmc-select" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)} style={{ minWidth: 200 }}>
+          <div className="dmc-delete-row">
+            <select className="dmc-select dmc-select-minw" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)}>
               {collections.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+        <div className="dmc-delete-options">
+          <label className="dmc-checkbox-label">
             <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview only)
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+          <label className="dmc-checkbox-label">
             <input type="checkbox" checked={backupFirst} onChange={() => setBackupFirst(!backupFirst)} disabled={dryRun} /> Backup before delete
           </label>
           <Button size="sm" variant="primary" onClick={analyze}>{dryRun ? 'Preview' : 'Analyze'}</Button>
@@ -149,8 +149,8 @@ export default function DmcDeleteManager() {
           </table>
 
           {preview.type === 'user' && preview.userCases?.length > 0 && (
-            <div style={{ marginTop: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Affected Cases ({preview.cases})</div>
+            <div className="dmc-affected-cases">
+              <div className="dmc-section-subtitle">Affected Cases ({preview.cases})</div>
               <table className="dmc-table">
                 <thead><tr><th>Case</th><th>Documents</th></tr></thead>
                 <tbody>
@@ -163,7 +163,7 @@ export default function DmcDeleteManager() {
           )}
 
           {!dryRun && (
-            <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+            <div className="dmc-delete-confirm">
               <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Confirm Delete'}</Button>
               <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
             </div>

@@ -80,7 +80,7 @@ export default function DataTable({
           <thead>
             <tr>
               {selectable && (
-                <th style={{ width: 40 }}>
+<th className="th-checkbox">
                   <input type="checkbox" checked={allOnPageSelected} onChange={toggleAllOnPage} aria-label="Select page" />
                 </th>
               )}

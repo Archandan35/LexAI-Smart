@@ -61,7 +61,7 @@ export default function PermissionMatrix({
                     <span className="matrix__module-icon"><Icon name={m.icon} size={15} /></span>
                     <span>
                       <span className="matrix__module-name">{m.label}</span>
-                      {m.admin && <span className="badge badge--navy" style={{ marginLeft: 6, fontSize: 9, padding: '1px 6px' }}>Admin</span>}
+                      {m.admin && <span className="badge badge--navy badge--admin">Admin</span>}
                       <span className="matrix__module-count">{rs.on}/{rs.total}</span>
                     </span>
                     {!readOnly && (

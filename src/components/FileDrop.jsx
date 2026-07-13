@@ -29,9 +29,9 @@ export default function FileDrop({ onFile, accept = '.pdf,.docx,.doc,.png,.jpg,.
       }}
     >
       <input ref={ref} type="file" accept={accept} hidden onChange={(e) => handle(e.target.files[0])} />
-      <div className="empty__icon" style={{ margin: '0 auto 12px' }}><Icon name="upload" size={24} /></div>
-      <div style={{ fontWeight: 650, color: 'var(--navy-800)' }}>{name || 'Drop a file or click to upload'}</div>
-      <div style={{ fontSize: 12.5, color: 'var(--text-faint)', marginTop: 5 }}>{hint || accept.replaceAll('.', '').toUpperCase()}</div>
+      <div className="empty__icon filedrop__icon"><Icon name="upload" size={24} /></div>
+      <div className="filedrop__label">{name || 'Drop a file or click to upload'}</div>
+      <div className="filedrop__hint">{hint || accept.replaceAll('.', '').toUpperCase()}</div>
     </div>
   );
 }

@@ -121,7 +121,7 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
       <div className="docmgr__main">
         <div className="toolbar-row">
           <PermissionGate perm="documents.upload"><Button size="sm" icon="upload" onClick={() => { setUploadFolder(activeFolder === 'all' ? '' : activeFolder); setUploadOpen(true); }}>Upload</Button></PermissionGate>
-          <div style={{ flex: 1 }} />
+          <div className="docmgr__toolbar-spacer" />
           {selected.length > 0 && (
             <>
               <span className="muted">{selected.length} selected</span>
@@ -140,12 +140,12 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
           <Card bodyClass="card__body--flush">
             <div className="table-scroll">
               <table className="table">
-                <thead><tr><th style={{ width: 34 }} /><th>Name</th><th>Folder</th><th>Sync</th><th>Size</th><th>Uploaded</th><th style={{ width: 170 }}>Actions</th></tr></thead>
+                <thead><tr><th className="docmgr__table-head-check" /><th>Name</th><th>Folder</th><th>Sync</th><th>Size</th><th>Uploaded</th><th className="docmgr__table-head-actions">Actions</th></tr></thead>
                 <tbody>
                   {visible.map((d) => (
                     <tr key={d.id} className={selected.includes(d.id) ? 'row--selected' : ''}>
                       <td>{can('documents.bulkDelete') && <input type="checkbox" checked={selected.includes(d.id)} onChange={() => toggle(d.id)} />}</td>
-                      <td style={{ fontWeight: 600 }}><Icon name="file" size={14} /> {d.name}</td>
+                      <td className="docmgr__name-cell"><Icon name="file" size={14} /> {d.name}</td>
                       <td><Badge tone="grey">{d.folder_id ? (folders.find((f) => f.id === d.folder_id)?.name || d.folder) : d.folder}</Badge></td>
                       <td><SyncStatus status={d.syncStatus} /></td>
                       <td>{bytes(d.size)}</td>
@@ -179,8 +179,8 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
       <Modal open={uploadOpen} title="Upload Document" onClose={() => setUploadOpen(false)}
         footer={<><Button variant="ghost" onClick={() => setUploadOpen(false)}>Cancel</Button><Button icon="upload" onClick={doUpload}>Upload</Button></>}>
         <FolderPicker folders={docFolders} value={uploadFolder} onChange={setUploadFolder} onCreateFolder={createFolder} label="Save to folder" />
-        <div style={{ marginTop: 12 }}><FileDrop onFile={setPendingFile} /></div>
-        {pendingFile && <div className="alert alert--info" style={{ marginTop: 12 }}><Icon name="file" size={15} />Ready: {pendingFile.name}</div>}
+        <div className="docmgr__upload-drop"><FileDrop onFile={setPendingFile} /></div>
+        {pendingFile && <div className="alert alert--info docmgr__ready-file"><Icon name="file" size={15} />Ready: {pendingFile.name}</div>}
       </Modal>
 
       {/* Move */}
@@ -191,7 +191,7 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
 
       {/* Text preview */}
       <Modal open={!!preview} title={preview?.name} onClose={() => setPreview(null)} size="lg">
-        <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1.7 }}>{preview?.text || preview?.content}</div>
+        <div className="docmgr__preview-text">{preview?.text || preview?.content}</div>
       </Modal>
 
       <FolderManagerModal open={folderMgr} onClose={() => setFolderMgr(false)} caseId={caseId} folders={docFolders} kind="document" onChanged={onChanged} />
@@ -216,17 +216,17 @@ export function FolderManagerModal({ open, onClose, caseId, folders, kind, onCha
 
   return (
     <Modal open={open} title={`Manage ${kind === 'draft' ? 'Draft' : 'Document'} Folders`} onClose={onClose}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <div className="docmgr__folder-add-row">
         <Input value={name} placeholder="New folder…" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
         <Button icon="folderPlus" onClick={add}>Add</Button>
       </div>
-      <div className="table-scroll" style={{ maxHeight: '46vh' }}>
+      <div className="table-scroll docmgr__folder-scroll">
         <table className="table">
           <tbody>
             {folders.map((f) => (
               <tr key={f.id}>
                 <td>{editId === f.id ? <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} /> : <><Icon name="folder" size={14} /> {f.name}{f.system && <Badge tone="grey">default</Badge>}</>}</td>
-                <td style={{ width: 100 }}>
+                <td className="docmgr__action-cell">
                   <div className="row-actions">
                     {editId === f.id
                       ? <><button className="iconbtn" onClick={() => save(f)}><Icon name="check" size={14} /></button><button className="iconbtn" onClick={() => setEditId(null)}><Icon name="close" size={14} /></button></>
