@@ -69,20 +69,21 @@ export default function ManageCases() {
   const { statuses } = useCaseStatuses();
   const { caseTypes } = useCaseTypes();
 
-  const caseTypeMap = useMemo(() => {
+  const shortCodeMap = useMemo(() => {
     const map = {};
     caseTypes.forEach((t) => {
-      if (t.name) map[t.name.toLowerCase()] = t.name;
-      if (t.short_code) map[t.short_code.toLowerCase()] = t.name;
+      if (t.name) map[t.name.toLowerCase()] = t.short_code || t.name;
+      if (t.short_code) map[t.short_code.toLowerCase()] = t.short_code;
     });
     return map;
   }, [caseTypes]);
 
   const formatCaseNum = (c) => {
-    const ct = c.case_type ? (caseTypeMap[c.case_type.toLowerCase()] || '') : '';
+    const raw = c.case_type || '';
+    const sc = shortCodeMap[raw.toLowerCase()] || '';
     const cn = c.case_number || c.caseNumber;
     const cy = c.case_year;
-    if (ct && cn && cy) return `${ct} No. ${cn} of ${cy}`;
+    if (sc && cn && cy) return `${sc} ${cn} of ${cy}`;
     if (cn && cy) return `No. ${cn} of ${cy}`;
     return c.case_display_number || c.caseNumber || '';
   };
