@@ -535,6 +535,12 @@ function BulkDelete({ config, entity }) {
       )}
       <div style={{ marginBottom: 16 }}>
         <div className="crud-field-label">Select {entity}s to delete <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
+        <div className="crud-checkbox-toolbar">
+          <label className="crud-checkbox-all">
+            <input type="checkbox" checked={selected.length === items.length && items.length > 0} onChange={toggleAll} disabled={saving} />
+            <span>Select all {items.length}</span>
+          </label>
+        </div>
         <div className="crud-checkbox-list">
           {items.map((i) => (
             <label key={i.id} className="crud-checkbox-row">
