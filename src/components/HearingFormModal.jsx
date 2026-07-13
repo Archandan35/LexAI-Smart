@@ -131,7 +131,9 @@ export default function HearingFormModal({ open, onClose, onSaved, initialCaseId
     if (!text) return '';
     const c = caseData || {};
     const d = form.date ? new Date(form.date) : new Date();
-    const nd = c.nextHearing ? new Date(c.nextHearing) : null;
+    const nd = (form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate))
+      ? new Date(form.nextHearingDate)
+      : (c.nextHearing ? new Date(c.nextHearing) : null);
     const today = new Date();
     return text
       .replace(/\{caseNumber\}/g, formatCaseNumber(c) || c.caseNumber || c.case_display_number || '—')
