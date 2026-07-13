@@ -107,18 +107,25 @@ export default function HearingFormModal({ open, onClose, onSaved, initialCaseId
     return cn ? String(cn) : '';
   }, []);
 
-  const hearingShortcodes = useMemo(() => [
-    { label: 'Case Number', value: '{caseNumber}' },
-    { label: 'Parties / Title', value: '{parties}' },
-    { label: 'Court', value: '{court}' },
-    { label: 'Judge / Officer', value: '{judge}' },
-    { label: 'Stage', value: '{stage}' },
-    { label: 'Hearing Date', value: '{hearingDate}' },
-    { label: 'Next Hearing Date', value: '{nextHearingDate}' },
-    { label: 'Purpose', value: '{purpose}' },
-    { label: 'Status', value: '{status}' },
-    { label: 'Today\'s Date', value: '{todayDate}' },
-  ], []);
+  const hearingShortcodes = useMemo(() => {
+    const caseData = getCaseDetails(form.caseId);
+    const nd = (form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate))
+      ? new Date(form.nextHearingDate)
+      : (caseData?.nextHearing ? new Date(caseData.nextHearing) : null);
+    const today = new Date();
+    return [
+      { label: 'Case Number', value: formatCaseNumber(caseData) || caseData?.caseNumber || caseData?.case_display_number || '{caseNumber}' },
+      { label: 'Parties / Title', value: caseData?.title || '{parties}' },
+      { label: 'Court', value: caseData?.court || '{court}' },
+      { label: 'Judge / Officer', value: caseData?.judge || '{judge}' },
+      { label: 'Stage', value: caseData?.stage || '{stage}' },
+      { label: 'Hearing Date', value: formatDate(form.date) || form.date || '{hearingDate}' },
+      { label: 'Next Hearing Date', value: nd ? formatDate(nd) : form.nextHearingDate || '{nextHearingDate}' },
+      { label: 'Purpose', value: form.purpose || '{purpose}' },
+      { label: 'Status', value: form.status || '{status}' },
+      { label: "Today's Date", value: formatDate(today) },
+    ];
+  }, [form, getCaseDetails, formatCaseNumber]);
 
   const resolveShortcodes = useCallback((text, caseData) => {
     if (!text) return '';

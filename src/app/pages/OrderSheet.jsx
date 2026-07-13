@@ -7,7 +7,7 @@ import Icon from '@/components/Icon.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import CaseSelect from '@/components/CaseSelect.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
-import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
+import { Field, Input, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import DataTable from '@/components/DataTable.jsx';
@@ -523,7 +523,27 @@ export default function OrderSheet() {
     return cn ? String(cn) : '';
   }, []);
 
-  const hearingShortcodes = useMemo(() => [
+  const hearingShortcodes = useMemo(() => {
+    const caseData = getCaseDetails(form.caseId);
+    const nd = (form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate))
+      ? new Date(form.nextHearingDate)
+      : (caseData?.nextHearing ? new Date(caseData.nextHearing) : null);
+    const today = new Date();
+    return [
+      { label: 'Case Number', value: formatCaseNumber(caseData) || caseData?.caseNumber || caseData?.case_display_number || '{caseNumber}' },
+      { label: 'Parties / Title', value: caseData?.title || '{parties}' },
+      { label: 'Court', value: caseData?.court || '{court}' },
+      { label: 'Judge / Officer', value: caseData?.judge || '{judge}' },
+      { label: 'Stage', value: caseData?.stage || '{stage}' },
+      { label: 'Hearing Date', value: formatDate(form.date) || form.date || '{hearingDate}' },
+      { label: 'Next Hearing Date', value: nd ? formatDate(nd) : form.nextHearingDate || '{nextHearingDate}' },
+      { label: 'Purpose', value: form.purpose || '{purpose}' },
+      { label: 'Status', value: form.status || '{status}' },
+      { label: "Today's Date", value: formatDate(today) },
+    ];
+  }, [form, getCaseDetails, formatCaseNumber]);
+
+  const templatePlaceholders = [
     { label: 'Case Number', value: '{caseNumber}' },
     { label: 'Parties / Title', value: '{parties}' },
     { label: 'Court', value: '{court}' },
@@ -533,8 +553,8 @@ export default function OrderSheet() {
     { label: 'Next Hearing Date', value: '{nextHearingDate}' },
     { label: 'Purpose', value: '{purpose}' },
     { label: 'Status', value: '{status}' },
-    { label: 'Today\'s Date', value: '{todayDate}' },
-  ], []);
+    { label: "Today's Date", value: '{todayDate}' },
+  ];
 
   const resolveShortcodes = useCallback((text, caseData) => {
     if (!text) return '';
@@ -1789,7 +1809,9 @@ export default function OrderSheet() {
           </Select>
         </Field>
         <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." readOnly={tplViewMode} /></Field>
-        <Field label="Template Content"><Textarea value={tplForm.content} onChange={(e) => setTplForm({ ...tplForm, content: e.target.value })} placeholder="Drafting content structure..." readOnly={tplViewMode} /></Field>
+        <Field label="Template Content">
+          <DocEditor value={tplForm.content} onChange={(v) => setTplForm({ ...tplForm, content: v })} readOnly={tplViewMode} placeholders={templatePlaceholders} />
+        </Field>
       </Modal>
     </>
   );
