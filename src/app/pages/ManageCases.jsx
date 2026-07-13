@@ -339,7 +339,7 @@ export default function ManageCases() {
                       <Icon name="edit" size={17} /><span>Edit</span>
                     </button>
                   </PermissionGate>
-                  <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="Documents">
+                  <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?tab=Documents`)} aria-label="Documents">
                     <Icon name="documents" size={17} /><span>Documents</span>
                   </button>
                   <PermissionGate perm="manageCase.export">
@@ -347,7 +347,7 @@ export default function ManageCases() {
                       <Icon name="download" size={17} /><span>Download</span>
                     </button>
                   </PermissionGate>
-                  <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="Hearings">
+                  <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?tab=Hearings`)} aria-label="Hearings">
                     <Icon name="video" size={17} /><span>Hearing</span>
                   </button>
                   <PermissionGate perm="manageCase.delete">

@@ -13749,7 +13749,7 @@ kbd.cmd__kbd {
   .modal {
     max-width: calc(100vw - 24px);
     margin: 12px;
-    max-height: 90vh;
+    max-height: calc(100vh - 120px);
   }
 
   .modal--lg {
@@ -13775,7 +13775,7 @@ kbd.cmd__kbd {
   .modal {
     max-width: calc(100vw - 12px);
     margin: 6px;
-    max-height: 92vh;
+    max-height: calc(100vh - 100px);
   }
 
   .modal--lg {

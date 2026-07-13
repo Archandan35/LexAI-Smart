@@ -14,7 +14,11 @@ import NotesPanel from '@/components/NotesPanel.jsx';
 import CaseTimeline from '@/components/CaseTimeline.jsx';
 import RemindersPanel from '@/components/RemindersPanel.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
+import { Field, Input, Select, Textarea } from '@/components/Field.jsx';
+import FileDrop from '@/components/FileDrop.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
+import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
+import { fileLogic } from '@/logic/fileLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
@@ -34,13 +38,56 @@ export default function CaseDetails() {
   const priorityTone = Object.fromEntries((priorities || []).map((p) => [p.name, p.color || 'grey']));
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
-  const [tab, setTab] = useState('Overview');
+  const [tab, setTab] = useState(params.get('tab') || 'Overview');
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
   const [showDeleteDlg, setShowDeleteDlg] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  const goToTab = useCallback((t) => {
+    setTab(t);
+    if (t === 'Overview') {
+      if (params.has('tab')) {
+        params.delete('tab');
+        setParams(params, { replace: true });
+      }
+    } else if (params.get('tab') !== t) {
+      params.set('tab', t);
+      setParams(params, { replace: true });
+    }
+  }, [params, setParams]);
+
+  const [hearingOpen, setHearingOpen] = useState(false);
+  const [hearingForm, setHearingForm] = useState({ date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', judge: '', notes: '' });
+  const [hearingBusy, setHearingBusy] = useState(false);
+
+  const saveHearing = async () => {
+    if (!hearingForm.date) { toast.push('Date is required.', 'error'); return; }
+    setHearingBusy(true);
+    try {
+      const payload = { ...hearingForm, caseId: id };
+      const r = await orderSheetLogic.addHearing(payload);
+      if (!r.ok) { toast.push(r.error || 'Failed to add hearing.', 'error'); return; }
+      setHearingOpen(false);
+      setHearingForm({ date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', judge: '', notes: '' });
+      if (hearingForm.nextHearingDate) {
+        await caseLogic.update(id, { next_hearing: hearingForm.nextHearingDate }, user);
+      }
+      toast.push('Hearing added.', 'success');
+      load();
+    } catch (e) {
+      toast.push(e?.message || 'An unexpected error occurred.', 'error');
+    }
+    setHearingBusy(false);
+  };
+
+  const onHearingFile = async (file) => {
+    const rec = await fileLogic.uploadDocument(file, { caseId: id, folder: 'Hearing' });
+    setHearingForm((f) => ({ ...f, docRef: rec.ref, docName: rec.name }));
+    toast.push('File attached.', 'success');
+  };
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
@@ -173,7 +220,7 @@ export default function CaseDetails() {
 
           <div className="tabs">
             {TABS.map((t) => (
-              <div key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
+              <div key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => goToTab(t)}>
                 {t}
                 {t === 'Documents' && ` (${documents.length})`}
                 {t === 'Hearings' && ` (${hearings.length})`}
@@ -312,7 +359,7 @@ export default function CaseDetails() {
 
               <Card
                 title="Important Dates"
-                actions={<button className="linkbtn" onClick={() => setTab('Case Tracking')}>View All</button>}
+                actions={<button className="linkbtn" onClick={() => goToTab('Case Tracking')}>View All</button>}
               >
                 <div className="case-details-detail-dates">
                   <div className="case-details-detail-dates__cell">
@@ -348,7 +395,7 @@ export default function CaseDetails() {
 
               <Card
                 title="Upcoming Hearing"
-                actions={<button className="linkbtn" onClick={() => setTab('Hearings')}>View All</button>}
+                actions={<button className="linkbtn" onClick={() => goToTab('Hearings')}>View All</button>}
               >
                 {!upcomingHearing ? (
                   <MiniEmpty icon="calendar" title="No upcoming hearing." />
@@ -372,20 +419,20 @@ export default function CaseDetails() {
 
               <Card
                 title="Documents"
-                actions={<button className="linkbtn" onClick={() => setTab('Documents')}>View All</button>}
+                actions={<button className="linkbtn" onClick={() => goToTab('Documents')}>View All</button>}
               >
                 {folders.filter((f) => f.kind === 'document').length === 0 && documents.length === 0 ? (
                   <MiniEmpty
                     icon="folder"
                     title="No documents uploaded."
                     hint="Upload or add documents related to this case."
-                    action={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
+                    action={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => goToTab('Documents')}>Add Document</Button></PermissionGate>}
                   />
                 ) : (
                   folders.filter((f) => f.kind === 'document').map((f) => {
                     const count = documents.filter((d) => d.folder === f.name).length;
                     return (
-                      <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
+                      <div className="list-row" key={f.id} onClick={() => goToTab('Documents')}>
                         <div className="list-row__icon"><Icon name="folder" size={15} /></div>
                         <div className="flex-1 min-w-0">
                           <div className="list-row__title">{f.name}</div>
@@ -465,7 +512,10 @@ export default function CaseDetails() {
           )}
 
           {tab === 'Hearings' && (
-            <Card title="Hearing History">
+            <Card
+              title="Hearing History"
+              actions={<Button size="sm" icon="plus" onClick={() => setHearingOpen(true)}>Add Hearing</Button>}
+            >
               {hearings.length === 0 ? <EmptyState icon="calendar" title="No hearings recorded." /> : (
                 <div className="timeline">
                   {hearings.map((h) => (
@@ -528,7 +578,7 @@ export default function CaseDetails() {
 
           <div className="tabs">
             {TABS.map((t) => (
-              <div key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
+              <div key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => goToTab(t)}>
                 {t}
                 {t === 'Documents' && ` (${documents.length})`}
                 {t === 'Hearings' && ` (${hearings.length})`}
@@ -582,7 +632,7 @@ export default function CaseDetails() {
 
                   <Card
                     title="Important Dates"
-                    actions={<button className="linkbtn" onClick={() => setTab('Case Tracking')}>View All</button>}
+                    actions={<button className="linkbtn" onClick={() => goToTab('Case Tracking')}>View All</button>}
                   >
                     <div className="case-detail__dates-grid">
                       <div className="case-detail__date-cell">
@@ -609,7 +659,7 @@ export default function CaseDetails() {
               <div className="case-detail__grid-mt cd__grid-3">
                 <Card
                   title="Upcoming Hearing"
-                  actions={<button className="linkbtn" onClick={() => setTab('Hearings')}>View All</button>}
+                  actions={<button className="linkbtn" onClick={() => goToTab('Hearings')}>View All</button>}
                 >
                   {!upcomingHearing ? (
                     <MiniEmpty icon="calendar" title="No upcoming hearing." />
@@ -633,20 +683,20 @@ export default function CaseDetails() {
 
                 <Card
                   title="Documents"
-                  actions={<button className="linkbtn" onClick={() => setTab('Documents')}>View All</button>}
+                  actions={<button className="linkbtn" onClick={() => goToTab('Documents')}>View All</button>}
                 >
                   {folders.filter((f) => f.kind === 'document').length === 0 && documents.length === 0 ? (
                     <MiniEmpty
                       icon="folder"
                       title="No documents uploaded."
                       hint="Upload or add documents related to this case."
-                      action={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
+                      action={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => goToTab('Documents')}>Add Document</Button></PermissionGate>}
                     />
                   ) : (
                     folders.filter((f) => f.kind === 'document').map((f) => {
                     const count = documents.filter((d) => (d.folder_id || d.folder) === (f.id || f.name)).length;
                       return (
-                        <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
+                        <div className="list-row" key={f.id} onClick={() => goToTab('Documents')}>
                           <div className="list-row__icon"><Icon name="folder" size={15} /></div>
                           <div className="flex-1 min-w-0">
                             <div className="list-row__title">{f.name}</div>
@@ -727,7 +777,10 @@ export default function CaseDetails() {
           )}
 
           {tab === 'Hearings' && (
-            <Card title="Hearing History">
+            <Card
+              title="Hearing History"
+              actions={<Button size="sm" icon="plus" onClick={() => setHearingOpen(true)}>Add Hearing</Button>}
+            >
               {hearings.length === 0 ? <EmptyState icon="calendar" title="No hearings recorded." /> : (
                 <div className="timeline">
                   {hearings.map((h) => (
@@ -753,6 +806,56 @@ export default function CaseDetails() {
       {/* Shared Modals */}
       <Modal open={editing} title="Edit Case" size="lg" onClose={() => setEditing(false)}>
         <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" caseDocuments={documents} />
+      </Modal>
+
+      <Modal
+        open={hearingOpen}
+        title="Add Hearing"
+        onClose={() => { setHearingOpen(false); setHearingForm({ date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', judge: '', notes: '' }); }}
+        footer={<><Button variant="ghost" onClick={() => setHearingOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing} busy={hearingBusy}>Add</Button></>}
+      >
+        <div className="hearing-form">
+          <div className="input-row">
+            <Field label="Hearing Date">
+              <Input type="date" value={hearingForm.date} onChange={(e) => setHearingForm({ ...hearingForm, date: e.target.value })} />
+            </Field>
+            <Field label="Status">
+              <Input value={hearingForm.status} onChange={(e) => setHearingForm({ ...hearingForm, status: e.target.value })} placeholder="e.g. Scheduled, Completed" />
+            </Field>
+          </div>
+          <div className="input-row">
+            <Field label="Purpose">
+              <Input value={hearingForm.purpose} onChange={(e) => setHearingForm({ ...hearingForm, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
+            </Field>
+            <Field label="Next Hearing Date">
+              <Input type="date" value={hearingForm.nextHearingDate} onChange={(e) => setHearingForm({ ...hearingForm, nextHearingDate: e.target.value })} />
+            </Field>
+          </div>
+          <div className="input-row">
+            <Field label="Posted For">
+              <Input value={hearingForm.postedFor} onChange={(e) => setHearingForm({ ...hearingForm, postedFor: e.target.value })} placeholder="e.g. Arguments" />
+            </Field>
+            <Field label="Judge">
+              <Input value={hearingForm.judge || c.judge || ''} onChange={(e) => setHearingForm({ ...hearingForm, judge: e.target.value })} placeholder="Judge name" />
+            </Field>
+          </div>
+          <Field label="Proceedings">
+            <Textarea value={hearingForm.notes} onChange={(e) => setHearingForm({ ...hearingForm, notes: e.target.value })} placeholder="Hearing proceedings, orders, or notes…" rows={4} />
+          </Field>
+          <Field label="Attachment">
+            {hearingForm.docName ? (
+              <div className="list-row">
+                <div className="list-row__icon"><Icon name="file" size={15} /></div>
+                <div className="flex-1">{hearingForm.docName}</div>
+                <button className="btn btn--danger btn--sm" onClick={() => setHearingForm({ ...hearingForm, docRef: null, docName: '' })}>
+                  <Icon name="close" size={13} />
+                </button>
+              </div>
+            ) : (
+              <FileDrop onFile={onHearingFile} hint="Attach hearing document" />
+            )}
+          </Field>
+        </div>
       </Modal>
 
       <Modal
