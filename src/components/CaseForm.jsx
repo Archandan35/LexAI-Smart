@@ -239,7 +239,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   }, [refreshCaseTypes, refreshStages, refreshPriorities, refreshCourts, refreshBenchTypes, refreshJurisdictions, refreshJudges]);
 
   const caseTypeOptions = useMemo(() =>
-    caseTypes.filter((t) => t.status !== 'Inactive').map((t) => ({ value: t.short_code || t.name, label: t.name }))
+    caseTypes.filter((t) => t.status !== 'Inactive').map((t) => ({ value: t.name, label: t.name }))
   , [caseTypes]);
 
   const hierarchyOptions = courts.map((h) => ({ value: h, label: h }));

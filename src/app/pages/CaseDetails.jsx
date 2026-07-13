@@ -22,6 +22,7 @@ import { exportJson } from '@/utils/exportData.js';
 import { formatDate, formatDateTime, stripHtml } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
+import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import HearingFormModal from '@/components/HearingFormModal.jsx';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
@@ -33,6 +34,12 @@ export default function CaseDetails() {
   const { user } = useAuth();
   const { priorities } = usePriorities();
   const priorityTone = Object.fromEntries((priorities || []).map((p) => [p.name, p.color || 'grey']));
+  const { caseTypes } = useCaseTypes();
+  const resolveCaseType = useCallback((ct) => {
+    if (!ct) return '';
+    const match = caseTypes.find((t) => t.name?.toLowerCase() === ct.toLowerCase() || t.short_code?.toLowerCase() === ct.toLowerCase());
+    return match ? match.name : ct;
+  }, [caseTypes]);
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
   const [tab, setTab] = useState(params.get('tab') || 'Overview');
@@ -258,7 +265,7 @@ export default function CaseDetails() {
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="layers" size={18} /></div>
                     <span className="case-details-detail-chart__label">Case Type</span>
-                    <span className="case-details-detail-chart__value">{c.case_type || '—'}</span>
+                    <span className="case-details-detail-chart__value">{resolveCaseType(c.case_type) || '—'}</span>
                   </div>
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="users" size={18} /></div>
@@ -469,7 +476,7 @@ export default function CaseDetails() {
               <Row label="Case Display Number" value={c.case_display_number} />
               <Row label="Case Number (Numeric)" value={c.case_number} />
               <Row label="Case Year" value={c.case_year} />
-              <Row label="Case Type" value={c.case_type} />
+              <Row label="Case Type" value={resolveCaseType(c.case_type)} />
               <Row label="CNR Number" value={c.cnr_number} />
               <Row label="Filing Number" value={c.filing_number} />
               <Row label="Registration Number" value={c.registration_number} />
@@ -525,7 +532,7 @@ export default function CaseDetails() {
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{c.courtName || combinedCourt(c)}</span>
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="users" size={14} /></span>{c.judge || '—'}</span>
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filingDate)}</span>
-                {c.case_type && <Badge tone="grey">{c.case_type}</Badge>}
+                {c.case_type && <Badge tone="grey">{resolveCaseType(c.case_type)}</Badge>}
               </div>
             </div>
             <div className="page-header__actions row-actions row-actions--wide">
@@ -566,7 +573,7 @@ export default function CaseDetails() {
                 >
                   <Row label="Case Number" value={c.case_display_number || c.caseNumber} />
                   <Row label="Case Year" value={c.case_year} />
-                  <Row label="Case Type" value={c.case_type} />
+                  <Row label="Case Type" value={resolveCaseType(c.case_type)} />
                   <Row label="Case Stage" value={c.stage} />
                   <Row label="Filing Date" value={formatDate(c.filingDate)} />
                   <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
@@ -734,7 +741,7 @@ export default function CaseDetails() {
               <Row label="Case Display Number" value={c.case_display_number} />
               <Row label="Case Number (Numeric)" value={c.case_number} />
               <Row label="Case Year" value={c.case_year} />
-              <Row label="Case Type" value={c.case_type} />
+              <Row label="Case Type" value={resolveCaseType(c.case_type)} />
               <Row label="CNR Number" value={c.cnr_number} />
               <Row label="Filing Number" value={c.filing_number} />
               <Row label="Registration Number" value={c.registration_number} />
