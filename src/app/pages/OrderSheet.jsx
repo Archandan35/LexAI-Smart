@@ -939,13 +939,13 @@ export default function OrderSheet() {
                                 <span className={`order-sheet__tpl-tag order-sheet__tpl-tag--${catLower}`}>
                                   {t.category}
                                 </span>
-                                <div className="order-sheet__tpl-actions">
-                                  <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
-                                  <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
-                                  <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
-                                  <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
-                                </div>
                               </div>
+                            </div>
+                            <div className="order-sheet__tpl-actions">
+                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
                             </div>
                           </div>
                         );

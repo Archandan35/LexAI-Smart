@@ -11011,15 +11011,34 @@ kbd.cmd__kbd {
   align-items: center;
   border-top: 1px solid var(--border);
   padding-top: 10px;
-  gap: 8px;
 }
 
 .order-sheet__tpl-actions {
   display: flex;
-  flex-direction: row;
-  gap: 4px;
+  flex-direction: column;
+  gap: 2px;
   flex-shrink: 0;
-  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+@media (max-width: 991px) {
+  .order-sheet__tpl-card {
+    flex-wrap: wrap;
+  }
+  .order-sheet__tpl-actions {
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+    padding-top: 10px;
+    margin-top: 2px;
+  }
+  .order-sheet__tpl-action {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .order-sheet__tpl-action {
