@@ -5,7 +5,7 @@ import Icon from '@/components/Icon.jsx';
 import Badge from '@/components/Badge.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 
 /* ---- helpers ---- */
@@ -62,6 +62,7 @@ function docIconVariant(name) {
 const BAR_COLORS = ['#6d4fe8', '#1f9d6b', '#e07b00', '#2547a3', '#888'];
 
 export default function Dashboard() {
+  const { formatDate } = useFormat();
   const { data, loading } = useDashboard();
   const nav = useNavigate();
   const { user } = useAuth();

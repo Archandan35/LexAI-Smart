@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { auditService } from '@/services/auditService.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Icon from '@/components/Icon.jsx';
 
 export default function DmcAuditActivity() {
+  const { formatDate } = useFormat();
   const [logs, setLogs] = useState([]);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');

@@ -20,13 +20,13 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { config } from '@/config/config.js';
 import { preferencesService } from '@/services/preferencesService.js';
 import { exportPdf, exportDocx, exportHtml, exportTxt } from '@/utils/exportDoc.js';
-import { fromNow, formatDateTime, formatDate } from '@/utils/format.js';
+import { useFormat, formatDate as plainFormatDate } from '@/utils/format.js';
 
 const FOLDER_KEY = 'lexai.draftfolders.v1';
 const AUTOSAVE_KEY = 'lexai.autosave.v1';
 
 const PLACEHOLDERS = [
-  { label: 'Today’s Date', value: formatDate(new Date()) },
+  { label: 'Today’s Date', value: plainFormatDate(new Date()) },
   { label: 'Court Name', value: '«Court Name»' },
   { label: 'Case Number', value: '«Case Number»' },
   { label: 'Plaintiff / Petitioner', value: '«Plaintiff»' },
@@ -35,6 +35,7 @@ const PLACEHOLDERS = [
 ];
 
 export default function DraftingStudio() {
+  const { formatDate, formatDateTime, fromNow } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const [drafts, setDrafts] = useState([]);

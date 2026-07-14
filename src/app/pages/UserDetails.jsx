@@ -13,9 +13,10 @@ import Spinner from '@/components/Spinner.jsx';
 import RoleSelector from '@/components/RoleSelector.jsx';
 import PermissionMatrix from '@/components/PermissionMatrix.jsx';
 import { Field, Input } from '@/components/Field.jsx';
-import { formatDateTime } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 export default function UserDetails() {
+  const { formatDateTime } = useFormat();
   const { id } = useParams();
   const nav = useNavigate();
   const { user: actor, roles } = useAuth();

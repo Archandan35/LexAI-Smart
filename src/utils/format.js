@@ -1,4 +1,12 @@
+import { useState, useEffect } from 'react';
 import { DateEngine } from '@/core/DateEngine.js';
+import { settingsCache } from '@/core/settingsCache.js';
+
+export function useFormat() {
+  const [, setTick] = useState(0);
+  useEffect(() => settingsCache.subscribe(() => setTick(t => t + 1)), []);
+  return { formatDate, formatDateTime, fromNow };
+}
 
 export function formatDate(value) {
   if (!value) return '—';

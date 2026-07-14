@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications.js';
 import Icon from './Icon.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 const TONE = { danger: 'red', warn: 'amber', info: 'navy' };
 
 export default function NotificationsBell() {
+  const { formatDate } = useFormat();
   const { items, unread, dismiss, dismissAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);

@@ -13,9 +13,10 @@ import PermissionGate from '@/components/PermissionGate.jsx';
 import BackupHistoryTable from '@/components/BackupHistoryTable.jsx';
 import RestoreBackupModal from '@/components/RestoreBackupModal.jsx';
 import ImportBackupModal from '@/components/ImportBackupModal.jsx';
-import { bytes, formatDateTime } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 
 export default function DmcBackupRecovery() {
+  const { formatDateTime } = useFormat();
   const { backups, stats, refresh } = useBackups();
   const { user } = useAuth();
   const { can } = usePermissions();

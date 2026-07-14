@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useBackups } from '@/hooks/useBackups.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
-import { bytes } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 import Icon from '@/components/Icon.jsx';
 
 export default function DmcDashboard() {
+  const { formatDate, formatDateTime } = useFormat();
   const { backups, stats } = useBackups();
   const [health, setHealth] = useState({ status: 'checking', provider: '—', version: '—', collections: 0 });
 
@@ -24,7 +25,7 @@ export default function DmcDashboard() {
   const cards = [
     { label: 'Provider', value: health.provider, sub: 'Connection ' + health.status, dot: health.status === 'connected' ? 'ok' : health.status === 'error' ? 'err' : 'warn' },
     { label: 'Collections', value: health.collections, sub: 'Schema v' + health.version },
-    { label: 'Total Backups', value: backups.length, sub: stats?.lastBackup ? 'Last: ' + new Date(stats.lastBackup).toLocaleDateString() : 'No backups yet' },
+    { label: 'Total Backups', value: backups.length, sub: stats?.lastBackup ? 'Last: ' + formatDate(stats.lastBackup) : 'No backups yet' },
     { label: 'Backup Size', value: bytes(stats?.totalBytes || 0), sub: (stats?.protectedCount ?? 0) + ' protected' },
     { label: 'Retention', value: stats?.retention || '—', sub: stats?.frequency || 'manual' },
     { label: 'Storage Used', value: bytes(0), sub: 'File storage' },
@@ -63,7 +64,7 @@ export default function DmcDashboard() {
             <tr><td>Schema Integrity</td><td><span className="dmc-badge dmc-badge--green">Valid</span></td><td>{health.collections} collections deployed</td></tr>
             <tr><td>Backup Status</td><td><span className={`dmc-badge dmc-badge--${backups.length ? 'green' : 'amber'}`}>{backups.length ? 'Active' : 'None'}</span></td><td>{backups.length} backup(s), {stats?.protectedCount} protected</td></tr>
             <tr><td>File Storage</td><td><span className="dmc-badge dmc-badge--green">Operational</span></td><td>Provider-agnostic</td></tr>
-            <tr><td>Last Backup</td><td><span className={`dmc-badge dmc-badge--${stats?.lastBackup ? 'green' : 'amber'}`}>{stats?.lastBackup ? 'Completed' : 'Never'}</span></td><td>{stats?.lastBackup ? new Date(stats.lastBackup).toLocaleString() : 'No backup recorded'}</td></tr>
+            <tr><td>Last Backup</td><td><span className={`dmc-badge dmc-badge--${stats?.lastBackup ? 'green' : 'amber'}`}>{stats?.lastBackup ? 'Completed' : 'Never'}</span></td><td>{stats?.lastBackup ? formatDateTime(stats.lastBackup) : 'No backup recorded'}</td></tr>
           </tbody>
         </table>
       </div>

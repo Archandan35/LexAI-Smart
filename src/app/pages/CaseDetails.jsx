@@ -19,7 +19,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
-import { formatDate, formatDateTime, stripHtml } from '@/utils/format.js';
+import { stripHtml, useFormat } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
@@ -28,6 +28,7 @@ import HearingFormModal from '@/components/HearingFormModal.jsx';
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
 
 export default function CaseDetails() {
+  const { formatDate, formatDateTime } = useFormat();
   const { id } = useParams();
   const nav = useNavigate();
   const toast = useToast();

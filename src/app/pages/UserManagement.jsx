@@ -18,11 +18,12 @@ import PermissionGate from '@/components/PermissionGate.jsx';
 import RoleSelector from '@/components/RoleSelector.jsx';
 import { Field, Input } from '@/components/Field.jsx';
 import { exportCsv } from '@/utils/exportData.js';
-import { formatDate, fromNow } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 const BLANK = { name: '', email: '', username: '', roleCode: '', password: '', status: 'Active' };
 
 export default function UserManagement() {
+  const { formatDate, fromNow } = useFormat();
   const { users, loading, refresh } = useUsers();
   const { user: actor, roles } = useAuth();
   const { can } = usePermissions();

@@ -20,7 +20,7 @@ import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 function getStageVariant(stage) {
   if (!stage) return '';
@@ -31,6 +31,7 @@ function getStageVariant(stage) {
 }
 
 export default function ManageCases() {
+  const { formatDate } = useFormat();
   const nav = useNavigate();
   const toast = useToast();
   const { cases, loading, refresh } = useCases();

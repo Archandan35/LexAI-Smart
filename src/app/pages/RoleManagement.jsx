@@ -15,9 +15,10 @@ import DataTable from '@/components/DataTable.jsx';
 import RoleForm from '@/components/RoleForm.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
 import { exportJson } from '@/utils/exportData.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 export default function RoleManagement() {
+  const { formatDate } = useFormat();
   const { roles, loading, refresh } = useRoles();
   const { can } = usePermissions();
   const { user, loadRoles } = useAuth();

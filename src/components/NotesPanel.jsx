@@ -11,10 +11,11 @@ import { caseActivityService } from '@/services/caseActivityService.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { nowISO } from '@/utils/id.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 // NotesPanel — add / edit / delete / view case notes.
 export default function NotesPanel({ caseId, notes, onChanged }) {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const [editing, setEditing] = useState(null); // note or {} for new

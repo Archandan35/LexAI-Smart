@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import Icon from './Icon.jsx';
 import Badge from './Badge.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import { citationLogic } from '@/logic/citationLogic.js';
 
 // Renders one retrieved/verified judgment. Shows relevance, court, date,
 // verified source link, and expandable relevant paragraphs. Used by Citation
 // Search, Research, Hearing Notes — never fabricates content.
 export default function CitationCard({ item, rank }) {
+  const { formatDate } = useFormat();
   const [open, setOpen] = useState(false);
   const paras = item.paragraphs || [];
   return (

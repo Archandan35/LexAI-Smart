@@ -9,7 +9,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
 import { migrateLocalStorage } from '@/utils/migrateLocalStorage.js';
-import { bytes, formatDateTime } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 
 // DatabaseManager — universal, provider-agnostic database administration.
 // All data access flows through databaseManagerLogic (logic → services →
@@ -19,6 +19,7 @@ import { bytes, formatDateTime } from '@/utils/format.js';
 const SEV_TONE = { critical: 'red', warn: 'amber', info: 'grey' };
 
 export default function DatabaseManager() {
+  const { formatDateTime } = useFormat();
   const { user } = useAuth();
   const toast = useToast();
   const fileRef = useRef(null);

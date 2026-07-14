@@ -8,7 +8,7 @@ import Badge from '@/components/Badge.jsx';
 import DataTable from '@/components/DataTable.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
 import { exportCsv } from '@/utils/exportData.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 
 function timeOnly(iso) {
@@ -23,6 +23,7 @@ const TONE = (action) => {
 };
 
 export default function AuditLogs() {
+  const { formatDate } = useFormat();
   const { can } = usePermissions();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseService } from '@/services/caseService.js';
-import { formatDate, bytes } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 import { storageService } from '@/services/storageService.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -9,6 +9,7 @@ import Icon from '@/components/Icon.jsx';
 const COLLECTIONS = ['documents', 'cases', 'drafts', 'notes', 'case_folders', 'hearings'];
 
 export default function DmcDataExplorer() {
+  const { formatDate } = useFormat();
   const [collection, setCollection] = useState('documents');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);

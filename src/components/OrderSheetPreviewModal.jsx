@@ -1,6 +1,6 @@
 import Modal from './Modal.jsx';
 import Icon from './Icon.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 
 const statusColour = (s) => {
@@ -9,6 +9,7 @@ const statusColour = (s) => {
 };
 
 export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDocument, cases: allCases }) {
+  const { formatDate } = useFormat();
   const data = hearing || doc;
   if (!data) return null;
 

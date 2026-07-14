@@ -7,7 +7,7 @@ import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepo
 import storageService from '@/services/storageService.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate, bytes } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
 /* ── helpers ── */
@@ -56,6 +56,7 @@ function StatCard({ icon, value, label, sub }) {
 
 /* ── main ── */
 export default function CaseDocuments() {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const [docs, setDocs] = useState([]);

@@ -23,7 +23,7 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate, stripHtml } from '@/utils/format.js';
+import { stripHtml, useFormat } from '@/utils/format.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 
@@ -31,6 +31,7 @@ const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHeari
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
 export default function OrderSheet() {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const { cases } = useAppData();

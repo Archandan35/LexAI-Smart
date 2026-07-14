@@ -19,9 +19,10 @@ import PermissionMatrix from '@/components/PermissionMatrix.jsx';
 import { Field, Select } from '@/components/Field.jsx';
 import { ROLE_HIERARCHY } from '@/constants/permissions.js';
 import { exportJson } from '@/utils/exportData.js';
-import { formatDateTime } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 export default function RoleDetails() {
+  const { formatDateTime } = useFormat();
   const { id } = useParams();
   const nav = useNavigate();
   const { user, loadRoles, roles: allRoles } = useAuth();

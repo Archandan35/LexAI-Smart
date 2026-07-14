@@ -18,7 +18,7 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 
@@ -37,6 +37,7 @@ const FIELD_MAP = {
 };
 
 export default function HearingFormModal({ open, onClose, onSaved, initialCaseId, editing }) {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const { cases } = useAppData();

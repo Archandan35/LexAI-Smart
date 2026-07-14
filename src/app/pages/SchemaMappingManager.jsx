@@ -6,7 +6,7 @@ import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import Spinner from '@/components/Spinner.jsx';
-import { formatDate, formatDateTime } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 const TABS = [
   { id: 'entities', label: 'Entity Mapping' },
@@ -17,6 +17,7 @@ const TABS = [
 ];
 
 export default function SchemaMappingManager() {
+  const { formatDate, formatDateTime } = useFormat();
   const [mappings, setMappings] = useState([]);
   const [conflicts, setConflicts] = useState([]);
   const [unmapped, setUnmapped] = useState([]);

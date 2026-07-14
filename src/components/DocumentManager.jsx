@@ -15,13 +15,14 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { exportJson } from '@/utils/exportData.js';
-import { bytes, formatDate } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 
 const VIEW_KEY = 'lexai.docview.v1';
 
 // DocumentManager — folder-based document manager with list/grid views, upload
 // workflow (choose/create folder), per-file actions and bulk actions.
 export default function DocumentManager({ caseId, documents, folders, onChanged }) {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const { can } = usePermissions();

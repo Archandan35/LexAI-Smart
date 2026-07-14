@@ -8,9 +8,10 @@ import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Field, Select } from '@/components/Field.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 export default function SecuritySettings() {
+  const { formatDate } = useFormat();
   const { user: actor } = useAuth();
   const toast = useToast();
   const [hasSuperAdmin, setHasSuperAdmin] = useState(false);

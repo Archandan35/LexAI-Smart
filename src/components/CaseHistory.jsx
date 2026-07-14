@@ -10,12 +10,13 @@ import { Field, Input, Textarea, Select } from './Field.jsx';
 import { caseHistoryLogic } from '@/logic/caseHistoryLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import { useHearingStatuses } from '@/hooks/useHearingStatuses.js';
 
 // CaseHistory — scrollable legal-proceedings history with full untruncated text,
 // expand/collapse, search, date-range filter, asc/desc, and order-sheet import.
 export default function CaseHistory({ caseId, onChanged }) {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const { statuses: hearingStatuses } = useHearingStatuses();

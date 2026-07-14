@@ -4,11 +4,12 @@ import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
 import { reminderService } from '@/services/reminderService.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 const TABS = ['calendar', 'tasks'];
 
 export default function Calendar() {
+  const { formatDate } = useFormat();
   const [tab, setTab] = useState('calendar');
   const [events, setEvents] = useState([]);
   const [reminders, setReminders] = useState([]);

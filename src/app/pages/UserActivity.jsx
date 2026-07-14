@@ -3,9 +3,10 @@ import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { auditService } from '@/services/auditService.js';
-import { formatDateTime } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 export default function UserActivity() {
+  const { formatDateTime } = useFormat();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

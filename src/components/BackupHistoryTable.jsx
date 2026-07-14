@@ -3,7 +3,7 @@ import Icon from './Icon.jsx';
 import DataTable from './DataTable.jsx';
 import PermissionGate from './PermissionGate.jsx';
 import { backupLogic } from '@/logic/backupLogic.js';
-import { bytes, formatDate } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 
 function timeOnly(iso) {
@@ -13,6 +13,7 @@ function timeOnly(iso) {
 // BackupHistoryTable — single-row listing with inline actions. Shared by the
 // dashboard (limited) and the full history page.
 export default function BackupHistoryTable({ backups, actor, can, onChanged, onRestore, toast, limit }) {
+  const { formatDate } = useFormat();
   const rows = limit ? backups.slice(0, limit) : backups;
 
   const act = async (promise, okMsg) => {

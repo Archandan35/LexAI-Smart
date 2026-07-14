@@ -4,7 +4,7 @@ import Badge from './Badge.jsx';
 import Icon from './Icon.jsx';
 import EmptyState from './EmptyState.jsx';
 import { caseActivityService } from '@/services/caseActivityService.js';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 
 const ICONS = {
@@ -22,6 +22,7 @@ function timeOnly(iso) {
 
 // CaseTimeline — chronological system activity (audit trail) for a case.
 export default function CaseTimeline({ caseId, refreshKey }) {
+  const { formatDate } = useFormat();
   const [items, setItems] = useState([]);
 
   useEffect(() => {

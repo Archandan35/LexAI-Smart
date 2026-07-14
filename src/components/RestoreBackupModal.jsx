@@ -3,13 +3,14 @@ import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import { backupLogic } from '@/logic/backupLogic.js';
-import { formatDateTime } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 // RestoreBackupModal — confirmation + integrity check + restore preview before
 // replacing the current database.
 export default function RestoreBackupModal({ backup, open, onClose, onRestored, actor }) {
   const [integrity, setIntegrity] = useState(null);
   const [busy, setBusy] = useState(false);
+  const { formatDateTime } = useFormat();
 
   useEffect(() => {
     if (open && backup) { setIntegrity(null); backupLogic.verify(backup.id).then(setIntegrity); }

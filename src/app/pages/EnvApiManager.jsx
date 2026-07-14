@@ -13,11 +13,12 @@ import { ENV_CATEGORY_KEYS } from '@/constants/envCatalog.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
-import { formatDateTime } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 const TABS = ['Environment Variables', 'API Manager', 'Secret Manager', 'Sync Status', 'Configuration History'];
 
 export default function EnvApiManager() {
+  const { formatDateTime } = useFormat();
   const { can } = usePermissions();
   const { user } = useAuth();
   const toast = useToast();

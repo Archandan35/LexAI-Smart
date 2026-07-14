@@ -8,11 +8,12 @@ import PermissionGate from '@/components/PermissionGate.jsx';
 import { storageStatsService } from '@/services/storageStatsService.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
-import { bytes, formatDateTime } from '@/utils/format.js';
+import { bytes, useFormat } from '@/utils/format.js';
 
 const FUTURE_PROVIDERS = ['mega', 'terabox', 'supabase', 's3', 'r2', 'onedrive', 'dropbox'];
 
 export default function StorageSettings() {
+  const { formatDateTime } = useFormat();
   const toast = useToast();
   const [summary, setSummary] = useState(null);
   const [busy, setBusy] = useState('');

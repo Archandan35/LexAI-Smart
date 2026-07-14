@@ -14,7 +14,7 @@ import { reminderTypesLogic } from '@/logic/reminderTypesLogic.js';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
-import { formatDate } from '@/utils/format.js';
+import { useFormat } from '@/utils/format.js';
 
 function dayDiff(date) {
   const d = new Date(date); d.setHours(0, 0, 0, 0);
@@ -23,6 +23,7 @@ function dayDiff(date) {
 }
 
 export default function RemindersPanel({ caseId, onChanged }) {
+  const { formatDate } = useFormat();
   const toast = useToast();
   const { user } = useAuth();
   const [items, setItems] = useState([]);
