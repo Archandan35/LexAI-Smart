@@ -13372,6 +13372,7 @@ kbd.cmd__kbd {
 
 .hpm-proceedings--edit {
   border-top: 1.5px solid var(--border, #e2e8f0);
+  padding: 16px;
 }
 
 .hpm-proceedings--empty {
@@ -15632,10 +15633,7 @@ kbd.cmd__kbd {
   }
 
   .hpm-chevron {
-    display: block;
-    color: #9ba3be;
-    margin-left: auto;
-    transform: rotate(180deg);
+    display: none;
   }
 
   .hpm-grid--2x2,
