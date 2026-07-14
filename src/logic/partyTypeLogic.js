@@ -1,6 +1,7 @@
 import { partyTypeService } from '@/services/partyTypeService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
+import { orderComparator, nextDisplayOrder, normalizeDisplayOrder } from '@/utils/displayOrder.js';
 
 const SHORT_CODE_PREFIX = 'PART';
 
@@ -12,15 +13,22 @@ function autoShortCode(name = '') {
 export const partyTypeLogic = {
   async list() {
     const rows = await partyTypeService.list();
-    return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+    return [...rows].sort(orderComparator);
+  },
+
+  async normalizeOrder() {
+    const rows = await partyTypeService.list();
+    return normalizeDisplayOrder(rows, (id, patch) => partyTypeService.update(id, patch));
   },
 
   async create(data) {
     try {
       const name = (data.name || '').trim();
+      const rows = await partyTypeService.list();
       const row = await partyTypeService.create({
         ...data, name,
         short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
+        display_order: data.display_order ?? nextDisplayOrder(rows),
         id: uid('pty'), created_at: nowISO(),
       });
       return ok(row);
@@ -61,7 +69,7 @@ export const partyTypeLogic = {
   async reorder(ids) {
     try {
       for (let i = 0; i < ids.length; i++) {
-        await partyTypeService.update(ids[i], { display_order: i });
+        await partyTypeService.update(ids[i], { display_order: i + 1 });
       }
       return ok(true);
     } catch (e) {

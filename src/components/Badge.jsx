@@ -1,31 +1,22 @@
-const isHex = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+import { getBadgeColors, fixedToneFor } from '../utils/badgeColors.js';
 
-function contrastText(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000 < 128 ? '#ffffff' : '#1a2236';
-}
-
-const NAMED = {
-  green: '#16a34a', red: '#dc2626', amber: '#d97706', navy: '#1e40af',
-  grey: '#6b7280', blue: '#1e40af', orange: '#ea580c',
-};
-
+// Single reusable badge. Background is a light tint of the color and text is a
+// dark shade of the same color family. Active is always green, Inactive is
+// always red, no matter which tone the caller passes.
 export default function Badge({ children, tone, dot, style: externalStyle }) {
-  const hex = isHex(tone) ? tone : NAMED[tone] || '#6b7280';
-  const textColor = contrastText(hex);
+  const key = fixedToneFor(children) || tone;
+  const c = getBadgeColors(key);
   return (
     <span
       className="badge badge--dyn"
       style={{
-        '--bd-bg': `${hex}18`,
-        '--bd-color': textColor,
-        '--bd-border': `${hex}40`,
+        '--bd-bg': c.bg,
+        '--bd-color': c.text,
+        '--bd-border': c.border,
         ...externalStyle,
       }}
     >
-      {dot && <span className="dot sync__dot--dyn" style={{ '--dot-bg': hex }} />}
+      {dot && <span className="dot sync__dot--dyn" style={{ '--dot-bg': c.text }} />}
       {children}
     </span>
   );

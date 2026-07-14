@@ -1,6 +1,7 @@
 import { caseStatusService } from '@/services/caseStatusService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
+import { orderComparator, nextDisplayOrder, normalizeDisplayOrder } from '@/utils/displayOrder.js';
 
 const SHORT_CODE_PREFIX = 'CASS';
 
@@ -13,19 +14,25 @@ export const caseStatusLogic = {
   async list() {
     try {
       const rows = await caseStatusService.list();
-      return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+      return [...rows].sort(orderComparator);
     } catch (err) { return fail(err); }
+  },
+
+  async normalizeOrder() {
+    const rows = await caseStatusService.list();
+    return normalizeDisplayOrder(rows, (id, patch) => caseStatusService.update(id, patch));
   },
 
   async create(data) {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Status name is required.');
+      const rows = await caseStatusService.list();
       return ok(await caseStatusService.create({
         name,
         short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         description: (data.description || '').trim(),
-        display_order: data.display_order ?? 0,
+        display_order: data.display_order ?? nextDisplayOrder(rows),
         color: data.color || '#6b7280',
         status: data.status || 'Active',
         createdAt: nowISO(),
@@ -58,7 +65,7 @@ export const caseStatusLogic = {
   async reorder(orderedIds) {
     try {
       for (let i = 0; i < orderedIds.length; i += 1) {
-        await caseStatusService.update(orderedIds[i], { display_order: i });
+        await caseStatusService.update(orderedIds[i], { display_order: i + 1 });
       }
       return ok(true);
     } catch (err) { return fail(err); }

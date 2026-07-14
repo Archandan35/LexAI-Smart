@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
+import { orderComparator } from '@/utils/displayOrder.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import Card from '@/components/Card.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
@@ -45,20 +46,17 @@ export default function CaseTypes() {
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
-  // One-time backfill: legacy rows with no display_order get sequential order so
-  // the list stays stable (editing must not reorder records).
+  // One-time normalize: assign a clean 1..N display_order (filling gaps left by
+  // deletes) so the list stays stable — editing must never reorder records.
   const renumberedRef = useRef(false);
   useEffect(() => {
     if (renumberedRef.current) return;
     if (loading || !Array.isArray(caseTypes) || !caseTypes.length) return;
-    if (caseTypes.every((i) => !i.display_order)) {
-      renumberedRef.current = true;
-      (async () => {
-        const ordered = caseTypes.map((i, idx) => ({ ...i, display_order: idx + 1 }));
-        await Promise.all(ordered.map((i) => caseTypeLogic.update(i.id, { display_order: i.display_order }).catch(() => {})));
-        refresh();
-      })();
-    }
+    renumberedRef.current = true;
+    (async () => {
+      await caseTypeLogic.normalizeOrder().catch(() => {});
+      refresh();
+    })();
   }, [caseTypes, loading, refresh]);
 
   const [newName, setNewName] = useState('');
@@ -98,7 +96,7 @@ export default function CaseTypes() {
   const filtered = caseTypes.filter((t) =>
     !search || t.name.toLowerCase().includes(search.toLowerCase()) ||
     (t.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+  ).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);

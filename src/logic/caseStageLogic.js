@@ -1,6 +1,7 @@
 import { caseStageService } from '@/services/caseStageService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO } from '@/utils/id.js';
+import { orderComparator, nextDisplayOrder, normalizeDisplayOrder } from '@/utils/displayOrder.js';
 
 const SHORT_CODE_PREFIX = 'CSTT';
 
@@ -13,7 +14,12 @@ function autoShortCode(name = '') {
 export const caseStageLogic = {
   async list() {
     const rows = await caseStageService.list();
-    return [...rows].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return [...rows].sort(orderComparator);
+  },
+
+  async normalizeOrder() {
+    const rows = await caseStageService.list();
+    return normalizeDisplayOrder(rows, (id, patch) => caseStageService.update(id, patch));
   },
 
   async names() {
@@ -26,12 +32,11 @@ export const caseStageLogic = {
     const data = typeof name === 'object' ? name : {};
     const rows = await caseStageService.list();
     if (rows.some((s) => s.name.toLowerCase() === n.toLowerCase())) return fail('That stage already exists.');
-    const order = rows.reduce((m, s) => Math.max(m, s.order ?? 0), 0) + 1;
     return ok(await caseStageService.create({
       name: n,
       short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(n),
       description: (data.description || '').trim(),
-      display_order: data.display_order ?? order,
+      display_order: data.display_order ?? nextDisplayOrder(rows),
       color: data.color || '#6b7280',
       status: data.status || 'Active',
       createdAt: nowISO(),
@@ -72,7 +77,7 @@ export const caseStageLogic = {
   // Persist a new ordering (drag & reorder).
   async reorder(orderedIds) {
     for (let i = 0; i < orderedIds.length; i += 1) {
-      await caseStageService.update(orderedIds[i], { display_order: i });
+      await caseStageService.update(orderedIds[i], { display_order: i + 1 });
     }
     return ok(true);
   },

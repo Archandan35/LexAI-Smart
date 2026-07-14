@@ -9,6 +9,7 @@ import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
+import { orderComparator } from '@/utils/displayOrder.js';
 
 const ENTITY_PREFIX = 'BT';
 
@@ -76,19 +77,11 @@ export default function BenchTypes() {
 
   const load = async () => {
     setLoading(true);
-    const res = await benchTypeLogic.list();
+    const res = await benchTypeLogic.normalizeOrder().catch(() => []);
     if (Array.isArray(res)) {
-      let data = res;
-      const allZero = data.every(i => !i.display_order);
-      if (allZero) {
-        data = data.map((i, idx) => ({ ...i, display_order: idx + 1 }));
-        for (const item of data) {
-          await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
-        }
-      }
       const seen = new Set();
-      const deduped = data.filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true; });
-      if (deduped.length !== data.length) console.warn('[BenchTypes] Duplicate IDs in list() — deduped', data.length, '→', deduped.length);
+      const deduped = res.filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true; });
+      if (deduped.length !== res.length) console.warn('[BenchTypes] Duplicate IDs in list() — deduped', res.length, '→', deduped.length);
       setItems(deduped);
     }
     setLoading(false);
@@ -265,7 +258,7 @@ export default function BenchTypes() {
 
   const filtered = items.filter(i =>
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+  ).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -762,6 +755,7 @@ export default function BenchTypes() {
           <thead>
             <tr>
               <th className="bench-types__th--w32"></th>
+              <th className="bench-types__th--w32">#</th>
               <th><span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="bench-types__sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="bench-types__sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
@@ -770,7 +764,7 @@ export default function BenchTypes() {
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="bench-types__empty" colSpan={5}>No bench types found.</td></tr>
+              <tr><td className="bench-types__empty" colSpan={6}>No bench types found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -781,6 +775,7 @@ export default function BenchTypes() {
                 <td className="bench-types__drag-cell">
                   <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
+                <td><span className="cmp-order-num">{item.display_order}</span></td>
                 <td>
                   <div className="bench-types__name-cell">
                     <span className="bench-types__name-avatar"><Icon name="users" size={15} /></span>

@@ -5,6 +5,7 @@ import { Input, Select, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtsLogic } from '@/logic/courtsLogic.js';
+import { orderComparator } from '@/utils/displayOrder.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
@@ -81,19 +82,11 @@ export default function Courts() {
 
   const load = async () => {
     setLoading(true);
-    const res = await courtsLogic.list();
+    const res = await courtsLogic.normalizeOrder().catch(() => []);
     if (Array.isArray(res)) {
-      let data = res;
-      const allZero = data.every(i => !i.display_order);
-      if (allZero) {
-        data = data.map((i, idx) => ({ ...i, display_order: idx + 1 }));
-        for (const item of data) {
-          await courtsLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
-        }
-      }
       const seen = new Set();
-      const deduped = data.filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true; });
-      if (deduped.length !== data.length) console.warn('[Courts] Duplicate IDs in list() — deduped', data.length, '→', deduped.length);
+      const deduped = res.filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true; });
+      if (deduped.length !== res.length) console.warn('[Courts] Duplicate IDs in list() — deduped', res.length, '→', deduped.length);
       setItems(deduped);
     }
     setLoading(false);
@@ -414,7 +407,7 @@ export default function Courts() {
     !search ||
     i.name.toLowerCase().includes(search.toLowerCase()) ||
     (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  ).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -449,6 +442,7 @@ export default function Courts() {
             <td className="cmp-drag-cell">
               <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
             </td>
+            <td><span className="cmp-order-num">{item.display_order}</span></td>
             <td className="courts__cell courts__cell--checkbox">
               <input
                 type="checkbox"
@@ -471,7 +465,7 @@ export default function Courts() {
                 {item.parent_id ? `Child of ${items.find((i) => i.id === item.parent_id)?.name || '—'}` : 'Root level'}
               </span>
             </td>
-            <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
+            <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'red'}`}>{item.status}</span></td>
             <td>
               <div className="cmp-actions">
                 <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
@@ -723,7 +717,7 @@ export default function Courts() {
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
+                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'red'}`}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -775,7 +769,7 @@ export default function Courts() {
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Status</span>
-            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem?.status || 'Active'}</span>
+            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'green' : 'red'}`}>{viewItem?.status || 'Active'}</span>
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Badge Color</span>
@@ -904,6 +898,7 @@ export default function Courts() {
           <thead>
             <tr>
               <th className="cmp-th--w32"></th>
+              <th className="cmp-th--w40">#</th>
               <th className="courts__th-checkbox"><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
               <th>Court Name</th>
               <th>Shortcode</th>
@@ -914,7 +909,7 @@ export default function Courts() {
           </thead>
           <tbody>
             {rootItems.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={7}>No courts defined.</td></tr>
+              <tr><td className="cmp-empty" colSpan={8}>No courts defined.</td></tr>
             ) : renderTree(rootItems)}
           </tbody>
         </table>

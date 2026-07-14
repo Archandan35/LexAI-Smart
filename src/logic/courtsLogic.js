@@ -1,6 +1,7 @@
 import { courtsService } from '@/services/courtsService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
+import { orderComparator, normalizeDisplayOrder } from '@/utils/displayOrder.js';
 
 const SHORT_CODE_PREFIX = 'COUT';
 
@@ -23,8 +24,14 @@ export const courtsLogic = {
   async list() {
     try {
       const rows = await courtsService.list();
-      return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+      return [...rows].sort(orderComparator);
     } catch (err) { return fail(err); }
+  },
+
+  // Renumber each sibling group (rows sharing the same parent_id) to a clean 1..N.
+  async normalizeOrder() {
+    const rows = await courtsService.list();
+    return normalizeDisplayOrder(rows, (id, patch) => courtsService.update(id, patch), { groupBy: 'parent_id' });
   },
 
   async get(id) {
@@ -58,29 +65,30 @@ export const courtsLogic = {
     } catch (err) { return fail(err); }
   },
 
+  // Update only the fields actually provided. This is critical: a partial
+  // update (e.g. a status toggle or a drag-reorder) must NOT wipe out
+  // parent_id, short_code or display_order that the caller didn't touch.
   async update(id, data) {
     try {
-      const name = (data.name || '').trim();
-      if (!name) return fail('Court name is required.');
-
-      const parent_id = await resolveParentId(
-        { parent_id: data.parent_id, parent_name: data.parent_name },
-        courtsService
-      );
-
-      const short_code =
-        (data.short_code ?? '').toString().trim() ||
-        autoShortCode(name);
-
-      return ok(await courtsService.update(id, {
-        name,
-        short_code,
-        level: data.level,
-        parent_id,
-        display_order: data.display_order,
-        color: data.color,
-        status: data.status,
-      }));
+      const patch = {};
+      if (data.name !== undefined) {
+        const name = (data.name || '').trim();
+        if (!name) return fail('Court name is required.');
+        patch.name = name;
+      }
+      if (data.short_code !== undefined) patch.short_code = (data.short_code || '').trim().toUpperCase();
+      if (data.parent_id !== undefined || data.parent_name !== undefined) {
+        patch.parent_id = await resolveParentId(
+          { parent_id: data.parent_id, parent_name: data.parent_name },
+          courtsService
+        );
+      }
+      if (data.description !== undefined) patch.description = (data.description || '').trim();
+      if (data.level !== undefined) patch.level = data.level;
+      if (data.display_order !== undefined) patch.display_order = data.display_order;
+      if (data.color !== undefined) patch.color = data.color;
+      if (data.status !== undefined) patch.status = data.status;
+      return ok(await courtsService.update(id, patch));
     } catch (err) { return fail(err); }
   },
 
@@ -187,7 +195,7 @@ export const courtsLogic = {
   async reorder(orderedIds) {
     try {
       for (let i = 0; i < orderedIds.length; i += 1) {
-        await courtsService.update(orderedIds[i], { display_order: i });
+        await courtsService.update(orderedIds[i], { display_order: i + 1 });
       }
       return ok(true);
     } catch (err) { return fail(err); }

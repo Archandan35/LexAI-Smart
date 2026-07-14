@@ -1,6 +1,7 @@
 import { caseTypeService } from '@/services/caseTypeService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
+import { orderComparator, normalizeDisplayOrder } from '@/utils/displayOrder.js';
 
 const SHORT_CODE_PREFIX = 'CAST';
 
@@ -13,8 +14,13 @@ export const caseTypeLogic = {
   async list() {
     try {
       const rows = await caseTypeService.list();
-      return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+      return [...rows].sort(orderComparator);
     } catch (err) { return fail(err); }
+  },
+
+  async normalizeOrder() {
+    const rows = await caseTypeService.list();
+    return normalizeDisplayOrder(rows, (id, patch) => caseTypeService.update(id, patch));
   },
 
   async get(id) {
@@ -87,7 +93,7 @@ export const caseTypeLogic = {
   async reorder(orderedIds) {
     try {
       for (let i = 0; i < orderedIds.length; i += 1) {
-        await caseTypeService.update(orderedIds[i], { display_order: i });
+        await caseTypeService.update(orderedIds[i], { display_order: i + 1 });
       }
       return ok(true);
     } catch (err) { return fail(err); }

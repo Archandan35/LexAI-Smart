@@ -13231,17 +13231,26 @@ kbd.cmd__kbd {
 .dmc-badge--amber { background: #d9770618; color: #d97706; border-color: #d9770640; }
 .dmc-badge--navy  { background: #1e3a5f18; color: #1e3a5f; border-color: #1e3a5f40; }
 
-.cmp-status-pill--active { background: #16a34a18; color: #16a34a; border-color: #16a34a40; }
-.cmp-status-pill--inactive { background: #6b728018; color: #6b7280; border-color: #6b728040; }
+.cmp-status-pill--active { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.cmp-status-pill--inactive { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
 
-.bench-types__status-pill--active { background: #ECFDF5; color: #16A34A; }
-.bench-types__status-pill--inactive { background: #FFF7ED; color: #D97706; }
-.bench-types__status-pill--active .bench-types__status-dot { background: #22C55E; }
-.bench-types__status-pill--inactive .bench-types__status-dot { background: #F59E0B; }
+.bench-types__status-pill--active { background: #dcfce7; color: #166534; }
+.bench-types__status-pill--inactive { background: #fee2e2; color: #991b1b; }
+.bench-types__status-pill--active .bench-types__status-dot { background: #166534; }
+.bench-types__status-pill--inactive .bench-types__status-dot { background: #991b1b; }
 
-.badge--active { background: #16a34a18; color: #16a34a; border-color: #16a34a40; }
-.badge--inactive { background: #6b728018; color: #6b7280; border-color: #6b728040; }
-.badge--admin { background: #1e40af18; color: #1e40af; border-color: #1e40af40; }
+/* ---- Standard badge color system: light tint bg + dark same-family text ---- */
+.badge--green, .badge--success, .badge--active { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.badge--red, .badge--danger, .badge--inactive { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+.badge--amber, .badge--warn, .badge--warning { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.badge--yellow { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+.badge--orange { background: #ffedd5; color: #9a3412; border-color: #fed7aa; }
+.badge--blue, .badge--info { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.badge--navy, .badge--admin { background: #e0e7ff; color: #1e3a8a; border-color: #c7d2fe; }
+.badge--purple, .badge--violet { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
+.badge--pink { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+.badge--teal, .badge--cyan { background: #cffafe; color: #155e75; border-color: #a5f3fc; }
+.badge--grey, .badge--gray, .badge--muted, .badge--neutral { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
 
 /* Blinking dot animation */
 @keyframes blink-dot {
@@ -19915,6 +19924,21 @@ kbd.cmd__kbd {
   cursor: grabbing;
 }
 
+.cmp-order-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .cmp-drag-hint {
   font-size: 12px;
   color: var(--text-faint);
@@ -20376,6 +20400,7 @@ kbd.cmd__kbd {
   height: 7px;
   border-radius: 50%;
   display: inline-block;
+  background: currentColor;
 }
 
 .cmp-actions {

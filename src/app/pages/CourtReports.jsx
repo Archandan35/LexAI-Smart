@@ -65,7 +65,7 @@ export default function CourtReports() {
                 {courts.map((c) => (
                   <tr key={c.id}>
                     <td>{c.name}</td>
-                    <td><span className={`badge ${c.status === 'Active' ? 'badge--green' : 'badge--grey'}`}>{c.status}</span></td>
+                    <td><span className={`badge ${c.status === 'Active' ? 'badge--green' : 'badge--red'}`}>{c.status}</span></td>
                     <td>{allCases.filter((ca) => ca.court === c.name).length}</td>
                   </tr>
                 ))}

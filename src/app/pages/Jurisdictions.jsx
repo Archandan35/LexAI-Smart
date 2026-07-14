@@ -8,6 +8,7 @@ import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
+import { orderComparator } from '@/utils/displayOrder.js';
 
 const ENTITY_PREFIX = 'JUR';
 
@@ -75,18 +76,8 @@ export default function Jurisdictions() {
 
   const load = async () => {
     setLoading(true);
-    const res = await jurisdictionLogic.list();
-    if (Array.isArray(res)) {
-      let data = res;
-      const allZero = data.every(i => !i.display_order);
-      if (allZero) {
-        data = data.map((i, idx) => ({ ...i, display_order: idx + 1 }));
-        for (const item of data) {
-          await jurisdictionLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
-        }
-      }
-      setItems(data);
-    }
+    const res = await jurisdictionLogic.normalizeOrder().catch(() => []);
+    if (Array.isArray(res)) setItems(res);
     setLoading(false);
   };
 
@@ -257,7 +248,7 @@ export default function Jurisdictions() {
 
   const filtered = items.filter(i =>
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+  ).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -675,6 +666,7 @@ export default function Jurisdictions() {
           <thead>
             <tr>
               <th className="cmp-th--w32"></th>
+              <th className="cmp-th--w40">#</th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
@@ -683,7 +675,7 @@ export default function Jurisdictions() {
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={5}>No jurisdictions found.</td></tr>
+              <tr><td className="cmp-empty" colSpan={6}>No jurisdictions found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -694,6 +686,7 @@ export default function Jurisdictions() {
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
+                <td><span className="cmp-order-num">{item.display_order}</span></td>
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>

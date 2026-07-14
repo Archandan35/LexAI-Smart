@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
+import { orderComparator } from '@/utils/displayOrder.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -47,20 +48,17 @@ export default function PartyTypes() {
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
-  // One-time backfill: legacy rows with no display_order get sequential order so
-  // the list stays stable (editing must not reorder records).
+  // One-time normalize: assign a clean 1..N display_order (filling gaps left by
+  // deletes) so the list stays stable — editing must never reorder records.
   const renumberedRef = useRef(false);
   useEffect(() => {
     if (renumberedRef.current) return;
     if (loading || !Array.isArray(partyTypes) || !partyTypes.length) return;
-    if (partyTypes.every((i) => !i.display_order)) {
-      renumberedRef.current = true;
-      (async () => {
-        const ordered = partyTypes.map((i, idx) => ({ ...i, display_order: idx + 1 }));
-        await Promise.all(ordered.map((i) => partyTypeLogic.update(i.id, { display_order: i.display_order }).catch(() => {})));
-        refresh();
-      })();
-    }
+    renumberedRef.current = true;
+    (async () => {
+      await partyTypeLogic.normalizeOrder().catch(() => {});
+      refresh();
+    })();
   }, [partyTypes, loading, refresh]);
 
   const [newName, setNewName] = useState('');
@@ -340,7 +338,7 @@ export default function PartyTypes() {
   const filtered = partyTypes.filter(t =>
     !search || t.name.toLowerCase().includes(search.toLowerCase()) ||
     (t.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+  ).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -777,6 +775,7 @@ export default function PartyTypes() {
           <thead>
             <tr>
               <th className="cmp-th--w32"></th>
+              <th className="cmp-th--w40">#</th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
@@ -785,7 +784,7 @@ export default function PartyTypes() {
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={5}>No party types found.</td></tr>
+              <tr><td className="cmp-empty" colSpan={6}>No party types found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id}
                 draggable={!search}
@@ -799,6 +798,7 @@ export default function PartyTypes() {
                     <Icon name="grip" size={15} />
                   </span>
                 </td>
+                <td><span className="cmp-order-num">{item.display_order}</span></td>
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>

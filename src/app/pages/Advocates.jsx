@@ -119,7 +119,7 @@ export default function Advocates() {
                   {u.phone && <span title={u.phone}>{u.phone}</span>}
                 </div>
                 <div className="client-card__badges">
-                  <span className={`badge badge--${u.status === 'Active' ? 'green' : 'grey'}`}>{u.status || 'Active'}</span>
+                  <span className={`badge badge--${u.status === 'Active' ? 'green' : 'red'}`}>{u.status || 'Active'}</span>
                 </div>
               </div>
               <div className="client-card__actions" onClick={(e) => e.stopPropagation()}>
@@ -169,7 +169,7 @@ export default function Advocates() {
               <div className="client-card__avatar client-detail__avatar" style={{ '--avatar-bg': colourFromName(viewing.name) }}>{initials(viewing.name)}</div>
               <div>
                 <h2 className="m-0">{viewing.name}</h2>
-                <p className="muted mt-4"><span className={`badge badge--${viewing.status === 'Active' ? 'green' : 'grey'}`}>{viewing.status || 'Active'}</span></p>
+                <p className="muted mt-4"><span className={`badge badge--${viewing.status === 'Active' ? 'green' : 'red'}`}>{viewing.status || 'Active'}</span></p>
               </div>
             </div>
             <div className="grid-2 mt-20">
