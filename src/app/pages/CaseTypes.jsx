@@ -424,6 +424,10 @@ export default function CaseTypes() {
         </div>
       </div>
 
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={14} /> Import CSV
+      </button>
+
       {/* Form Card */}
       {activeAction && showFilter && (
         <Card className="cmp-form">
@@ -794,10 +798,6 @@ export default function CaseTypes() {
             <div className="cmp-mobile-stat-label">Inactive</div>
           </div>
         </div>
-
-        <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
-          <Icon name="upload" size={14} /> Import CSV
-        </button>
 
         <div className="cmp-mobile-section-header">
           <span className="cmp-mobile-section-title">All Case Types</span>

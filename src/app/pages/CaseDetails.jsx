@@ -124,10 +124,11 @@ export default function CaseDetails() {
 
   const c = vault.case;
   const lastHearing = vault.lastHearing;
+  const todayStr = new Date().toISOString().slice(0, 10);
   const upcomingHearing = [...(vault.hearings || [])]
-    .filter((h) => new Date(h.date) >= startOfToday())
-    .sort((a, b) => new Date(a.date) - new Date(b.date))[0]
-    || (c.nextHearing && new Date(c.nextHearing) >= startOfToday()
+    .filter((h) => (h.date || '').slice(0, 10) >= todayStr)
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0]
+    || (c.nextHearing && (c.nextHearing || '').slice(0, 10) >= todayStr
       ? { date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }
       : null);
 

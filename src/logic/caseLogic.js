@@ -136,9 +136,14 @@ export const caseLogic = {
         caseService.listHearings(),
       ]);
       const live = cases.filter((c) => !c.archived);
-      const upcoming = hearings
-        .filter((h) => new Date(h.date) >= startOfToday())
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const hearingDates = new Set(hearings.map((h) => h.caseId || h.case_id));
+      const caseNext = live
+        .filter((c) => c.nextHearing && (c.nextHearing || '').slice(0, 10) >= todayStr && !hearingDates.has(c.id))
+        .map((c) => ({ id: `next-${c.id}`, caseTitle: c.title, date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
+      const upcoming = [...hearings
+        .filter((h) => (h.date || '').slice(0, 10) >= todayStr)
+        .sort((a, b) => (a.date || '').localeCompare(b.date || '')), ...caseNext]
         .slice(0, 6);
       let recentCitations = [];
       try { recentCitations = (await citationService.searchCases({ keywords: 'contract limitation title' })).slice(0, 4); }
