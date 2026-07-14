@@ -67,55 +67,29 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
     )?.case?.id)
   ) : null;
 
-  console.log('[OrderSheetPreviewModal] data keys:', Object.keys(data), 'caseId field:', data.caseId, 'case_id field:', data.case_id, 'case obj:', data.case ? { id: data.case.id, title: data.case.title } : null);
-  console.log('[OrderSheetPreviewModal] resolved caseId:', caseId);
-
   const linkedCase = !isDoc && allCases
     ? allCases.find((h) => h.case?.id === caseId)?.case || null
     : null;
 
   useEffect(() => {
     if (tab === 'historical' && caseId && !isDoc) {
-      console.log('[OrderSheetPreviewModal] FETCHING historical for caseId:', caseId);
       setLoading(true);
       const fetchHistorical = async () => {
         const finalCaseId = caseId;
         try {
-          console.log('[OrderSheetPreviewModal] calling getCase + listHearings + history list');
           let [caseRes, hearingsRes, historyRows] = await Promise.all([
-            caseService.getCase(finalCaseId).catch((e) => { console.log('[OrderSheetPreviewModal] getCase error:', e); return null; }),
-            caseService.listHearings(finalCaseId).catch((e) => { console.log('[OrderSheetPreviewModal] listHearings error:', e); return null; }),
-            caseHistoryService.list(finalCaseId).catch((e) => { console.log('[OrderSheetPreviewModal] history list error:', e); return null; }),
+            caseService.getCase(finalCaseId).catch(() => null),
+            caseService.listHearings(finalCaseId).catch(() => null),
+            caseHistoryService.list(finalCaseId).catch(() => null),
           ]);
 
-          console.log('[OrderSheetPreviewModal] getCase result:', caseRes ? 'ok' : 'null');
-          console.log('[OrderSheetPreviewModal] hearingsRes count:', hearingsRes?.length, 'type:', typeof hearingsRes, 'isArray:', Array.isArray(hearingsRes));
-          console.log('[OrderSheetPreviewModal] historyRows count:', historyRows?.length, 'type:', typeof historyRows, 'isArray:', Array.isArray(historyRows));
-
           if ((!hearingsRes || hearingsRes.length === 0) && finalCaseId) {
-            console.log('[OrderSheetPreviewModal] hearings empty, trying unfiltered fetch');
             const all = await caseService.listHearings().catch(() => []);
-            console.log('[OrderSheetPreviewModal] all hearings count:', all.length);
-            const filtered = all.filter((h) => {
-              const match = (h.caseId || h.case_id) === finalCaseId;
-              console.log('[OrderSheetPreviewModal] hearing', h.id, 'caseId:', h.caseId, 'case_id:', h.case_id, 'match:', match);
-              return match;
-            });
-            console.log('[OrderSheetPreviewModal] filtered hearings count:', filtered.length);
-            hearingsRes = filtered;
+            hearingsRes = all.filter((h) => (h.caseId || h.case_id) === finalCaseId);
           }
-
           if ((!historyRows || historyRows.length === 0) && finalCaseId) {
-            console.log('[OrderSheetPreviewModal] history empty, trying unfiltered fetch');
             const all = await caseHistoryService.list().catch(() => []);
-            console.log('[OrderSheetPreviewModal] all history count:', all.length);
-            const filtered = all.filter((h) => {
-              const match = (h.caseId || h.case_id) === finalCaseId;
-              console.log('[OrderSheetPreviewModal] history', h.id, 'caseId:', h.caseId, 'case_id:', h.case_id, 'match:', match);
-              return match;
-            });
-            console.log('[OrderSheetPreviewModal] filtered history count:', filtered.length);
-            historyRows = filtered;
+            historyRows = all.filter((h) => (h.caseId || h.case_id) === finalCaseId);
           }
 
           const theCase = caseRes?.data || caseRes;
@@ -132,42 +106,34 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
 
           const hearingsArr = Array.isArray(hearingsRes) ? hearingsRes : [];
           const historyArr = Array.isArray(historyRows) ? historyRows : [];
-          console.log('[OrderSheetPreviewModal] hearings after fallback:', hearingsArr.length, 'history after fallback:', historyArr.length);
-          console.log('[OrderSheetPreviewModal] data.id:', data.id, 'data._id:', data._id);
 
-          hearingsArr
-            .filter((h) => h.id !== data.id && h.id !== data._id)
-            .forEach((h) => {
-              addItem({
-                ...h,
-                caseId: h.caseId || h.case_id || finalCaseId,
-                case: theCase,
-                caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
-                parties: theCase?.title || '—',
-                court: theCase ? combinedCourt(theCase) : '—',
-                stage: theCase?.stage || '—',
-              });
+          hearingsArr.forEach((h) => {
+            addItem({
+              ...h,
+              caseId: h.caseId || h.case_id || finalCaseId,
+              case: theCase,
+              caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
+              parties: theCase?.title || '—',
+              court: theCase ? combinedCourt(theCase) : '—',
+              stage: theCase?.stage || '—',
             });
+          });
 
-          historyArr
-            .filter((h) => h.id !== data.id && h.id !== data._id)
-            .forEach((h) => {
-              addItem({
-                ...h,
-                notes: h.text || h.notes,
-                caseId: h.caseId || finalCaseId,
-                case: theCase,
-                caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
-                parties: theCase?.title || '—',
-                court: theCase ? combinedCourt(theCase) : '—',
-                stage: theCase?.stage || '—',
-              });
+          historyArr.forEach((h) => {
+            addItem({
+              ...h,
+              notes: h.text || h.notes,
+              caseId: h.caseId || finalCaseId,
+              case: theCase,
+              caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
+              parties: theCase?.title || '—',
+              court: theCase ? combinedCourt(theCase) : '—',
+              stage: theCase?.stage || '—',
             });
+          });
 
-          console.log('[OrderSheetPreviewModal] FINAL merged count:', merged.length);
           setHistorical(merged);
-        } catch (e) {
-          console.log('[OrderSheetPreviewModal] CATCH error:', e);
+        } catch {
           setHistorical([]);
         }
         setLoading(false);
