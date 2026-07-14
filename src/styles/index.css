@@ -14924,7 +14924,7 @@ kbd.cmd__kbd {
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .cl-card__num {
@@ -14968,7 +14968,7 @@ kbd.cmd__kbd {
 .cl-card__parties {
   font-size: 12px;
   color: var(--text-soft);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -14982,7 +14982,7 @@ kbd.cmd__kbd {
   gap: 5px;
   font-size: 12px;
   color: var(--text-soft);
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 
 .cl-card__meta-row {
@@ -16492,13 +16492,10 @@ kbd.cmd__kbd {
 .cv-case-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-.cv-case-card__body {
-  padding: 16px 16px 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
 }
 
 .cv-case-card__row1 {
@@ -16506,13 +16503,13 @@ kbd.cmd__kbd {
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .cv-case-card__left {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
@@ -16521,7 +16518,7 @@ kbd.cmd__kbd {
   color: var(--text-faint);
   cursor: pointer;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 1px;
   background: none;
   border: none;
   padding: 0;
@@ -16540,10 +16537,11 @@ kbd.cmd__kbd {
 
 .cv-case-card__title {
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: 13px;
   color: var(--navy-900);
   line-height: 1.3;
   margin: 0;
+  word-break: break-word;
 }
 
 .cv-case-card__title-row {
@@ -16565,9 +16563,10 @@ kbd.cmd__kbd {
 .cv-badge-status {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 10px;
   font-weight: 700;
   background: var(--green-soft);
   color: var(--green);
@@ -16601,64 +16600,81 @@ kbd.cmd__kbd {
 
 /* ── Parties text ── */
 .cv-case-card__parties {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-soft);
   line-height: 1.4;
-  margin: 4px 0 10px 32px;
+  margin-bottom: 10px;
 }
 
-/* ── Metadata row ── */
-.cv-case-card__meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-left: 32px;
-  margin-bottom: 0;
-}
-
-.cv-case-card__court {
+/* ── Court row ── */
+.cv-case-card__court-row {
   display: flex;
   align-items: center;
   gap: 5px;
   font-size: 12px;
   color: var(--text-soft);
+  margin-bottom: 10px;
 }
 
-.cv-case-card__court svg {
-  flex-shrink: 0;
+/* ── Bench + Judge row ── */
+.cv-case-card__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 10px;
 }
 
-/* ── Stage badge ── */
-.cv-badge-stage {
+.cv-case-card__meta-row span {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 650;
-  background: var(--brand-soft);
-  color: var(--navy-700);
-  border: 1px solid #cdd9f7;
-  white-space: nowrap;
+  gap: 4px;
 }
 
-.cv-badge-stage--defendant {
-  background: #f3f0ff;
-  color: #6d28d9;
-  border-color: #d4c6fa;
-}
-
-/* ── Date ── */
-.cv-case-card__date {
+/* ── Dates row ── */
+.cv-case-card__dates {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--text-soft);
+  gap: 12px;
+  margin-bottom: 10px;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 8px 12px;
 }
 
-.cv-case-card__date svg {
+.cv-case-card__dates-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cv-case-card__dates-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cv-case-card__dates-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cv-case-card__dates-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
   flex-shrink: 0;
 }
 
@@ -16667,6 +16683,8 @@ kbd.cmd__kbd {
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
+  padding-top: 8px;
+  gap: 2px;
 }
 
 .cv-action-btn {
@@ -16674,21 +16692,17 @@ kbd.cmd__kbd {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 12px 4px 10px;
+  gap: 4px;
+  padding: 6px 4px;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-soft);
-  font-size: 10.5px;
+  color: var(--text-faint);
+  font-size: 10px;
   font-weight: 600;
   font-family: inherit;
   transition: color .15s var(--ease), background .15s var(--ease);
-  border-right: 1px solid var(--border);
-}
-
-.cv-action-btn:last-child {
-  border-right: none;
+  border-radius: 6px;
 }
 
 .cv-action-btn:hover {

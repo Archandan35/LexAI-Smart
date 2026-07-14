@@ -312,68 +312,74 @@ export default function ManageCases() {
           ) : (
             filtered.map((c) => (
               <article key={c.id} className="cv-case-card">
-                <div className="cv-case-card__body">
-                  <div className="cv-case-card__row1">
-                    <div className="cv-case-card__left">
-                      <button
-                        className={`cv-case-card__star${c.watch ? ' starred' : ''}`}
-                        onClick={() => act(() => caseLogic.toggleWatch(c.id, !c.watch))}
-                        aria-label={c.watch ? 'Remove from starred' : 'Star this case'}
-                      >
-                        <Icon name="star" size={17} fill={c.watch} className={c.watch ? 'star--on' : ''} />
-                      </button>
-                      <div className="cv-case-card__title-row">
-                        <span className="cv-case-card__title">{formatCaseNum(c)}</span>
-                      </div>
-                    </div>
-                    <div className="cv-case-card__right">
-                      <span className={`cv-badge-status${c.archived ? ' cv-badge-status--archived' : ''}`}>
-                        {c.status || (c.archived ? 'Archived' : 'Active')}
-                      </span>
-                      <button className="cv-kebab" aria-label="Case options">
-                        <Icon name="more-vertical" size={18} />
-                      </button>
+                <div className="cv-case-card__row1">
+                  <div className="cv-case-card__left">
+                    <button
+                      className={`cv-case-card__star${c.watch ? ' starred' : ''}`}
+                      onClick={() => act(() => caseLogic.toggleWatch(c.id, !c.watch))}
+                      aria-label={c.watch ? 'Remove from starred' : 'Star this case'}
+                    >
+                      <Icon name="star" size={17} fill={c.watch} />
+                    </button>
+                    <div className="cv-case-card__title-row">
+                      <span className="cv-case-card__title">{formatCaseNum(c)}</span>
                     </div>
                   </div>
+                  <div className="cv-case-card__right">
+                    <span className={`cv-badge-status${c.archived ? ' cv-badge-status--archived' : ''}`}>
+                      {c.status || (c.archived ? 'Archived' : 'Active')}
+                    </span>
+                    <button className="cv-kebab" aria-label="Case options">
+                      <Icon name="more-vertical" size={18} />
+                    </button>
+                  </div>
+                </div>
 
-                  <p className="cv-case-card__parties">{c.title}</p>
+                <p className="cv-case-card__parties">{c.title}</p>
 
-                  <div className="cv-case-card__meta">
-                    <span className="cv-case-card__court">
-                      <Icon name="building" size={13} />{c.courtName || combinedCourt(c)}
-                    </span>
-                    <span className={`cv-badge-stage${getStageVariant(c.stage) === 'defendant' ? ' cv-badge-stage--defendant' : ''}`}>
-                      {c.stage || '—'}
-                    </span>
-                    <span className="cv-case-card__date">
-                      <Icon name="calendar" size={13} />{formatDate(c.nextHearing)}
-                    </span>
+                <div className="cv-case-card__court-row">
+                  <Icon name="building" size={13} /> {c.courtName || combinedCourt(c)}
+                </div>
+                <div className="cv-case-card__meta-row">
+                  <span><Icon name="users" size={13} /> {c.bench_type || '—'}</span>
+                  <span><Icon name="user" size={13} /> {c.judge || '—'}</span>
+                </div>
+
+                <div className="cv-case-card__dates">
+                  <div className="cv-case-card__dates-item">
+                    <span className="cv-case-card__dates-label">Next Hearing</span>
+                    <span className="cv-case-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(c.nextHearing) || '—'}</span>
+                  </div>
+                  <div className="cv-case-card__dates-divider" />
+                  <div className="cv-case-card__dates-item">
+                    <span className="cv-case-card__dates-label">Last Hearing</span>
+                    <span className="cv-case-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(c.updatedAt || c.registration_date) || '—'}</span>
                   </div>
                 </div>
 
                 <div className="cv-case-card__actions" role="toolbar" aria-label="Case actions">
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="View case">
-                    <Icon name="eye" size={17} /><span>View</span>
+                    <Icon name="eye" size={16} /><span>View</span>
                   </button>
                   <PermissionGate perm="manageCase.edit">
                     <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?edit=1`)} aria-label="Edit case">
-                      <Icon name="edit" size={17} /><span>Edit</span>
+                      <Icon name="edit" size={16} /><span>Edit</span>
+                    </button>
+                  </PermissionGate>
+                  <PermissionGate perm="manageCase.create">
+                    <button className="cv-action-btn" onClick={() => act(() => caseLogic.duplicate(c.id, user), 'Case duplicated.')} aria-label="Duplicate case">
+                      <Icon name="layers" size={16} /><span>Duplicate</span>
                     </button>
                   </PermissionGate>
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?tab=Documents`)} aria-label="Documents">
-                    <Icon name="documents" size={17} /><span>Documents</span>
+                    <Icon name="documents" size={16} /><span>Documents</span>
                   </button>
-                  <PermissionGate perm="manageCase.export">
-                    <button className="cv-action-btn" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))} aria-label="Download case">
-                      <Icon name="download" size={17} /><span>Download</span>
-                    </button>
-                  </PermissionGate>
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?tab=Hearings`)} aria-label="Hearings">
-                    <Icon name="video" size={17} /><span>Hearing</span>
+                    <Icon name="video" size={16} /><span>Hearings</span>
                   </button>
                   <PermissionGate perm="manageCase.delete">
                     <button className="cv-action-btn" onClick={() => remove(c)} aria-label="Delete case">
-                      <Icon name="trash" size={17} /><span>Delete</span>
+                      <Icon name="trash" size={16} /><span>Delete</span>
                     </button>
                   </PermissionGate>
                 </div>
