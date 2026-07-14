@@ -314,6 +314,18 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return { created: false, ok: false, sql, needsManual: res.needsManual !== false };
   }
 
+  // PostgREST caches the schema. After we ALTER a table (add column / create
+  // table) via raw SQL, the REST API keeps returning 400 ("column not found in
+  // schema cache") until the cache is reloaded. Notify PostgREST to refresh so
+  // the very next request sees the new column. Best-effort only.
+  async reloadSchema() {
+    try {
+      await this.execSql("SELECT pg_notify('pgrst', 'reload schema');");
+    } catch (e) {
+      console.warn('[Supabase] schema cache reload failed:', e?.message);
+    }
+  }
+
   async remove(collection, id) {
     const res = await fetch(`${this._endpoint(collection)}?id=eq.${id}`, {
       method: 'DELETE', headers: this._headers(),

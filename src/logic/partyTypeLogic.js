@@ -31,12 +31,18 @@ export const partyTypeLogic = {
 
   async update(id, data) {
     try {
-      const name = (data.name || '').trim();
-      const row = await partyTypeService.update(id, {
-        ...data, name,
-        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
-        updated_at: nowISO(),
-      });
+      const patch = {};
+      if (data.name !== undefined) {
+        const name = (data.name || '').trim();
+        if (!name) return fail('Party type name is required.');
+        patch.name = name;
+      }
+      if (data.short_code !== undefined) patch.short_code = (data.short_code || '').trim().toUpperCase();
+      if (data.description !== undefined) patch.description = (data.description || '').trim();
+      if (data.display_order !== undefined) patch.display_order = data.display_order;
+      if (data.color !== undefined) patch.color = data.color;
+      if (data.status !== undefined) patch.status = data.status || 'Active';
+      const row = await partyTypeService.update(id, patch);
       return ok(row);
     } catch (e) {
       return fail(e);

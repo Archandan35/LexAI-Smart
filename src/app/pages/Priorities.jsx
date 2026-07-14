@@ -525,7 +525,7 @@ export default function Priorities() {
                   <Input value={newCode} placeholder="e.g., URG" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                 </div>
                 <div className="cmp-field cmp-field--full">
-                  <label className="cmp-label">Color</label>
+                  <label className="cmp-label">Badge Color</label>
                   <ColorPicker value={newColor} onChange={setNewColor} />
                 </div>
                 <div className="cmp-field">
@@ -573,7 +573,7 @@ export default function Priorities() {
                       <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
                     </div>
                     <div className="cmp-field cmp-field--full">
-                      <label className="cmp-label">Color</label>
+                      <label className="cmp-label">Badge Color</label>
 <ColorPicker value={editColor} onChange={setEditColor} />
                     </div>
                     <div className="cmp-field">
@@ -719,7 +719,7 @@ export default function Priorities() {
             <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
           </div>
           <div className="cmp-field cmp-field--full">
-            <label className="cmp-label">Color</label>
+            <label className="cmp-label">Badge Color</label>
             <ColorPicker value={editColor} onChange={setEditColor} />
           </div>
           <div className="cmp-field">
@@ -747,7 +747,7 @@ export default function Priorities() {
             <Input value={newCode} placeholder="e.g., URG" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
           </div>
           <div className="cmp-field cmp-field--full">
-            <label className="cmp-label">Color</label>
+            <label className="cmp-label">Badge Color</label>
             <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
           <div className="cmp-field">

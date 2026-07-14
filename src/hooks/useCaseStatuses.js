@@ -11,8 +11,9 @@ export function useCaseStatuses() {
     setLoading(true);
     try {
       const data = await caseStatusLogic.list();
-      const names = (Array.isArray(data) ? data : []).map((s) => s.name);
-      cached = { statuses: names, raw: data };
+      const list = Array.isArray(data) ? data : [];
+      const names = list.map((s) => s.name);
+      cached = { statuses: names, raw: list };
       setStatuses(names);
     } catch { setStatuses([]); }
     setLoading(false);
@@ -20,7 +21,7 @@ export function useCaseStatuses() {
 
   useEffect(() => { if (!cached) refresh(); }, [refresh]);
 
-  return { statuses, loading, refresh };
+  return { statuses, items: cached?.raw || [], loading, refresh };
 }
 
 export default useCaseStatuses;

@@ -38,9 +38,18 @@ export default function ManageCases() {
   const { refreshCases } = useAppData();
   const { can } = usePermissions();
   const { user } = useAuth();
-  const { names: stageNames } = useCaseStages();
-  const { statuses } = useCaseStatuses();
+  const { names: stageNames, stages } = useCaseStages();
+  const { statuses, items: statusItems } = useCaseStatuses();
   const { caseTypes } = useCaseTypes();
+
+  const stageColor = useMemo(
+    () => Object.fromEntries((stages || []).map((s) => [s.name, s.color || 'navy'])),
+    [stages]
+  );
+  const statusColor = useMemo(
+    () => Object.fromEntries((statusItems || []).map((s) => [s.name, s.color || 'grey'])),
+    [statusItems]
+  );
 
   const shortCodeMap = useMemo(() => {
     const map = {};
@@ -185,9 +194,9 @@ export default function ManageCases() {
                         <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{formatCaseNum(c)}</td>
                         <td className="manage-cases__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
                         <td>{c.courtName || combinedCourt(c)}</td>
-                        <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
+                        <td>{c.stage ? <Badge tone={stageColor[c.stage] || 'navy'}>{c.stage}</Badge> : '—'}</td>
                         <td className="manage-cases__cell-date">{formatDate(c.nextHearing)}</td>
-                        <td><Badge dot>{c.status}</Badge></td>
+                        <td>{c.status ? <Badge dot tone={statusColor[c.status] || 'grey'}>{c.status}</Badge> : '—'}</td>
                         <td>
                           <div className="row-actions">
                             <button className="iconbtn" title="View" onClick={() => nav(`/cases/${c.id}`)}><Icon name="eye" size={15} /></button>
@@ -297,7 +306,10 @@ export default function ManageCases() {
                   </div>
                   <div className="cv-case-card__right">
                     <span className="cv-case-card__badge">
-                      <span className="cv-case-card__badge-dot" />
+                      <span
+                        className="cv-case-card__badge-dot"
+                        style={{ background: c.stage ? (stageColor[c.stage] || '#1e40af') : (statusColor[c.status] || '#6b7280') }}
+                      />
                       {c.stage || c.status || (c.archived ? 'Archived' : 'Active')}
                     </span>
                   </div>

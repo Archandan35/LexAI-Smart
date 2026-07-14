@@ -45,6 +45,22 @@ export default function CaseTypes() {
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
+  // One-time backfill: legacy rows with no display_order get sequential order so
+  // the list stays stable (editing must not reorder records).
+  const renumberedRef = useRef(false);
+  useEffect(() => {
+    if (renumberedRef.current) return;
+    if (loading || !Array.isArray(caseTypes) || !caseTypes.length) return;
+    if (caseTypes.every((i) => !i.display_order)) {
+      renumberedRef.current = true;
+      (async () => {
+        const ordered = caseTypes.map((i, idx) => ({ ...i, display_order: idx + 1 }));
+        await Promise.all(ordered.map((i) => caseTypeLogic.update(i.id, { display_order: i.display_order }).catch(() => {})));
+        refresh();
+      })();
+    }
+  }, [caseTypes, loading, refresh]);
+
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
   const [newStatus, setNewStatus] = useState('Active');

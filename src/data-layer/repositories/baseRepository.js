@@ -20,9 +20,24 @@ async function ensureCollectionExists(db, collection) {
   const exists = await db.collectionExists(providerName).catch(() => false);
   if (!exists) {
     const schema = getSchema(collection);
-    await db.ensureCollection(providerName, schema || {}).catch(() => {});
+    const res = await db.ensureCollection(providerName, schema || {}).catch(() => null);
+    // A newly created table is invisible to PostgREST until its schema cache is
+    // reloaded — do it now so the immediate retry can see the columns.
+    if (res?.created && typeof db.reloadSchema === 'function') {
+      await db.reloadSchema();
+      await new Promise((r) => setTimeout(r, 350));
+    }
   }
   return exists;
+}
+
+// After we add columns (or create a table) via raw SQL, PostgREST keeps a stale
+// schema cache and the next write 400s. Reload the cache and pause briefly so
+// the retry runs against the refreshed schema.
+async function refreshSchemaAfterProvision(db, provisioned) {
+  if (!provisioned || typeof db.reloadSchema !== 'function') return;
+  await db.reloadSchema();
+  await new Promise((r) => setTimeout(r, 400));
 }
 
 async function ensureRecordColumns(db, collection, record) {
@@ -31,6 +46,7 @@ async function ensureRecordColumns(db, collection, record) {
   if (!schema || typeof db.listColumns !== 'function') return;
   const liveColumns = await db.listColumns(providerName).catch(() => null);
 
+  let added = false;
   if (liveColumns) {
     const liveNames = new Set(liveColumns.map((c) => c.name.toLowerCase()));
     for (const [field, val] of Object.entries(record)) {
@@ -39,13 +55,16 @@ async function ensureRecordColumns(db, collection, record) {
       const pgType = EntityRegistry.pgType(schema.fields?.[field] || (typeof val === 'number' ? 'numeric' : 'text'));
       await db.ensureColumn(providerName, field, pgType).catch(() => {});
       liveNames.add(field.toLowerCase());
+      added = true;
     }
   } else {
     for (const [field, type] of Object.entries(schema.fields || {})) {
       if (field === 'id') continue;
       await db.ensureColumn(providerName, field, EntityRegistry.pgType(type)).catch(() => {});
+      added = true;
     }
   }
+  await refreshSchemaAfterProvision(db, added);
 }
 
 async function withProvisioning(provider, collection, fn) {
@@ -160,8 +179,22 @@ export function createRepository(collection) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerPatch);
         await grantCollectionAccess(provider, entityName);
-        const result = await provider.update(providerName(), id, providerPatch);
-        return FieldMapper.toLexAI(entityName, result);
+        // PostgREST schema cache reload (triggered inside ensureRecordColumns)
+        // is asynchronous; retry a few times so a freshly-added column is seen.
+        let lastErr = err;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            const result = await provider.update(providerName(), id, providerPatch);
+            return FieldMapper.toLexAI(entityName, result);
+          } catch (e) {
+            lastErr = e;
+            if (typeof provider.reloadSchema === 'function') {
+              await provider.reloadSchema();
+              await new Promise((r) => setTimeout(r, 400));
+            }
+          }
+        }
+        throw lastErr;
       }
     },
 

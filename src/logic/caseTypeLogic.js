@@ -51,24 +51,30 @@ export const caseTypeLogic = {
 
   async update(id, data) {
     try {
-      const name = (data.name || '').trim();
-      let shortCode = (data.short_code || '').trim();
-      if (!name) return fail('Case type name is required.');
-      if (!shortCode) shortCode = autoShortCode(name);
-      const existing = await caseTypeService.list();
-      if (existing.some((t) => t.id !== id && t.name.toLowerCase() === name.toLowerCase())) {
-        return fail(`A case type with name "${name}" already exists.`);
+      const patch = {};
+      let name;
+      if (data.name !== undefined) {
+        name = (data.name || '').trim();
+        if (!name) return fail('Case type name is required.');
+        patch.name = name;
       }
-      if (shortCode && existing.some((t) => t.id !== id && t.short_code.toLowerCase() === shortCode.toLowerCase())) {
-        return fail(`A case type with short code "${shortCode}" already exists.`);
+      if (data.short_code !== undefined) patch.short_code = (data.short_code || '').trim();
+      if (data.description !== undefined) patch.description = (data.description || '').trim();
+      if (data.display_order !== undefined) patch.display_order = data.display_order;
+      if (data.color !== undefined) patch.color = data.color;
+      if (data.status !== undefined) patch.status = data.status || 'Active';
+
+      if (name !== undefined) {
+        const existing = await caseTypeService.list();
+        if (existing.some((t) => t.id !== id && t.name.toLowerCase() === name.toLowerCase())) {
+          return fail(`A case type with name "${name}" already exists.`);
+        }
+        const shortCode = patch.short_code || autoShortCode(name);
+        if (shortCode && existing.some((t) => t.id !== id && t.short_code.toLowerCase() === shortCode.toLowerCase())) {
+          return fail(`A case type with short code "${shortCode}" already exists.`);
+        }
       }
-      return ok(await caseTypeService.update(id, {
-        name,
-        short_code: data.short_code,
-        display_order: data.display_order,
-        color: data.color,
-        status: data.status,
-      }));
+      return ok(await caseTypeService.update(id, patch));
     } catch (err) { return fail(err); }
   },
 

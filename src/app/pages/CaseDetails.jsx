@@ -23,6 +23,8 @@ import { stripHtml, useFormat } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
+import { useCaseStages } from '@/hooks/useCaseStages.js';
+import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import HearingFormModal from '@/components/HearingFormModal.jsx';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
@@ -41,6 +43,11 @@ export default function CaseDetails() {
     const match = caseTypes.find((t) => t.name?.toLowerCase() === ct.toLowerCase() || t.short_code?.toLowerCase() === ct.toLowerCase());
     return match ? match.name : ct;
   }, [caseTypes]);
+  const caseTypeTone = Object.fromEntries((caseTypes || []).map((t) => [t.name, t.color || 'grey']));
+  const { stages } = useCaseStages();
+  const stageTone = Object.fromEntries((stages || []).map((s) => [s.name, s.color || 'navy']));
+  const { items: statusItems } = useCaseStatuses();
+  const statusTone = Object.fromEntries((statusItems || []).map((s) => [s.name, s.color || 'grey']));
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
   const [tab, setTab] = useState(params.get('tab') || 'Overview');
@@ -447,8 +454,8 @@ export default function CaseDetails() {
           {tab === 'Case Tracking' && (
             <>
               <Card title="Case Tracking">
-                <Row label="Current Stage" value={c.stage} />
-                <Row label="Status" value={c.status} />
+                <Row label="Current Stage" value={c.stage ? <Badge tone={stageTone[c.stage] || 'navy'}>{c.stage}</Badge> : '—'} />
+                <Row label="Status" value={c.status ? <Badge tone={statusTone[c.status] || 'grey'}>{c.status}</Badge> : '—'} />
                 <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
                 <Row label="Filing Date" value={formatDate(c.filingDate)} />
                 <Row label="Registration Date" value={formatDate(c.registration_date)} />
@@ -478,7 +485,7 @@ export default function CaseDetails() {
               <Row label="Case Display Number" value={c.case_display_number} />
               <Row label="Case Number (Numeric)" value={c.case_number} />
               <Row label="Case Year" value={c.case_year} />
-              <Row label="Case Type" value={resolveCaseType(c.case_type)} />
+              <Row label="Case Type" value={resolveCaseType(c.case_type) ? <Badge tone={caseTypeTone[resolveCaseType(c.case_type)] || 'grey'}>{resolveCaseType(c.case_type)}</Badge> : '—'} />
               <Row label="CNR Number" value={c.cnr_number} />
               <Row label="Filing Number" value={c.filing_number} />
               <Row label="Registration Number" value={c.registration_number} />
@@ -534,7 +541,7 @@ export default function CaseDetails() {
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{c.courtName || combinedCourt(c)}</span>
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="users" size={14} /></span>{c.judge || '—'}</span>
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filingDate)}</span>
-                {c.case_type && <Badge tone="grey">{resolveCaseType(c.case_type)}</Badge>}
+                {c.case_type && <Badge tone={caseTypeTone[resolveCaseType(c.case_type)] || 'grey'}>{resolveCaseType(c.case_type)}</Badge>}
               </div>
             </div>
             <div className="page-header__actions row-actions row-actions--wide">
@@ -547,7 +554,7 @@ export default function CaseDetails() {
           </div>
 
           <div className="case-detail__metrics">
-            <Metric icon="target" label="Current Stage" value={c.stage || '—'} />
+            <Metric icon="target" label="Current Stage" value={c.stage ? <Badge tone={stageTone[c.stage] || 'navy'}>{c.stage}</Badge> : '—'} />
             <Metric icon="calendar" label="Next Hearing" value={formatDate(c.nextHearing)} />
             <Metric icon="alert" label="Priority" value={<Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority || '—'}</Badge>} flag />
             <Metric icon="file" label="Documents" value={documents.length} />
@@ -575,7 +582,7 @@ export default function CaseDetails() {
                 >
                   <Row label="Case Number" value={c.case_display_number || c.caseNumber} />
                   <Row label="Case Year" value={c.case_year} />
-                  <Row label="Case Type" value={resolveCaseType(c.case_type)} />
+                  <Row label="Case Type" value={resolveCaseType(c.case_type) ? <Badge tone={caseTypeTone[resolveCaseType(c.case_type)] || 'grey'}>{resolveCaseType(c.case_type)}</Badge> : '—'} />
                   <Row label="Case Stage" value={c.stage} />
                   <Row label="Filing Date" value={formatDate(c.filingDate)} />
                   <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
@@ -583,8 +590,8 @@ export default function CaseDetails() {
                   <Row label="Court Name" value={c.courtName} />
                   <Row label="Bench Type" value={c.bench_type} />
                   <Row label="Judge" value={c.judge} />
-                  <Row label="Status" value={c.status} />
-                  <Row label="Priority" value={c.priority} />
+                  <Row label="Status" value={c.status ? <Badge tone={statusTone[c.status] || 'grey'}>{c.status}</Badge> : '—'} />
+                  <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
                   <Row label="Client" value={c.client} />
                   <Row label="Advocate" value={c.advocate} />
                 </Card>
@@ -712,8 +719,8 @@ export default function CaseDetails() {
           {tab === 'Case Tracking' && (
             <div className="grid-2">
               <Card title="Case Tracking">
-                <Row label="Current Stage" value={c.stage} />
-                <Row label="Status" value={c.status} />
+                <Row label="Current Stage" value={c.stage ? <Badge tone={stageTone[c.stage] || 'navy'}>{c.stage}</Badge> : '—'} />
+                <Row label="Status" value={c.status ? <Badge tone={statusTone[c.status] || 'grey'}>{c.status}</Badge> : '—'} />
                 <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
                 <Row label="Filing Date" value={formatDate(c.filingDate)} />
                 <Row label="Registration Date" value={formatDate(c.registration_date)} />
@@ -743,7 +750,7 @@ export default function CaseDetails() {
               <Row label="Case Display Number" value={c.case_display_number} />
               <Row label="Case Number (Numeric)" value={c.case_number} />
               <Row label="Case Year" value={c.case_year} />
-              <Row label="Case Type" value={resolveCaseType(c.case_type)} />
+              <Row label="Case Type" value={resolveCaseType(c.case_type) ? <Badge tone={caseTypeTone[resolveCaseType(c.case_type)] || 'grey'}>{resolveCaseType(c.case_type)}</Badge> : '—'} />
               <Row label="CNR Number" value={c.cnr_number} />
               <Row label="Filing Number" value={c.filing_number} />
               <Row label="Registration Number" value={c.registration_number} />

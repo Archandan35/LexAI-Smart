@@ -41,16 +41,18 @@ export const jurisdictionLogic = {
 
   async update(id, data) {
     try {
-      const name = (data.name || '').trim();
-      if (!name) return fail('Jurisdiction name is required.');
-      return ok(await jurisdictionService.update(id, {
-        name,
-        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
-        description: (data.description || '').trim(),
-        display_order: data.display_order,
-        color: data.color,
-        status: data.status,
-      }));
+      const patch = {};
+      if (data.name !== undefined) {
+        const name = (data.name || '').trim();
+        if (!name) return fail('Jurisdiction name is required.');
+        patch.name = name;
+      }
+      if (data.short_code !== undefined) patch.short_code = (data.short_code || '').trim().toUpperCase();
+      if (data.description !== undefined) patch.description = (data.description || '').trim();
+      if (data.display_order !== undefined) patch.display_order = data.display_order;
+      if (data.color !== undefined) patch.color = data.color;
+      if (data.status !== undefined) patch.status = data.status || 'Active';
+      return ok(await jurisdictionService.update(id, patch));
     } catch (err) { return fail(err); }
   },
 
