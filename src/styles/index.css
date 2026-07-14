@@ -11028,31 +11028,36 @@ kbd.cmd__kbd {
   }
   .order-sheet__tpl-actions {
     flex-direction: row;
-    gap: 8px;
+    gap: 0;
     width: 100%;
-    justify-content: center;
+    justify-content: space-around;
     margin-left: 0;
     padding-top: 10px;
     margin-top: 2px;
+    border-top: 1px solid var(--border);
   }
-  .order-sheet__tpl-action {
-    width: 32px;
-    height: 32px;
+  .order-sheet__tpl-action:hover {
+    background: var(--surface-2);
+    color: var(--text-soft);
   }
 }
 
 .order-sheet__tpl-action {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  gap: 2px;
   border: none;
-  border-radius: 4px;
   background: transparent;
   color: var(--text-faint);
   cursor: pointer;
   transition: all 0.15s;
+  font-family: inherit;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  min-width: 44px;
 }
 
 .order-sheet__tpl-action:hover {
@@ -14971,18 +14976,26 @@ kbd.cmd__kbd {
   overflow: hidden;
 }
 
-.cl-card__meta {
+.cl-card__court-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
   align-items: center;
-  margin-bottom: 10px;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 12px;
   color: var(--text-soft);
+  margin-bottom: 4px;
 }
 
-.cl-card__meta-item {
+.cl-card__meta-row {
   display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+}
+
+.cl-card__meta-row span {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
 }
@@ -15019,6 +15032,9 @@ kbd.cmd__kbd {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .cl-card__dates-item--next .cl-card__dates-value {

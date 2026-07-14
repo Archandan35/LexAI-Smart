@@ -793,34 +793,36 @@ export default function OrderSheet() {
                               </span>
                             </div>
                             <div className="cl-card__parties">{h.parties}</div>
-                            <div className="cl-card__meta">
-                              <div className="cl-card__meta-item">🏛 {h.court}</div>
-                              <div className="cl-card__meta-item">👥 {h.case?.bench_type || '—'}</div>
-                              <div className="cl-card__meta-item">👨‍⚖ {h.case?.judge || h.judge || '—'}</div>
+                            <div className="cl-card__court-row">
+                              <Icon name="building" size={13} /> {h.court}
+                            </div>
+                            <div className="cl-card__meta-row">
+                              <span><Icon name="users" size={13} /> {h.case?.bench_type || '—'}</span>
+                              <span><Icon name="user" size={13} /> {h.case?.judge || h.judge || '—'}</span>
                             </div>
                             <div className="cl-card__dates">
                               <div className="cl-card__dates-item cl-card__dates-item--next">
                                 <span className="cl-card__dates-label">Next Hearing</span>
-                                <span className="cl-card__dates-value">📅 {formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</span>
+                                <span className="cl-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</span>
                               </div>
                               <div className="cl-card__dates-divider" />
                               <div className="cl-card__dates-item cl-card__dates-item--last">
                                 <span className="cl-card__dates-label">Last Hearing</span>
-                                <span className="cl-card__dates-value">📅 {formatDate(h.date) || '—'}</span>
+                                <span className="cl-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(h.date) || '—'}</span>
                               </div>
                             </div>
                             <div className="cl-card__actions">
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); setPreviewHearing(h); }} title="View">
-                                👁 <span>View</span>
+                                <Icon name="eye" size={14} /><span>View</span>
                               </button>
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); openEdit(h); }} title="Edit">
-                                ✏ <span>Edit</span>
+                                <Icon name="edit" size={14} /><span>Edit</span>
                               </button>
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); duplicateHearing(h); }} title="Duplicate">
-                                📄 <span>Duplicate</span>
+                                <Icon name="copy" size={14} /><span>Duplicate</span>
                               </button>
                               <button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
-                                🗑 <span>Delete</span>
+                                <Icon name="trash" size={14} /><span>Delete</span>
                               </button>
                             </div>
                           </div>
@@ -942,10 +944,10 @@ export default function OrderSheet() {
                               </div>
                             </div>
                             <div className="order-sheet__tpl-actions">
-                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
-                              <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
-                              <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
-                              <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /><span>View</span></button>
+                              <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /><span>Edit</span></button>
+                              <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /><span>Duplicate</span></button>
+                              <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /><span>Delete</span></button>
                             </div>
                           </div>
                         );
