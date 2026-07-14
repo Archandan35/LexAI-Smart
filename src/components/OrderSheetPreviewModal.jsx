@@ -303,11 +303,11 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                   <span>Hearing Details</span>
                   <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
                 </div>
-                <div className="hpm-grid hpm-grid--4col">
+                  <div className="hpm-grid hpm-grid--4col">
                   <div className="hpm-hcell">
                     <div className="hpm-hcell__icon"><Icon name="calendar" size={15} strokeWidth={2} /></div>
                     <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Date</span>
+                      <span className="hpm-hcell__label">Last Hearing Date</span>
                       <span className="hpm-hcell__value">{formatDate(data.date) || '—'}</span>
                     </div>
                   </div>
