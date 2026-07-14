@@ -1201,7 +1201,7 @@ export default function OrderSheet() {
                             {visibleColumns.court && <td>{h.court}</td>}
                             {visibleColumns.bench && <td>{h.case?.bench_type || '—'}</td>}
                             {visibleColumns.purpose && <td>{h.purpose || '—'}</td>}
-                            {visibleColumns.nextHearingDate && <td>{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</td>}
+                            {visibleColumns.nextHearingDate && <td className="order-sheet__cell-nowrap">{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</td>}
                             {visibleColumns.postedFor && <td>{h.postedFor || h.posted_for || '—'}</td>}
                             {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                             {visibleColumns.status && (

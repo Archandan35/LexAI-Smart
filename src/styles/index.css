@@ -6697,6 +6697,11 @@ kbd.cmd__kbd {
 /* ---- OrderSheet additions ---- */
 .order-sheet__cell-date {
   font-weight: 650;
+  white-space: nowrap;
+}
+
+.order-sheet__cell-nowrap {
+  white-space: nowrap;
 }
 
 .table td.order-sheet__cell-actions {
@@ -8364,6 +8369,11 @@ kbd.cmd__kbd {
 /* ---- OrderSheet additions ---- */
 .order-sheet__cell-date {
   font-weight: 650;
+  white-space: nowrap;
+}
+
+.order-sheet__cell-nowrap {
+  white-space: nowrap;
 }
 
 .table td.order-sheet__cell-actions {
@@ -10721,7 +10731,9 @@ kbd.cmd__kbd {
   font-size: 12px;
   font-weight: 600;
   border-radius: 20px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
 }
 
