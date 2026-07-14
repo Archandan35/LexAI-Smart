@@ -1,0 +1,3 @@
+# SPA fallback: serve the prebuilt shell for every route in one hop.
+# 200 (rewrite, not 301/302) = no redirect chain, single round trip.
+/*    /index.html    200

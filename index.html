@@ -5,10 +5,32 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="LexAI — AI-powered Indian Litigation Assistant" />
+    <meta name="theme-color" content="#1c2f72" />
     <title>LexAI — Indian Litigation Assistant</title>
+    <style>
+      /* Critical inline shell: paints instantly before the JS bundle parses.
+         React replaces #root on mount, removing this automatically. */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f7f8fc;
+      }
+      #app-splash .spin {
+        width: 38px;
+        height: 38px;
+        border: 3px solid #d7ddf0;
+        border-top-color: #1c2f72;
+        border-radius: 50%;
+        animation: app-splash-spin 0.7s linear infinite;
+      }
+      @keyframes app-splash-spin { to { transform: rotate(360deg); } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div id="app-splash"><div class="spin"></div></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

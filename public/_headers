@@ -1,0 +1,27 @@
+# Cloudflare Pages / Netlify edge headers
+# Content-hashed build assets never change for a given hash -> cache forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Other fingerprint-safe static asset types.
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=604800
+/*.png
+  Cache-Control: public, max-age=604800
+/*.jpg
+  Cache-Control: public, max-age=604800
+/*.webp
+  Cache-Control: public, max-age=604800
+
+# The HTML shell must always be revalidated so a new deploy's hashed
+# asset URLs are picked up immediately on the next address-bar visit.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

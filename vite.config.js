@@ -16,8 +16,18 @@ export default defineConfig({
     open: true,
   },
   build: {
+    // Modern browsers only -> smaller, faster-parsing output.
+    target: 'es2020',
+    cssCodeSplit: true,
+    // Skip gzip-size reporting during build (host does brotli at the edge).
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 900,
     rollupOptions: {
       output: {
+        // Content-hashed filenames = safe to cache immutably (see public/_headers).
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
         },
