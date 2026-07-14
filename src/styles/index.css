@@ -13151,16 +13151,16 @@ kbd.cmd__kbd {
 
 .hpm-header__title {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
-  color: var(--text);
-  line-height: 1.3;
+  color: #0F172A;
+  line-height: 1.25;
 }
 
 .hpm-header__subtitle {
   margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--text-soft);
+  font-size: 14px;
+  color: #64748B;
 }
 
 .hpm-header__right {
@@ -13179,17 +13179,19 @@ kbd.cmd__kbd {
 }
 
 .hpm-icon-circle--xl {
-  width: 48px;
-  height: 48px;
-  background: var(--brand-soft);
-  color: var(--navy-700);
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: #EAF0FE;
+  color: #2A5BD7;
 }
 
 .hpm-icon-circle--md {
-  width: 32px;
-  height: 32px;
-  background: var(--brand-soft);
-  color: var(--navy-600);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #EAF0FE;
+  color: #2A5BD7;
 }
 
 .hpm-icon-circle--doc {
@@ -13270,21 +13272,22 @@ kbd.cmd__kbd {
 
 /* ── Close Button ── */
 .hpm-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  border: none;
-  background: var(--surface-2);
-  color: var(--text-soft);
+  border: 1px solid #E2E8F0;
+  background: #fff;
+  color: #94A3B8;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 50%;
   transition: all 0.15s var(--ease);
 }
 
 .hpm-close-btn:hover {
-  background: var(--red-soft);
-  color: var(--red);
+  background: #F8FAFC;
+  color: #64748B;
+  border-color: #CBD5E1;
 }
 
 /* ── Body ── */
@@ -13310,12 +13313,55 @@ kbd.cmd__kbd {
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .hpm-section-title span {
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
+}
+
+/* ── Chevron (expand/collapse) ── */
+.hpm-chevron-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+.hpm-chevron {
+  display: block;
+  margin-left: auto;
+  color: #94A3B8;
+  transform: rotate(-90deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.hpm-chevron-btn .hpm-chevron {
+  margin-left: 0;
+}
+
+.hpm-card--collapsed .hpm-chevron {
+  transform: rotate(90deg);
+}
+
+.hpm-card--collapsed .hpm-section-body {
+  display: none;
+}
+
+.hpm-card--collapsed .hpm-section-title {
+  margin-bottom: 0;
 }
 
 .hpm-section-title__actions {
@@ -13447,6 +13493,33 @@ kbd.cmd__kbd {
   word-break: break-word;
 }
 
+/* ── Parties (plaintiff / vs / defendant) ── */
+.hpm-parties {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.hpm-parties__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F172A;
+  line-height: 1.3;
+}
+
+.hpm-parties__vs {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #EAF0FE;
+  color: #2A5BD7;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
 /* ── Hearing Grids ── */
 .hpm-grid--4col {
   display: grid;
@@ -13459,6 +13532,94 @@ kbd.cmd__kbd {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+/* ── Hearing Hero Row (Last / Next Hearing Date) ── */
+.hpm-hero-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 16px;
+}
+
+.hpm-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+}
+
+.hpm-hero--last {
+  background: #FFF4EC;
+}
+
+.hpm-hero--next {
+  background: #EAF8F0;
+}
+
+.hpm-hero__divider {
+  width: 1px;
+  align-self: stretch;
+  background: #E5E7EB;
+  margin: 4px 12px;
+  flex-shrink: 0;
+}
+
+.hpm-hero__icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.hpm-hero--last .hpm-hero__icon { background: #FBE2D0; color: #9A3412; }
+.hpm-hero--next .hpm-hero__icon { background: #CDEDD9; color: #16a05a; }
+
+.hpm-hero__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hpm-hero__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hpm-hero--last .hpm-hero__label { color: #C2703B; }
+.hpm-hero--next .hpm-hero__label { color: #4E9E77; }
+
+.hpm-hero__value {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hpm-hero--last .hpm-hero__value { color: #9A3412; }
+.hpm-hero--next .hpm-hero__value { color: #16a05a; }
+
+/* ── Hearing Detail Panel (shaded 2x2) ── */
+.hpm-detail-panel {
+  background: #F5F6FB;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.hpm-detail-panel .hpm-grid--2x2 {
+  gap: 16px;
+}
+
+.hpm-detail-panel .hpm-hcell__icon {
+  background: transparent;
+  color: #64748B;
+  width: 26px;
+  height: 26px;
 }
 
 /* ── Hearing Cell ── */
@@ -13559,20 +13720,35 @@ kbd.cmd__kbd {
   display: none;
 }
 
-.hpm-chevron {
-  display: none;
-}
-
 .hpm-action-bar {
-  display: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+  padding: 16px 28px;
+  margin: 0 28px 24px;
+  border-top: 1px solid #E5E7EB;
 }
 
 .hpm-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.hpm-action-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
 }
 
 /* ── Order Sheet Preview Modal — Tabs ── */
@@ -13586,7 +13762,11 @@ kbd.cmd__kbd {
 
 .hpm-tab {
   flex: 1;
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted, #64748b);
@@ -15597,7 +15777,7 @@ kbd.cmd__kbd {
   }
 
   .hpm-chevron {
-    display: none;
+    display: block;
   }
 
   .hpm-grid--2x2,
@@ -15606,6 +15786,28 @@ kbd.cmd__kbd {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     margin-bottom: 0;
+  }
+
+  /* New structures — horizontal insets on mobile */
+  .hpm-hero-row {
+    margin: 12px 16px 0;
+  }
+
+  .hpm-detail-panel {
+    margin: 12px 16px 16px;
+    padding: 4px 14px;
+  }
+
+  .hpm-detail-panel .hpm-grid--2x2 {
+    gap: 0;
+  }
+
+  .hpm-detail-panel .hpm-hcell {
+    padding: 12px 2px;
+  }
+
+  .hpm-detail-panel .hpm-hcell:nth-child(odd) {
+    border-right: none;
   }
 
   .hpm-cell,
@@ -15703,14 +15905,13 @@ kbd.cmd__kbd {
   }
 
   .hpm-hcell .hpm-pill {
-    display: inline-block;
-    background: #e6f9ef;
-    color: #16a05a;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     border-radius: 6px;
     padding: 3px 10px;
     font-size: 11.5px;
     font-weight: 700;
-    border: 1.5px solid #a8e8c8;
   }
 
   .hpm-proceedings {

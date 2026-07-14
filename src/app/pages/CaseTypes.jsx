@@ -723,9 +723,9 @@ export default function CaseTypes() {
             <tr>
               {bulkMode && <th className="cmp-th--w40"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
               <th className="cmp-th--w32"></th>
+              <th className="cmp-th--w40">#</th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th><span className="cmp-sort">ORDER <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
               <th className="cmp-th--w200">ACTIONS</th>
             </tr>
@@ -746,6 +746,7 @@ export default function CaseTypes() {
                   <td className="cmp-drag-cell">
                     <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                   </td>
+                  <td><span className="cmp-order-num">{item.display_order}</span></td>
                   <td>
                     <div className="cmp-name-cell">
                       <span className="cmp-color-swatch-lg" style={{ '--swatch-color': item.color || '#6b7280' }} />
@@ -754,7 +755,6 @@ export default function CaseTypes() {
                     </div>
                   </td>
                   <td><span className="cmp-code-pill">{item.short_code}</span></td>
-                  <td>{item.display_order ?? '—'}</td>
                   <td>
                     <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>

@@ -29,6 +29,13 @@ const statusColour = (s) => {
   return 'grey';
 };
 
+const splitParties = (s) => {
+  if (!s) return null;
+  const m = String(s).split(/\s+(?:vs?\.?|versus)\s+/i);
+  if (m.length < 2) return null;
+  return { plaintiff: m[0].trim(), defendant: m.slice(1).join(' vs ').trim() };
+};
+
 export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDocument, cases: allCases }) {
   const { formatDate, formatDateTime } = useFormat();
   const [tab, setTab] = useState('current');
@@ -39,6 +46,9 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
   const [editDraft, setEditDraft] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [viewHearing, setViewHearing] = useState(hearing);
+  const [collapsed, setCollapsed] = useState({});
+
+  const toggleSection = (key) => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const data = viewHearing || doc;
   if (!data) return null;
@@ -195,7 +205,10 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
               </span>
             )}
             {data.status && (
-              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
+              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>
+                {statusColour(data.status) === 'green' && <Icon name="check-circle" size={13} strokeWidth={2.2} />}
+                {data.status}
+              </span>
             )}
             <button className="hpm-close-btn" onClick={onClose} aria-label="Close">
               <Icon name="close" size={18} strokeWidth={2} />
@@ -211,7 +224,10 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
               </span>
             )}
             {data.status && (
-              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
+              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>
+                {statusColour(data.status) === 'green' && <Icon name="check-circle" size={13} strokeWidth={2.2} />}
+                {data.status}
+              </span>
             )}
           </div>
         )}
@@ -222,13 +238,13 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
               className={`hpm-tab ${tab === 'current' ? 'hpm-tab--active' : ''}`}
               onClick={() => { setTab('current'); setViewHearing(hearing); }}
             >
-              Current
+              <Icon name="clock" size={14} strokeWidth={2} /> Current
             </button>
             <button
               className={`hpm-tab ${tab === 'historical' ? 'hpm-tab--active' : ''}`}
               onClick={() => setTab('historical')}
             >
-              Historical
+              <Icon name="clock" size={14} strokeWidth={2} /> Historical
             </button>
           </div>
         )}
@@ -257,14 +273,15 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
             </div>
           ) : (
             <div className="hpm-body">
-              <div className="hpm-card hpm-card--section">
-                <div className="hpm-section-title">
+              <div className={`hpm-card hpm-card--section${collapsed.info ? ' hpm-card--collapsed' : ''}`}>
+                <button type="button" className="hpm-section-title" onClick={() => toggleSection('info')}>
                   <div className="hpm-icon-circle hpm-icon-circle--md">
                     <Icon name="info" size={16} strokeWidth={2} />
                   </div>
                   <span>Case Information</span>
-                  <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
-                </div>
+                  <Icon className="hpm-chevron" name="chevron" size={16} strokeWidth={2.5} />
+                </button>
+                <div className="hpm-section-body">
                 <div className="hpm-grid hpm-grid--2x2">
                   <div className="hpm-cell">
                     <div className="hpm-cell__icon"><Icon name="doc" size={16} strokeWidth={2} /></div>
@@ -277,7 +294,18 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                     <div className="hpm-cell__icon"><Icon name="users" size={16} strokeWidth={2} /></div>
                     <div className="hpm-cell__body">
                       <span className="hpm-cell__label">Parties</span>
-                      <span className="hpm-cell__value">{data.parties || data.case?.title || '—'}</span>
+                      {(() => {
+                        const raw = data.parties || data.case?.title || '—';
+                        const parts = splitParties(raw);
+                        if (!parts) return <span className="hpm-cell__value">{raw}</span>;
+                        return (
+                          <span className="hpm-cell__value hpm-parties">
+                            <span className="hpm-parties__name">{parts.plaintiff}</span>
+                            <span className="hpm-parties__vs">vs</span>
+                            <span className="hpm-parties__name">{parts.defendant}</span>
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div className="hpm-cell">
@@ -295,67 +323,76 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
 
-              <div className="hpm-card hpm-card--section">
-                <div className="hpm-section-title">
+              <div className={`hpm-card hpm-card--section${collapsed.hearing ? ' hpm-card--collapsed' : ''}`}>
+                <button type="button" className="hpm-section-title" onClick={() => toggleSection('hearing')}>
                   <div className="hpm-icon-circle hpm-icon-circle--md">
                     <Icon name="calendar" size={16} strokeWidth={2} />
                   </div>
                   <span>Hearing Details</span>
-                  <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
-                </div>
-                  <div className="hpm-grid hpm-grid--4col">
-                  <div className="hpm-hcell">
-                    <div className="hpm-hcell__icon"><Icon name="calendar" size={15} strokeWidth={2} /></div>
-                    <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Last Hearing Date</span>
-                      <span className="hpm-hcell__value">{formatDate(data.date) || '—'}</span>
+                  <Icon className="hpm-chevron" name="chevron" size={16} strokeWidth={2.5} />
+                </button>
+                <div className="hpm-section-body">
+                  <div className="hpm-hero-row">
+                    <div className="hpm-hero hpm-hero--last">
+                      <div className="hpm-hero__icon"><Icon name="calendar" size={16} strokeWidth={2} /></div>
+                      <div className="hpm-hero__body">
+                        <span className="hpm-hero__label">Last Hearing Date</span>
+                        <span className="hpm-hero__value">{formatDate(data.date) || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="hpm-hero__divider" />
+                    <div className="hpm-hero hpm-hero--next">
+                      <div className="hpm-hero__icon"><Icon name="calendar" size={16} strokeWidth={2} /></div>
+                      <div className="hpm-hero__body">
+                        <span className="hpm-hero__label">Next Hearing Date</span>
+                        <span className="hpm-hero__value">{formatDate(data.nextHearingDate || data.next_hearing_date) || '—'}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="hpm-hcell">
-                    <div className="hpm-hcell__icon"><Icon name="calendar" size={15} strokeWidth={2} /></div>
-                    <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Next Hearing Date</span>
-                      <span className="hpm-hcell__value">{formatDate(data.nextHearingDate || data.next_hearing_date) || '—'}</span>
-                    </div>
-                  </div>
-                  <div className="hpm-hcell">
-                    <div className="hpm-hcell__icon"><Icon name="doc" size={15} strokeWidth={2} /></div>
-                    <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Purpose</span>
-                      <span className="hpm-hcell__value">{data.purpose || '—'}</span>
-                    </div>
-                  </div>
-                  <div className="hpm-hcell">
-                    <div className="hpm-hcell__icon"><Icon name="flag" size={15} strokeWidth={2} /></div>
-                    <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Posted For</span>
-                      <span className="hpm-hcell__value">{data.postedFor || data.posted_for || '—'}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="hpm-grid hpm-grid--2col">
-                  <div className="hpm-hcell">
-                    <div className="hpm-hcell__icon"><Icon name="shield" size={15} strokeWidth={2} /></div>
-                    <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Status</span>
-                      <span className="hpm-hcell__value">
-                        <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="hpm-hcell">
-                    <div className="hpm-hcell__icon"><Icon name="user" size={15} strokeWidth={2} /></div>
-                    <div className="hpm-hcell__body">
-                      <span className="hpm-hcell__label">Judge</span>
-                      <span className="hpm-hcell__value">{data.judge || data.case?.judge || '—'}</span>
+                  <div className="hpm-detail-panel">
+                    <div className="hpm-grid hpm-grid--2x2">
+                      <div className="hpm-hcell">
+                        <div className="hpm-hcell__icon"><Icon name="flag" size={15} strokeWidth={2} /></div>
+                        <div className="hpm-hcell__body">
+                          <span className="hpm-hcell__label">Purpose</span>
+                          <span className="hpm-hcell__value">{data.purpose || '—'}</span>
+                        </div>
+                      </div>
+                      <div className="hpm-hcell">
+                        <div className="hpm-hcell__icon"><Icon name="gavel" size={15} strokeWidth={2} /></div>
+                        <div className="hpm-hcell__body">
+                          <span className="hpm-hcell__label">Posted For</span>
+                          <span className="hpm-hcell__value">{data.postedFor || data.posted_for || '—'}</span>
+                        </div>
+                      </div>
+                      <div className="hpm-hcell">
+                        <div className="hpm-hcell__icon"><Icon name="shield" size={15} strokeWidth={2} /></div>
+                        <div className="hpm-hcell__body">
+                          <span className="hpm-hcell__label">Status</span>
+                          <span className="hpm-hcell__value">
+                            <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>
+                              {statusColour(data.status) === 'green' && <Icon name="check-circle" size={12} strokeWidth={2.2} />}
+                              {data.status}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="hpm-hcell">
+                        <div className="hpm-hcell__icon"><Icon name="users" size={15} strokeWidth={2} /></div>
+                        <div className="hpm-hcell__body">
+                          <span className="hpm-hcell__label">Bench</span>
+                          <span className="hpm-hcell__value">{data.bench || data.case?.bench_type || data.case?.benchType || '—'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="hpm-card hpm-card--section">
+              <div className={`hpm-card hpm-card--section${collapsed.proceedings ? ' hpm-card--collapsed' : ''}`}>
                 <div className="hpm-section-title">
                   <div className="hpm-icon-circle hpm-icon-circle--md">
                     <Icon name="doc" size={16} strokeWidth={2} />
@@ -375,8 +412,11 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                       </>
                     )}
                   </div>
-                  <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
+                  <button type="button" className="hpm-chevron-btn" onClick={() => toggleSection('proceedings')} aria-label="Toggle section">
+                    <Icon className="hpm-chevron" name="chevron" size={16} strokeWidth={2.5} />
+                  </button>
                 </div>
+                <div className="hpm-section-body">
                 {editNotes ? (
                   <div className="hpm-proceedings hpm-proceedings--edit">
                     <DocEditor value={editDraft} onChange={setEditDraft} />
@@ -390,6 +430,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                     <span className="muted">No proceedings recorded.</span>
                   </div>
                 )}
+                </div>
               </div>
             </div>
           )
