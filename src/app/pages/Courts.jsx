@@ -412,6 +412,7 @@ export default function Courts() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const bulkMode = activeAction === 'delete' && subMode === 'bulk';
 
   const rootItems = filtered.filter((i) => !i.parent_id).sort((a, b) => a.display_order - b.display_order);
   const getChildren = (parentId) => filtered.filter((i) => i.parent_id === parentId).sort((a, b) => a.display_order - b.display_order);
@@ -439,22 +440,16 @@ export default function Courts() {
             onDrop={(e) => handleDrop(e, item.id)}
             onDragEnd={handleDragEnd}
           >
+            {bulkMode && <td className="cmp-check-cell"><input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} onClick={stopRowDnD} /></td>}
             <td className="cmp-drag-cell">
               <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
             </td>
             <td><span className="cmp-order-num">{item.display_order}</span></td>
-            <td className="courts__cell courts__cell--checkbox">
-              <input
-                type="checkbox"
-                checked={selected.has(item.id)}
-                onChange={() => handleSelect(item.id)}
-                onClick={stopRowDnD}
-              />
-            </td>
             <td className="cmp-indent" style={{ '--indent': `${16 + depth * 24}px` }}>
               <div className="cmp-name-cell">
-                <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
-                <span className="courts__name">{item.name}</span>
+                <span className="cmp-color-swatch-lg" style={{ '--swatch-color': item.color || '#6b7280' }} />
+                <span className="cmp-name-avatar"><Icon name="building" size={15} /></span>
+                <span className="cmp-cell-name">{item.name}</span>
               </div>
             </td>
             <td>
@@ -710,17 +705,7 @@ export default function Courts() {
                     </label>
                     <span className="cmp-checkbox-count">{bulkDelSelected.size} selected</span>
                   </div>
-                  <div className="cmp-checkbox-list">
-                    {filtered.length === 0 ? (
-                      <div className="cmp-empty">No courts to display.</div>
-                    ) : filtered.map(item => (
-                      <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
-                        <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
-                        <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'red'}`}>{item.status}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <div className="cmp-drag-hint">Tick the rows in the table below to select records for deletion.</div>
                   {bulkDelSelected.size > 0 && (
                     <div className="cmp-warning">
                       <Icon name="alert" size={16} />
@@ -897,9 +882,9 @@ export default function Courts() {
         <table className="cmp-table">
           <thead>
             <tr>
+              {bulkMode && <th className="cmp-th--w40"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
               <th className="cmp-th--w32"></th>
               <th className="cmp-th--w40">#</th>
-              <th className="courts__th-checkbox"><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
               <th>Court Name</th>
               <th>Shortcode</th>
               <th>Parent</th>
@@ -909,7 +894,7 @@ export default function Courts() {
           </thead>
           <tbody>
             {rootItems.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={8}>No courts defined.</td></tr>
+              <tr><td className="cmp-empty" colSpan={bulkMode ? 8 : 7}>No courts defined.</td></tr>
             ) : renderTree(rootItems)}
           </tbody>
         </table>
@@ -935,11 +920,7 @@ export default function Courts() {
         </div>
       </div>
 
-      {selected.size > 0 && (
-        <div className="cmp-mt8">
-          <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
-        </div>
-      )}
+
 
       {/* ── Mobile View ── */}
       <div className="cmp-mobile-only">

@@ -19907,6 +19907,18 @@ kbd.cmd__kbd {
   text-align: center;
 }
 
+.cmp-check-cell {
+  text-align: center;
+  width: 40px;
+}
+
+.cmp-check-cell input[type="checkbox"] {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--brand);
+}
+
 .cmp-drag-handle {
   display: inline-flex;
   cursor: grab;

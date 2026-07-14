@@ -277,6 +277,7 @@ export default function Priorities() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const bulkMode = activeAction === 'delete' && subMode === 'bulk';
 
   const handleDragStart = (e, idx) => {
     setDragIdx(idx);
@@ -616,18 +617,7 @@ export default function Priorities() {
                     </label>
                     <span className="cmp-checkbox-count">{bulkDelSelected.size} selected</span>
                   </div>
-                  <div className="cmp-checkbox-list">
-                    {filtered.length === 0 ? (
-                      <div className="cmp-empty">No priorities to display.</div>
-                    ) : filtered.map(item => (
-                      <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
-                        <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
-                        <div className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
-                        <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className={`cmp-checkbox-status cmp-checkbox-status--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <div className="cmp-drag-hint">Tick the rows in the table below to select records for deletion.</div>
                   {bulkDelSelected.size > 0 && (
                     <div className="cmp-warning">
                       <Icon name="alert" size={16} />
@@ -760,9 +750,9 @@ export default function Priorities() {
         <table className="cmp-table">
           <thead>
             <tr>
+              {bulkMode && <th className="cmp-th--w40"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
               <th className="cmp-th--w32"></th>
               <th className="cmp-th--w40">#</th>
-              <th className="cmp-th--w40">CLR</th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
@@ -771,7 +761,7 @@ export default function Priorities() {
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={7}>No priorities found.</td></tr>
+              <tr><td className="cmp-empty" colSpan={bulkMode ? 7 : 6}>No priorities found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -779,13 +769,14 @@ export default function Priorities() {
                 onDragEnd={handleDragEnd}
                 className={`cmp-row${dragIdx === (safePage - 1) * perPage + idx ? ' cmp-row--dragging' : ''}`}
               >
+                {bulkMode && <td className="cmp-check-cell"><input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} /></td>}
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
                 <td><span className="cmp-order-num">{item.display_order}</span></td>
-                <td><div className="cmp-color-swatch-lg" style={{ '--swatch-color': item.color || '#6b7280' }} /></td>
                 <td>
                   <div className="cmp-name-cell">
+                    <span className="cmp-color-swatch-lg" style={{ '--swatch-color': item.color || '#6b7280' }} />
                     <span className="cmp-name-avatar"><Icon name="flag" size={15} /></span>
                     <span className="cmp-cell-name">{item.name}</span>
                   </div>

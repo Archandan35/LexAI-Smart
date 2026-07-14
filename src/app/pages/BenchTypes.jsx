@@ -263,6 +263,7 @@ export default function BenchTypes() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const bulkMode = activeAction === 'delete' && subMode === 'bulk';
 
   const handleDragStart = (e, idx) => {
     setDragIdx(idx);
@@ -589,17 +590,7 @@ export default function BenchTypes() {
                     </label>
                     <span className="bench-types__checkbox-count">{bulkDelSelected.size} selected</span>
                   </div>
-                  <div className="bench-types__checkbox-list">
-                    {filtered.length === 0 ? (
-                      <div className="bench-types__checkbox-empty">No bench types to display.</div>
-                    ) : filtered.map(item => (
-                      <label key={item.id} className={`bench-types__checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
-                        <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
-                        <span className="bench-types__checkbox-name">{item.name}</span>
-                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>{item.status}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <div className="cmp-drag-hint">Tick the rows in the table below to select records for deletion.</div>
                   {bulkDelSelected.size > 0 && (
                     <div className="bench-types__warning">
                       <Icon name="alert" size={16} />
@@ -754,6 +745,7 @@ export default function BenchTypes() {
         <table className="bench-types__table">
           <thead>
             <tr>
+              {bulkMode && <th className="bench-types__th--w32"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
               <th className="bench-types__th--w32"></th>
               <th className="bench-types__th--w32">#</th>
               <th><span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
@@ -764,7 +756,7 @@ export default function BenchTypes() {
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="bench-types__empty" colSpan={6}>No bench types found.</td></tr>
+              <tr><td className="bench-types__empty" colSpan={bulkMode ? 7 : 6}>No bench types found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -772,15 +764,16 @@ export default function BenchTypes() {
                 onDragEnd={handleDragEnd}
                 className={`bench-types__row${dragIdx === (safePage - 1) * perPage + idx ? ' bench-types__row--dragging' : ''}`}
               >
-                <td className="bench-types__drag-cell">
-                  <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
+                {bulkMode && <td className="cmp-check-cell"><input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} /></td>}
+                <td className="cmp-drag-cell">
+                  <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
                 <td><span className="cmp-order-num">{item.display_order}</span></td>
                 <td>
-                  <div className="bench-types__name-cell">
-                    <span className="bench-types__name-avatar"><Icon name="users" size={15} /></span>
-                    <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
-                    <span className="bench-types__cell-name">{item.name}</span>
+                  <div className="cmp-name-cell">
+                    <span className="cmp-color-swatch-lg" style={{ '--swatch-color': item.color || '#6b7280' }} />
+                    <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>
+                    <span className="cmp-cell-name">{item.name}</span>
                   </div>
                 </td>
                 <td><span className="bench-types__code-pill">{item.short_code}</span></td>
