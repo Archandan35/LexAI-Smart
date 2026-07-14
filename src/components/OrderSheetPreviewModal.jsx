@@ -17,28 +17,9 @@ function fmtCaseNumber(c) {
   return c.case_display_number || c.caseNumber || String(cn || '') || '—';
 }
 
-const STATUS_COLORS = [
-  { bg: '#fce4ec', text: '#c62828', border: '#ef9a9a', dot: '#c62828' },
-  { bg: '#fff4e6', text: '#e8590c', border: '#ffc078', dot: '#e8590c' },
-  { bg: '#f4fce3', text: '#5c940d', border: '#c0eb75', dot: '#5c940d' },
-  { bg: '#edf2ff', text: '#364fc7', border: '#bac8ff', dot: '#364fc7' },
-  { bg: '#f3e5f5', text: '#7b1fa2', border: '#ce93d8', dot: '#7b1fa2' },
-  { bg: '#e0f2f1', text: '#00695c', border: '#80cbc4', dot: '#00695c' },
-  { bg: '#fff8e1', text: '#f57f17', border: '#ffe082', dot: '#f57f17' },
-  { bg: '#fbe9e7', text: '#bf360c', border: '#ffab91', dot: '#bf360c' },
-  { bg: '#e8eaf6', text: '#283593', border: '#9fa8da', dot: '#283593' },
-  { bg: '#fafafa', text: '#424242', border: '#bdbdbd', dot: '#424242' },
-];
-
-function getStatusStyle(status) {
-  let hash = 0;
-  const s = status || '';
-  for (let i = 0; i < s.length; i++) {
-    hash = s.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const idx = Math.abs(hash) % STATUS_COLORS.length;
-  return STATUS_COLORS[idx];
-}
+const ACCENT_COLORS = {
+  green: '#16a05a', blue: '#1e40af', red: '#991b1b', orange: '#9a3412', grey: '#475569',
+};
 
 const statusColour = (s) => {
   const map = { completed: 'green', scheduled: 'blue', active: 'green', cancelled: 'red', adjourned: 'orange', disposed: 'grey' };
@@ -380,22 +361,22 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 </div>
                 <div className="hpm-historical-list">
                 {sortedHistorical.map((h) => {
-                  const st = getStatusStyle(h.status);
-                  const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
+                  const tone = statusColour(h.status);
+                  const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at || h.date;
                   return (
                     <div
                       key={h.id}
                       className="hpm-historical-card"
                       onClick={() => handleHistoricalView(h)}
                     >
-                      <div className="hpm-historical-card__accent" style={{ background: st.dot }} />
+                      <div className="hpm-historical-card__accent" style={{ background: ACCENT_COLORS[tone] || ACCENT_COLORS.grey }} />
                       <div className="hpm-historical-card__body">
                         <div className="hpm-historical-card__header">
                           <span className="hpm-historical-card__date">
                             <Icon name="calendar" size={14} strokeWidth={2} /> {formatDate(h.date)}
                           </span>
-                          <span className="hpm-historical-card__status">
-                            <span className="hpm-historical-card__status-dot" style={{ background: st.dot }} />
+                          <span className={`hpm-pill hpm-pill--${tone}`}>
+                            <span className="dot" />
                             {h.status}
                           </span>
                         </div>

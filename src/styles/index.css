@@ -13257,6 +13257,52 @@ kbd.cmd__kbd {
   border: 1px solid #b8c8f0;
 }
 
+.hpm-pill--green {
+  background: #e6f9ef;
+  color: #16a05a;
+  border: 1.5px solid #a8e8c8;
+}
+
+.hpm-pill--blue {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1.5px solid #93c5fd;
+}
+
+.hpm-pill--red {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1.5px solid #fca5a5;
+}
+
+.hpm-pill--orange {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1.5px solid #fdba74;
+}
+
+.hpm-pill--grey {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid #cbd5e1;
+}
+
+/* Blinking dot animation */
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+.hpm-pill .dot,
+.hpm-historical-card__status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  background: currentColor;
+  animation: blink-dot 1.4s ease-in-out infinite;
+}
+
 /* ── Close Button ── */
 .hpm-close-btn {
   width: 32px;
@@ -15510,6 +15556,14 @@ kbd.cmd__kbd {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .hpm-historical-toolbar {
+    padding: 0 16px;
+  }
+
+  .hpm-historical-list {
+    padding: 0 16px 16px;
   }
 
   .hpm-card--section {
