@@ -15845,6 +15845,38 @@ kbd.cmd__kbd {
   }
 }
 
+@media (max-width: 991px) {
+  .cv-banner {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  .cv-banner__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .cv-banner__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .cv-banner__title {
+    font-size: 16px;
+  }
+  .cv-banner__btn {
+    padding: 7px 12px;
+    font-size: 12px;
+    gap: 4px;
+    border-radius: 8px;
+  }
+  .cv-banner__btn svg {
+    width: 15px;
+    height: 15px;
+  }
+  .cv-banner__desc {
+    font-size: 12px;
+  }
+}
+
 .case-details-mobile-view,
 .case-details-mobile-detail {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -16370,23 +16402,6 @@ kbd.cmd__kbd {
   line-height: 1.5;
   margin: 0;
   padding-right: 120px;
-}
-
-.cv-banner__illustration {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 130px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.cv-banner__illustration svg {
-  width: 120px;
-  height: 120px;
 }
 
 .cv-banner__btn {

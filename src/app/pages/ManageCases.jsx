@@ -22,34 +22,6 @@ import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate } from '@/utils/format.js';
 
-function VaultIllustration() {
-  return (
-    <svg viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="44" cy="96" rx="12" ry="4" fill="#a3b8e0" opacity="0.4" />
-      <rect x="38" y="78" width="12" height="18" rx="3" fill="#4f7abb" />
-      <rect x="36" y="75" width="16" height="6" rx="3" fill="#3a5fa0" />
-      <path d="M44 75 Q36 60 28 65 Q36 68 44 75" fill="#4ade80" opacity="0.85" />
-      <path d="M44 72 Q52 58 60 63 Q52 66 44 72" fill="#22c55e" opacity="0.85" />
-      <path d="M44 68 Q40 55 32 58 Q38 64 44 68" fill="#4ade80" opacity="0.6" />
-      <rect x="50" y="30" width="62" height="68" rx="8" fill="#4f7abb" />
-      <rect x="50" y="24" width="30" height="12" rx="6" fill="#4f7abb" />
-      <rect x="46" y="40" width="62" height="60" rx="8" fill="#6b95d4" />
-      <circle cx="77" cy="70" r="18" fill="white" opacity="0.2" />
-      <path d="M77 55 L90 60 L90 70 Q90 80 77 86 Q64 80 64 70 L64 60 Z" fill="white" opacity="0.35" />
-      <path d="M77 58 L87 62 L87 70 Q87 78 77 83 Q67 78 67 70 L67 62 Z" fill="white" opacity="0.5" />
-      <rect x="72" y="67" width="10" height="8" rx="2" fill="#1e3a8a" />
-      <path d="M73 67 Q73 62 77 62 Q81 62 81 67" stroke="#1e3a8a" strokeWidth="2" fill="none" />
-      <circle cx="77" cy="71" r="1.5" fill="white" />
-      <rect x="55" y="32" width="36" height="26" rx="4" fill="white" opacity="0.9" transform="rotate(-8 55 32)" />
-      <rect x="58" y="30" width="36" height="26" rx="4" fill="white" opacity="0.95" transform="rotate(-3 58 30)" />
-      <rect x="60" y="29" width="36" height="26" rx="4" fill="white" />
-      <line x1="64" y1="38" x2="92" y2="38" stroke="#c8d4ee" strokeWidth="1.5" />
-      <line x1="64" y1="43" x2="88" y2="43" stroke="#c8d4ee" strokeWidth="1.5" />
-      <line x1="64" y1="48" x2="84" y2="48" stroke="#c8d4ee" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
 function getStageVariant(stage) {
   if (!stage) return '';
   const s = stage.toLowerCase();
@@ -259,9 +231,6 @@ export default function ManageCases() {
             <p className="cv-banner__desc">
               Every matter with its documents, drafts, history, timeline and hearings in one secure place.
             </p>
-            <div className="cv-banner__illustration" aria-hidden="true">
-              <VaultIllustration />
-            </div>
           </div>
 
           <div className="cv-search-wrap">
