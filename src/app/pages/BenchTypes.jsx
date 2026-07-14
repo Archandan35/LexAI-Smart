@@ -7,6 +7,7 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Modal from '@/components/Modal.jsx';
 
 const ENTITY_PREFIX = 'BT';
 
@@ -60,6 +61,8 @@ export default function BenchTypes() {
 
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [dupTarget, setDupTarget] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [moreMenu, setMoreMenu] = useState(null);
@@ -104,6 +107,7 @@ export default function BenchTypes() {
     setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
     setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
+    setEditTarget(null); setDupTarget(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
     setPage(1);
   };
@@ -123,7 +127,7 @@ export default function BenchTypes() {
     setBusy(true);
     const res = await benchTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Bench type added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Bench type added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -163,7 +167,7 @@ export default function BenchTypes() {
     const item = items.find(x => x.id === editId);
     const res = await benchTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
     setBusy(false);
-    if (res.ok) { setEditId(''); toast.push('Bench type updated.', 'success'); load(); }
+    if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Bench type updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -294,18 +298,25 @@ export default function BenchTypes() {
   };
 
   const startEdit = (item) => {
-    setActiveAction('edit');
-    setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditStatus(item.status || 'Active');
+    setEditTarget(item);
   };
 
   const startDelete = (item) => {
     setActiveAction('delete');
     setSubMode('single');
     setDelId(item.id);
+  };
+
+  const startDuplicate = (item) => {
+    setNewName(item.name + ' (copy)');
+    setNewCode(item.short_code || '');
+    setNewStatus(item.status || 'Active');
+    setNewDesc(item.description || '');
+    setDupTarget(item);
   };
 
   const confirmDeleteItem = (item) => {
@@ -648,26 +659,79 @@ export default function BenchTypes() {
         </div>
       </div>
 
-      {viewItem && (
-        <Card className="bench-types__detail">
-          <div className="bench-types__detail-header">
-            <span className="bench-types__detail-title">{viewItem.name}</span>
-            <span className="bench-types__detail-code">{viewItem.short_code}</span>
-            <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
-            <button className="iconbtn bench-types__detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
+      <Modal open={!!viewItem} title={viewItem?.name} onClose={() => setViewItem(null)}>
+        <div className="bench-types__detail-body">
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Short Code</span>
+            <span className="bench-types__detail-value">{viewItem?.short_code || '—'}</span>
           </div>
-          <div className="bench-types__detail-body">
-            <div className="bench-types__detail-row">
-              <span className="bench-types__detail-label">Description</span>
-              <span className="bench-types__detail-value">{viewItem.description || '—'}</span>
-            </div>
-            <div className="bench-types__detail-row">
-              <span className="bench-types__detail-label">Display Order</span>
-              <span className="bench-types__detail-value">{viewItem.display_order ?? '—'}</span>
-            </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Status</span>
+            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem?.status || 'Active'}</span>
           </div>
-        </Card>
-      )}
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Description</span>
+            <span className="bench-types__detail-value">{viewItem?.description || '—'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Display Order</span>
+            <span className="bench-types__detail-value">{viewItem?.display_order ?? '—'}</span>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!editTarget} title="Edit Bench Type" onClose={() => setEditTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
+        </div>}>
+        <div className="bench-types__form-grid">
+          <div className="bench-types__field">
+            <label className="bench-types__label">Name <span className="bench-types__required">*</span></label>
+            <Input value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
+            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Status</label>
+            <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!dupTarget} title="Duplicate Bench Type" onClose={() => setDupTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Bench Type'}</Button>
+        </div>}>
+        <div className="bench-types__form-grid">
+          <div className="bench-types__field">
+            <label className="bench-types__label">Name <span className="bench-types__required">*</span></label>
+            <Input value={newName} placeholder="e.g., Single Bench" onChange={e => setNewName(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
+            <Input value={newCode} placeholder="e.g., SB" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Status</label>
+            <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Description <span className="bench-types__optional">(optional)</span></label>
+            <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
+            <span className="bench-types__char-count">{newDesc.length} / 250</span>
+          </div>
+        </div>
+      </Modal>
 
       <div className="bench-types__table-card">
         <table className="bench-types__table">
@@ -710,7 +774,7 @@ export default function BenchTypes() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(item.description || ''); setActiveAction('add'); setMoreMenu(null); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { startDuplicate(item); setMoreMenu(null); }}><Icon name="copy" size={15} /></button>
                     <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
                       title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                       onClick={() => handleToggle(item)}>
@@ -780,7 +844,7 @@ export default function BenchTypes() {
                 <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Edit</span>
               </button>
-              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(''); setNewStatus('Active'); setActiveAction('add'); }}>
+              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => startDuplicate(item)}>
                 <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Duplicate</span>
               </button>

@@ -6,6 +6,7 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Modal from '@/components/Modal.jsx';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -60,6 +61,8 @@ export default function CaseStages() {
 
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [dupTarget, setDupTarget] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const dragOrder = useRef(null);
@@ -87,6 +90,7 @@ export default function CaseStages() {
     setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active'); setEditDesc('');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
+    setEditTarget(null); setDupTarget(null);
     setFormCollapsed(false);
     setPage(1);
     setMoreMenu(null);
@@ -113,7 +117,7 @@ export default function CaseStages() {
     setBusy(true);
     const res = await caseStageLogic.add({ name: newName.trim(), short_code: newCode, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Case stage added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Case stage added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -146,7 +150,7 @@ export default function CaseStages() {
     setBusy(true);
     const res = await caseStageLogic.update(editId, { name: editName.trim(), short_code: editCode, status: editStatus });
     setBusy(false);
-    if (res.ok) { setEditId(''); toast.push('Case stage updated.', 'success'); load(); }
+    if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Case stage updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -295,19 +299,24 @@ export default function CaseStages() {
   }, [dragIdx, toast]);
 
   const startEdit = (item) => {
-    setActiveAction('edit');
-    setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditStatus(item.status || 'Active');
     setEditDesc(item.description || '');
+    setEditTarget(item);
   };
 
   const startDelete = (item) => {
     setActiveAction('delete');
     setSubMode('single');
     setDelId(item.id);
+  };
+
+  const startDuplicate = (item) => {
+    setNewName(item.name + ' (copy)');
+    setNewStatus(item.status || 'Active');
+    setDupTarget(item);
   };
 
   const confirmDeleteItem = (item) => {
@@ -406,6 +415,10 @@ export default function CaseStages() {
           </button>
         </div>
       </div>
+
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={14} /> Import CSV
+      </button>
 
       {activeAction && (
         <Card className="cmp-form">
@@ -576,33 +589,68 @@ export default function CaseStages() {
         <input ref={searchRef} value={search} placeholder="Search..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
 
-      {viewItem && (
-        <Card className="cmp-detail">
-          <div className="cmp-detail-header">
-            <span className="cmp-detail-title">{viewItem.name}</span>
-            <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
-              <span className="cmp-status-dot"></span>{viewItem.status || 'Active'}
+      <Modal open={!!viewItem} title={viewItem?.name} onClose={() => setViewItem(null)}>
+        <div className="cmp-detail-body">
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Name</span>
+            <span className="cmp-detail-value">{viewItem?.name}</span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Status</span>
+            <span className={`cmp-status-pill cmp-status-pill--${(viewItem?.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+              <span className="cmp-status-dot"></span>{viewItem?.status || 'Active'}
             </span>
-            <button className="cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
           </div>
-          <div className="cmp-detail-body">
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Name</span>
-              <span className="cmp-detail-value">{viewItem.name}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Status</span>
-              <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
-                <span className="cmp-status-dot"></span>{viewItem.status || 'Active'}
-              </span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Order</span>
-              <span className="cmp-detail-value">{viewItem.order ?? '—'}</span>
-            </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Order</span>
+            <span className="cmp-detail-value">{viewItem?.order ?? '—'}</span>
           </div>
-        </Card>
-      )}
+        </div>
+      </Modal>
+
+      <Modal open={!!editTarget} title="Edit Case Stage" onClose={() => setEditTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code</label>
+            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!dupTarget} title="Duplicate Case Stage" onClose={() => setDupTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Case Stage'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={newName} placeholder="e.g., Filing" onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
 
       <div className="cmp-table-card">
         <table className="cmp-table">
@@ -643,7 +691,7 @@ export default function CaseStages() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewStatus(item.status || 'Active'); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => startDuplicate(item)}><Icon name="copy" size={15} /></button>
                     <button className={`cmp-act-btn${item.status === 'Active' ? ' cmp-act-btn--toggle-on' : ' cmp-act-btn--toggle-off'}`}
                       title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                       onClick={() => handleToggle(item)}>
@@ -704,10 +752,6 @@ export default function CaseStages() {
           </div>
         </div>
 
-        <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
-          <Icon name="upload" size={14} /> Import CSV
-        </button>
-
         <div className="cmp-mobile-section-header">
           <span className="cmp-mobile-section-title">All Case Stages</span>
           <span className="cmp-mobile-section-count">{Math.min(perPage, filtered.length)} of {filtered.length}</span>
@@ -743,7 +787,7 @@ export default function CaseStages() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewStatus(item.status || 'Active'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => startDuplicate(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>

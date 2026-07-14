@@ -6,6 +6,7 @@ import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Modal from '@/components/Modal.jsx';
 
 const ENTITY_PREFIX = 'COU';
 
@@ -61,6 +62,8 @@ export default function Courts() {
 
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [dupTarget, setDupTarget] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [moreMenu, setMoreMenu] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
@@ -108,6 +111,7 @@ export default function Courts() {
     setEditId(''); setEditName(''); setEditCode(''); setEditParent(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
+    setEditTarget(null); setDupTarget(null);
     setPage(1);
   };
 
@@ -132,7 +136,7 @@ export default function Courts() {
     const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
     const res = await courtsLogic.create({ name: newName, short_code: newCode, parent_id: newParent || null, display_order: order, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewParent(''); setNewStatus('Active'); setNewDesc(''); toast.push('Court added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewParent(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Court added.', 'success'); load(); }
     else { toast.push(res.error, 'error'); }
   };
 
@@ -167,7 +171,7 @@ export default function Courts() {
     const item = items.find(x => x.id === editId);
     const res = await courtsLogic.update(editId, { name: editName, short_code: editCode, parent_id: editParent || null, display_order: item?.display_order, status: editStatus });
     setBusy(false);
-    if (res.ok) { setEditId(''); toast.push('Court updated.', 'success'); load(); }
+    if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Court updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -261,15 +265,21 @@ export default function Courts() {
     setBusy(false);
   };
 
-  // Edit modal
   const startEdit = (item) => {
-    setActiveAction('edit');
-    setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditParent(item.parent_id || '');
     setEditStatus(item.status || 'Active');
+    setEditTarget(item);
+  };
+
+  const startDuplicate = (item) => {
+    setNewName(item.name + ' (copy)');
+    setNewCode(item.short_code || '');
+    setNewParent(item.parent_id || '');
+    setNewStatus('Active');
+    setDupTarget(item);
   };
 
   const confirmDeleteItem = (item) => {
@@ -458,7 +468,7 @@ export default function Courts() {
               <div className="cmp-actions">
                 <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                 <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => duplicate(item)}><Icon name="copy" size={15} /></button>
+                <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => startDuplicate(item)}><Icon name="copy" size={15} /></button>
                 <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
                   title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                   onClick={() => handleToggle(item)}>
@@ -741,44 +751,95 @@ export default function Courts() {
         <input ref={searchRef} value={search} placeholder="Search courts…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
 
-      {/* View Detail Card */}
-      {viewItem && (
-        <Card className="cmp-detail">
-          <div className="cmp-detail-header">
-            <span className="cmp-detail-title">{viewItem.name}</span>
-            <span className="cmp-detail-code">{viewItem.short_code}</span>
-            <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
-            <button className="iconbtn cmp-detail-close" onClick={() => setViewItem(null)} title="Close"><Icon name="close" size={16} /></button>
+      <Modal open={!!viewItem} title={viewItem?.name} onClose={() => setViewItem(null)}>
+        <div className="cmp-detail-body">
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Code</span>
+            <span className="cmp-detail-value">{viewItem?.short_code || '—'}</span>
           </div>
-          <div className="cmp-detail-body">
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Status</span>
-              <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Parent</span>
-              <span className="cmp-detail-value">{viewItem.parent_id ? (items.find(i => i.id === viewItem.parent_id)?.name || viewItem.parent_id) : '—'}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Description</span>
-              <span className="cmp-detail-value">{viewItem.description || '—'}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Display Order</span>
-              <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">ID</span>
-              <span className="cmp-detail-value">{viewItem.id}</span>
-            </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Status</span>
+            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem?.status || 'Active'}</span>
           </div>
-          <div className="cmp-detail-footer">
-            <Button variant="ghost" size="sm" icon="edit" onClick={() => { setViewItem(null); activate('edit'); setEditId(viewItem.id); setEditName(viewItem.name); setEditCode(viewItem.short_code || ''); setEditParent(viewItem.parent_id || ''); setEditStatus(viewItem.status || 'Active'); }}>Edit</Button>
-            <Button variant="ghost" size="sm" icon="trash" className="cmp-btn-danger-outline" onClick={() => { setViewItem(null); startDelete(viewItem); }}>Delete</Button>
-            <Button variant="ghost" size="sm" icon="copy" onClick={() => { setViewItem(null); const newName = `${viewItem.name} (copy)`; setNewName(newName); setNewCode(viewItem.short_code ? `${viewItem.short_code}C` : ''); setNewParent(viewItem.parent_id || ''); setNewStatus('Active'); activate('add'); }}>Duplicate</Button>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Parent</span>
+            <span className="cmp-detail-value">{viewItem?.parent_id ? (items.find(i => i.id === viewItem.parent_id)?.name || viewItem.parent_id) : '—'}</span>
           </div>
-        </Card>
-      )}
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Description</span>
+            <span className="cmp-detail-value">{viewItem?.description || '—'}</span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Display Order</span>
+            <span className="cmp-detail-value">{viewItem?.display_order ?? '—'}</span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">ID</span>
+            <span className="cmp-detail-value">{viewItem?.id}</span>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!editTarget} title="Edit Court" onClose={() => setEditTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Parent Court</label>
+            <Select value={editParent} onChange={e => setEditParent(e.target.value)} options={[{ value: '', label: '— Root —' }, ...liveOptions(editId)]} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!dupTarget} title="Duplicate Court" onClose={() => setDupTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Court'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={newName} placeholder="e.g., Supreme Court" onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={newCode} placeholder="e.g., SC" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Parent Court</label>
+            <Select value={newParent} onChange={e => setNewParent(e.target.value)} options={[{ value: '', label: '— Root —' }, ...liveOptions(null)]} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Description <span className="cmp-optional">(optional)</span></label>
+            <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
+            <span className="cmp-char-count">{newDesc.length} / 250</span>
+          </div>
+        </div>
+      </Modal>
 
       {busy && (
         <div className="cmp-busy-overlay">
@@ -919,7 +980,7 @@ export default function Courts() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(''); setNewParent(item.parent_id || ''); setNewStatus('Active'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => startDuplicate(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>

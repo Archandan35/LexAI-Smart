@@ -37,13 +37,22 @@ export function bytes(n) {
 
 export function stripHtml(str) {
   if (!str) return '';
-  return str
+  // Add spacing after block closing tags to prevent text concatenation
+  let text = str
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n')
     .replace(/<\/div>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\n{3,}/g, '\n\n');
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    // Ensure space between adjacent tags so inline elements don't concatenate
+    .replace(/>(\s*)</g, '> <')
+    .replace(/<[^>]*>/g, '');
+  // Decode HTML entities via textarea (handles &amp; &lt; &gt; &quot; &nbsp; &#39; etc.)
+  const el = document.createElement('textarea');
+  el.innerHTML = text;
+  text = el.value;
+  return text;
 }
 
 export function truncate(str, len = 120) {

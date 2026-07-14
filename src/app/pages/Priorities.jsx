@@ -6,6 +6,7 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Modal from '@/components/Modal.jsx';
 
 const ENTITY_PREFIX = 'PR';
 
@@ -64,6 +65,8 @@ export default function Priorities() {
 
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [dupTarget, setDupTarget] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
@@ -110,6 +113,7 @@ export default function Priorities() {
     setNewName(''); setNewCode(''); setNewColor('#6b7280'); setNewStatus('Active'); setNewDesc('');
     setEditId(''); setEditName(''); setEditCode(''); setEditColor('#6b7280'); setEditStatus('');
     setDelId(''); setImportFile(null);
+    setEditTarget(null); setDupTarget(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
     setMoreMenu(null);
     setFormCollapsed(false);
@@ -137,7 +141,7 @@ export default function Priorities() {
     setBusy(true);
     const res = await priorityLogic.create({ name: newName, short_code: newCode, color: newColor, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewColor('#6b7280'); setNewStatus('Active'); setNewDesc(''); toast.push('Priority added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewColor('#6b7280'); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Priority added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -179,7 +183,7 @@ export default function Priorities() {
     const item = items.find(x => x.id === editId);
     const res = await priorityLogic.update(editId, { name: editName, short_code: editCode, color: editColor, description: item?.description, display_order: item?.display_order, status: editStatus });
     setBusy(false);
-    if (res.ok) { setEditId(''); toast.push('Priority updated.', 'success'); load(); }
+    if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Priority updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -319,13 +323,12 @@ export default function Priorities() {
   };
 
   const startEdit = (item) => {
-    setActiveAction('edit');
-    setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditColor(item.color || '#6b7280');
     setEditStatus(item.status || 'Active');
+    setEditTarget(item);
   };
 
   const startDelete = (item) => {
@@ -341,6 +344,15 @@ export default function Priorities() {
     setBusy(false);
     if (res.ok) { toast.push(`Priority ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); load(); }
     else toast.push(res.error, 'error');
+  };
+
+  const startDuplicate = (item) => {
+    setNewName(item.name + ' (copy)');
+    setNewCode(item.short_code || '');
+    setNewStatus(item.status || 'Active');
+    setNewDesc('');
+    setNewColor('#6b7280');
+    setDupTarget(item);
   };
 
   const confirmDeleteItem = (item) => {
@@ -680,30 +692,103 @@ export default function Priorities() {
         <input ref={searchRef} value={search} placeholder="Search..." autoComplete="off" onChange={e=>{setSearch(e.target.value);setPage(1);}} />
       </div>
 
-      {viewItem && (
-        <Card className="cmp-detail">
-          <div className="cmp-detail-header">
-            <div className="cmp-color-swatch-md" style={{ background: viewItem.color || '#6b7280' }} />
-            <span className="cmp-detail-title">{viewItem.name}</span>
-            <span className="cmp-code-pill">{viewItem.short_code}</span>
-            <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+      <Modal open={!!viewItem} title={viewItem?.name} onClose={() => setViewItem(null)}>
+        <div className="cmp-detail-body">
+          <div className="cmp-color-swatch-md" style={{ background: viewItem?.color || '#6b7280' }} />
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Short Code</span>
+            <span className="cmp-detail-value"><span className="cmp-code-pill">{viewItem?.short_code || '—'}</span></span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Status</span>
+            <span className={`cmp-status-pill cmp-status-pill--${(viewItem?.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
               <span className="cmp-status-dot"></span>
-              {viewItem.status}
+              {viewItem?.status || 'Active'}
             </span>
-            <button className="iconbtn cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
           </div>
-          <div className="cmp-detail-body">
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Description</span>
-              <span className="cmp-detail-value">{viewItem.description || '—'}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Display Order</span>
-              <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Description</span>
+            <span className="cmp-detail-value">{viewItem?.description || '—'}</span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Display Order</span>
+            <span className="cmp-detail-value">{viewItem?.display_order ?? '—'}</span>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!editTarget} title="Edit Priority" onClose={() => setEditTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Color</label>
+            <div className="cmp-color-picker-wrap">
+              {COLOR_OPTIONS.map((c) => (
+                <button key={c} className="cmp-color-btn" onClick={() => setEditColor(c)}
+                  style={{ background: c, border: editColor === c ? '2px solid #fff' : '2px solid transparent', outline: editColor === c ? '2px solid var(--brand)' : 'none' }}
+                />
+              ))}
             </div>
           </div>
-        </Card>
-      )}
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!dupTarget} title="Duplicate Priority" onClose={() => setDupTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Priority'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={newName} placeholder="e.g., Urgent" onChange={e => setNewName(e.target.value)} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={newCode} placeholder="e.g., URG" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Color</label>
+            <div className="cmp-color-picker-wrap">
+              {COLOR_OPTIONS.map((c) => (
+                <button key={c} className="cmp-color-btn" onClick={() => setNewColor(c)}
+                  style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Description <span className="cmp-optional">(optional)</span></label>
+            <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
+            <span className="cmp-char-count">{newDesc.length} / 250</span>
+          </div>
+        </div>
+      </Modal>
 
       <div className="cmp-table-card">
         <table className="cmp-table">
@@ -748,7 +833,7 @@ export default function Priorities() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(''); setNewColor('#6b7280'); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => startDuplicate(item)}><Icon name="copy" size={15} /></button>
                     <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
                       title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                       onClick={() => handleToggle(item)}>
@@ -845,7 +930,7 @@ export default function Priorities() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(''); setNewColor('#6b7280'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => startDuplicate(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>

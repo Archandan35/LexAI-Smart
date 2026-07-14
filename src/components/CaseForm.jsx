@@ -279,7 +279,6 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     delete payload.defendants;
     delete payload.presiding_officer;
     delete payload.next_hearing_date;
-    delete payload.jurisdiction;
     Object.keys(payload).forEach((k) => {
       if (payload[k] === '' || payload[k] === null || payload[k] === undefined) delete payload[k];
     });

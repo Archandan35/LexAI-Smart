@@ -6,6 +6,7 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Modal from '@/components/Modal.jsx';
 
 const ENTITY_PREFIX = 'JUR';
 
@@ -61,6 +62,8 @@ export default function Jurisdictions() {
 
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [dupTarget, setDupTarget] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
 
@@ -94,6 +97,7 @@ export default function Jurisdictions() {
     setEditId(''); setEditName(''); setEditCode('');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
+    setEditTarget(null); setDupTarget(null);
     setPage(1);
   };
 
@@ -109,7 +113,7 @@ export default function Jurisdictions() {
     setBusy(true);
     const res = await jurisdictionLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Jurisdiction added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Jurisdiction added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -152,7 +156,7 @@ export default function Jurisdictions() {
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     const item = items.find(x => x.id === editId);
     const res = await jurisdictionLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
-    if (res.ok) { setEditId(''); toast.push('Jurisdiction updated.', 'success'); load(); }
+    if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Jurisdiction updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -284,18 +288,25 @@ export default function Jurisdictions() {
   };
 
   const startEdit = (item) => {
-    setActiveAction('edit');
-    setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditStatus(item.status || 'Active');
+    setEditTarget(item);
   };
 
   const startDelete = (item) => {
     setActiveAction('delete');
     setSubMode('single');
     setDelId(item.id);
+  };
+
+  const startDuplicate = (item) => {
+    setNewName(item.name + ' (copy)');
+    setNewCode(item.short_code || '');
+    setNewStatus(item.status || 'Active');
+    setNewDesc(item.description || '');
+    setDupTarget(item);
   };
 
   const confirmDeleteItem = (item) => {
@@ -573,26 +584,71 @@ export default function Jurisdictions() {
         <input ref={searchRef} value={search} placeholder="Search..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
 
-      {viewItem && (
-        <Card className="cmp-detail">
-          <div className="cmp-detail-header">
-            <span className="cmp-detail-title">{viewItem.name}</span>
-            <span className="cmp-detail-code">{viewItem.short_code}</span>
-            <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
-            <button className="iconbtn cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
+      <Modal open={!!viewItem} title={viewItem?.name} onClose={() => setViewItem(null)}>
+        <div className="cmp-detail-body">
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Description</span>
+            <span className="cmp-detail-value">{viewItem?.description || '—'}</span>
           </div>
-          <div className="cmp-detail-body">
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Description</span>
-              <span className="cmp-detail-value">{viewItem.description || '—'}</span>
-            </div>
-            <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Display Order</span>
-              <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
-            </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Display Order</span>
+            <span className="cmp-detail-value">{viewItem?.display_order ?? '—'}</span>
           </div>
-        </Card>
-      )}
+        </div>
+      </Modal>
+
+      <Modal open={!!editTarget} title="Edit Jurisdiction" onClose={() => setEditTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!dupTarget} title="Duplicate Jurisdiction" onClose={() => setDupTarget(null)}
+        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Jurisdiction'}</Button>
+        </div>}>
+        <div className="cmp-form-grid">
+          <div className="cmp-field">
+            <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+            <Input value={newName} placeholder="e.g., Civil" onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={newCode} placeholder="e.g., CIV" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Status</label>
+            <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Description <span className="cmp-optional">(optional)</span></label>
+            <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
+            <span className="cmp-char-count">{newDesc.length} / 250</span>
+          </div>
+        </div>
+      </Modal>
 
       <div className="cmp-table-card">
         <table className="cmp-table">
@@ -635,7 +691,7 @@ export default function Jurisdictions() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(item.description || ''); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => startDuplicate(item)}><Icon name="copy" size={15} /></button>
                     <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
                       title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                       onClick={() => handleToggle(item)}>
@@ -732,7 +788,7 @@ export default function Jurisdictions() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => startDuplicate(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
