@@ -23,8 +23,14 @@ const ACCENT_COLORS = {
 };
 
 const statusColour = (s) => {
-  const map = { completed: 'green', scheduled: 'blue', active: 'green', cancelled: 'red', adjourned: 'orange', disposed: 'grey' };
-  return map[s?.toLowerCase()] || 'grey';
+  const v = (s || '').toLowerCase();
+  if (/completed|done|finished|closed/.test(v)) return 'green';
+  if (/scheduled|reserved|upcoming|pending|part.heard/.test(v)) return 'blue';
+  if (/active|progress|running|open/.test(v)) return 'green';
+  if (/cancelled|dismissed|rejected|vacated|struck/.test(v)) return 'red';
+  if (/adjourned|postponed|deferred|awaiting|continuance/.test(v)) return 'orange';
+  if (/disposed|settled|withdrawn|decided|judgment/.test(v)) return 'grey';
+  return 'grey';
 };
 
 export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDocument, cases: allCases }) {
