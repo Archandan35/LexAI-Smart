@@ -57,22 +57,41 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
   if (!data) return null;
 
   const isDoc = !!doc;
-  const caseId = !isDoc ? (data.caseId || data.case_id || data.case?.caseId || data.case?._id) : null;
 
-  const linkedCase = !isDoc && data.caseId && allCases
-    ? allCases.find((c) => c.id === data.caseId)
+  const caseId = !isDoc ? (
+    data.caseId || data.case_id
+    || data.case?.id
+    || data.case?.caseId || data.case?._id
+    || (allCases && allCases.find((h) =>
+      h.id === data.id || h._id === data._id
+    )?.case?.id)
+  ) : null;
+
+  const linkedCase = !isDoc && allCases
+    ? allCases.find((h) => h.case?.id === caseId)?.case || null
     : null;
 
   useEffect(() => {
     if (tab === 'historical' && caseId && !isDoc) {
       setLoading(true);
       const fetchHistorical = async () => {
+        const finalCaseId = caseId;
         try {
-          const [caseRes, hearingsRes, historyRows] = await Promise.all([
-            caseService.getCase(caseId).catch(() => null),
-            caseService.listHearings(caseId).catch(() => []),
-            caseHistoryService.list(caseId).catch(() => []),
+          let [caseRes, hearingsRes, historyRows] = await Promise.all([
+            caseService.getCase(finalCaseId).catch(() => null),
+            caseService.listHearings(finalCaseId).catch(() => null),
+            caseHistoryService.list(finalCaseId).catch(() => null),
           ]);
+
+          if ((!hearingsRes || hearingsRes.length === 0) && finalCaseId) {
+            const all = await caseService.listHearings().catch(() => []);
+            hearingsRes = all.filter((h) => (h.caseId || h.case_id) === finalCaseId);
+          }
+          if ((!historyRows || historyRows.length === 0) && finalCaseId) {
+            const all = await caseHistoryService.list().catch(() => []);
+            historyRows = all.filter((h) => (h.caseId || h.case_id) === finalCaseId);
+          }
+
           const theCase = caseRes?.data || caseRes;
 
           const seen = new Set();
@@ -90,7 +109,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
             .forEach((h) => {
               addItem({
                 ...h,
-                caseId: h.caseId || h.case_id || caseId,
+                caseId: h.caseId || h.case_id || finalCaseId,
                 case: theCase,
                 caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
                 parties: theCase?.title || '—',
@@ -105,7 +124,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
               addItem({
                 ...h,
                 notes: h.text || h.notes,
-                caseId: h.caseId || caseId,
+                caseId: h.caseId || finalCaseId,
                 case: theCase,
                 caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
                 parties: theCase?.title || '—',
