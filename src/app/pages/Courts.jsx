@@ -76,7 +76,6 @@ export default function Courts() {
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
 
-  const [selected, setSelected] = useState(new Set());
   const [dragId, setDragId] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
 
@@ -312,44 +311,6 @@ export default function Courts() {
       else toast.push(res.error, 'error');
     } catch (err) { toast.push(err?.message || 'Failed to toggle status.', 'error'); }
   }, [load, toast]);
-
-  // Legacy tree functions
-  const removeBulk = async () => {
-    if (!selected.size) return;
-    const count = selected.size;
-    setConfirmState({
-      title: 'Delete Courts',
-      message: `Delete ${count} court(s)?`,
-      variant: 'danger',
-      confirmLabel: 'Delete All',
-      onConfirm: async () => {
-        setConfirmState(null);
-        setBusy(true);
-        const res = await courtsLogic.bulkRemove([...selected]);
-        setBusy(false);
-        if (res.ok) {
-          setSelected(new Set());
-          toast.push(`${res.data?.deleted || count} court(s) deleted.`, 'success');
-          await load();
-        } else { toast.push(res.error, 'error'); }
-      },
-      onCancel: () => setConfirmState(null),
-    });
-  };
-
-  const handleSelectAll = (e) => {
-    if (e.target.checked) setSelected(new Set(filtered.map((t) => t.id)));
-    else setSelected(new Set());
-  };
-
-  const handleSelect = (id) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const duplicate = async (item) => {
     const res = await courtsLogic.create({ name: `${item.name} (Copy)`, short_code: item.short_code, parent_id: item.parent_id });
