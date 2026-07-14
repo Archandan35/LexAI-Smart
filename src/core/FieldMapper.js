@@ -46,7 +46,7 @@ const DEFAULT_MAPPINGS = {
   case_folders: { ...COMMON, caseId: 'case_id', parentId: 'parent_id' },
   case_history: { caseId: 'case_id', createdAt: 'created_at' },
   case_statuses: { ...COMMON },
-  case_stages: { createdAt: 'created_at' },
+  case_stages: { ...COMMON },
   case_types: { ...COMMON },
   cause_list_templates: { ...COMMON },
   config_history: { changedBy: 'changed_by' },
