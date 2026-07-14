@@ -249,16 +249,16 @@ export default function ManageCases() {
               </div>
               <div className="cv-banner__text">
                 <h2 className="cv-banner__title">Manage Cases</h2>
-                <p className="cv-banner__desc">
-                  Every matter with its documents, drafts, history, timeline and hearings in one secure place.
-                </p>
               </div>
+              <PermissionGate perm="manageCase.create">
+                <button className="cv-banner__btn" onClick={() => setOpen(true)}>
+                  <Icon name="plus" size={20} />New Case
+                </button>
+              </PermissionGate>
             </div>
-            <PermissionGate perm="manageCase.create">
-              <button className="cv-banner__btn" onClick={() => setOpen(true)}>
-                <Icon name="plus" size={20} />New Case
-              </button>
-            </PermissionGate>
+            <p className="cv-banner__desc">
+              Every matter with its documents, drafts, history, timeline and hearings in one secure place.
+            </p>
             <div className="cv-banner__illustration" aria-hidden="true">
               <VaultIllustration />
             </div>
@@ -311,7 +311,7 @@ export default function ManageCases() {
             <div className="cv-empty">No cases found.</div>
           ) : (
             filtered.map((c) => (
-              <article key={c.id} className="cv-case-card">
+              <article key={c.id} className={`cv-case-card${c.archived ? ' cv-case-card--archived' : ''}`}>
                 <div className="cv-case-card__row1">
                   <div className="cv-case-card__left">
                     <button
@@ -326,12 +326,10 @@ export default function ManageCases() {
                     </div>
                   </div>
                   <div className="cv-case-card__right">
-                    <span className={`cv-badge-status${c.archived ? ' cv-badge-status--archived' : ''}`}>
+                    <span className="cv-case-card__badge">
+                      <span className="cv-case-card__badge-dot" />
                       {c.status || (c.archived ? 'Archived' : 'Active')}
                     </span>
-                    <button className="cv-kebab" aria-label="Case options">
-                      <Icon name="more-vertical" size={18} />
-                    </button>
                   </div>
                 </div>
 
@@ -346,12 +344,12 @@ export default function ManageCases() {
                 </div>
 
                 <div className="cv-case-card__dates">
-                  <div className="cv-case-card__dates-item">
+                  <div className="cv-case-card__dates-item cv-case-card__dates-item--next">
                     <span className="cv-case-card__dates-label">Next Hearing</span>
                     <span className="cv-case-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(c.nextHearing) || '—'}</span>
                   </div>
                   <div className="cv-case-card__dates-divider" />
-                  <div className="cv-case-card__dates-item">
+                  <div className="cv-case-card__dates-item cv-case-card__dates-item--last">
                     <span className="cv-case-card__dates-label">Last Hearing</span>
                     <span className="cv-case-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(c.updatedAt || c.registration_date) || '—'}</span>
                   </div>

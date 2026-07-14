@@ -16312,7 +16312,8 @@ kbd.cmd__kbd {
 
 .cv-banner__top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 14px;
 }
 
@@ -16337,7 +16338,7 @@ kbd.cmd__kbd {
   font-weight: 800;
   color: var(--navy-900);
   letter-spacing: -0.4px;
-  margin: 0 0 6px;
+  margin: 0;
 }
 
 .cv-banner__desc {
@@ -16345,6 +16346,7 @@ kbd.cmd__kbd {
   color: var(--text-soft);
   line-height: 1.5;
   margin: 0;
+  padding-right: 120px;
 }
 
 .cv-banner__illustration {
@@ -16367,27 +16369,22 @@ kbd.cmd__kbd {
 .cv-banner__btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--navy-700);
   color: #fff;
   border: none;
-  border-radius: 12px;
-  padding: 12px 22px;
-  font-size: 14.5px;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(30, 58, 138, .22);
-  transition: transform .15s var(--ease), box-shadow .2s var(--ease);
-  width: fit-content;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .15s var(--ease);
 }
 
 .cv-banner__btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(30, 58, 138, .32);
-}
-
-.cv-banner__btn:active {
-  transform: translateY(0);
+  background: var(--navy-800);
 }
 
 /* ── Search bar ── */
@@ -16559,8 +16556,8 @@ kbd.cmd__kbd {
   flex-shrink: 0;
 }
 
-/* ── Status badge ── */
-.cv-badge-status {
+/* ── Status badge with blinking dot ── */
+.cv-case-card__badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -16574,28 +16571,29 @@ kbd.cmd__kbd {
   white-space: nowrap;
 }
 
-.cv-badge-status--archived {
+.cv-case-card__badge-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: cv-blink 1.2s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+@keyframes cv-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.cv-case-card--archived .cv-case-card__badge {
   background: var(--amber-soft);
   color: var(--amber);
   border-color: #f0dba8;
 }
 
-/* ── Kebab menu ── */
-.cv-kebab {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-faint);
-  display: grid;
-  place-items: center;
-  padding: 2px;
-  border-radius: 6px;
-  transition: background .15s;
-}
-
-.cv-kebab:hover {
-  background: var(--surface-2);
-  color: var(--text);
+.cv-case-card--archived .cv-case-card__badge-dot {
+  background: var(--amber);
 }
 
 /* ── Parties text ── */
@@ -16662,13 +16660,20 @@ kbd.cmd__kbd {
 .cv-case-card__dates-value {
   font-size: 13px;
   font-weight: 700;
-  color: var(--navy-700);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-flex;
   align-items: center;
   gap: 3px;
+}
+
+.cv-case-card__dates-item--next .cv-case-card__dates-value {
+  color: #0b7285;
+}
+
+.cv-case-card__dates-item--last .cv-case-card__dates-value {
+  color: #e67700;
 }
 
 .cv-case-card__dates-divider {
