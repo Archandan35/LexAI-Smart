@@ -213,7 +213,7 @@ export default function ManageCases() {
                         <td className="manage-cases__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
                         <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
-                        <td>{formatDate(c.nextHearing)}</td>
+                        <td className="manage-cases__cell-date">{formatDate(c.nextHearing)}</td>
                         <td><Badge dot>{c.status}</Badge></td>
                         <td>
                           <div className="row-actions">
@@ -328,7 +328,7 @@ export default function ManageCases() {
                   <div className="cv-case-card__right">
                     <span className="cv-case-card__badge">
                       <span className="cv-case-card__badge-dot" />
-                      {c.status || (c.archived ? 'Archived' : 'Active')}
+                      {c.stage || c.status || (c.archived ? 'Archived' : 'Active')}
                     </span>
                   </div>
                 </div>

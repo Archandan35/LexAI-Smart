@@ -133,7 +133,6 @@ select {
 
 .page-area {
   padding: 26px 32px 60px;
-  max-width: 1320px;
   width: 100%;
   margin: 0 auto;
 }
@@ -6679,6 +6678,7 @@ kbd.cmd__kbd {
 .manage-cases__cell-case {
   font-weight: 650;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .manage-cases__cell-clickable {
@@ -6687,6 +6687,11 @@ kbd.cmd__kbd {
 
 .manage-cases__th-actions {
   width: 160px;
+  white-space: nowrap;
+}
+
+.manage-cases__cell-date {
+  white-space: nowrap;
 }
 
 /* ---- OrderSheet additions ---- */
@@ -8340,6 +8345,7 @@ kbd.cmd__kbd {
 .manage-cases__cell-case {
   font-weight: 650;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .manage-cases__cell-clickable {
@@ -8348,6 +8354,11 @@ kbd.cmd__kbd {
 
 .manage-cases__th-actions {
   width: 160px;
+  white-space: nowrap;
+}
+
+.manage-cases__cell-date {
+  white-space: nowrap;
 }
 
 /* ---- OrderSheet additions ---- */
