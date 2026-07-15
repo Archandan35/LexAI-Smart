@@ -14027,7 +14027,7 @@ kbd.cmd__kbd {
   width: 2px;
   flex: 1;
   margin-top: 2px;
-  margin-bottom: -18px;
+  margin-bottom: -28px;
   opacity: 0.45;
 }
 
@@ -14052,7 +14052,7 @@ kbd.cmd__kbd {
   border: none;
   border-radius: 0;
   padding: 0 0 2px;
-  margin-bottom: 18px;
+  margin-bottom: 28px;
   background: transparent;
   box-shadow: none;
 }
