@@ -226,40 +226,8 @@ export default function Dashboard() {
 
       </div>
 
-      {/* ---- Reminders ---- */}
-      <div className="card dash-reminders-card">
-        <div className="dash-card-head">
-          <span className="dash-card-head__title">Upcoming Reminders</span>
-          <span className="dash-card-head__link" onClick={() => nav('/cases')}>View All <Icon name="arrow" size={13} /></span>
-        </div>
-        {upcomingReminders.length === 0 ? (
-          <div className="dash-padded-content">
-            <EmptyState icon="bell" title="No reminders due." />
-          </div>
-        ) : upcomingReminders.map((r) => {
-          const urgent = r.daysLeft <= 3;
-          return (
-            <div className="dash-hearing-row" key={r.id} onClick={() => r.caseId && nav(`/cases/${r.caseId}`)}>
-              <div className={`dash-hearing-icon dash-hearing-icon--${urgent ? 'red' : 'amber'}`}>
-                <Icon name="bell" size={16} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="dash-hearing__title">{r.title}</div>
-                <div className="dash-hearing__sub">{r.caseTitle}{r.type ? ` • ${r.type}` : ''}</div>
-              </div>
-              <div className="dash-hearing__date-col">
-                <div className="dash-hearing__date">{formatDate(r.date)}</div>
-                <div className={urgent ? 'dash-reminder__urgent' : 'dash-reminder__soon'}>
-                  {r.daysLeft === 0 ? 'Today' : `${r.daysLeft} day${r.daysLeft === 1 ? '' : 's'} left`}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ---- Row 2: Recent Cases | Category Distribution | Quick Actions ---- */}
-      <div className="dash-grid-3">
+      {/* ---- Row 2: Recent Cases | Upcoming Reminders ---- */}
+      <div className="dash-grid-2">
 
         {/* Recent Cases */}
         <div className="card dash-card--col1">
@@ -294,6 +262,42 @@ export default function Dashboard() {
             </table>
           )}
         </div>
+
+        {/* Upcoming Reminders */}
+        <div className="card dash-reminders-card">
+          <div className="dash-card-head">
+            <span className="dash-card-head__title">Upcoming Reminders</span>
+            <span className="dash-card-head__link" onClick={() => nav('/cases')}>View All <Icon name="arrow" size={13} /></span>
+          </div>
+          {upcomingReminders.length === 0 ? (
+            <div className="dash-padded-content">
+              <EmptyState icon="bell" title="No reminders due." />
+            </div>
+          ) : upcomingReminders.map((r) => {
+            const urgent = r.daysLeft <= 3;
+            return (
+              <div className="dash-hearing-row" key={r.id} onClick={() => r.caseId && nav(`/cases/${r.caseId}`)}>
+                <div className={`dash-hearing-icon dash-hearing-icon--${urgent ? 'red' : 'amber'}`}>
+                  <Icon name="bell" size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="dash-hearing__title">{r.title}</div>
+                  <div className="dash-hearing__sub">{r.caseTitle}{r.type ? ` • ${r.type}` : ''}</div>
+                </div>
+                <div className="dash-hearing__date-col">
+                  <div className="dash-hearing__date">{formatDate(r.date)}</div>
+                  <div className={urgent ? 'dash-reminder__urgent' : 'dash-reminder__soon'}>
+                    {r.daysLeft === 0 ? 'Today' : `${r.daysLeft} day${r.daysLeft === 1 ? '' : 's'} left`}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ---- Row 3: Case Category Distribution | Quick Actions ---- */}
+      <div className="dash-grid-2">
 
         {/* Category Distribution */}
         <div className="card">
