@@ -38,19 +38,7 @@ const CaseTimeline = lazy(() => import('@/app/pages/CaseTimeline.jsx'));
 const HearingNotes = lazy(() => import('@/app/pages/HearingNotes.jsx'));
 const ManageCases = lazy(() => import('@/app/pages/ManageCases.jsx'));
 const CaseDetails = lazy(() => import('@/app/pages/CaseDetails.jsx'));
-const OrderSheet = lazy(async () => {
-  try {
-    const mod = await import('@/app/pages/OrderSheet.jsx');
-    console.log('[DEBUG OrderSheet] module resolved:', mod, 'default:', mod && mod.default);
-    if (!mod || mod.default === undefined) {
-      console.error('[DEBUG OrderSheet] module has no default export. Keys:', mod && Object.keys(mod));
-    }
-    return mod;
-  } catch (err) {
-    console.error('[DEBUG OrderSheet] dynamic import FAILED:', err);
-    throw err;
-  }
-});
+const OrderSheet = lazy(() => import('@/app/pages/OrderSheet.jsx'));
 
 const NotFound = lazy(() => import('@/app/pages/NotFound.jsx'));
 

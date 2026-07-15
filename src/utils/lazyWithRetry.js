@@ -54,13 +54,9 @@ export function lazyWithRetry(factory) {
   return lazy(async () => {
     try {
       const mod = await factory();
-      if (!mod || mod.default === undefined) {
-        console.error('[DEBUG lazyWithRetry] module resolved without a default export:', mod);
-      }
       cleanRetryParam();
       return mod;
     } catch (err) {
-      console.error('[DEBUG lazyWithRetry] factory threw:', err, '| isChunkLoadError:', isChunkLoadError(err));
       if (isChunkLoadError(err) && recoverFromChunkError()) {
         return new Promise(() => {});
       }

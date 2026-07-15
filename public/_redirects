@@ -1,3 +1,12 @@
-# SPA fallback: serve the prebuilt shell for every route in one hop.
+# Hashed build assets must resolve to real files only. If one is missing
+# (a stale client requesting an old hash after a deploy), return a real 404
+# instead of falling through to the HTML shell below. Serving index.html for a
+# .js/.css request makes the browser parse HTML as a module -> the chunk
+# resolves with no `default` export and React.lazy crashes with
+# "Cannot read properties of undefined (reading 'default')". A clean 404 lets
+# the app's chunk-error recovery reload once against a fresh index.html.
+/assets/*    /assets/:splat    404
+
+# SPA fallback: serve the prebuilt shell for every app route in one hop.
 # 200 (rewrite, not 301/302) = no redirect chain, single round trip.
 /*    /index.html    200
