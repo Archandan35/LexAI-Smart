@@ -11780,6 +11780,7 @@ kbd.cmd__kbd {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .hh-wire__foot-actions {

@@ -68,7 +68,7 @@ export default function HearingHistoryView({
         <div className="hh-wire__text">{stripHtml(h.notes) || 'No proceedings recorded.'}</div>
 
         <button className="hh-wire__readmore" onClick={() => setPreview(h)}>
-          Read More <Icon name="chevron" size={13} />
+          Read More
         </button>
 
         <div className="hh-wire__foot">
