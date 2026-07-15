@@ -521,6 +521,7 @@ export default function CaseDetails() {
 
           {tab === 'Hearings' && (
             <div className="flex-col gap-16">
+              {!isMobile && (
               <div className="order-sheet__case-info-card">
                 <div className="order-sheet__case-info-header">
                   <div className="order-sheet__case-icon-box">
@@ -558,6 +559,7 @@ export default function CaseDetails() {
                   </div>
                 </div>
               </div>
+              )}
 
               <Card
                 title="History Timeline"
@@ -586,7 +588,8 @@ export default function CaseDetails() {
             >
               <HearingHistoryView
                 hearings={hearings}
-                onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                onShare={shareHearing}
                 getStatusStyle={getStatusStyle}
                 emptyTitle="No history yet."
                 emptyIcon="history"
@@ -836,6 +839,7 @@ export default function CaseDetails() {
 
           {tab === 'Hearings' && (
             <div className="flex-col gap-16">
+              {!isMobile && (
               <div className="order-sheet__case-info-card">
                 <div className="order-sheet__case-info-header">
                   <div className="order-sheet__case-icon-box">
@@ -873,6 +877,7 @@ export default function CaseDetails() {
                   </div>
                 </div>
               </div>
+              )}
 
               <Card
                 title="History Timeline"
@@ -901,7 +906,8 @@ export default function CaseDetails() {
             >
               <HearingHistoryView
                 hearings={hearings}
-                onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                onShare={shareHearing}
                 getStatusStyle={getStatusStyle}
                 emptyTitle="No history yet."
                 emptyIcon="history"
