@@ -15633,6 +15633,7 @@ kbd.cmd__kbd {
     display: flex;
     justify-content: center;
     padding: 10px 0 4px;
+    background: #fff;
   }
 
   .hpm-drag-handle span {
