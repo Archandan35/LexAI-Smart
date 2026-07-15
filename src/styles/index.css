@@ -792,6 +792,10 @@ select {
   flex-shrink: 0;
 }
 
+.badge__dot--blink {
+  animation: cv-blink 1.2s ease-in-out infinite;
+}
+
 /* ---------- Shared page components ---------- */
 .stats-row {
   display: flex;
@@ -17484,7 +17488,7 @@ kbd.cmd__kbd {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--green);
+  background: currentColor;
   animation: cv-blink 1.2s ease-in-out infinite;
   vertical-align: middle;
 }
