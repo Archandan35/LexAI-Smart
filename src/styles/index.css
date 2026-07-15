@@ -11528,45 +11528,67 @@ kbd.cmd__kbd {
   color: var(--text-faint);
 }
 
-/* Full-width 50/50 Timeline / Cards toggle */
-.hh-seg {
+/* Single-row toolbar: toggle · sort · add */
+.hh-wire__bar {
   display: flex;
-  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hh-wire__bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hh-wire__add {
+  white-space: nowrap;
+}
+
+/* Timeline / Cards toggle — card-style pill with hover animation */
+.hh-seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .hh-seg button {
-  flex: 1 1 50%;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  padding: 9px 12px;
-  font-size: 13px;
+  padding: 7px 16px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-soft);
   background: transparent;
   border: none;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.hh-seg button + button {
-  border-left: 1px solid var(--border);
+.hh-seg button:hover {
+  color: var(--navy-700);
+  transform: translateY(-1px);
 }
 
 .hh-seg button.active {
-  background: var(--brand-soft);
+  background: var(--surface);
   color: var(--navy-700);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Cards grid view */
+/* Cards grid view — 3 columns on desktop */
 .hh-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
@@ -11579,37 +11601,22 @@ kbd.cmd__kbd {
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   padding: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
-/* Desktop two-column layout: timeline cards left, Add Hearing right */
-.hh-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 20px;
-  align-items: start;
-}
-
-.hh-layout__side {
-  position: sticky;
-  top: 20px;
-  display: flex;
-}
-
-.hh-layout__add {
-  width: 100%;
-  justify-content: center;
+.hh-cards__card:hover {
+  border-color: var(--navy-600);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 @media (max-width: 991px) {
-  .hh-layout {
-    grid-template-columns: 1fr;
+  .hh-cards {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  .hh-layout__side {
-    position: static;
-    order: -1;
-  }
-
+@media (max-width: 767px) {
   .hh-cards {
     grid-template-columns: 1fr;
   }
@@ -11666,6 +11673,13 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   padding: 16px;
   margin-bottom: 22px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.hh-wire__card:hover {
+  border-color: var(--navy-600);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .hh-wire__card-head {

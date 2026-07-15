@@ -19,6 +19,7 @@ export default function HearingHistoryView({
   hearings = [],
   onEdit,
   onShare,
+  onAdd,
   getStatusStyle,
   emptyTitle = 'No hearings recorded.',
   emptyIcon = 'calendar',
@@ -44,10 +45,6 @@ export default function HearingHistoryView({
   }, [hearings, sortDir]);
 
   const lastUpdated = (h) => (h.updated_at ? formatDateTime(h.updated_at) : formatDate(h.date));
-
-  if (!hearings || hearings.length === 0) {
-    return <EmptyState icon={emptyIcon} title={emptyTitle} />;
-  }
 
   const renderCard = (h) => {
     const st = styleFor(h.status);
@@ -97,39 +94,45 @@ export default function HearingHistoryView({
 
   return (
     <div className="hh-wire">
-      {/* Sort control */}
+      {/* Single-row toolbar: Timeline/Cards toggle · Sort · Add Hearing */}
       <div className="hh-wire__bar">
-        <div className="hh-wire__sort">
-          <span className="hh-wire__sort-label">Sort:</span>
-          <div className="hh-wire__sort-select">
-            <select value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
-              <option value="desc">Recent</option>
-              <option value="asc">Oldest</option>
-            </select>
-            <Icon name="chevronDown" size={13} />
+        <div className="hh-seg">
+          <button
+            type="button"
+            className={view === 'timeline' ? 'active' : ''}
+            onClick={() => setView('timeline')}
+          >
+            <Icon name="activity" size={14} /> Timeline
+          </button>
+          <button
+            type="button"
+            className={view === 'cards' ? 'active' : ''}
+            onClick={() => setView('cards')}
+          >
+            <Icon name="grid" size={14} /> Cards
+          </button>
+        </div>
+
+        <div className="hh-wire__bar-right">
+          <div className="hh-wire__sort">
+            <span className="hh-wire__sort-label">Sort:</span>
+            <div className="hh-wire__sort-select">
+              <select value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
+                <option value="desc">Recent</option>
+                <option value="asc">Oldest</option>
+              </select>
+              <Icon name="chevronDown" size={13} />
+            </div>
           </div>
+          {onAdd && (
+            <Button size="sm" icon="plus" onClick={onAdd} className="hh-wire__add">Add Hearing</Button>
+          )}
         </div>
       </div>
 
-      {/* Full-width 50/50 Timeline / Cards toggle */}
-      <div className="hh-seg">
-        <button
-          type="button"
-          className={view === 'timeline' ? 'active' : ''}
-          onClick={() => setView('timeline')}
-        >
-          <Icon name="activity" size={14} /> Timeline
-        </button>
-        <button
-          type="button"
-          className={view === 'cards' ? 'active' : ''}
-          onClick={() => setView('cards')}
-        >
-          <Icon name="grid" size={14} /> Cards
-        </button>
-      </div>
-
-      {view === 'timeline' ? (
+      {sorted.length === 0 ? (
+        <EmptyState icon={emptyIcon} title={emptyTitle} />
+      ) : view === 'timeline' ? (
         <div className="hh-wire__list">
           {sorted.map((h, i) => {
             const st = styleFor(h.status);
