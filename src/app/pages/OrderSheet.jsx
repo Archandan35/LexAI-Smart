@@ -681,8 +681,8 @@ export default function OrderSheet() {
                       </div>
                     </div>
                     <div className="flex-row gap-8 mb-10">
-                      <input type="date" value={dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) ? dateFrom : ''} onChange={(e) => setDateFrom(e.target.value)} className="order-sheet__date-input" />
-                      <input type="date" value={dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : ''} onChange={(e) => setDateTo(e.target.value)} className="order-sheet__date-input" />
+                      <Input type="date" value={dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) ? dateFrom : ''} onChange={(e) => setDateFrom(e.target.value)} className="flex-1" />
+                      <Input type="date" value={dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : ''} onChange={(e) => setDateTo(e.target.value)} className="flex-1" />
                     </div>
 
                     {/* Court */}

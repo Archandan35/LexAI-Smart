@@ -1,3 +1,4 @@
+import { DateField } from '@/components/DateField.jsx';
 
 export function Field({ label, children, hint }) {
   return (
@@ -9,7 +10,10 @@ export function Field({ label, children, hint }) {
   );
 }
 
-export function Input({ className, ...props }) { return <input className={["input", className].filter(Boolean).join(" ")} {...props} />; }
+export function Input({ className, ...props }) {
+  if (props.type === "date") return <DateField className={className} {...props} />;
+  return <input className={["input", className].filter(Boolean).join(" ")} {...props} />;
+}
 export function Textarea({ className, ...props }) { return <textarea className={["textarea", className].filter(Boolean).join(" ")} {...props} />; }
 export function Select({ children, className, options, ...props }) {
   return (
