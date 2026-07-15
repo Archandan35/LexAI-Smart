@@ -136,14 +136,28 @@ export const caseLogic = {
   // Dashboard data aggregation across collections.
   async dashboard() {
     try {
-      const [cases, drafts, documents, hearings, reminders] = await Promise.all([
+      const [cases, drafts, documents, hearings] = await Promise.all([
         caseService.listCases(),
         draftingService.listDrafts(),
         caseService.listDocuments(),
         caseService.listHearings(),
-        reminderService.list(),
       ]);
       const live = cases.filter((c) => !c.archived);
+
+      // Ensure automatic hearing reminders exist for every case that currently
+      // has an upcoming next-hearing date. syncHearingReminders is idempotent —
+      // it only writes when reminders are missing/stale — so this reconciles
+      // cases whose hearing dates were set before the reminder feature existed
+      // (or from other entry points) without ever creating duplicates.
+      const syncable = live.filter((c) => {
+        const s = String(c?.status || '').toLowerCase();
+        if (['disposed', 'cancelled', 'canceled', 'closed', 'dismissed', 'archived', 'completed'].includes(s)) return false;
+        if (!c.nextHearing) return false;
+        const x = new Date(c.nextHearing);
+        return !Number.isNaN(x.getTime());
+      });
+      await Promise.all(syncable.map((c) => reminderLogic.syncHearingReminders(c.id).catch(() => {})));
+      const reminders = await reminderService.list().catch(() => []);
       const now = new Date(); now.setHours(0, 0, 0, 0);
       const isFuture = (d) => {
         if (!d) return false;
@@ -176,27 +190,39 @@ export const caseLogic = {
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
         .slice(0, 6);
 
-      /* Upcoming reminders (pending, future-dated) across all cases. */
+      /* Upcoming reminders: pending notifications whose trigger date has arrived
+         or is still ahead. Show the nearest-firing reminder per case so the
+         dashboard stays a concise summary; the full list lives on the case. */
       const today = new Date(); today.setHours(0, 0, 0, 0);
-      const upcomingReminders = (reminders || [])
+      const dayMs = 86400000;
+      const activeReminders = (reminders || [])
         .filter((r) => !r.done && r.status !== 'completed' && r.status !== 'dismissed')
-        .map((r) => {
-          const d = new Date(r.date);
-          return { raw: r, ts: d.getTime() };
-        })
-        .filter((x) => !Number.isNaN(x.ts) && x.ts >= today.getTime())
-        .sort((a, b) => a.ts - b.ts)
+        .map((r) => ({ raw: r, triggerTs: new Date(r.date).setHours(0, 0, 0, 0) }))
+        .filter((x) => !Number.isNaN(x.triggerTs))
+        .sort((a, b) => a.triggerTs - b.triggerTs);
+
+      const byCaseNearest = new Map();
+      for (const x of activeReminders) {
+        const cid = x.raw.caseId || x.raw.case_id || x.raw.id;
+        if (!byCaseNearest.has(cid)) byCaseNearest.set(cid, x);
+      }
+
+      const upcomingReminders = [...byCaseNearest.values()]
+        .sort((a, b) => a.triggerTs - b.triggerTs)
         .slice(0, 8)
-        .map(({ raw }) => {
-          const c = caseMap[raw.case_id];
-          const daysLeft = Math.round((new Date(raw.date).setHours(0, 0, 0, 0) - today.getTime()) / 86400000);
+        .map(({ raw, triggerTs }) => {
+          const cid = raw.caseId || raw.case_id;
+          const c = caseMap[cid];
+          const hearingTs = raw.dueAt ? new Date(raw.dueAt).setHours(0, 0, 0, 0) : triggerTs;
+          const daysLeft = Math.max(0, Math.round((hearingTs - today.getTime()) / dayMs));
           return {
             id: raw.id,
             title: raw.title,
             type: raw.type || 'Reminder',
-            date: raw.date,
-            caseId: raw.case_id,
-            caseTitle: c?.title || c?.caseNumber || '—',
+            date: raw.dueAt || raw.date,
+            triggerDate: raw.date,
+            caseId: cid,
+            caseTitle: c?.title || c?.case_display_number || c?.caseNumber || '—',
             daysLeft,
           };
         });
