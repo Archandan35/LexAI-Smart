@@ -1,23 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function usePartyTypes() {
-  const [partyTypes, setPartyTypes] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await partyTypeLogic.list();
-      const list = Array.isArray(data) ? data : [];
-      setPartyTypes(list);
-    } catch {
-      // list failed — keep existing data instead of clearing
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('party_types', () => partyTypeLogic.list());
+  const partyTypes = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   return { partyTypes, loading, refresh };
 }

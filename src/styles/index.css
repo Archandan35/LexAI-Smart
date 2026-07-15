@@ -13730,27 +13730,32 @@ kbd.cmd__kbd {
 .hpm-action-bar {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 48px;
-  padding: 16px 28px;
+  align-items: stretch;
+  gap: 16px;
+  padding: 16px;
   margin: 0 28px 24px;
-  border-top: 1px solid #E5E7EB;
+  border: 1px solid #E7ECF1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 32, 42, 0.04);
 }
 
 .hpm-action-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  background: none;
-  border: none;
+  background: #fff;
+  border: 1px solid #E7ECF1;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
-  color: #64748B;
-  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+  color: #16202A;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
 }
 
 .hpm-action-btn:hover {
@@ -13923,7 +13928,7 @@ kbd.cmd__kbd {
   color: var(--text-secondary, #475569);
   margin-bottom: 12px;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -14113,16 +14118,28 @@ kbd.cmd__kbd {
   -webkit-line-clamp: 3;
 }
 
-.hpm-historical-card__notes::after {
-  content: 'Read more ...';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding-left: 28px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff 42%);
-  color: #2563eb;
-  font-weight: 600;
+.hpm-historical-card__notes.is-expanded {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.hpm-historical-card__notes-wrap {
+  display: block;
+}
+
+.hpm-readmore {
+  display: block;
+  width: 100%;
+  text-align: right;
+  margin: -4px 0 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 13.5px;
+  font-weight: 600;
+  color: #2563eb;
 }
 
 .hpm-historical-card__notes--empty::after {
@@ -16090,15 +16107,7 @@ kbd.cmd__kbd {
   }
 
   .hpm-historical-card__notes::after {
-    content: 'Read more ...';
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    padding-left: 28px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff 42%);
-    color: #2563eb;
-    font-weight: 600;
-    font-size: 13.5px;
+    content: none;
   }
 
   .hpm-historical-card__notes--empty::after {
@@ -16408,8 +16417,10 @@ kbd.cmd__kbd {
     display: flex;
     align-items: stretch;
     gap: 12px;
-    padding: 14px 12px 24px;
-    border-top: 1.5px solid #eceef5;
+    padding: 14px;
+    margin: 0 12px 24px;
+    border: 1px solid #E7ECF1;
+    border-radius: 16px;
     background: #fff;
     flex-shrink: 0;
   }
@@ -16466,7 +16477,8 @@ kbd.cmd__kbd {
   }
 
   .hpm-action-bar {
-    padding: 12px 12px 20px;
+    padding: 12px;
+    margin: 0 12px 20px;
   }
 }
 

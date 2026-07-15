@@ -1,25 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 // useCaseStages — dynamic stage list, kept in sync across forms.
 export function useCaseStages() {
-  const [stages, setStages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refresh } = useQuery('case_stages', () => caseStageLogic.list());
+  const stages = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const names = useMemo(() => stages.map((s) => s.name), [stages]);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await caseStageLogic.list();
-      setStages(Array.isArray(data) ? data : []);
-    } catch {
-      // keep existing data
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  return { stages, names: stages.map((s) => s.name), loading, refresh };
+  return { stages, names, loading, refresh };
 }
 
 export default useCaseStages;

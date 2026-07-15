@@ -1,23 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { priorityLogic } from '@/logic/priorityLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function usePriorities() {
-  const [priorities, setPriorities] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await priorityLogic.list();
-      const list = Array.isArray(data) ? data : [];
-      setPriorities(list);
-    } catch {
-      // keep existing data
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('priorities', () => priorityLogic.list());
+  const priorities = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   return { priorities, loading, refresh };
 }

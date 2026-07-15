@@ -1,23 +1,17 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { caseLogic } from '@/logic/caseLogic.js';
+import { useQuery, invalidateQuery } from '@/data-layer/queryCache.js';
 
-// useCases — list + mutate cases via the logic layer.
+export const CASES_KEY = 'cases';
+
+// useCases — list + mutate cases via the logic layer, cached app-wide.
 export function useCases() {
-  const [cases, setCases] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refresh } = useQuery(CASES_KEY, () => caseLogic.list());
+  const cases = data || [];
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    const rows = await caseLogic.list();
-    setCases(rows);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  const create = useCallback(async (data) => { await caseLogic.create(data); await refresh(); }, [refresh]);
-  const update = useCallback(async (id, patch) => { await caseLogic.update(id, patch); await refresh(); }, [refresh]);
-  const remove = useCallback(async (id) => { await caseLogic.remove(id); await refresh(); }, [refresh]);
+  const create = useCallback(async (payload) => { await caseLogic.create(payload); await invalidateQuery(CASES_KEY); }, []);
+  const update = useCallback(async (id, patch) => { await caseLogic.update(id, patch); await invalidateQuery(CASES_KEY); }, []);
+  const remove = useCallback(async (id) => { await caseLogic.remove(id); await invalidateQuery(CASES_KEY); }, []);
 
   return { cases, loading, refresh, create, update, remove };
 }

@@ -1,27 +1,13 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
-
-let cached = null;
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useCaseStatuses() {
-  const [statuses, setStatuses] = useState(cached?.statuses || []);
-  const [loading, setLoading] = useState(!cached);
+  const { data, loading, refresh } = useQuery('case_statuses', () => caseStatusLogic.list());
+  const items = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const statuses = useMemo(() => items.map((s) => s.name), [items]);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await caseStatusLogic.list();
-      const list = Array.isArray(data) ? data : [];
-      const names = list.map((s) => s.name);
-      cached = { statuses: names, raw: list };
-      setStatuses(names);
-    } catch { setStatuses([]); }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { if (!cached) refresh(); }, [refresh]);
-
-  return { statuses, items: cached?.raw || [], loading, refresh };
+  return { statuses, items, loading, refresh };
 }
 
 export default useCaseStatuses;

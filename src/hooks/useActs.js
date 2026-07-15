@@ -1,24 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { actLogic } from '@/logic/actLogic.js';
-
-let cached = null;
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useActs() {
-  const [acts, setActs] = useState(cached?.acts || []);
-  const [loading, setLoading] = useState(!cached);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await actLogic.list();
-      const list = Array.isArray(data) ? data : [];
-      cached = { acts: list };
-      setActs(list);
-    } catch { setActs([]); }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { if (!cached) refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('acts', () => actLogic.list());
+  const acts = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   return { acts, loading, refresh };
 }

@@ -1,24 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { contactTypeLogic } from '@/logic/contactTypeLogic.js';
-
-let cached = null;
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useContactTypes() {
-  const [types, setTypes] = useState(cached?.types || []);
-  const [loading, setLoading] = useState(!cached);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await contactTypeLogic.list();
-      const names = (Array.isArray(data) ? data : []).map((t) => t.name);
-      cached = { types: names, raw: data };
-      setTypes(names);
-    } catch { setTypes([]); }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { if (!cached) refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('contact_types', () => contactTypeLogic.list());
+  const types = useMemo(() => (Array.isArray(data) ? data : []).map((t) => t.name), [data]);
 
   return { types, loading, refresh };
 }

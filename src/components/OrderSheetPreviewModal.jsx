@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Modal from './Modal.jsx';
 import Icon from './Icon.jsx';
 import DocEditor from './DocEditor.jsx';
@@ -47,6 +47,9 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
   const [savingNotes, setSavingNotes] = useState(false);
   const [viewHearing, setViewHearing] = useState(hearing);
   const [collapsed, setCollapsed] = useState({});
+  const [expandedNotes, setExpandedNotes] = useState({});
+  const [overflowingNotes, setOverflowingNotes] = useState({});
+  const notesRefs = useRef({});
 
   const toggleSection = (key) => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
 
@@ -146,6 +149,18 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
     });
     return sorted;
   }, [historical, sortDir]);
+
+  useEffect(() => {
+    setOverflowingNotes((prev) => {
+      const next = { ...prev };
+      Object.entries(notesRefs.current).forEach(([id, el]) => {
+        if (el && !expandedNotes[id]) {
+          next[id] = el.scrollHeight - el.clientHeight > 2;
+        }
+      });
+      return next;
+    });
+  }, [sortedHistorical, tab, expandedNotes]);
 
   const courtName = linkedCase
     ? [linkedCase.court, extractJurisdiction(linkedCase)].filter(Boolean).join(', ')
@@ -480,7 +495,25 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                           </span>
                         </div>
                         {h.notes ? (
-                          <div className="hpm-historical-card__notes" dangerouslySetInnerHTML={{ __html: h.notes }} />
+                          <div className="hpm-historical-card__notes-wrap">
+                            <div
+                              ref={(el) => { notesRefs.current[h.id] = el; }}
+                              className={`hpm-historical-card__notes${expandedNotes[h.id] ? ' is-expanded' : ''}`}
+                              dangerouslySetInnerHTML={{ __html: h.notes }}
+                            />
+                            {(overflowingNotes[h.id] || expandedNotes[h.id]) && (
+                              <button
+                                type="button"
+                                className="hpm-readmore"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedNotes((prev) => ({ ...prev, [h.id]: !prev[h.id] }));
+                                }}
+                              >
+                                {expandedNotes[h.id] ? 'Read less' : 'Read more ...'}
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <div className="hpm-historical-card__notes hpm-historical-card__notes--empty">
                             <span className="muted">No proceedings recorded</span>

@@ -1,17 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { roleLogic } from '@/logic/roleLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useRoles() {
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setRoles(await roleLogic.list());
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('roles', () => roleLogic.list());
+  const roles = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   return { roles, loading, refresh };
 }

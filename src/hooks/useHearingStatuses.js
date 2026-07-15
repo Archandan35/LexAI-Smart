@@ -1,24 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { hearingStatusLogic } from '@/logic/hearingStatusLogic.js';
-
-let cached = null;
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useHearingStatuses() {
-  const [statuses, setStatuses] = useState(cached?.statuses || []);
-  const [loading, setLoading] = useState(!cached);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await hearingStatusLogic.list();
-      const names = (Array.isArray(data) ? data : []).map((s) => s.name);
-      cached = { statuses: names, raw: data };
-      setStatuses(names);
-    } catch { setStatuses([]); }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { if (!cached) refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('hearing_statuses', () => hearingStatusLogic.list());
+  const statuses = useMemo(() => (Array.isArray(data) ? data : []).map((s) => s.name), [data]);
 
   return { statuses, loading, refresh };
 }

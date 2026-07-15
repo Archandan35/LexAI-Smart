@@ -1,17 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { userLogic } from '@/logic/userLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useUsers() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setUsers(await userLogic.list());
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('users', () => userLogic.list());
+  const users = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   return { users, loading, refresh };
 }

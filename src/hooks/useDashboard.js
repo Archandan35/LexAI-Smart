@@ -1,20 +1,13 @@
-import { useEffect, useState } from 'react';
 import { caseLogic } from '@/logic/caseLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useDashboard() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refresh } = useQuery('dashboard', async () => {
+    const res = await caseLogic.dashboard();
+    return res.ok ? res.data : null;
+  });
 
-  useEffect(() => {
-    let on = true;
-    (async () => {
-      const res = await caseLogic.dashboard();
-      if (on) { setData(res.ok ? res.data : null); setLoading(false); }
-    })();
-    return () => { on = false; };
-  }, []);
-
-  return { data, loading };
+  return { data: data ?? null, loading, refresh };
 }
 
 export default useDashboard;

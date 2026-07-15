@@ -1,23 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 
 export function useCaseTypes() {
-  const [caseTypes, setCaseTypes] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await caseTypeLogic.list();
-      const list = Array.isArray(data) ? data : [];
-      setCaseTypes(list);
-    } catch {
-      // keep existing data
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data, loading, refresh } = useQuery('case_types', () => caseTypeLogic.list());
+  const caseTypes = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   return { caseTypes, loading, refresh };
 }
