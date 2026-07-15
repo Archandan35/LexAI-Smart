@@ -15728,8 +15728,8 @@ kbd.cmd__kbd {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 14px;
-    padding: 0 18px 16px;
+    margin-top: 0;
+    padding: 12px 18px 16px;
     background: #fff;
   }
 
@@ -15809,7 +15809,7 @@ kbd.cmd__kbd {
 
   .hpm-historical-card {
     display: flex;
-    gap: 14px;
+    gap: 10px;
     align-items: stretch;
     border: none;
     border-radius: 0;
@@ -15830,13 +15830,13 @@ kbd.cmd__kbd {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 40px;
+    width: 26px;
     flex-shrink: 0;
   }
 
   .hpm-timeline-rail__dot {
-    width: 40px;
-    height: 40px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -15846,8 +15846,8 @@ kbd.cmd__kbd {
   }
 
   .hpm-timeline-rail__dot svg {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
   }
 
   .hpm-timeline-rail__line {
@@ -15891,31 +15891,48 @@ kbd.cmd__kbd {
   }
 
   .hpm-historical-card__date {
-    font-size: 14.5px;
+    font-size: 13px;
     font-weight: 700;
     color: #16202A;
   }
 
   .hpm-historical-card__date svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   .hpm-historical-card__header .hpm-pill {
     border-radius: 999px;
-    padding: 5px 11px;
-    font-size: 12px;
+    padding: 3px 9px;
+    font-size: 10.5px;
     font-weight: 700;
     white-space: nowrap;
   }
 
   .hpm-historical-card__notes {
+    position: relative;
     font-size: 13.5px;
     line-height: 1.6;
     color: #16202A;
     text-align: justify;
     margin-bottom: 12px;
     -webkit-line-clamp: 3;
+  }
+
+  .hpm-historical-card__notes::after {
+    content: 'Read more ...';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding-left: 28px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff 42%);
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+
+  .hpm-historical-card__notes--empty::after {
+    content: none;
   }
 
   .hpm-historical-card__footer {
@@ -15998,6 +16015,7 @@ kbd.cmd__kbd {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 0;
+    align-items: start;
   }
 
   .hpm-cell {
@@ -16086,19 +16104,8 @@ kbd.cmd__kbd {
   }
 
   .hpm-hero__icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #fff;
+    display: none;
   }
-
-  .hpm-hero__icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .hpm-hero--last .hpm-hero__icon { background: #fff; color: #1B6FE0; }
-  .hpm-hero--next .hpm-hero__icon { background: #fff; color: #1B8A5A; }
 
   .hpm-hero__label {
     font-size: 10.5px;
@@ -16142,11 +16149,11 @@ kbd.cmd__kbd {
   }
 
   .hpm-detail-panel .hpm-hcell:nth-child(odd) {
-    border-right: 1px solid #E4E9ED;
+    border-right: none;
   }
 
   .hpm-detail-panel .hpm-hcell:nth-child(-n+2) {
-    border-bottom: 1px solid #E4E9ED;
+    border-bottom: none;
   }
 
   .hpm-detail-panel .hpm-hcell__body {
@@ -16242,6 +16249,7 @@ kbd.cmd__kbd {
     font-size: 13.5px;
     color: #5a6080;
     font-weight: 600;
+    white-space: nowrap;
   }
 }
 
