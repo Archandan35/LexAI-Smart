@@ -462,10 +462,10 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
               <div className="hpm-historical-panel">
                 <div className="hpm-historical-toolbar">
                   <span className="hpm-historical-count">{historical.length} hearing{historical.length !== 1 ? 's' : ''}</span>
-                  <button className="hpm-historical-sort" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
-                    <Icon name="arrowUp" size={12} strokeWidth={2.5} className={sortDir === 'asc' ? '' : 'icon-flip-180'} />
-                    {sortDir === 'asc' ? 'Low to High' : 'High to Low'}
-                  </button>
+                  <select className="hpm-historical-sort" value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
+                    <option value="desc">Recent</option>
+                    <option value="asc">Oldest</option>
+                  </select>
                 </div>
                 <div className="hpm-historical-list">
                 {sortedHistorical.map((h) => {
@@ -523,7 +523,6 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                           <span className="hpm-historical-card__updated">
                             <Icon className="hpm-hc-clock" name="clock" size={13} strokeWidth={1.8} /> Last Updated : {formatDateTime(updatedAt)}
                           </span>
-                          <Icon className="hpm-hc-chevron" name="chevron" size={16} strokeWidth={2} />
                         </div>
                       </div>
                     </div>
