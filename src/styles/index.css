@@ -15674,15 +15674,15 @@ kbd.cmd__kbd {
   }
 
   .hpm-header__title {
-    font-size: 24px;
-    font-weight: 800;
+    font-size: 18px;
+    font-weight: 700;
     color: #16202A;
-    letter-spacing: -0.3px;
-    line-height: 1.15;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
   }
 
   .hpm-header__subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: #5B6B78;
     font-weight: 500;
   }
@@ -15737,7 +15737,7 @@ kbd.cmd__kbd {
     display: inline-flex;
     border-radius: 999px;
     padding: 6px 12px;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 700;
   }
 
@@ -15786,7 +15786,7 @@ kbd.cmd__kbd {
   }
 
   .hpm-historical-count {
-    font-size: 16px;
+    font-size: 14.5px;
     font-weight: 700;
     color: #16202A;
   }
@@ -15891,8 +15891,8 @@ kbd.cmd__kbd {
   }
 
   .hpm-historical-card__date {
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 14.5px;
+    font-weight: 700;
     color: #16202A;
   }
 
@@ -15903,14 +15903,14 @@ kbd.cmd__kbd {
 
   .hpm-historical-card__header .hpm-pill {
     border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 13px;
+    padding: 5px 11px;
+    font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
   }
 
   .hpm-historical-card__notes {
-    font-size: 14px;
+    font-size: 13.5px;
     line-height: 1.6;
     color: #16202A;
     text-align: justify;
@@ -15965,8 +15965,8 @@ kbd.cmd__kbd {
   }
 
   .hpm-section-title span {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     color: #16202A;
   }
 
@@ -16047,14 +16047,14 @@ kbd.cmd__kbd {
   .hpm-cell__value {
     grid-row: 2;
     grid-column: 1 / span 2;
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 700;
     color: #16202A;
   }
 
   .hpm-cell .hpm-parties__name {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 13.5px;
+    font-weight: 700;
     color: #16202A;
   }
 
@@ -16110,8 +16110,8 @@ kbd.cmd__kbd {
   .hpm-hero--next .hpm-hero__label { color: #5B6B78; }
 
   .hpm-hero__value {
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 700;
   }
 
   .hpm-hero--last .hpm-hero__value { color: #1B6FE0; }
@@ -16183,8 +16183,8 @@ kbd.cmd__kbd {
   .hpm-detail-panel .hpm-hcell__value {
     grid-row: 2;
     grid-column: 1 / span 2;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 13.5px;
+    font-weight: 700;
     color: #16202A;
   }
 
@@ -16260,7 +16260,7 @@ kbd.cmd__kbd {
   }
 
   .hpm-header__title {
-    font-size: 22px;
+    font-size: 17px;
   }
 
   .hpm-mobile-badges {
