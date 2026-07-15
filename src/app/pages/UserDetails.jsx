@@ -61,7 +61,7 @@ export default function UserDetails() {
         subtitle={u.email || u.username}
         actions={(
           <>
-            <Button variant="ghost" icon="arrow" onClick={() => nav('/admin/users')}>Back</Button>
+            <Button variant="ghost" icon="arrow" onClick={() => (window.history.length > 1 ? nav(-1) : nav('/admin/users'))}>Back</Button>
             {can('permissions.edit') && <Button variant="ghost" icon="lock" onClick={() => nav('/admin/permissions')}>Manage permissions</Button>}
           </>
         )}

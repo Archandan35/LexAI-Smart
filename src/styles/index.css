@@ -1955,6 +1955,17 @@ select {
   align-items: start;
 }
 
+/* Prevent grid/flex children from forcing horizontal overflow once the
+   layout stacks on tablet/mobile (desktop >1080px is untouched). */
+@media (max-width: 1080px) {
+  .grid-sidebar,
+  .grid-sidebar > *,
+  .user-details__col,
+  .user-details__col > * {
+    min-width: 0;
+  }
+}
+
 .list-row {
   display: flex;
   align-items: center;
