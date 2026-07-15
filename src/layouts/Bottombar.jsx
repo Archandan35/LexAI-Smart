@@ -19,7 +19,7 @@ export default function Bottombar() {
       <div className="bottombar">
         <svg className="bottombar__bg" viewBox="0 0 400 78" preserveAspectRatio="none">
           <path
-            d="M10 0 H176 C181 0 184 2 184 6 C184 27 192 47 200 47 C208 47 216 27 216 6 C216 2 219 0 224 0 H390 Q400 0 400 10 V78 H0 V10 Q0 0 10 0 Z"
+            d="M10 0 H160 C170 0 174 6 178 14 C184 24 191 30 200 30 C209 30 216 24 222 14 C226 6 230 0 240 0 H390 Q400 0 400 10 V78 H0 V10 Q0 0 10 0 Z"
             fill="currentColor"
           />
         </svg>
