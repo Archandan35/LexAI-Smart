@@ -17,9 +17,9 @@ export default function Bottombar() {
   const bar = (
     <div className="bottombar-wrap">
       <div className="bottombar">
-        <svg className="bottombar__bg" viewBox="0 0 400 78" preserveAspectRatio="none">
+        <svg className="bottombar__bg" viewBox="0 0 380 100" preserveAspectRatio="none">
           <path
-            d="M10 0 H160 C170 0 174 6 178 14 C184 24 191 30 200 30 C209 30 216 24 222 14 C226 6 230 0 240 0 H390 Q400 0 400 10 V78 H0 V10 Q0 0 10 0 Z"
+            d="M20 30 L158.6 30 A32 32 0 0 1 221.4 30 L360 30 A20 20 0 0 1 380 50 L380 100 L0 100 L0 50 A20 20 0 0 1 20 30 Z"
             fill="currentColor"
           />
         </svg>
