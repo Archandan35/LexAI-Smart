@@ -27,6 +27,11 @@ export const SchemaMappingService = {
     }
   },
 
+  // Expose entity schema list to the UI without leaking the data-provider layer.
+  listSchemas() {
+    return listSchemas();
+  },
+
   // List all mappings with entity metadata
   async listMappings() {
     const provider = getDatabaseProvider();

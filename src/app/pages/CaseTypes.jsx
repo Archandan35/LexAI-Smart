@@ -378,29 +378,7 @@ export default function CaseTypes() {
           <p>Manage case types used in case forms and filters.</p>
           <div className="cmp-hero-accent" />
         </div>
-        <svg className="cmp-hero-watermark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
-          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
-          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
-          <circle cx="50" cy="0" r="6" fill="currentColor"/>
-          <circle cx="50" cy="0" r="3" fill="#fff"/>
-          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
-          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
-          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
-          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
-          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
-          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
-          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
-          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
-          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
-          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
-          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
-          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
-          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
-          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
-        </svg>
+        <Icon name="courthouse" className="cmp-hero-watermark" />
       </div>
 
       {/* 6 Stat Cards */}

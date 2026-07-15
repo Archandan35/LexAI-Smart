@@ -78,6 +78,9 @@ const PATHS = {
   activity: 'M22 12h-4l-3 9L9 3l-3 9H2',
   wrench: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
   migrate: 'M5 12h14M12 5l7 7-7 7M5 5l7 7-7 7',
+  redo: 'M23 4v6h-6M20.49 15a9 9 0 1 1-2.12-9.36L23 10',
+  undo: 'M1 4v6h6M3.51 15a9 9 0 1 0 2.13-9.36L1 10',
+  maximize: 'M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3',
 };
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */
@@ -153,7 +156,43 @@ const COMPLEX = {
   ),
 };
 
+/* Large decorative illustrations (viewBox 0 0 100 100). Sized/positioned via CSS class. */
+const ILLUSTRATIONS = {
+  courthouse: (
+    <>
+      <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor" />
+      <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor" />
+      <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+      <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor" />
+      <circle cx="50" cy="0" r="6" fill="currentColor" />
+      <circle cx="50" cy="0" r="3" fill="#fff" />
+      <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+      <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor" />
+      <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7" />
+      <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+      <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+      <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8" />
+      <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6" />
+      <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+      <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+      <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8" />
+      <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6" />
+      <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5" />
+      <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4" />
+      <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3" />
+      <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35" />
+    </>
+  ),
+};
+
 export default function Icon({ name, size = 18, className = '', strokeWidth = 1.9, fill = false }) {
+  if (ILLUSTRATIONS[name]) {
+    return (
+      <svg viewBox="0 0 100 100" className={className} aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        {ILLUSTRATIONS[name]}
+      </svg>
+    );
+  }
   if (COMPLEX[name]) {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true">

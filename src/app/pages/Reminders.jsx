@@ -159,7 +159,7 @@ export default function Reminders() {
                 <button className="iconbtn" title={r.done ? 'Mark pending' : 'Mark done'} onClick={() => toggle(r)}>
                   <Icon name={r.done ? 'check' : 'clock'} size={15} />
                 </button>
-                <div className="reminder-row__content" onClick={() => r.caseId && nav(`/cases/${r.caseId}`)} style={{ cursor: r.caseId ? 'pointer' : 'default' }}>
+                <div className={`reminder-row__content${r.caseId ? ' reminder-row__content--link' : ''}`} onClick={() => r.caseId && nav(`/cases/${r.caseId}`)}>
                   <div className="reminder-row__title">{r.title}</div>
                   <div className="list-row__meta">{r.type}{c ? ` · ${caseLabel(c)}` : ''} · {formatDate(r.date)}</div>
                 </div>

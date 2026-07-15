@@ -20952,6 +20952,11 @@ kbd.cmd__kbd {
 .reminder-row__content {
   flex: 1;
   min-width: 0;
+  cursor: default;
+}
+
+.reminder-row__content--link {
+  cursor: pointer;
 }
 
 .reminder-form__type-row {

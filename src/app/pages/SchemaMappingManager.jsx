@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { SchemaMappingService } from '@/services/schemaMappingService.js';
-import { listSchemas } from '@/data-provider/schema/index.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -125,7 +124,7 @@ export default function SchemaMappingManager() {
 
   const handleValidate = async () => {
     setValidationResult({ loading: true });
-    const schemas = listSchemas();
+    const schemas = SchemaMappingService.listSchemas();
     const results = [];
     for (const s of schemas) {
       const v = await SchemaMappingService.validateMapping(s.collection);
@@ -136,7 +135,7 @@ export default function SchemaMappingManager() {
 
   if (loading) return <div className="page-center"><Spinner size={32} /></div>;
 
-  const schemas = listSchemas();
+  const schemas = SchemaMappingService.listSchemas();
 
   return (
     <div className="fade-in">

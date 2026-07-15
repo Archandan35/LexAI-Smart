@@ -43,9 +43,7 @@ function StatCard({ icon, value, label, sub }) {
   return (
     <div className="cdoc__stat-card">
       <div className="cdoc__stat-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {icon}
-        </svg>
+        <Icon name={icon} size={20} />
       </div>
       <div className="cdoc__stat-val">{value}</div>
       <div className="cdoc__stat-label">{label}</div>
@@ -397,9 +395,7 @@ export default function CaseDocuments() {
       <div className="cdoc__header-row">
         <div className="cdoc__header-left">
           <div className="cdoc__header-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-            </svg>
+            <Icon name="folder" size={22} />
           </div>
           <div>
             <h1 className="cdoc__title">Case Documents</h1>
@@ -419,26 +415,10 @@ export default function CaseDocuments() {
 
       {/* Stats row */}
       <div className="cdoc__stats">
-        <StatCard
-          icon={<><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></>}
-          value={folders.length}
-          label="Folders"
-        />
-        <StatCard
-          icon={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></>}
-          value={docs.length}
-          label="Documents"
-        />
-        <StatCard
-          icon={<><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" /></>}
-          value={bytes(totalSize)}
-          label="Total Size"
-        />
-        <StatCard
-          icon={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>}
-          value={lastUpdated ? formatDate(lastUpdated) : '—'}
-          label="Last Updated"
-        />
+        <StatCard icon="folder" value={folders.length} label="Folders" />
+        <StatCard icon="file" value={docs.length} label="Documents" />
+        <StatCard icon="database" value={bytes(totalSize)} label="Total Size" />
+        <StatCard icon="calendar" value={lastUpdated ? formatDate(lastUpdated) : '—'} label="Last Updated" />
       </div>
 
       {/* Main layout: folder panel + content */}
@@ -471,7 +451,7 @@ export default function CaseDocuments() {
 
           {/* Folder search */}
           <div className="cdoc__sidebar-search">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            <Icon name="search" size={13} />
             <input value={folderSearch} placeholder="Search folders…" onChange={(e) => setFolderSearch(e.target.value)} />
           </div>
 
@@ -502,16 +482,16 @@ export default function CaseDocuments() {
                 className={`cdoc__bc-btn${!activeFolder ? ' active' : ''}`}
                 onClick={() => { setActiveFolder(null); setDocSelected([]); }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z" /></svg>
+                <Icon name="layers" size={14} />
                 All Documents
               </button>
               {breadcrumbPath.map((f) => (
                 <React.Fragment key={f.id}>
                   <span className="cdoc__bc-sep">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    <Icon name="chevron" size={12} />
                   </span>
                   <span className="cdoc__bc-sep">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                    <Icon name="folder" size={13} />
                   </span>
                   <button className="cdoc__bc-btn" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>{f.name}</button>
                 </React.Fragment>
@@ -522,10 +502,10 @@ export default function CaseDocuments() {
               {/* View toggle */}
               <div className="cdoc__seg">
                 <button className={`cdoc__seg-btn${viewMode === 'grid' ? ' active' : ''}`} title="Grid view" onClick={() => setViewMode('grid')}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  <Icon name="grid" size={15} />
                 </button>
                 <button className={`cdoc__seg-btn${viewMode === 'list' ? ' active' : ''}`} title="List view" onClick={() => setViewMode('list')}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                  <Icon name="list" size={15} />
                 </button>
               </div>
 
@@ -539,13 +519,13 @@ export default function CaseDocuments() {
                   <option value="date-old">Date (Oldest)</option>
                   <option value="size">Size</option>
                 </select>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                <Icon name="chevronDown" size={12} />
               </div>
 
               {/* Filters */}
               <div className="cdoc__filter-wrap">
                 <button className={`cdoc__filter-btn${fileExtFilter.length > 0 ? ' cdoc__filter-btn--active' : ''}`} onClick={() => setShowFilter((s) => !s)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+                  <Icon name="filter" size={14} />
                   Filters{fileExtFilter.length > 0 ? ` (${fileExtFilter.length})` : ''}
                 </button>
                 {showFilter && (
@@ -571,7 +551,7 @@ export default function CaseDocuments() {
           {(!activeFolder || getChildren(activeFolder).length > 0) && (
             <>
               <div className="cdoc__content-search">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                <Icon name="search" size={14} />
                 <input value={folderSearch} placeholder="Search folders…" onChange={(e) => setFolderSearch(e.target.value)} />
               </div>
               <div className="docmgr__folder-grid">{((activeFolder === null ? filteredRootFolders : getChildren(activeFolder)).filter((f) => !folderSearch || f.name.toLowerCase().includes(folderSearch.toLowerCase()))).map((f) => {
@@ -594,7 +574,7 @@ export default function CaseDocuments() {
                           onClick={(e) => e.stopPropagation()}
                         />
                       )}
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                      <Icon name="folder" size={32} strokeWidth={1.5} />
                     </div>
                     <span className="docmgr__folder-card-name">{f.name}</span>
                     <span className="docmgr__folder-card-meta">
@@ -611,7 +591,7 @@ export default function CaseDocuments() {
                         setCtxMenu({ id: f.id, x: rect.right - 160, y: rect.bottom + 4 });
                       }}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                      <Icon name="more-vertical" size={14} />
                     </button>
                   </div>
                 );
@@ -667,14 +647,14 @@ export default function CaseDocuments() {
                             <td className="cdoc__td cdoc__td--muted">{d.uploaded_by || d.uploadedBy || '—'}</td>
                             <td className="cdoc__td cdoc__td--actions">
                               <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                <Icon name="eye" size={15} />
                               </button>
                               <button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                <Icon name="download" size={15} />
                               </button>
                               <div className="cdoc__action-more-wrap" onClick={(e) => e.stopPropagation()}>
                                 <button className="cdoc__action-btn" title="More" onClick={() => setDocMenuId(docMenuId === d.id ? null : d.id)}>
-                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                                  <Icon name="more-vertical" size={15} />
                                 </button>
                                 {docMenuId === d.id && (
                                   <div className="cdoc__doc-menu">
@@ -707,13 +687,13 @@ export default function CaseDocuments() {
                       </div>
                       <div className="cdoc__pg-btns">
                         <button className="cdoc__pg-btn" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                          <Icon name="chevronLeft" size={14} />
                         </button>
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                           <button key={p} className={`cdoc__pg-btn${p === page ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
                         ))}
                         <button className="cdoc__pg-btn" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                          <Icon name="chevron" size={14} />
                         </button>
                       </div>
                     </div>
@@ -738,10 +718,10 @@ export default function CaseDocuments() {
                         </div>
                         <div className="doccard__actions">
                           <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                            <Icon name="eye" size={14} />
                           </button>
                           <button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                            <Icon name="download" size={14} />
                           </button>
                         </div>
                       </div>
@@ -797,24 +777,24 @@ export default function CaseDocuments() {
         return (
           <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ '--menu-x': `${ctxMenu.x}px`, '--menu-y': `${ctxMenu.y}px` }}>
             <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); startRename(f); setCtxMenu(null); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+              <Icon name="edit" size={14} />
               Rename
             </button>
             <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); cutFolder(f); setCtxMenu(null); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" /></svg>
+              <Icon name="scissors" size={14} />
               Cut
             </button>
             <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); copyFolder(f); setCtxMenu(null); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              <Icon name="copy" size={14} />
               Copy
             </button>
             <div className="cdoc__ctx-divider" />
             <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setFolderProps(f); setCtxMenu(null); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+              <Icon name="info" size={14} />
               Properties
             </button>
             <button className="cdoc__ctx-item cdoc__ctx-item--danger" onClick={(e) => { e.stopPropagation(); deleteFolder(f); setCtxMenu(null); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+              <Icon name="trash" size={14} />
               Delete
             </button>
           </div>
@@ -825,43 +805,43 @@ export default function CaseDocuments() {
       {contentCtx && (
         <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ '--menu-x': `${contentCtx.x}px`, '--menu-y': `${contentCtx.y}px` }}>
           <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setCreating(true); setBulkAdding(false); setNewName(''); setContentCtx(null); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            <Icon name="plus" size={14} />
             Add new folder
           </button>
           <div className="cdoc__ctx-divider" />
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+            <Icon name="redo" size={14} />
             Redo
           </button>
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+            <Icon name="undo" size={14} />
             Undo
           </button>
           <div className="cdoc__ctx-divider" />
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+            <Icon name="trash" size={14} />
             Delete
           </button>
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" /></svg>
+            <Icon name="scissors" size={14} />
             Cut
           </button>
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 9 2 12 5 15" /><polyline points="9 5 12 2 15 5" /><polyline points="15 19 12 22 9 19" /><polyline points="19 9 22 12 19 15" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="12" y1="2" x2="12" y2="22" /></svg>
+            <Icon name="move" size={14} />
             Move
           </button>
           <div className="cdoc__ctx-divider" />
           <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setContentCtx(null); if (activeFolder) { const f = folders.find((x) => x.id === activeFolder); if (f) setFolderProps(f); } }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+            <Icon name="info" size={14} />
             Properties
           </button>
           <div className="cdoc__ctx-divider" />
           <button className={`cdoc__ctx-item${viewMode === 'grid' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setViewMode('grid'); setContentCtx(null); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+            <Icon name="grid" size={14} />
             View: Grid
           </button>
           <button className={`cdoc__ctx-item${viewMode === 'list' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setViewMode('list'); setContentCtx(null); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+            <Icon name="list" size={14} />
             View: List
           </button>
           <div className="cdoc__ctx-divider" />
@@ -873,7 +853,7 @@ export default function CaseDocuments() {
           <button className={`cdoc__ctx-item${sortBy === 'size' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setSortBy('size'); setContentCtx(null); }}>Size</button>
           <div className="cdoc__ctx-divider" />
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+            <Icon name="folder" size={14} />
             Group by
           </button>
         </div>
