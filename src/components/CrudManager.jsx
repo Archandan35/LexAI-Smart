@@ -332,10 +332,27 @@ function SingleDelete({ config, entity }) {
 /* ------------------------------------------------------------------ */
 /* Bulk Add                                                             */
 /* ------------------------------------------------------------------ */
-const HAS_CODE = ['Case Type', 'Bench Type', 'Jurisdiction'];
+const BULK_SAMPLE_NAMES = {
+  Courts: ['High Court', 'District Court', 'Session Court'],
+  'Bench Type': ['Division Bench', 'Single Bench', 'Full Bench'],
+  'Case Type': ['Civil Suit', 'Criminal Case', 'Writ Petition'],
+  Jurisdiction: ['Civil', 'Criminal', 'Family'],
+  Stage: ['Pleading', 'Hearing', 'Order'],
+  Priority: ['High', 'Medium', 'Low'],
+  Status: ['Pending', 'Disposed', 'Active'],
+  Judge: ['Justice Sharma', 'Justice Verma'],
+  'Party Type': ['Plaintiff', 'Respondent', 'Petitioner'],
+};
 
 function BulkAdd({ config, entity }) {
-  const hasCode = HAS_CODE.includes(entity);
+  const hasCode = (config.fields || []).some((f) => f.key === 'short_code');
+  const scField = (config.fields || []).find((f) => f.key === 'short_code');
+  const prefixMatch = scField?.placeholder?.match(/^([A-Za-z]+-)</);
+  const prefix = prefixMatch ? prefixMatch[1] : '';
+  const sampleNames = BULK_SAMPLE_NAMES[entity] || ['Item One', 'Item Two', 'Item Three'];
+  const bulkPlaceholder = hasCode
+    ? sampleNames.map((n) => `${n}: ${prefix}${n.toUpperCase().replace(/\s+/g, '-')}`).join('\n')
+    : sampleNames.join('\n');
   const [lines, setLines] = useState('');
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -357,8 +374,9 @@ function BulkAdd({ config, entity }) {
         if (entity === 'Stage') {
           r = await config.logic.add(line);
         } else if (hasCode) {
-          const [name, code] = line.split(':').map((s) => s.trim());
-          r = await config.logic.create({ name: name || line, short_code: (code || name?.substring(0, 4) || '').toUpperCase(), ...config.defaults }, config.actor);
+          const [name, codeRaw] = line.split(':').map((s) => s.trim());
+          const code = (codeRaw || `${prefix}${name.toUpperCase().replace(/\s+/g, '-')}`).toUpperCase();
+          r = await config.logic.create({ name: name || line, short_code: code, ...config.defaults }, config.actor);
         } else {
           r = await config.logic.create({ name: line, ...config.defaults }, config.actor);
         }
@@ -387,9 +405,7 @@ function BulkAdd({ config, entity }) {
           value={lines}
           onChange={(e) => setLines(e.target.value)}
           rows={8}
-          placeholder={hasCode
-            ? `Civil Suit:CIV\nCriminal Case:CRL\nWrit Petition:WP`
-            : `Item 1\nItem 2\nItem 3`}
+          placeholder={bulkPlaceholder}
           disabled={saving}
         />
       </div>
@@ -678,11 +694,15 @@ function BulkImport({ config, entity }) {
 /* ------------------------------------------------------------------ */
 /* Tip text per tab                                                     */
 /* ------------------------------------------------------------------ */
+const entityHasShortCode = (config) => (config?.fields || []).some((f) => f.key === 'short_code');
+
 const TIPS = {
-  'single-add': (e) => `Use meaningful names${HAS_CODE.includes(e) ? ' and short codes' : ''} for better organization and quick identification.`,
+  'single-add': (e, c) => `Use meaningful names${entityHasShortCode(c) ? ' and short codes' : ''} for better organization and quick identification.`,
   'single-edit': (e) => `Editing a ${e} name updates it across all associated records.`,
   'single-delete': (e) => `Ensure no active cases are using this ${e} before deleting.`,
-  'bulk-add': (e) => HAS_CODE.includes(e) ? `Format: Name:CODE per line — e.g. "Civil Suit:CIV". Short codes should be uppercase.` : `Enter one ${e} name per line. Blank lines are ignored.`,
+  'bulk-add': (e, c) => entityHasShortCode(c)
+    ? `Format: Name:CODE per line — e.g. "High Court: COUT-HIGH-COURT". Include the full prefixed short code (uppercase).`
+    : `Enter one ${e} name per line. Blank lines are ignored.`,
   'bulk-edit': (e) => `Select items then fill in the new values. Only filled fields will be updated.`,
   'bulk-delete': (e) => `Double-check your selection before confirming — deleted ${e}s cannot be recovered.`,
   'import': (e) => `CSV must have a header row. Supported columns match the ${e} fields shown above.`,
@@ -707,7 +727,7 @@ export default function CrudManager({ open, onClose, entity, config }) {
   useEffect(() => { if (open) setTab('single-add'); }, [open]);
 
   const subtitle = SUBTITLES[tab]?.(entity) ?? '';
-  const tip = TIPS[tab]?.(entity) ?? '';
+  const tip = TIPS[tab]?.(entity, config) ?? '';
 
   return (
     <Modal
