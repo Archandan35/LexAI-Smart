@@ -115,6 +115,15 @@ export default function OrderSheet() {
   // Case History & Timeline views
   const [histCaseId, setHistCaseId] = useState('');
   const [history, setHistory] = useState(null);
+  const [histSort, setHistSort] = useState('desc'); // desc = Recent, asc = Oldest
+  const historyHearings = useMemo(() => {
+    const list = [...(history?.hearings || [])];
+    list.sort((a, b) => {
+      const diff = new Date(a.date) - new Date(b.date);
+      return histSort === 'desc' ? -diff : diff;
+    });
+    return list;
+  }, [history, histSort]);
 
   // Rich text editor state
   const [draftTemplates, setDraftTemplates] = useState([]);
@@ -1321,13 +1330,28 @@ export default function OrderSheet() {
                   </div>
 
                   {/* History Timeline card */}
-                  <Card title="History Timeline" sub="Chronological proceedings logs and order sheets">
+                  <Card
+                    title="History Timeline"
+                    sub="Chronological proceedings logs and order sheets"
+                    actions={history.hearings.length > 0 && (
+                      <div className="hh-wire__sort">
+                        <span className="hh-wire__sort-label">Sort:</span>
+                        <div className="hh-wire__sort-select">
+                          <select value={histSort} onChange={(e) => setHistSort(e.target.value)}>
+                            <option value="desc">Recent</option>
+                            <option value="asc">Oldest</option>
+                          </select>
+                          <Icon name="chevronDown" size={13} />
+                        </div>
+                      </div>
+                    )}
+                  >
                     {history.hearings.length === 0 ? (
                       <EmptyState icon="history" title="No history logs recorded." />
                     ) : (
                       <div className="order-sheet__timeline-v-container">
                         <div className="order-sheet__timeline-v-line-path" />
-                        {history.hearings.map((h, i) => {
+                        {historyHearings.map((h, i) => {
                           const markerClass = h.status?.toLowerCase() || 'default';
                           return (
                             <div className="order-sheet__timeline-v-row" key={h.id || i}>
@@ -1518,7 +1542,7 @@ export default function OrderSheet() {
                     <div className="order-sheet__timeline-h-container">
                       <div className="order-sheet__timeline-h">
                         <div className="order-sheet__timeline-h-track" />
-                        {history.hearings.map((h, i) => {
+                        {historyHearings.map((h, i) => {
                           const markerClass = h.status?.toLowerCase() || 'default';
                           const isScheduled = h.status === 'Scheduled';
                           return (
@@ -1556,7 +1580,7 @@ export default function OrderSheet() {
                           </tr>
                         </thead>
                         <tbody>
-                          {history.hearings.map((h, i) => {
+                          {historyHearings.map((h, i) => {
                             return (
                               <tr key={h.id || i}>
                                 <td className="order-sheet__timeline-event-date-cell text-nowrap">{formatDate(h.date)}</td>
