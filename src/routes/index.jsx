@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout.jsx';
 import RequireAuth from '@/components/RequireAuth.jsx';
+import { lazyWithRetry as lazy } from '@/utils/lazyWithRetry.js';
 
 const Login = lazy(() => import('@/app/pages/Login.jsx'));
 const Register = lazy(() => import('@/app/pages/Register.jsx'));
