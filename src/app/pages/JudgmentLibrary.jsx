@@ -25,8 +25,6 @@ const FILTER_DEFAULTS = {
   court: '',
   judge: '',
   type: '',
-  matterType: '',
-  act: '',
   year: '',
 };
 
@@ -321,14 +319,6 @@ export default function JudgmentLibrary() {
           <option value="">All Types</option>
           {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
-        <div className="jl-filter-select">
-          <span className="jl-filter-select__label">Matter Type</span>
-          <span className="jl-filter-select__value">All Matter Types</span>
-        </div>
-        <div className="jl-filter-select">
-          <span className="jl-filter-select__label">Act</span>
-          <span className="jl-filter-select__value">All Acts</span>
-        </div>
         <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
           <option value="">All Years</option>
           {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
