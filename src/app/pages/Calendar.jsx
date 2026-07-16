@@ -98,24 +98,6 @@ export default function Calendar() {
 
   const caseNumberOnly = useCallback((c) => c.case_display_number || c.caseNumber || c.title || 'Case', []);
 
-  // Map a case status to the hearing stage shown on the calendar.
-  const hearingPhrase = useCallback((status) => {
-    const s = (status || '').toLowerCase();
-    const MAP = {
-      active: 'Further Hearing',
-      'in progress': 'Further Hearing',
-      'on hold': 'Hearing Pending',
-      disposed: 'Orders Pronounced',
-      dismissed: 'Case Dismissed',
-      closed: 'Case Closed',
-      completed: 'Case Closed',
-      'awaiting for orders': 'Awaiting for Orders',
-      'awaiting for order': 'Awaiting for Orders',
-      'pending orders': 'Awaiting for Orders',
-    };
-    return MAP[s] || (status || 'Hearing');
-  }, []);
-
   const events = useMemo(() => {
     const out = [];
     // Scheduled case hearings — driven by each case's next hearing date.
@@ -126,7 +108,7 @@ export default function Calendar() {
       out.push({
         id: `case-hearing-${c.id}`,
         kind: 'hearing',
-        title: `${caseNumberOnly(c)} — ${hearingPhrase(statusName)}`,
+        title: `${caseNumberOnly(c)} — ${statusName}`,
         caseId: c.id,
         date: due,
         color: caseStatusColor[(statusName || '').toLowerCase()] || '#3b82f6',
