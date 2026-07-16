@@ -21143,6 +21143,9 @@ kbd.cmd__kbd {
   color: var(--text-faint);
   margin: 0 14px 12px;
 }
+.tasks-search-inner { position: relative; flex: 1; min-width: 0; }
+.tasks-search-inner input { width: 100%; padding: 2px 0 2px 28px; box-sizing: border-box; }
+.tasks-search-inner svg { position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none; }
 .tasks-search svg { flex: 0 0 auto; color: var(--text-faint); }
 .tasks-search input {
   flex: 1 1 200px;
