@@ -21435,3 +21435,421 @@ kbd.cmd__kbd {
   .seg { display: flex; width: 100%; }
   .seg__btn { flex: 1; justify-content: center; padding: 12px 14px; font-size: 14px; }
 }
+
+/* ===== Judgment Library ===== */
+.jl-stats-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.jl-stats-row--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.jl-stats-row--5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.jl-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.jl-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.jl-stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.jl-stat-icon--purple { background: #7c5cf5; }
+.jl-stat-icon--green { background: #22c55e; }
+.jl-stat-icon--orange { background: #f59e0b; }
+.jl-stat-icon--pink { background: #ec4899; }
+.jl-stat-icon--blue { background: #3b82f6; }
+.jl-stat-icon--teal { background: #14b8a6; }
+.jl-stat-icon--deep-purple { background: #8b5cf6; }
+.jl-stat-icon--sky { background: #0ea5e9; }
+.jl-stat-icon--gold { background: #eab308; }
+
+.jl-stat-label {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+
+.jl-stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--navy-900);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.jl-stat-value--sm {
+  font-size: 22px;
+}
+
+.jl-stat-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+
+.jl-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.jl-search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  color: var(--text-faint);
+  font-size: 13.5px;
+}
+
+.jl-search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.jl-search-box input::placeholder {
+  color: var(--text-faint);
+}
+
+.jl-search-box:focus-within {
+  border-color: var(--navy-600);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  background: var(--surface);
+}
+
+.jl-filter-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  align-items: center;
+}
+
+.jl-filter-select {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  cursor: pointer;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.jl-filter-select__label {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.jl-filter-select__value {
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jl-filter-select__value::after {
+  content: "⌄";
+  color: var(--text-faint);
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.jl-case-title {
+  font-weight: 600;
+  color: var(--navy-700);
+  font-size: 13.5px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.jl-case-title:hover {
+  color: var(--navy-600);
+  text-decoration: underline;
+}
+
+.jl-case-sub {
+  color: var(--text-faint);
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+.jl-cell-strong {
+  color: var(--text);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.jl-cell-muted {
+  color: var(--text-soft);
+}
+
+.jl-status-pill {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.jl-status--active {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.jl-status--archived {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.jl-heart-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--border-strong);
+  transition: color 0.15s var(--ease);
+}
+
+.jl-heart-btn--filled {
+  color: var(--red);
+}
+
+.jl-heart-btn:hover {
+  color: var(--red);
+}
+
+.jl-actions {
+  display: flex;
+  gap: 6px;
+  color: var(--text-faint);
+}
+
+.jl-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  border-radius: 4px;
+  transition: color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.jl-actions button:hover {
+  color: var(--navy-700);
+  background: var(--brand-soft);
+}
+
+.jl-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 6px 0 6px;
+}
+
+.jl-showing-text {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.jl-pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jl-page-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+
+.jl-page-btn:hover:not(.jl-page-btn--active):not(.jl-page-btn--nav) {
+  background: var(--brand-soft);
+  border-color: var(--border-strong);
+}
+
+.jl-page-btn--active {
+  background: var(--navy-700);
+  color: #fff;
+  border-color: var(--navy-700);
+}
+
+.jl-page-btn--nav {
+  color: var(--text-faint);
+  border: none;
+  background: transparent;
+}
+
+.jl-page-btn--nav:hover {
+  color: var(--navy-700);
+}
+
+.jl-per-page {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+  background: var(--surface);
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.jl-per-page::after {
+  content: "⌄";
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.jl-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+
+.jl-more-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.jl-clear-btn {
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+
+.jl-clear-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.jl-table thead tr {
+  background: var(--surface-2);
+}
+
+.jl-table th {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.jl-table .th--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.jl-table .th--sortable:hover {
+  color: var(--navy-700);
+}
+
+.jl-table td {
+  padding: 13px 14px;
+  vertical-align: top;
+  font-size: 13px;
+  color: var(--text-soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.jl-table tbody tr {
+  transition: background 0.15s var(--ease);
+}
+
+.jl-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.jl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.jl-table input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--navy-600);
+  cursor: pointer;
+}

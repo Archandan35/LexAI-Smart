@@ -138,7 +138,7 @@ export default function ManageCases() {
               <div className="bench-types__hero-accent" />
             </div>
             <PermissionGate perm="manageCase.create">
-              <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>
+              <Button icon="plus" onClick={() => setOpen(true)} style={{ marginLeft: 'auto' }}>New Case</Button>
             </PermissionGate>
             <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>

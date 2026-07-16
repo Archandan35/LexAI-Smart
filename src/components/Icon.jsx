@@ -83,6 +83,7 @@ const PATHS = {
   redo: 'M23 4v6h-6M20.49 15a9 9 0 1 1-2.12-9.36L23 10',
   undo: 'M1 4v6h6M3.51 15a9 9 0 1 0 2.13-9.36L1 10',
   maximize: 'M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3',
+  heart: 'M19 14c1.5-1.5 2.5-3.5 2.5-5.5A4.5 4.5 0 0 0 17 4c-1.5 0-3 .7-4 1.8-1-1.1-2.5-1.8-4-1.8A4.5 4.5 0 0 0 4.5 8.5c0 2 1 4 2.5 5.5l5 5 5-5z',
 };
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */
