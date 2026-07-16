@@ -21201,7 +21201,7 @@ kbd.cmd__kbd {
 .task-card__updated svg { color: var(--text-faint); }
 
 .task-card__actions { display: flex; flex-wrap: wrap; gap: 4px; }
-.task-card__actions .cv-action-btn { flex: 1 1 calc(16.666% - 3px); min-width: 48px; max-width: calc(16.666% - 3px); padding: 5px 3px; font-size: 9px; }
+.task-card__actions .cv-action-btn { flex: 1 1 calc(16.666% - 3px); min-width: 0; max-width: calc(16.666% - 3px); padding: 5px 3px; font-size: 9px; }
 .task-card__actions .cv-action-btn span { display: block; font-size: 8px; margin-top: 1px; }
 
 /* responsive calendar/tasks */

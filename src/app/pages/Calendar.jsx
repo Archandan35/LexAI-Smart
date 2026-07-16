@@ -685,7 +685,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
                 const linkedCase = t.case_id ? cases.find((c) => c.id === t.case_id) : null;
-                const caseNum = linkedCase?.case_display_number || linkedCase?.caseNumber || '';
+                const caseNum = linkedCase?.case_display_number || linkedCase?.caseNumber || t.case_id || '';
                 const caseTitle = linkedCase?.title || '';
                 return (
                   <article key={t.id} className={`task-card${t.archived ? ' task-card--archived' : ''}`}>
@@ -727,9 +727,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       <div className="task-card__dt-item">
                         <div className="task-card__dt-label-wrap">
                           <Icon name="clock" size={13} />
-                          <span className="task-card__dt-label">Due Time</span>
+                          <span className="task-card__dt-label">Due</span>
                         </div>
-                        <span className="task-card__dt-value">{t.due_time ? fmtTime(t.due_time) : '—'}</span>
+                        <span className="task-card__dt-value">
+                          {t.due_date ? formatDate(t.due_date) : '—'}
+                          {t.due_time ? ` ${fmtTime(t.due_time)}` : ''}
+                        </span>
                       </div>
                       {(t.start_date || t.end_date) && (
                         <div className="task-card__dt-item">
