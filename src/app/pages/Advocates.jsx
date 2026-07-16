@@ -93,9 +93,9 @@ export default function Advocates() {
       <PageHeader icon="users" title="Advocates" subtitle="Manage advocates in your practice." />
 
       <div className="stats-row">
-        <div className="stat-card"><span className="stat-card__value">{stats.total}</span><span className="stat-card__label">Total Advocates</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.active}</span><span className="stat-card__label">Active</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.inactive}</span><span className="stat-card__label">Inactive</span></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="users" size={20} /></div><div className="stat-card__value">{stats.total}</div><div className="stat-card__label">Total Advocates</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="check-circle" size={20} /></div><div className="stat-card__value">{stats.active}</div><div className="stat-card__label">Active</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="ban" size={20} /></div><div className="stat-card__value">{stats.inactive}</div><div className="stat-card__label">Inactive</div></div>
       </div>
 
       <div className="toolbar-row">

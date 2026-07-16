@@ -1174,7 +1174,6 @@ export default function OrderSheet() {
                         {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date <Icon name={sortDir === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} /></th>}
                         {visibleColumns.case && <th>Case Number & Title</th>}
                         {visibleColumns.court && <th>Court</th>}
-                        {visibleColumns.bench && <th>Bench</th>}
                         {visibleColumns.purpose && <th>Purpose</th>}
                         {visibleColumns.nextHearingDate && <th>Next Hearing</th>}
                         {visibleColumns.postedFor && <th>Posted For</th>}
@@ -1210,8 +1209,7 @@ export default function OrderSheet() {
                                 <div className="text-xs text-muted mt-4">{h.parties}</div>
                               </td>
                             )}
-                            {visibleColumns.court && <td>{h.court}</td>}
-                            {visibleColumns.bench && <td>{h.case?.bench_type || '—'}</td>}
+                            {visibleColumns.court && <td>{h.court}<div className="text-xs text-muted">{h.case?.bench_type || '—'}</div></td>}
                             {visibleColumns.purpose && <td>{h.purpose || '—'}</td>}
                             {visibleColumns.nextHearingDate && <td className="order-sheet__cell-nowrap">{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</td>}
                             {visibleColumns.postedFor && <td>{h.postedFor || h.posted_for || '—'}</td>}

@@ -180,7 +180,7 @@ export default function ManageCases() {
                   <thead><tr>
                     <th className="manage-cases__th-check">{can('manageCase.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
                     <th className="manage-cases__th-check"><Icon name="star" size={13} /></th>
-                    <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="manage-cases__th-actions">Actions</th>
+                    <th>Case Number</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="manage-cases__th-actions">Actions</th>
                   </tr></thead>
                   <tbody>
                     {filtered.map((c) => (
@@ -191,8 +191,10 @@ export default function ManageCases() {
                             <Icon name="star" size={15} className={c.watch ? 'star--on' : ''} fill={c.watch} />
                           </button>
                         </td>
-                        <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{formatCaseNum(c)}</td>
-                        <td className="manage-cases__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
+                        <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>
+                          <div>{formatCaseNum(c)}</div>
+                          <div className="manage-cases__cell-party">{c.title}</div>
+                        </td>
                         <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone={stageColor[c.stage] || 'navy'}>{c.stage}</Badge> : '—'}</td>
                         <td className="manage-cases__cell-date">{formatDate(c.nextHearing)}</td>

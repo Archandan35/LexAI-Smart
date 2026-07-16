@@ -41,10 +41,10 @@ export default function Contacts() {
       emptyText="No contacts yet."
       addLabel="Add Contact"
       statsConfig={[
-        { key: 'totalContacts', label: 'Total Contacts' },
-        { key: 'advocates', label: 'Advocates' },
-        { key: 'judges', label: 'Judges' },
-        { key: 'courtStaff', label: 'Court Staff' },
+        { key: 'totalContacts', label: 'Total Contacts', icon: 'users' },
+        { key: 'advocates', label: 'Advocates', icon: 'user' },
+        { key: 'judges', label: 'Judges', icon: 'shield' },
+        { key: 'courtStaff', label: 'Court Staff', icon: 'building' },
       ]}
       columns={[
         { header: 'Name', accessor: 'name' },

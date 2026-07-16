@@ -90,10 +90,10 @@ export default function Clients() {
       <PageHeader icon="users" title="Clients" subtitle="Manage your clients and contacts." />
 
       <div className="stats-row">
-        <div className="stat-card"><span className="stat-card__value">{stats.totalClients ?? 0}</span><span className="stat-card__label">Total Clients</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.activeMatters ?? 0}</span><span className="stat-card__label">Active Matters</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.pendingPayments ?? 0}</span><span className="stat-card__label">Pending Payments</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.newThisMonth ?? 0}</span><span className="stat-card__label">New This Month</span></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="users" size={20} /></div><div className="stat-card__value">{stats.totalClients ?? 0}</div><div className="stat-card__label">Total Clients</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="folder" size={20} /></div><div className="stat-card__value">{stats.activeMatters ?? 0}</div><div className="stat-card__label">Active Matters</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="credit-card" size={20} /></div><div className="stat-card__value">{stats.pendingPayments ?? 0}</div><div className="stat-card__label">Pending Payments</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="trending-up" size={20} /></div><div className="stat-card__value">{stats.newThisMonth ?? 0}</div><div className="stat-card__label">New This Month</div></div>
       </div>
 
       <div className="toolbar-row">

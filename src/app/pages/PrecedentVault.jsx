@@ -29,25 +29,29 @@ export default function PrecedentVault() {
   };
 
   return (
-    <div>
+    <div className="fade-in">
       <PageHeader title="Precedent Vault" icon="bookmark" />
       <div className="stats-row">
-        <div className="stat-card"><span className="stat-card__value">{stats.totalSaved}</span><span className="stat-card__label">Saved Precedents</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.totalTags}</span><span className="stat-card__label">Tags</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.recentlyAdded}</span><span className="stat-card__label">Recently Added</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.favorites}</span><span className="stat-card__label">Favorites</span></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="bookmark" size={20} /></div><div className="stat-card__value">{stats.totalSaved}</div><div className="stat-card__label">Saved Precedents</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="tag" size={20} /></div><div className="stat-card__value">{stats.totalTags}</div><div className="stat-card__label">Tags</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="clock" size={20} /></div><div className="stat-card__value">{stats.recentlyAdded}</div><div className="stat-card__label">Recently Added</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="star" size={20} /></div><div className="stat-card__value">{stats.favorites}</div><div className="stat-card__label">Favorites</div></div>
       </div>
-      <Card title="Saved Precedents">
-        <div className="search-row"><Input className="search-row__input" placeholder="Search by title or citation..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+      <Card bodyClass="card__body--flush">
+        <div className="toolbar-row" style={{ padding: '14px 18px 0' }}>
+          <Input className="search-row__input" placeholder="Search by title or citation..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
         {loading ? <div className="loading-block"><span className="spinner" /></div> : filtered.length === 0 ? (
           <div className="empty-state"><Icon name="bookmark" /><p>No precedents saved yet.</p></div>
         ) : (
-          <table className="data-table"><thead><tr><th>Title</th><th>Citation</th><th>Court</th><th>Date</th><th>Favorite</th></tr></thead>
-            <tbody>{filtered.map((p) => (
-              <tr key={p.id}><td>{p.title}</td><td>{p.citation}</td><td>{p.court}</td><td>{p.date}</td>
-                <td><button className="btn-icon" onClick={() => toggleFav(p)}><Icon name={p.is_favorite ? 'star' : 'star'} /></button></td></tr>
-            ))}</tbody>
-          </table>
+          <div className="table-scroll">
+            <table className="table"><thead><tr><th>Title</th><th>Citation</th><th>Court</th><th>Date</th><th>Favorite</th></tr></thead>
+              <tbody>{filtered.map((p) => (
+                <tr key={p.id}><td>{p.title}</td><td>{p.citation}</td><td>{p.court}</td><td>{p.date}</td>
+                  <td><button className="btn-icon" onClick={() => toggleFav(p)}><Icon name={p.is_favorite ? 'star' : 'star'} /></button></td></tr>
+              ))}</tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>

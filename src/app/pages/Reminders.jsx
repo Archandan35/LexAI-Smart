@@ -151,10 +151,10 @@ export default function Reminders() {
       )}
 
       <div className="stats-row">
-        <div className="stat-card"><span className="stat-card__value">{stats.total}</span><span className="stat-card__label">Total</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.pending}</span><span className="stat-card__label">Pending</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.overdue}</span><span className="stat-card__label">Overdue</span></div>
-        <div className="stat-card"><span className="stat-card__value">{stats.done}</span><span className="stat-card__label">Done</span></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="bell" size={20} /></div><div className="stat-card__value">{stats.total}</div><div className="stat-card__label">Total</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="clock" size={20} /></div><div className="stat-card__value">{stats.pending}</div><div className="stat-card__label">Pending</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="alert" size={20} /></div><div className="stat-card__value">{stats.overdue}</div><div className="stat-card__label">Overdue</div></div>
+        <div className="stat-card"><div className="stat-card__icon"><Icon name="check-circle" size={20} /></div><div className="stat-card__value">{stats.done}</div><div className="stat-card__label">Done</div></div>
       </div>
 
       <div className="toolbar-row">
