@@ -46,6 +46,8 @@ const PROGRESS_STEPS = [
 const INITIAL_FORM = {
   plaintiff: '',
   defendant: '',
+  subjectMatter: '',
+  act: '',
   plaintiffType: '',
   defendantType: '',
   plaintiffCounsel: '',
@@ -149,7 +151,7 @@ function DateInput({ value, placeholder, onCommit }) {
   );
 }
 
-export default function AddJudgmentModal({ open, onClose, onSaved }) {
+export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const navigate = useNavigate();
   const [tab, setTab] = useState('general');
   const [form, setForm] = useState(INITIAL_FORM);
@@ -190,7 +192,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
 
   useEffect(() => {
     if (!open) return;
-    setForm(INITIAL_FORM);
+    setForm(editing ? { ...INITIAL_FORM, ...editing } : INITIAL_FORM);
     setTab('general');
     Promise.all([
       judgmentsRepository.getAll().catch(() => []),
@@ -263,14 +265,18 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
       const entry = {
         ...cleaned,
         status: draft ? 'Draft' : 'Active',
-        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         keywords: [],
         acts: [],
         paragraphs: [],
       };
-      const created = await judgmentsRepository.create(entry);
-      if (!created) throw new Error('Save returned no record');
+      let result;
+      if (editing && editing.id) {
+        result = await judgmentsRepository.update(editing.id, entry);
+      } else {
+        result = await judgmentsRepository.create({ ...entry, createdAt: new Date().toISOString() });
+      }
+      if (!result) throw new Error('Save returned no record');
       onSaved?.();
       onClose?.();
     } catch (err) {
@@ -495,7 +501,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
             <div className="ajm-form-title">Legal References</div>
             <div className="ajm-field">
               <label>Acts & Statutes Referenced</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter acts and statutes referenced..." />
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter acts and statutes referenced..." value={form.act || ''} onChange={(e) => set('act', e.target.value)} />
             </div>
             <div className="ajm-field">
               <label>Sections & Provisions</label>
@@ -739,8 +745,8 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Add Case Precedent / Judgment"
-      subtitle="Add a new judgment or legal precedent to your knowledge library"
+      title={editing ? 'Edit Case Precedent / Judgment' : 'Add Case Precedent / Judgment'}
+      subtitle={editing ? 'Update the selected judgment record' : 'Add a new judgment or legal precedent to your knowledge library'}
       size="lg"
       className="ajm-overlay"
       footer={

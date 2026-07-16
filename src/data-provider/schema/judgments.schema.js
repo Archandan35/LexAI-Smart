@@ -20,6 +20,8 @@ export const JudgmentsSchema = {
     status: 'string',
     plaintiff: 'string',
     defendant: 'string',
+    subjectMatter: 'string',
+    act: 'string',
     plaintiffType: 'string',
     defendantType: 'string',
     plaintiffCounsel: 'string',

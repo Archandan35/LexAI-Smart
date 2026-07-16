@@ -6,6 +6,9 @@ import Icon from '@/components/Icon.jsx';
 import Badge from '@/components/Badge.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
+import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
+import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
+import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
 import { useFormat } from '@/utils/format.js';
 
 const TABS = [
@@ -73,6 +76,10 @@ export default function JudgmentDetail() {
   const [tab, setTab] = useState('sections');
   const [favourite, setFavourite] = useState(false);
 
+  const [courts, setCourts] = useState([]);
+  const [benchTypes, setBenchTypes] = useState([]);
+  const [judges, setJudges] = useState([]);
+
   useEffect(() => {
     let cancelled = false;
     judgmentsRepository.getById(id)
@@ -86,6 +93,9 @@ export default function JudgmentDetail() {
     judgmentsRepository.getAll()
       .then((data) => { if (!cancelled) setAllJudgments(data || []); })
       .catch(() => {});
+    courtsRepository.getAll().then(setCourts).catch(() => {});
+    benchTypesRepository.getAll().then(setBenchTypes).catch(() => {});
+    judgesRepository.getAll().then(setJudges).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -104,15 +114,33 @@ export default function JudgmentDetail() {
       .slice(0, 6);
   }, [judgment, allJudgments]);
 
+  const nameMap = useMemo(() => {
+    const build = (arr) => {
+      const m = {};
+      (arr || []).forEach((r) => { m[r.id] = r.name; });
+      return m;
+    };
+    return { court: build(courts), bench: build(benchTypes), judge: build(judges) };
+  }, [courts, benchTypes, judges]);
+
+  // Resolve a single id or an array of ids to display names (falls back to the raw value).
+  const judgeLabel = (val) => {
+    if (!val) return '';
+    if (Array.isArray(val)) return val.map((v) => nameMap.judge[v] || v).join(', ');
+    return nameMap.judge[val] || val;
+  };
+  const courtLabel = (val) => (val ? (nameMap.court[val] || val) : '');
+  const benchLabel = (val) => (val ? (nameMap.bench[val] || val) : '');
+
   const classification = useMemo(() => {
     if (!judgment) return [];
     const rows = [];
-    if (judgment.court) rows.push({ key: 'Court Level', val: judgment.court });
+    if (judgment.court) rows.push({ key: 'Court Level', val: courtLabel(judgment.court) });
     if (judgment.type) rows.push({ key: 'Type', val: judgment.type });
     if (judgment.matterType) rows.push({ key: 'Matter Type', val: judgment.matterType });
-    if (judgment.bench) rows.push({ key: 'Bench', val: judgment.bench });
-    if (judgment.judge) rows.push({ key: 'Judge', val: judgment.judge });
-    if (judgment.judges?.length) rows.push({ key: 'Bench', val: Array.isArray(judgment.judges) ? judgment.judges.join(', ') : judgment.judges });
+    if (judgment.bench) rows.push({ key: 'Bench', val: benchLabel(judgment.bench) });
+    if (judgment.judge) rows.push({ key: 'Judge', val: judgeLabel(judgment.judge) });
+    if (judgment.judges) rows.push({ key: 'Bench', val: judgeLabel(judgment.judges) });
     return rows;
   }, [judgment]);
 
@@ -195,9 +223,9 @@ export default function JudgmentDetail() {
         <div className="jd-case-citation">{citation}</div>
 
         <div className="jd-case-meta-grid">
-          <MetaItem icon="building" label="Court" value={court} />
-          <MetaItem icon="users" label="Bench / Judge" value={judgment.bench || judgment.judge || (judgment.judges?.length ? judgment.judges.join(', ') : '')} />
-          <MetaItem icon="user" label="Judge(s)" value={judgment.judge || (judgment.judges?.length ? judgment.judges.join(', ') : '')} />
+          <MetaItem icon="building" label="Court" value={courtLabel(court)} />
+          <MetaItem icon="users" label="Bench / Judge" value={benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges)} />
+          <MetaItem icon="user" label="Judge(s)" value={judgeLabel(judgment.judge) || judgeLabel(judgment.judges)} />
           <MetaItem icon="calendar" label="Judgment Date" value={date ? formatDate(date) : ''} />
         </div>
 
@@ -263,9 +291,9 @@ export default function JudgmentDetail() {
                 <h3 className="jd-section-title">Bench</h3>
                 <div className="jd-summary-text">
                   {judgment.bench ? (
-                    <>{judgment.bench} — {judgment.judge || (judgment.judges?.length ? judgment.judges.join(', ') : '')}</>
+                    <>{benchLabel(judgment.bench)} — {judgeLabel(judgment.judge) || judgeLabel(judgment.judges)}</>
                   ) : (
-                    judgment.judge || (judgment.judges?.length ? judgment.judges.join(', ') : 'Bench information not available.')
+                    judgeLabel(judgment.judge) || judgeLabel(judgment.judges) || 'Bench information not available.'
                   )}
                 </div>
               </div>

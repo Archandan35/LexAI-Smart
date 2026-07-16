@@ -21768,7 +21768,7 @@ kbd.cmd__kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 6px 0 6px;
+  padding: 16px 16px 18px 16px;
 }
 
 .jl-showing-text {

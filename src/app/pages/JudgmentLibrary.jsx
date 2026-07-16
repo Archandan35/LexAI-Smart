@@ -1,9 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
+import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
+import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
+import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
+import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 
@@ -25,6 +29,8 @@ const FILTER_DEFAULTS = {
   court: '',
   judge: '',
   type: '',
+  matterType: '',
+  act: '',
   year: '',
 };
 
@@ -43,6 +49,11 @@ export default function JudgmentLibrary() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
+  const [courts, setCourts] = useState([]);
+  const [benchTypes, setBenchTypes] = useState([]);
+  const [judges, setJudges] = useState([]);
+  const [acts, setActs] = useState([]);
+
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
     const handler = (e) => setIsMobile(e.matches);
@@ -51,33 +62,85 @@ export default function JudgmentLibrary() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  useEffect(() => {
+  const loadJudgments = useCallback(() => {
+    setLoading(true);
     judgmentsRepository.getAll()
       .then((data) => setJudgments(data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    loadJudgments();
+    courtsRepository.getAll().then(setCourts).catch(() => {});
+    benchTypesRepository.getAll().then(setBenchTypes).catch(() => {});
+    judgesRepository.getAll().then(setJudges).catch(() => {});
+    actsRepository.getAll().then(setActs).catch(() => {});
+  }, [loadJudgments]);
+
+  const [editing, setEditing] = useState(null);
+
+  const handleDelete = (j) => {
+    if (!window.confirm(`Delete judgment "${j.title || j.citation || 'Untitled'}"? This cannot be undone.`)) return;
+    judgmentsRepository.remove(j.id)
+      .then(() => loadJudgments())
+      .catch(() => {});
+  };
+
+  const handleDuplicate = (j) => {
+    const { id, createdAt, updatedAt, ...rest } = j;
+    judgmentsRepository.create({
+      ...rest,
+      title: rest.title ? `${rest.title} (Copy)` : rest.title,
+      citation: rest.citation ? `${rest.citation} (Copy)` : rest.citation,
+      status: 'Draft',
+    })
+      .then(() => loadJudgments())
+      .catch(() => {});
+  };
+
+  const nameMap = useMemo(() => {
+    const build = (arr) => {
+      const m = {};
+      (arr || []).forEach((r) => { m[r.id] = r.name; });
+      return m;
+    };
+    return {
+      court: build(courts),
+      bench: build(benchTypes),
+      judge: build(judges),
+      act: build(acts),
+    };
+  }, [courts, benchTypes, judges, acts]);
+
+  const resolveName = (map, val) => (val ? (map[val] || val) : '—');
+
   const uniqueValues = useMemo(() => {
     const courts = new Set();
     const judges = new Set();
     const types = new Set();
     const years = new Set();
+    const matterTypes = new Set();
+    const actIds = new Set();
     judgments.forEach((j) => {
       if (j.court) courts.add(j.court);
-      if (j.judge || j.bench) judges.add(j.judge || j.bench);
+      if (j.judges || j.judge || j.bench) judges.add(j.judges || j.judge || j.bench);
       if (j.type) types.add(j.type);
+      if (j.subjectMatter) matterTypes.add(j.subjectMatter);
+      if (j.act) actIds.add(j.act);
       if (j.date) {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
       }
     });
     return {
-      courts: Array.from(courts).sort(),
-      judges: Array.from(judges).sort(),
+      courts: Array.from(courts).sort().map((id) => ({ value: id, label: nameMap.court[id] || id })),
+      judges: Array.from(judges).sort().map((id) => ({ value: id, label: nameMap.judge[id] || id })),
       types: Array.from(types).sort(),
+      matterTypes: Array.from(matterTypes).sort().map((v) => ({ value: v, label: v })),
+      acts: Array.from(actIds).sort().map((id) => ({ value: id, label: nameMap.act[id] || id })),
       years: Array.from(years).sort(),
     };
-  }, [judgments]);
+  }, [judgments, nameMap]);
 
   const stats = useMemo(() => {
     const list = judgments;
@@ -89,9 +152,9 @@ export default function JudgmentLibrary() {
       if (!j.createdAt && !j.date) return false;
       return Date.now() - new Date(j.createdAt || j.date) < 30 * 24 * 60 * 60 * 1000;
     }).length;
-    const supreme = list.filter((j) => (j.court || '').toLowerCase().includes('supreme')).length;
-    const highCourt = list.filter((j) => (j.court || '').toLowerCase().includes('high')).length;
-    const tribunal = list.filter((j) => (j.court || '').toLowerCase().includes('tribunal')).length;
+    const supreme = list.filter((j) => (nameMap.court[j.court] || '').toLowerCase().includes('supreme')).length;
+    const highCourt = list.filter((j) => (nameMap.court[j.court] || '').toLowerCase().includes('high')).length;
+    const tribunal = list.filter((j) => (nameMap.court[j.court] || '').toLowerCase().includes('tribunal')).length;
     return { total, active, archived, favourite, recentlyAdded, recentlyViewed: 89, supreme, highCourt, tribunal };
   }, [judgments]);
 
@@ -111,6 +174,8 @@ export default function JudgmentLibrary() {
     if (filters.court) rows = rows.filter((j) => (j.court || '') === filters.court);
     if (filters.judge) rows = rows.filter((j) => (j.judge || j.bench || '') === filters.judge);
     if (filters.type) rows = rows.filter((j) => (j.type || '') === filters.type);
+    if (filters.matterType) rows = rows.filter((j) => (j.subjectMatter || '') === filters.matterType);
+    if (filters.act) rows = rows.filter((j) => (j.act || '') === filters.act);
     if (filters.year) {
       rows = rows.filter((j) => {
         try { return new Date(j.date).getFullYear() === Number(filters.year); } catch { return false; }
@@ -309,22 +374,24 @@ export default function JudgmentLibrary() {
       <div className="jl-filter-row">
         <select className="jl-filter-select jl-filter-select--native" value={filters.court} onChange={(e) => setFilter('court', e.target.value)}>
           <option value="">All Courts</option>
-          {uniqueValues.courts.map((c) => <option key={c} value={c}>{c}</option>)}
+          {uniqueValues.courts.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
         </select>
         <select className="jl-filter-select jl-filter-select--native" value={filters.judge} onChange={(e) => setFilter('judge', e.target.value)}>
           <option value="">All Judges</option>
-          {uniqueValues.judges.map((j) => <option key={j} value={j}>{j}</option>)}
+          {uniqueValues.judges.map((j) => <option key={j.value} value={j.value}>{j.label}</option>)}
         </select>
         <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
           <option value="">All Types</option>
           {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
-        <div className="jl-filter-select jl-filter-select--matter">
-          <span className="jl-filter-select__value">All Matter Types</span>
-        </div>
-        <div className="jl-filter-select jl-filter-select--act">
-          <span className="jl-filter-select__value">All Acts</span>
-        </div>
+        <select className="jl-filter-select jl-filter-select--native" value={filters.matterType} onChange={(e) => setFilter('matterType', e.target.value)}>
+          <option value="">All Matter Types</option>
+          {uniqueValues.matterTypes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+        </select>
+        <select className="jl-filter-select jl-filter-select--native" value={filters.act} onChange={(e) => setFilter('act', e.target.value)}>
+          <option value="">All Acts</option>
+          {uniqueValues.acts.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+        </select>
         <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
           <option value="">All Years</option>
           {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
@@ -370,10 +437,10 @@ export default function JudgmentLibrary() {
                       </td>
                       <td className="jl-cell-muted">{j.citation || '—'}</td>
                       <td className="jl-cell-strong">
-                        {j.court || '—'}
-                        {j.bench ? <><br />{j.bench}</> : null}
+                        {resolveName(nameMap.court, j.court)}
+                        {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
                       </td>
-                      <td className="jl-cell-strong">{j.judge || j.bench || '—'}</td>
+                      <td className="jl-cell-strong">{resolveName(nameMap.judge, j.judges || j.judge) || '—'}</td>
                       <td className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
                       <td className="jl-cell-muted">{j.caseNumber || '—'}</td>
                       <td>
@@ -390,9 +457,9 @@ export default function JudgmentLibrary() {
                       <td>
                         <div className="jl-actions">
                           <button title="View" onClick={() => navigate(`/research/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
-                          <button title="Edit"><Icon name="pen" size={15} /></button>
-                          <button title="Copy"><Icon name="copy" size={15} /></button>
-                          <button title="More"><Icon name="more-vertical" size={14} /></button>
+                          <button title="Edit" onClick={() => { setEditing(j); setShowAddModal(true); }}><Icon name="pen" size={15} /></button>
+                          <button title="Duplicate" onClick={() => handleDuplicate(j)}><Icon name="copy" size={15} /></button>
+                          <button title="Delete" onClick={() => handleDelete(j)}><Icon name="trash" size={15} /></button>
                         </div>
                       </td>
                     </tr>
@@ -445,7 +512,12 @@ export default function JudgmentLibrary() {
           <span>Calendar</span>
         </button>
       </nav>
-      <AddJudgmentModal open={showAddModal} onClose={() => setShowAddModal(false)} onSaved={() => judgmentsRepository.getAll().then((d) => setJudgments(d || [])).catch(() => {})} />
+      <AddJudgmentModal
+        open={showAddModal}
+        editing={editing}
+        onClose={() => { setShowAddModal(false); setEditing(null); }}
+        onSaved={() => { setEditing(null); loadJudgments(); }}
+      />
     </div>
   );
 }
