@@ -1,7 +1,7 @@
 
-export default function Card({ title, sub, actions, children, hover = false, className = '', bodyClass = '' }) {
+export default function Card({ title, sub, actions, children, hover = false, noPad = false, className = '', bodyClass = '' }) {
   return (
-    <section className={`card ${hover ? 'card--hover' : ''} ${className}`}>
+    <section className={`card ${hover ? 'card--hover' : ''} ${noPad ? 'card--no-pad' : ''} ${className}`}>
       {(title || actions) && (
         <header className="card__head">
           <div>
@@ -12,7 +12,7 @@ export default function Card({ title, sub, actions, children, hover = false, cla
           {actions}
         </header>
       )}
-      <div className={`card__body ${bodyClass}`}>{children}</div>
+      <div className={`card__body ${noPad ? 'card__body--no-pad' : ''} ${bodyClass}`}>{children}</div>
     </section>
   );
 }

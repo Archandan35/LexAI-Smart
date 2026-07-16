@@ -41,6 +41,9 @@ let _prefixMap = {
   configHistory: { prefix: 'CFGH', padding: 5 },
   templates: { prefix: 'TEMP', padding: 5 },
   schema_meta: { prefix: 'SMETA', padding: 5 },
+  tasks: { prefix: 'TASK', padding: 5 },
+  taskCategories: { prefix: 'TKCAT', padding: 5 },
+  taskStatuses: { prefix: 'TKST', padding: 5 },
 };
 
 // Seed entity_prefix_registry from in-memory map on first use

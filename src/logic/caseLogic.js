@@ -136,11 +136,12 @@ export const caseLogic = {
   // Dashboard data aggregation across collections.
   async dashboard() {
     try {
-      const [cases, drafts, documents, hearings] = await Promise.all([
+      const [cases, drafts, documents, hearings, tasks] = await Promise.all([
         caseService.listCases(),
         draftingService.listDrafts(),
         caseService.listDocuments(),
         caseService.listHearings(),
+        (async () => { try { const m = await import('@/logic/taskLogic.js'); const r = await m.taskLogic.list(); return r.ok ? r.data || [] : []; } catch { return []; } })(),
       ]);
       const live = cases.filter((c) => !c.archived);
 
@@ -226,6 +227,32 @@ export const caseLogic = {
             daysLeft,
           };
         });
+
+      /* Upcoming tasks: active, non-archived tasks with a due date that is today
+         or in the future, nearest-due first. Reuses the same tasks collection the
+         Calendar page reads — no duplicated data store. */
+      const upcomingTasks = (tasks || [])
+        .filter((t) => !t.archived && t.active !== false && t.status !== 'Completed' && t.due_date)
+        .map((t) => {
+          const dueTs = new Date(t.due_date).setHours(0, 0, 0, 0);
+          const daysLeft = Math.round((dueTs - today.getTime()) / dayMs);
+          const c = caseMap[t.case_id];
+          return {
+            id: t.id,
+            title: t.title,
+            category: t.category || 'Task',
+            status: t.status,
+            priority: t.priority,
+            color: t.color || '#6b7280',
+            date: t.due_date,
+            dueTime: t.due_time || null,
+            caseId: t.case_id || null,
+            caseTitle: c?.title || c?.case_display_number || c?.caseNumber || null,
+            daysLeft,
+          };
+        })
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+        .slice(0, 6);
       let recentCitations = [];
       try { recentCitations = (await citationService.searchCases({ keywords: 'contract limitation title' })).slice(0, 4); }
       catch { recentCitations = []; }
@@ -252,6 +279,7 @@ export const caseLogic = {
         recentDocuments: [...documents].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).slice(0, 5),
         upcomingHearings: upcoming,
         upcomingReminders,
+        upcomingTasks,
         recentCitations,
         caseTypeDistribution,
       });

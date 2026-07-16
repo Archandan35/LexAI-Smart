@@ -77,7 +77,7 @@ export default function Dashboard() {
   if (loading) return <Spinner label="Loading dashboard…" />;
   if (!data) return <EmptyState title="Could not load dashboard." />;
 
-  const { stats, activeCases, recentDrafts, recentDocuments, upcomingHearings, upcomingReminders, caseTypeDistribution } = data;
+  const { stats, activeCases, recentDrafts, recentDocuments, upcomingHearings, upcomingReminders, upcomingTasks, caseTypeDistribution } = data;
 
   /* Build derived stats */
   const totalCases = stats.totalCases ?? 0;
@@ -293,6 +293,47 @@ export default function Dashboard() {
                       <div className="dash-hearing__date">{formatDate(r.date)}</div>
                       <div className={urgent ? 'dash-reminder__urgent' : 'dash-reminder__soon'}>
                         {r.daysLeft === 0 ? 'Today' : `${r.daysLeft} day${r.daysLeft === 1 ? '' : 's'} left`}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ---- Row 2b: Upcoming Tasks ---- */}
+      <div className="dash-grid-1">
+        <div className="card dash-reminders-card">
+          <div className="dash-card-head">
+            <span className="dash-card-head__title">Upcoming Tasks</span>
+            <span className="dash-card-head__actions">
+              <span className="dash-card-head__link" onClick={() => nav('/calendar')}><Icon name="plus" size={13} /> Add Task</span>
+              <span className="dash-card-head__link" onClick={() => nav('/calendar')}>View All <Icon name="arrow" size={13} /></span>
+            </span>
+          </div>
+          {!upcomingTasks || upcomingTasks.length === 0 ? (
+            <div className="dash-padded-content">
+              <EmptyState icon="check" title="No upcoming tasks." />
+            </div>
+          ) : (
+            <div className="dash-reminders-scroll">
+              {upcomingTasks.map((t) => {
+                const urgent = (t.daysLeft ?? 99) <= 0;
+                return (
+                  <div className="dash-hearing-row" key={t.id} onClick={() => nav('/calendar')}>
+                    <div className="dash-hearing-icon" style={{ background: `${t.color || '#6b7280'}1a`, color: t.color || '#6b7280' }}>
+                      <Icon name="check" size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="dash-hearing__title">{t.title}</div>
+                      <div className="dash-hearing__sub">{t.category}{t.caseTitle ? ` • ${t.caseTitle}` : ''}</div>
+                    </div>
+                    <div className="dash-hearing__date-col">
+                      <div className="dash-hearing__date">{formatDate(t.date)}</div>
+                      <div className={urgent ? 'dash-reminder__urgent' : 'dash-reminder__soon'}>
+                        {t.daysLeft === 0 ? 'Today' : `${t.daysLeft} day${t.daysLeft === 1 ? '' : 's'} left`}
                       </div>
                     </div>
                   </div>

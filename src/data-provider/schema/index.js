@@ -51,6 +51,9 @@ import { DraftTypesSchema } from './draft_types.schema.js';
 import { JudgesSchema } from './judges.schema.js';
 import { ReminderTypesSchema } from './reminder_types.schema.js';
 import { PartyTypesSchema } from './party_types.schema.js';
+import { TasksSchema } from './tasks.schema.js';
+import { TaskCategoriesSchema } from './task_categories.schema.js';
+import { TaskStatusesSchema } from './task_statuses.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -101,6 +104,9 @@ export const schemas = {
   judges: JudgesSchema,
   reminder_types: ReminderTypesSchema,
   party_types: PartyTypesSchema,
+  tasks: TasksSchema,
+  task_categories: TaskCategoriesSchema,
+  task_statuses: TaskStatusesSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
