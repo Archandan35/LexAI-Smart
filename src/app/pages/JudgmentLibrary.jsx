@@ -31,9 +31,7 @@ export default function JudgmentLibrary() {
 
   useEffect(() => {
     judgmentsRepository.getAll()
-      .then((data) => {
-        setJudgments(data || []);
-      })
+      .then((data) => setJudgments(data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -47,14 +45,12 @@ export default function JudgmentLibrary() {
     const recentlyAdded = list.filter((j) => {
       if (!j.createdAt && !j.date) return false;
       const d = new Date(j.createdAt || j.date);
-      const now = new Date();
-      return now - d < 30 * 24 * 60 * 60 * 1000;
+      return Date.now() - d < 30 * 24 * 60 * 60 * 1000;
     }).length;
-    const recentlyViewed = 89;
     const supreme = list.filter((j) => (j.court || '').toLowerCase().includes('supreme')).length;
     const highCourt = list.filter((j) => (j.court || '').toLowerCase().includes('high')).length;
     const tribunal = list.filter((j) => (j.court || '').toLowerCase().includes('tribunal')).length;
-    return { total, active, archived, favourite, recentlyAdded, recentlyViewed, supreme, highCourt, tribunal };
+    return { total, active, archived, favourite, recentlyAdded, recentlyViewed: 89, supreme, highCourt, tribunal };
   }, [judgments]);
 
   const filtered = useMemo(() => {
@@ -81,9 +77,7 @@ export default function JudgmentLibrary() {
   const toggleAll = () => setSelected(allSelected ? [] : paged.map((j) => j.id));
   const toggleOne = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
-  const toggleFavourite = (id) => {
-    setFavourites((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  const toggleFavourite = (id) => setFavourites((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const pageNumbers = useMemo(() => {
     const total = totalPages;
@@ -120,9 +114,7 @@ export default function JudgmentLibrary() {
 
       <div className="jl-stats-row jl-stats-row--4">
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--purple">
-            <Icon name="book" size={22} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--purple"><Icon name="book" size={22} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">Total Judgments</div>
             <div className="jl-stat-value">{stats.total.toLocaleString()}</div>
@@ -130,9 +122,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--green">
-            <Icon name="check-circle" size={22} strokeWidth={2.2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--green"><Icon name="check-circle" size={22} strokeWidth={2.2} /></div>
           <div>
             <div className="jl-stat-label">Active Judgments</div>
             <div className="jl-stat-value">{stats.active.toLocaleString()}</div>
@@ -140,9 +130,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--orange">
-            <Icon name="archive" size={22} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--orange"><Icon name="archive" size={22} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">Archived Judgments</div>
             <div className="jl-stat-value">{stats.archived.toLocaleString()}</div>
@@ -150,9 +138,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--pink">
-            <Icon name="heart" size={22} fill />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--pink"><Icon name="heart" size={22} fill /></div>
           <div>
             <div className="jl-stat-label">Favourite Judgments</div>
             <div className="jl-stat-value">{stats.favourite.toLocaleString()}</div>
@@ -163,9 +149,7 @@ export default function JudgmentLibrary() {
 
       <div className="jl-stats-row jl-stats-row--5">
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--blue">
-            <Icon name="clock" size={20} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--blue"><Icon name="clock" size={20} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">Recently Added</div>
             <div className="jl-stat-value jl-stat-value--sm">{stats.recentlyAdded}</div>
@@ -173,9 +157,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--teal">
-            <Icon name="eye" size={20} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--teal"><Icon name="eye" size={20} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">Recently Viewed</div>
             <div className="jl-stat-value jl-stat-value--sm">{stats.recentlyViewed}</div>
@@ -183,9 +165,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--deep-purple">
-            <Icon name="building" size={20} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--deep-purple"><Icon name="building" size={20} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">Supreme Court</div>
             <div className="jl-stat-value jl-stat-value--sm">{stats.supreme.toLocaleString()}</div>
@@ -193,9 +173,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--sky">
-            <Icon name="building" size={20} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--sky"><Icon name="building" size={20} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">High Court</div>
             <div className="jl-stat-value jl-stat-value--sm">{stats.highCourt.toLocaleString()}</div>
@@ -203,9 +181,7 @@ export default function JudgmentLibrary() {
           </div>
         </div>
         <div className="jl-stat-card">
-          <div className="jl-stat-icon jl-stat-icon--gold">
-            <Icon name="scales" size={20} strokeWidth={2} />
-          </div>
+          <div className="jl-stat-icon jl-stat-icon--gold"><Icon name="scales" size={20} strokeWidth={2} /></div>
           <div>
             <div className="jl-stat-label">Tribunal Judgments</div>
             <div className="jl-stat-value jl-stat-value--sm">{stats.tribunal.toLocaleString()}</div>
@@ -226,9 +202,7 @@ export default function JudgmentLibrary() {
         <Button icon="plus">Add Judgment</Button>
         <Button variant="ghost" icon="download">Import</Button>
         <Button variant="ghost" icon="upload">Export</Button>
-        <button className="jl-more-btn">
-          <Icon name="more-horizontal" size={16} /> More
-        </button>
+        <Button variant="ghost" icon="more-horizontal">More</Button>
       </div>
 
       <div className="jl-filter-row">
@@ -256,23 +230,21 @@ export default function JudgmentLibrary() {
           <span className="jl-filter-select__label">Year</span>
           <span className="jl-filter-select__value">All Years</span>
         </div>
-        <button className="jl-more-btn">
-          <Icon name="filter" size={14} /> More Filters
-        </button>
-        <button className="jl-clear-btn">Clear</button>
+        <Button variant="ghost" icon="filter">More Filters</Button>
+        <Button variant="ghost">Clear</Button>
       </div>
 
-      <Card bodyClass="card__body--flush">
+      <Card noPad>
         {paged.length === 0 ? (
           <div className="empty">
             <div className="empty__icon"><Icon name="book" size={24} /></div>
-            <p className="muted">No judgments found.</p>
+            <p className="text-muted">No judgments found.</p>
           </div>
         ) : (
           <>
             <div className="table-scroll">
-              <table className="table jl-table">
-                <thead>
+              <table className="table">
+                <thead className="jl-thead">
                   <tr>
                     {TABLE_HEADERS.map((h) => (
                       <th key={h.key} className={h.sortable ? 'th--sortable' : ''}>
@@ -290,17 +262,11 @@ export default function JudgmentLibrary() {
                     const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
                     return (
                       <tr key={j.id}>
-                        <td>
-                          <input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} />
-                        </td>
+                        <td><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
                         <td>
                           <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
-                          {j.title !== j.caseName && j.caseName && (
-                            <div className="jl-case-sub">{j.title}</div>
-                          )}
-                          {!j.caseName && j.parties && (
-                            <div className="jl-case-sub">{j.parties}</div>
-                          )}
+                          {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
+                          {!j.caseName && j.parties && <div className="jl-case-sub">{j.parties}</div>}
                         </td>
                         <td className="jl-cell-muted">{j.citation || '—'}</td>
                         <td className="jl-cell-strong">
@@ -316,10 +282,7 @@ export default function JudgmentLibrary() {
                           </span>
                         </td>
                         <td>
-                          <button
-                            className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`}
-                            onClick={() => toggleFavourite(j.id)}
-                          >
+                          <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
                             <Icon name="heart" size={15} fill={isFav} />
                           </button>
                         </td>
@@ -348,13 +311,7 @@ export default function JudgmentLibrary() {
                   p === '...' ? (
                     <span key={`ellipsis-${i}`} className="jl-page-btn jl-page-btn--nav">…</span>
                   ) : (
-                    <button
-                      key={p}
-                      className={`jl-page-btn ${safePage === p ? 'jl-page-btn--active' : ''}`}
-                      onClick={() => setPage(p)}
-                    >
-                      {p}
-                    </button>
+                    <button key={p} className={`jl-page-btn ${safePage === p ? 'jl-page-btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
                   )
                 )}
                 <button className="jl-page-btn jl-page-btn--nav" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>›</button>

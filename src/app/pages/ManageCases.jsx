@@ -446,6 +446,28 @@ export default function ManageCases() {
           <Modal open={open} title="New Case" size="lg" onClose={() => setOpen(false)}>
             <CaseForm onSubmit={save} onCancel={() => setOpen(false)} busy={busy} submitLabel="Create Cases" />
           </Modal>
+
+          <nav className="bench-types__bottom-nav bench-types__mobile-only">
+            <button className="bench-types__nav-tab bench-types__nav-tab--active">
+              <Icon name="home" size={20} />
+              <span>Dashboard</span>
+            </button>
+            <button className="bench-types__nav-tab">
+              <Icon name="briefcase" size={20} />
+              <span>Matters</span>
+            </button>
+            <button className="bench-types__nav-fab">
+              <Icon name="plus" size={24} />
+            </button>
+            <button className="bench-types__nav-tab">
+              <Icon name="file" size={20} />
+              <span>Order Sheet</span>
+            </button>
+            <button className="bench-types__nav-tab">
+              <Icon name="calendar" size={20} />
+              <span>Calendar</span>
+            </button>
+          </nav>
         </div>
       )}
     </>
