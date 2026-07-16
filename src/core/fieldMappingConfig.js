@@ -41,7 +41,7 @@ const SCHEMAS = {
   judges: { ...COMMON },
   reminder_types: { ...COMMON },
   party_types: { ...COMMON },
-  tasks: { ...COMMON, caseId: 'case_id', hearingId: 'hearing_id' },
+  tasks: { ...COMMON },
   task_categories: { ...COMMON },
   task_statuses: { ...COMMON },
   acts: { ...COMMON },
