@@ -21095,10 +21095,11 @@ kbd.cmd__kbd {
   display: flex; flex-wrap: wrap; gap: 10px; padding: 0 14px 12px; border-top: 1px solid var(--border);
   align-items: center; padding-top: 12px;
 }
-.tasks-filter-row .select, .tasks-filter-row .input { flex: 1 1 160px; min-width: 0; max-width: 100%; }
+.tasks-filter-row .select, .tasks-filter-row .input { min-width: 140px; }
 .tasks-search {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
   box-sizing: border-box;
@@ -21108,7 +21109,6 @@ kbd.cmd__kbd {
   background: var(--surface);
   color: var(--text-faint);
   margin: 0 14px 12px;
-  flex-wrap: wrap;
 }
 .tasks-search svg { flex: 0 0 auto; color: var(--text-faint); }
 .tasks-search input {
@@ -21124,7 +21124,7 @@ kbd.cmd__kbd {
   box-shadow: none;
 }
 .tasks-search input::placeholder { color: var(--text-faint); }
-.tasks-search .tasks-arch-toggle { flex: 0 0 auto; margin-left: auto; }
+.tasks-search .tasks-arch-toggle { flex: 0 1 auto; margin-left: auto; }
 .tasks-arch-toggle {
   display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface);
   border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
@@ -21164,6 +21164,12 @@ kbd.cmd__kbd {
   .cal-cell { border-bottom: 1px solid var(--border); }
   .task-form-grid { grid-template-columns: 1fr; }
   .tasks-toolbar { flex-direction: column; align-items: stretch; }
+  .tasks-toolbar-right { flex-direction: column; align-items: stretch; }
+  .tasks-toolbar-right .btn { width: 100%; justify-content: center; }
+  .tasks-search { margin: 0 12px 12px; }
+  .tasks-search input { flex: 1 1 100%; order: 1; }
+  .tasks-search svg { order: 0; }
+  .tasks-search .tasks-arch-toggle { order: 2; flex: 1 1 100%; justify-content: center; margin-left: 0; }
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
   .cmp-pagination { flex-wrap: wrap; }
 }
