@@ -98,6 +98,23 @@ export default function Calendar() {
 
   const caseNumberOnly = useCallback((c) => c.case_display_number || c.caseNumber || c.title || 'Case', []);
 
+  // Light tint of a hex color for event backgrounds.
+  const tint = (() => {
+    const cache = {};
+    return (hex) => {
+      if (!hex) return 'rgba(107,114,128,0.12)';
+      if (cache[hex]) return cache[hex];
+      const h = hex.replace('#', '');
+      if (h.length !== 6) { cache[hex] = 'rgba(107,114,128,0.12)'; return cache[hex]; }
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      const out = `rgba(${r}, ${g}, ${b}, 0.12)`;
+      cache[hex] = out;
+      return out;
+    };
+  })();
+
   const events = useMemo(() => {
     const out = [];
     // Scheduled case hearings — driven by each case's next hearing date.
@@ -274,7 +291,8 @@ function CalendarView({ events, loading, onView, cases }) {
                       </div>
                       <div className="cal-cell-events">
                         {dayEvents.slice(0, 3).map((e) => (
-                          <button key={e.id} className="cal-event" onClick={() => onView(e)} title={e.title}>
+                          <button key={e.id} className="cal-event" onClick={() => onView(e)} title={e.title}
+                            style={{ '--dot': e.color, '--dot-bg': tint(e.color) }}>
                             <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
                             <span className="cal-event-title">{e.title}</span>
                           </button>
@@ -309,11 +327,12 @@ function CalendarView({ events, loading, onView, cases }) {
                       {dayEvents.length === 0 ? (
                         <div className="cal-week-empty">—</div>
                       ) : dayEvents.map((e) => (
-                        <button key={e.id} className="cal-event cal-event--block" onClick={() => onView(e)}>
-                          <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
-                          <span className="cal-event-title">{e.title}</span>
-                          {e.time && <span className="cal-event-time">{fmtTime(e.time)}</span>}
-                        </button>
+                      <button key={e.id} className="cal-event cal-event--block" onClick={() => onView(e)}
+                        style={{ '--dot': e.color, '--dot-bg': tint(e.color) }}>
+                        <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
+                        <span className="cal-event-title">{e.title}</span>
+                        {e.time && <span className="cal-event-time">{fmtTime(e.time)}</span>}
+                      </button>
                       ))}
                     </div>
                   );
@@ -325,7 +344,8 @@ function CalendarView({ events, loading, onView, cases }) {
           {view === 'day' && (
             <div className="cal-day">
               {(eventsByDay[dayKey(cursor)] || []).slice().sort((a, b) => (a.time || '').localeCompare(b.time || '')).map((e) => (
-                <button key={e.id} className="cal-day-event" onClick={() => onView(e)}>
+                <button key={e.id} className="cal-day-event" onClick={() => onView(e)}
+                  style={{ '--dot': e.color, '--dot-bg': tint(e.color) }}>
                   <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
                   <div className="cal-day-event-body">
                     <div className="cal-day-event-title">{e.title}</div>

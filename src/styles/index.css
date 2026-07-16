@@ -21038,17 +21038,17 @@ kbd.cmd__kbd {
 .cal-cell-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event {
   display: flex; align-items: center; gap: 5px; width: 100%; text-align: left;
-  border: none; background: var(--surface-2); border-radius: 6px; padding: 3px 5px;
-  font-size: 12px; cursor: pointer; color: var(--text);
+  border: none; background: var(--dot-bg, var(--surface-2)); border-radius: 6px; padding: 3px 5px;
+  font-size: 12px; cursor: pointer; color: var(--dot, var(--text));
 }
-.cal-event:hover { background: var(--surface-3, #e7ecf6); }
+.cal-event:hover { background: var(--dot-bg, var(--surface-3, #e7ecf6)); filter: brightness(0.97); }
 .cal-event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, #6b7280); flex: 0 0 auto; }
 .cal-event-dot--blink { animation: cal-dot-blink 1.4s ease-in-out infinite; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
 @keyframes cal-dot-blink {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
   50% { opacity: .35; box-shadow: 0 0 0 3px transparent; }
 }
-.cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; }
 .cal-event-more { font-size: 11px; color: var(--text-faint); padding-left: 4px; }
 
 /* week */
@@ -21072,11 +21072,11 @@ kbd.cmd__kbd {
 .cal-day { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .cal-day-event {
   display: flex; align-items: flex-start; gap: 10px; text-align: left; width: 100%;
-  border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 12px; cursor: pointer;
+  border: 1px solid var(--dot-bg, var(--border)); background: var(--dot-bg, var(--surface)); border-radius: 10px; padding: 12px; cursor: pointer;
 }
-.cal-day-event:hover { background: var(--surface-2); }
+.cal-day-event:hover { filter: brightness(0.97); }
 .cal-day-event-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.cal-day-event-title { font-weight: 700; }
+.cal-day-event-title { font-weight: 700; color: var(--dot, var(--text)); }
 .cal-day-event-time { font-size: 13px; color: var(--text-muted); }
 
 /* event/modal detail */
