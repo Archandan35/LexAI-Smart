@@ -92,7 +92,7 @@ export default function JudgmentLibrary() {
     const delId = deleteTarget.id;
     const label = deleteTarget.title || deleteTarget.citation || 'Untitled';
     setDeleteTarget(null);
-    judgmentsRepository.remove(delId)
+    judgmentsRepository.delete(delId)
       .then((ok) => {
         if (!ok) {
           console.error('[JudgmentLibrary] delete returned no rows for id', delId);

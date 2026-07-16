@@ -237,7 +237,7 @@ export default function JudgmentDetail() {
     if (!judgment) return;
     const delId = judgment.id;
     setConfirmDelete(false);
-    judgmentsRepository.remove(delId)
+    judgmentsRepository.delete(delId)
       .then(() => navigate('/research/judgment-library'))
       .catch(() => {});
   };
