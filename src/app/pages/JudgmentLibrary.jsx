@@ -8,6 +8,7 @@ import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js'
 import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
 import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
+import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
@@ -89,10 +90,26 @@ export default function JudgmentLibrary() {
   const confirmDelete = () => {
     if (!deleteTarget) return;
     const delId = deleteTarget.id;
+    const label = deleteTarget.title || deleteTarget.citation || 'Untitled';
     setDeleteTarget(null);
     judgmentsRepository.remove(delId)
-      .then(() => loadJudgments())
-      .catch(() => {});
+      .then((ok) => {
+        if (!ok) {
+          console.error('[JudgmentLibrary] delete returned no rows for id', delId);
+          return;
+        }
+        auditLogsRepository.create({
+          action: 'delete',
+          module: 'judgments',
+          user_name: 'current user',
+          details: `Deleted judgment: ${label}`,
+          at: new Date().toISOString(),
+        }).catch(() => {});
+        loadJudgments();
+      })
+      .catch((e) => {
+        console.error('[JudgmentLibrary] delete failed:', e);
+      });
   };
 
   const handleDuplicate = (j) => {
