@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
@@ -23,6 +23,7 @@ import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
+import { DateEngine } from '@/core/DateEngine.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
@@ -93,6 +94,57 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
           <Icon name="gear" size={15} />
         </button>
       </div>
+    </div>
+  );
+}
+
+// Parse a date string typed in the configured format back to yyyy-mm-dd.
+function parseToISO(str) {
+  if (!str) return '';
+  const s = String(str).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const fmt = DateEngine.getDateFormat();
+  const num = (re, order) => {
+    const m = re.exec(s);
+    if (!m) return null;
+    const [d, mo, y] = order.map((i) => m[i]);
+    const dt = new Date(`${y}-${mo}-${d}T00:00:00.000Z`);
+    return Number.isNaN(dt.getTime()) ? '' : dt.toISOString().slice(0, 10);
+  };
+  if (fmt === '23.06.2026') return num(/^(\d{2})\.(\d{2})\.(\d{4})$/, [1, 2, 3]) || '';
+  if (fmt === '23-06-2026') return num(/^(\d{2})-(\d{2})-(\d{4})$/, [1, 2, 3]) || '';
+  if (fmt === '23/06/2026' || fmt === 'dmy') return num(/^(\d{2})\/(\d{2})\/(\d{4})$/, [1, 2, 3]) || '';
+  if (fmt === '06/23/2026' || fmt === 'mdy') return num(/^(\d{2})\/(\d{2})\/(\d{4})$/, [2, 1, 3]) || '';
+  // Word-based or ISO-like formats: rely on the Date parser.
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+}
+
+// Date field that honours the global date-format setting: shows the value in
+// the configured format, accepts typed input, and opens a native date picker
+// (single calendar icon) when clicked.
+function DateInput({ value, placeholder, onCommit }) {
+  const hiddenRef = useRef(null);
+  const openPicker = () => hiddenRef.current && hiddenRef.current.showPicker && hiddenRef.current.showPicker();
+  return (
+    <div className="ajm-date-input" onClick={openPicker}>
+      <input
+        type="text"
+        className="ajm-input ajm-date-field"
+        placeholder={placeholder}
+        value={value ? DateEngine.formatDate(value) : ''}
+        onChange={(e) => onCommit(parseToISO(e.target.value))}
+      />
+      <span className="ajm-date-cal-icon" onClick={(e) => { e.stopPropagation(); openPicker(); }}>
+        <Icon name="calendar" size={14} />
+      </span>
+      <input
+        ref={hiddenRef}
+        type="date"
+        className="ajm-date-hidden"
+        value={value || ''}
+        onChange={(e) => onCommit(e.target.value)}
+      />
     </div>
   );
 }
@@ -203,8 +255,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     setSaving(true);
     setSaveError('');
     try {
+      const DATE_FIELDS = ['judgmentDate', 'pronouncementDate', 'uploadDate', 'date'];
+      const cleaned = { ...form };
+      DATE_FIELDS.forEach((f) => {
+        if (cleaned[f] === '' || cleaned[f] == null) cleaned[f] = null;
+      });
       const entry = {
-        ...form,
+        ...cleaned,
         status: draft ? 'Draft' : 'Active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -225,19 +282,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     }
   };
 
-  const toDisplayDate = (iso) => {
-    if (!iso) return '';
-    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-    if (!m) return iso;
-    return `${m[2]}-${m[3]}-${m[1]}`;
-  };
-
-  const fromDisplayDate = (disp) => {
-    const m = /^(\d{2})-(\d{2})-(\d{4})/.exec(disp || '');
-    if (!m) return disp || '';
-    return `${m[3]}-${m[2]}-${m[1]}`;
-  };
-
   const renderField = (label, fieldKey, placeholder, opts = {}) => {
     const { required, readonly, type } = opts;
     return (
@@ -247,17 +291,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           {required && <span className="ajm-req">*</span>}
         </label>
         {type === 'date' ? (
-          <div className="ajm-date-input">
-            <span className="ajm-date-cal-icon"><Icon name="calendar" size={14} /></span>
-            <input
-              type="text"
-              inputMode="numeric"
-              className="ajm-input ajm-date-field"
-              placeholder={placeholder}
-              value={toDisplayDate(form[fieldKey])}
-              onChange={(e) => set(fieldKey, fromDisplayDate(e.target.value))}
-            />
-          </div>
+          <DateInput
+            value={form[fieldKey]}
+            placeholder={DateEngine.getDatePlaceholder()}
+            onCommit={(iso) => set(fieldKey, iso)}
+          />
         ) : (
           <div className={readonly ? 'ajm-field-readonly' : ''}>
             <input
@@ -381,9 +419,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-3">
-                  {renderField('Judgment Date', 'judgmentDate', 'dd-mm-yyyy', { type: 'date', required: true })}
-                  {renderField('Pronouncement Date', 'pronouncementDate', 'dd-mm-yyyy', { type: 'date' })}
-                  {renderField('Upload Date', 'uploadDate', 'dd-mm-yyyy', { type: 'date' })}
+                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
+                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
+                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
                 </div>
               </div>
             </div>
