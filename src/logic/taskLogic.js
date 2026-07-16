@@ -58,7 +58,7 @@ export const taskLogic = {
         if (!title) return fail('Task title is required.');
         patch.title = title;
       }
-      ['description', 'notes', 'category', 'priority', 'status', 'due_time', 'reminder_time', 'color', 'tags', 'attachments', 'created_by'].forEach((k) => {
+      ['description', 'notes', 'category', 'priority', 'status', 'due_time', 'reminder_time', 'color', 'tags', 'attachments', 'created_by', 'case_id', 'hearing_id'].forEach((k) => {
         if (data[k] !== undefined) patch[k] = cleanString(data[k]);
       });
       ['due_date', 'start_date', 'end_date'].forEach((k) => {

@@ -681,11 +681,13 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
               </table>
             </div>
             <div className="tasks-cards">
-              {paged.map((t) => {
+              {paged.map((t, _debugIdx) => {
+                if (_debugIdx === 0) console.debug('[task-card-debug] task.case_id=', JSON.stringify(t.case_id), 'task.caseId=', JSON.stringify(t.caseId), 'cases.length=', cases.length, 'first case.id=', cases[0]?.id);
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
                 const cid = t.case_id || t.caseId || '';
-                const linkedCase = cid ? cases.find((c) => c.id === cid) : null;
+                const linkedCase = cid ? cases.find((c) => String(c.id) === String(cid)) : null;
+                if (cid && !linkedCase) console.debug('[task-card] MISS case_id=', cid, 'cases.length=', cases.length, 'sample ids=', cases.slice(0,5).map(c => c.id));
                 const caseNum = linkedCase ? (linkedCase.case_display_number || linkedCase.caseNumber || linkedCase.title || cid) : (cid || '—');
                 const caseTitle = linkedCase?.title || '';
                 return (
@@ -916,43 +918,6 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
         <div className="task-field task-field--full">
           <label className="cmp-label">Notes</label>
           <Textarea value={form.notes} placeholder="Additional notes…" onChange={(e) => set('notes', e.target.value)} />
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Category</label>
-          <div className="task-field-row">
-            <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
-              <option value="">— select —</option>
-              {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
-            </Select>
-            <button type="button" className="task-field-gear" title="Manage Categories" onClick={() => onManageCrud?.('category')}><Icon name="gear" size={14} /></button>
-          </div>
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Priority</label>
-          <div className="task-field-row">
-            <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
-              {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
-                : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
-            </Select>
-            <button type="button" className="task-field-gear" title="Manage Priorities" onClick={() => onManageCrud?.('priority')}><Icon name="gear" size={14} /></button>
-          </div>
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Status</label>
-          <div className="task-field-row">
-            <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
-              {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
-                : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
-            </Select>
-            <button type="button" className="task-field-gear" title="Manage Statuses" onClick={() => onManageCrud?.('status')}><Icon name="gear" size={14} /></button>
-          </div>
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Active / Inactive</label>
-          <Select value={form.active ? 'active' : 'inactive'} onChange={(e) => set('active', e.target.value === 'active')}>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </Select>
         </div>
         <div className="task-field">
           <label className="cmp-label">Due Date</label>
