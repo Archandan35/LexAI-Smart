@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import Toggle from '@/components/Toggle.jsx';
 
 // Light tint of a hex color for event backgrounds.
 const _tintCache = {};
@@ -710,20 +711,20 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     <div className="task-card__fields">
                       {t.title && (
                         <div className="task-card__field">
-                          <span className="task-card__field-icon"><Icon name="edit" size={14} /></span>
-                          <span className="task-card__field-value">{t.title}</span>
+                          <span className="task-card__field-icon"><Icon name="edit" size={13} /></span>
+                          <span className="task-card__field-value task-card__field-value--title">{t.title}</span>
                         </div>
                       )}
                       {t.description && (
                         <div className="task-card__field">
-                          <span className="task-card__field-icon"><Icon name="file" size={14} /></span>
-                          <span className="task-card__field-value">{t.description}</span>
+                          <span className="task-card__field-icon"><Icon name="file" size={13} /></span>
+                          <span className="task-card__field-value task-card__field-value--clamp">{t.description}</span>
                         </div>
                       )}
                       {t.notes && (
                         <div className="task-card__field">
-                          <span className="task-card__field-icon"><Icon name="notes" size={14} /></span>
-                          <span className="task-card__field-value">{t.notes}</span>
+                          <span className="task-card__field-icon"><Icon name="notes" size={13} /></span>
+                          <span className="task-card__field-value task-card__field-value--clamp">{t.notes}</span>
                         </div>
                       )}
                     </div>
@@ -755,7 +756,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
                     {t.tags && (
                       <div className="task-card__tags">
-                        <span className="task-card__tags-label">Tags</span>
+                        <span className="task-card__field-icon"><Icon name="tag" size={13} /></span>
                         {t.tags.split(',').slice(0, 6).map((tg) => (
                           <span key={tg.trim()} className="task-tag task-tag--colored">{tg.trim()}</span>
                         ))}
@@ -927,6 +928,14 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
         </div>
 
         <div className="task-field task-field--full">
+          <label className="cmp-label">Case Number</label>
+          <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
+            <option value="">— none —</option>
+            {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
+          </Select>
+        </div>
+
+        <div className="task-field task-field--full">
           <label className="cmp-label">Category <span className="cmp-required">*</span></label>
           <div className="task-field-row">
             <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
@@ -979,10 +988,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
 
         <div className="task-field task-field--full">
           <label className="cmp-label">Start / End Date</label>
-          <Select value={form.has_date_range ? 'yes' : 'no'} onChange={(e) => { const v = e.target.value === 'yes'; set('has_date_range', v); if (!v) { set('start_date', ''); set('end_date', ''); } }}>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </Select>
+          <Toggle checked={form.has_date_range} onChange={(v) => { set('has_date_range', v); if (!v) { set('start_date', ''); set('end_date', ''); } }} />
         </div>
         {form.has_date_range && (
           <>
@@ -999,10 +1005,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
 
         <div className="task-field task-field--full">
           <label className="cmp-label">Reminder</label>
-          <Select value={form.reminder ? 'yes' : 'no'} onChange={(e) => set('reminder', e.target.value === 'yes')}>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </Select>
+          <Toggle checked={form.reminder} onChange={(v) => set('reminder', v)} />
         </div>
         {form.reminder && (
           <div className="task-field">
@@ -1010,29 +1013,6 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
             <Input type="time" value={form.reminder_time} onChange={(e) => set('reminder_time', e.target.value)} />
           </div>
         )}
-
-        <div className="task-field task-field--full">
-          <label className="cmp-label">Linked Case</label>
-          <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
-            <option value="">— none —</option>
-            {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
-          </Select>
-        </div>
-
-        <div className="task-field task-field--full">
-          <label className="cmp-label">Metadata</label>
-          <div className="task-field-row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
-            {task?.created_by && <span className="cmp-text-sm">Created by: {task.created_by}</span>}
-            {task?.created_at && <span className="cmp-text-sm">Created: {new Date(task.created_at).toLocaleDateString()}</span>}
-            {task?.updated_at && <span className="cmp-text-sm">Updated: {new Date(task.updated_at).toLocaleDateString()}</span>}
-            {!task && <span className="cmp-text-muted">—</span>}
-          </div>
-        </div>
-
-        <div className="task-field">
-          <label className="cmp-label">Last Updated</label>
-          <Input value={task?.updated_at ? new Date(task.updated_at).toLocaleDateString() : '—'} disabled />
-        </div>
 
         <div className="task-field task-field--full">
           <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
