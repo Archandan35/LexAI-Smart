@@ -10,6 +10,7 @@ import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js'
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const TABLE_HEADERS = [
   { key: 'checkbox', label: '' },
@@ -47,6 +48,7 @@ export default function JudgmentLibrary() {
   const perPage = 10;
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   const [courts, setCourts] = useState([]);
@@ -81,8 +83,14 @@ export default function JudgmentLibrary() {
   const [editing, setEditing] = useState(null);
 
   const handleDelete = (j) => {
-    if (!window.confirm(`Delete judgment "${j.title || j.citation || 'Untitled'}"? This cannot be undone.`)) return;
-    judgmentsRepository.remove(j.id)
+    setDeleteTarget(j);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    const delId = deleteTarget.id;
+    setDeleteTarget(null);
+    judgmentsRepository.remove(delId)
       .then(() => loadJudgments())
       .catch(() => {});
   };
@@ -181,6 +189,7 @@ export default function JudgmentLibrary() {
         try { return new Date(j.date).getFullYear() === Number(filters.year); } catch { return false; }
       });
     }
+    rows.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
     return rows;
   }, [judgments, search, filters]);
 
@@ -517,6 +526,16 @@ export default function JudgmentLibrary() {
         editing={editing}
         onClose={() => { setShowAddModal(false); setEditing(null); }}
         onSaved={() => { setEditing(null); loadJudgments(); }}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Judgment"
+        message={`Are you sure you want to delete "${deleteTarget?.title || deleteTarget?.citation || 'this judgment'}"? This action cannot be undone.`}
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </div>
   );

@@ -22126,10 +22126,10 @@ kbd.cmd__kbd {
 /* Tabs */
 .jd-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 20px;
-  overflow-x: auto;
   background: var(--surface);
   border-radius: var(--radius) var(--radius) 0 0;
   padding: 0 4px;

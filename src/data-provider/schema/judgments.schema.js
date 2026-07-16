@@ -38,6 +38,8 @@ export const JudgmentsSchema = {
     acts: 'array',
     paragraphs: 'array',
     sourceUrl: 'string',
+    favourite: 'boolean',
+    pinned: 'boolean',
   },
   required: ['citation'],
   defaults: { keywords: [], acts: [], paragraphs: [] },

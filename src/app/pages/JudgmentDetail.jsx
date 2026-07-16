@@ -92,6 +92,7 @@ export default function JudgmentDetail() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('overview');
   const [favourite, setFavourite] = useState(false);
+  const [pinned, setPinned] = useState(false);
 
   const [courts, setCourts] = useState([]);
   const [benchTypes, setBenchTypes] = useState([]);
@@ -104,6 +105,7 @@ export default function JudgmentDetail() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +114,7 @@ export default function JudgmentDetail() {
         if (cancelled) return;
         setJudgment(data || null);
         setFavourite(data?.favourite || data?.favorited || false);
+        setPinned(!!data?.pinned);
       })
       .catch(() => { if (!cancelled) setJudgment(null); })
       .finally(() => { if (!cancelled) setLoading(false); });
@@ -194,20 +197,34 @@ export default function JudgmentDetail() {
     }
   };
 
-  const handleNotify = () => {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'granted') {
-      new Notification('Judgment reminder set', { body: judgment?.title || judgment?.citation || '' });
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then((p) => {
-        if (p === 'granted') new Notification('Judgment reminder set', { body: judgment?.title || judgment?.citation || '' });
-      }).catch(() => {});
-    }
+  const handlePin = () => {
+    if (!judgment) return;
+    const next = !pinned;
+    setPinned(next);
+    judgmentsRepository.update(judgment.id, { pinned: next })
+      .catch(() => { setPinned(!next); });
   };
 
   const handleCopyCitation = () => {
-    if (judgment?.citation && navigator.clipboard) {
-      navigator.clipboard.writeText(judgment.citation).catch(() => {});
+    if (!judgment) return;
+    const pA = judgment.appellant || judgment.petitioner || judgment.plaintiff || '';
+    const pB = judgment.respondent || judgment.respondentName || judgment.defendant || '';
+    const citations = [judgment.neutralCitation, judgment.reporterCitation, judgment.citation]
+      .filter(Boolean)
+      .filter((c, i, arr) => arr.indexOf(c) === i);
+    const ref = citations.join(' | ');
+    const formatted = (pA && pB)
+      ? `${pA} v. ${pB}, ${ref}`.replace(/, $/, '')
+      : (ref || judgment.title || '');
+    const text = formatted || judgment.title || '';
+    const done = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(done);
+    } else {
+      done();
     }
   };
 
@@ -300,7 +317,7 @@ export default function JudgmentDetail() {
           <Icon name="heart" size={16} /> Favourite
         </button>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn" title="Pin" onClick={handleNotify}><Icon name="pin" size={16} /> Pin</button>
+        <button type="button" className={`jd-tool-btn${pinned ? ' jd-tool-btn--active' : ''}`} title="Pin" onClick={handlePin}><Icon name="pin" size={16} /> Pin</button>
         <div className="jd-tool-divider" />
         <button type="button" className="jd-tool-btn" title="Share" onClick={handleShare}><Icon name="share" size={16} /> Share</button>
         <div className="jd-tool-divider" />
@@ -308,7 +325,7 @@ export default function JudgmentDetail() {
         <div className="jd-tool-divider" />
         <button type="button" className="jd-tool-btn" title="Download" onClick={handleShare}><Icon name="download" size={16} /> Download</button>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn" onClick={handleCopyCitation}><Icon name="doclines" size={16} /> Copy Citation</button>
+        <button type="button" className={`jd-tool-btn${copied ? ' jd-tool-btn--active' : ''}`} onClick={handleCopyCitation}><Icon name={copied ? 'check' : 'doclines'} size={16} /> {copied ? 'Copied!' : 'Copy Citation'}</button>
         <div className="jd-tool-divider" />
         <button type="button" className="jd-tool-btn jd-tool-btn--danger" title="Delete" onClick={handleDelete}><Icon name="trash" size={16} /> Delete</button>
         <div className="jd-tool-divider" />
