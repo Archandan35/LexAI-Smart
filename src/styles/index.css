@@ -21143,9 +21143,9 @@ kbd.cmd__kbd {
   color: var(--text-faint);
   margin: 0 14px 12px;
 }
-.tasks-search-inner { position: relative; flex: 1; min-width: 0; }
-.tasks-search-inner input { width: 100%; padding: 2px 0 2px 28px; box-sizing: border-box; }
-.tasks-search-inner svg { position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none; }
+.tasks-search-inner { display: flex; align-items: center; flex: 1; min-width: 0; gap: 8px; }
+.tasks-search-inner input { flex: 1; min-width: 0; }
+.tasks-search-inner svg { flex-shrink: 0; color: var(--text-faint); }
 .tasks-search svg { flex: 0 0 auto; color: var(--text-faint); }
 .tasks-search input {
   flex: 1 1 200px;
@@ -21209,7 +21209,7 @@ kbd.cmd__kbd {
 
 .task-card__fields { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
 .task-card__field { display: flex; align-items: center; gap: 6px; }
-.task-card__field-icon { flex: 0 0 20px; display: flex; align-items: center; justify-content: flex-start; color: var(--text-muted); }
+.task-card__field-icon { flex: 0 0 20px; display: flex; align-items: center; justify-content: flex-start; color: var(--navy-700); }
 .task-card__field-icon svg { display: block; }
 .task-card__field-value { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; word-break: break-word; }
 .task-card__field-value--title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
