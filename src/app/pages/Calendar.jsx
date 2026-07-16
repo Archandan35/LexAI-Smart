@@ -685,42 +685,79 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
                 const linkedCase = t.case_id ? cases.find((c) => c.id === t.case_id) : null;
+                const caseNum = linkedCase?.case_display_number || linkedCase?.caseNumber || '';
+                const caseTitle = linkedCase?.title || '';
                 return (
-                  <article key={t.id} className={`cv-case-card${t.archived ? ' cv-case-card--archived' : ''}`}>
-                    <div className="cv-case-card__row1">
-                      <div className="cv-case-card__left">
-                        <span className="cal-event-dot" style={{ '--dot': color, width: '10px', height: '10px', marginTop: '3px' }} />
-                        <div className="cv-case-card__title-row">
-                          <button className="link-btn cv-case-card__title" onClick={() => openView(t)}>{t.title}</button>
-                          {t.tags && <div className="task-tags">{t.tags.split(',').slice(0, 3).map((tg) => <span key={tg} className="task-tag">{tg.trim()}</span>)}</div>}
-                        </div>
+                  <article key={t.id} className={`task-card${t.archived ? ' task-card--archived' : ''}`}>
+                    <div className="task-card__header">
+                      <div className="task-card__case-row">
+                        <span className="task-card__case-num">{caseNum || '—'}</span>
+                        <span className="task-card__status-badge" style={{ '--dot': color }}>
+                          <span className="task-card__badge-dot" />
+                          {t.status || 'Pending'}
+                        </span>
                       </div>
-                      <div className="cv-case-card__right">
-                        <span className="cv-case-card__badge">
-                          <span className="cv-case-card__badge-dot" />
-                          {t.status || '—'}
+                      {caseTitle && <div className="task-card__case-title">{caseTitle}</div>}
+                    </div>
+
+                    <div className="task-card__fields">
+                      {t.title && (
+                        <div className="task-card__field">
+                          <Icon name="edit" size={14} className="task-card__field-icon" />
+                          <span className="task-card__field-label">Title</span>
+                          <span className="task-card__field-value">{t.title}</span>
+                        </div>
+                      )}
+                      {t.description && (
+                        <div className="task-card__field">
+                          <Icon name="file" size={14} className="task-card__field-icon" />
+                          <span className="task-card__field-label">Description</span>
+                          <span className="task-card__field-value">{t.description}</span>
+                        </div>
+                      )}
+                      {t.notes && (
+                        <div className="task-card__field">
+                          <Icon name="note" size={14} className="task-card__field-icon" />
+                          <span className="task-card__field-label">Notes</span>
+                          <span className="task-card__field-value">{t.notes}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="task-card__divider" />
+
+                    <div className="task-card__datetime-row">
+                      <div className="task-card__dt-item">
+                        <Icon name="clock" size={13} />
+                        <span className="task-card__dt-label">Due Time</span>
+                        <span className="task-card__dt-value">{t.due_time ? fmtTime(t.due_time) : '—'}</span>
+                      </div>
+                      <div className="task-card__dt-item">
+                        <Icon name="calendar" size={13} />
+                        <span className="task-card__dt-label">Start / End</span>
+                        <span className="task-card__dt-value">
+                          {t.start_date ? formatDate(t.start_date) : '—'}
+                          {t.end_date ? ` → ${formatDate(t.end_date)}` : ''}
                         </span>
                       </div>
                     </div>
-                    <div className="cv-case-card__meta-row">
-                      <span><Icon name="flag" size={13} /> {t.priority || '—'}</span>
-                      <span>{t.category ? <Badge tone="grey">{t.category}</Badge> : '—'}</span>
-                    </div>
-                    <div className="cv-case-card__court-row">
-                      <Icon name="clock" size={13} /> Due: {t.due_date ? formatDate(t.due_date) : '—'}{t.due_time ? ` ${fmtTime(t.due_time)}` : ''}
-                    </div>
-                    {linkedCase && (
-                      <div className="cv-case-card__court-row">
-                        <Icon name="link" size={13} /> {linkedCase.case_display_number || linkedCase.caseNumber || 'Linked'}
+
+                    {t.tags && (
+                      <div className="task-card__tags">
+                        {t.tags.split(',').slice(0, 6).map((tg) => (
+                          <span key={tg.trim()} className="task-tag">{tg.trim()}</span>
+                        ))}
                       </div>
                     )}
-                    <div className="cv-case-card__dates">
-                      <div className="cv-case-card__dates-item">
-                        <span className="cv-case-card__dates-label">State</span>
-                        <span className="cv-case-card__dates-value">{t.active ? 'Active' : 'Inactive'}{t.archived ? ' · Archived' : ''}</span>
+
+                    {task?.updated_at && (
+                      <div className="task-card__updated">
+                        <Icon name="clock" size={13} />
+                        Last Updated: {new Date(task.updated_at).toLocaleString()}
                       </div>
-                    </div>
-                    <div className="cv-case-card__actions" role="toolbar" aria-label="Task actions">
+                    )}
+
+                    <div className="task-card__actions" role="toolbar" aria-label="Task actions">
                       <button className="cv-action-btn" onClick={() => openView(t)} aria-label="View"><Icon name="eye" size={16} /><span>View</span></button>
                       <button className="cv-action-btn" onClick={() => openEdit(t)} aria-label="Edit"><Icon name="edit" size={16} /><span>Edit</span></button>
                       <button className="cv-action-btn" onClick={() => doAction(taskLogic.duplicate(t.id).then(() => onChanged()))} aria-label="Duplicate"><Icon name="copy" size={16} /><span>Duplicate</span></button>
