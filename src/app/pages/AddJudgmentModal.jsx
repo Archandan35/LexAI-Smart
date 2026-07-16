@@ -127,7 +127,10 @@ function parseToISO(str) {
 // (single calendar icon) only when the calendar icon is clicked.
 function DateInput({ value, placeholder, onCommit }) {
   const hiddenRef = useRef(null);
-  const openPicker = () => hiddenRef.current && hiddenRef.current.showPicker && hiddenRef.current.showPicker();
+  const openPicker = () => {
+    const el = hiddenRef.current;
+    if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
+  };
   return (
     <div className="ajm-date-input">
       <input
@@ -136,14 +139,21 @@ function DateInput({ value, placeholder, onCommit }) {
         placeholder={placeholder}
         value={value ? DateEngine.formatDate(value) : ''}
         onChange={(e) => onCommit(parseToISO(e.target.value))}
+        onFocus={(e) => { if (!e.target.value) openPicker(); }}
       />
-      <span className="ajm-date-cal-icon" onClick={openPicker}>
+      <button
+        type="button"
+        className="ajm-date-cal-icon"
+        title="Pick date"
+        onClick={openPicker}
+        tabIndex={-1}
+      >
         <Icon name="calendar" size={14} />
-      </span>
+      </button>
       <input
         ref={hiddenRef}
         type="date"
-        className="ajm-date-hidden"
+        className="ajm-date-native"
         value={value || ''}
         onChange={(e) => onCommit(e.target.value)}
       />
