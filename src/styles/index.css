@@ -21527,7 +21527,9 @@ kbd.cmd__kbd {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 11px 16px;
+  padding: 9px 16px;
+  height: 40px;
+  box-sizing: border-box;
   color: var(--text-faint);
   font-size: 13.5px;
 }
@@ -21601,11 +21603,10 @@ kbd.cmd__kbd {
 .jl-toolbar .btn {
   height: 40px;
   box-sizing: border-box;
-}
-
-.jl-search-box {
-  height: 40px;
-  box-sizing: border-box;
+  padding: 9px 16px;
+  box-shadow: none;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .jl-filter-row .btn {
