@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '@/components/PageHeader.jsx';
+
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Modal from '@/components/Modal.jsx';
@@ -130,12 +130,69 @@ export default function ManageCases() {
     <>
       {!isMobile && (
         <div className="fade-in cv-desktop-view">
-          <PageHeader
-            icon="vault"
-            title="Manage Cases"
-            subtitle="Every matter with its documents, drafts, history, timeline and hearings in one secure place."
-            actions={<PermissionGate perm="manageCase.create"><Button icon="plus" onClick={() => setOpen(true)}>New Case</Button></PermissionGate>}
-          />
+          <div className="bench-types__hero">
+            <div className="bench-types__hero-icon"><Icon name="vault" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Manage Cases</h2>
+              <p>Every matter with its documents, drafts, history, timeline and hearings in one secure place.</p>
+              <div className="bench-types__hero-accent" />
+            </div>
+            <PermissionGate perm="manageCase.create">
+              <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>
+            </PermissionGate>
+            <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
+
+          <div className="bench-types__stats-row">
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--total"><Icon name="layers" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Total Cases</div>
+                <div className="bench-types__statcard-value">{cases.length}</div>
+                <div className="bench-types__statcard-sub">All cases in system</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--active"><Icon name="check-circle" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Active</div>
+                <div className="bench-types__statcard-value">{cases.filter(c => !c.archived).length}</div>
+                <div className="bench-types__statcard-sub">Currently open</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--inactive"><Icon name="clock" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Pending</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{cases.filter(c => !c.archived && (!c.status || c.status === 'Pending')).length}</div>
+                <div className="bench-types__statcard-sub">Awaiting action</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--most-used"><Icon name="file" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Disposed</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{cases.filter(c => c.status === 'Disposed').length}</div>
+                <div className="bench-types__statcard-sub">Completed matters</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--created-month"><Icon name="calendar" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Upcoming Hearings</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{cases.filter(c => c.nextHearing).length}</div>
+                <div className="bench-types__statcard-sub">Scheduled hearings</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--assignments"><Icon name="vault" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Archived</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{cases.filter(c => c.archived).length}</div>
+                <div className="bench-types__statcard-sub">Stored records</div>
+              </div>
+            </div>
+          </div>
 
           <div className="toolbar-row">
             <div className="datatable__search manage-cases__search">

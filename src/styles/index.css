@@ -21067,7 +21067,7 @@ kbd.cmd__kbd {
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
 .cal-cell {
   min-height: 110px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
-  padding: 6px 6px 4px; display: flex; flex-direction: column; gap: 3px;
+  padding: 6px 6px 4px; display: flex; flex-direction: column; gap: 3px; min-width: 0; overflow: hidden;
 }
 .cal-cell:nth-child(7n) { border-right: none; }
 .cal-cell--muted { background: var(--surface-2); opacity: .6; }
@@ -21092,7 +21092,7 @@ kbd.cmd__kbd {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
   50% { opacity: .35; box-shadow: 0 0 0 3px transparent; }
 }
-.cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; }
+.cal-event-title { color: inherit; overflow-wrap: break-word; word-break: break-word; }
 .cal-event-more { font-size: 11px; color: var(--text-faint); padding-left: 4px; }
 
 /* week */
@@ -21105,11 +21105,11 @@ kbd.cmd__kbd {
 .cal-week-head--today { background: var(--navy-50, #eef2fb); }
 .cal-week-head--today .cal-week-head-date { color: var(--navy-700); }
 .cal-week-body { display: grid; grid-template-columns: repeat(7, 1fr); min-height: 320px; }
-.cal-week-col { border-right: 1px solid var(--border); padding: 6px; display: flex; flex-direction: column; gap: 5px; min-width: 0; overflow: hidden; }
+.cal-week-col { border-right: 1px solid var(--border); padding: 6px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .cal-week-col:last-child { border-right: none; }
 .cal-week-col--today { background: var(--navy-50, #eef2fb); }
 .cal-week-empty { color: var(--text-faint); text-align: center; padding: 20px 0; }
-.cal-event--block { padding: 8px 10px; border-radius: 8px; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; width: 100%; box-sizing: border-box; }
+.cal-event--block { padding: 8px 10px; border-radius: 8px; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; width: 100%; box-sizing: border-box; overflow-wrap: break-word; word-break: break-word; }
 .cal-event-time { font-size: 11px; color: var(--text-faint); }
 
 /* day */
