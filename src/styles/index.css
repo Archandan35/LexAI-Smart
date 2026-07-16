@@ -17439,6 +17439,10 @@ kbd.cmd__kbd {
     max-width: 380px;
   }
 
+  .bench-types__hero-accent {
+    margin-top: 10px;
+  }
+
   .bench-types__hero-watermark {
     display: block;
     right: 16px;
