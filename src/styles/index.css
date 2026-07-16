@@ -22446,6 +22446,24 @@ kbd.cmd__kbd {
   to { opacity: 1; transform: none; }
 }
 
+/* Overview — Headnotes + Judgment Summary as two distinct auto-growing cards */
+.jd-overview-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.jd-prose-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  background: var(--surface);
+}
+
+.jd-prose-card .jd-panel-title {
+  margin: 0 0 12px;
+}
+
 .jd-panel-title {
   font-size: 15px;
   font-weight: 700;
@@ -22462,13 +22480,6 @@ kbd.cmd__kbd {
   line-height: 1.7;
   color: var(--text);
   white-space: pre-wrap;
-}
-
-@media (min-width: 1025px) {
-  .jd-prose {
-    max-height: 400px;
-    overflow-y: auto;
-  }
 }
 
 .jd-empty-text {
@@ -23129,10 +23140,23 @@ kbd.cmd__kbd {
   overflow-y: auto;
 }
 
-/* Judgment Summary & Headnotes rich editors — match the prior textarea sizing */
+/* Judgment Summary & Headnotes rich editors — auto-grow with content, no fixed height */
+.ajm-doc-editor .doc-canvas {
+  padding: 12px;
+  max-height: none;
+  overflow: visible;
+  display: block;
+  background: var(--surface);
+}
+
 .ajm-doc-editor .doc-page {
   width: 100%;
-  min-height: 350px;
+  min-height: 140px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
   font-family: 'Calibri', 'Arial', sans-serif;
 }
 
@@ -23427,7 +23451,7 @@ kbd.cmd__kbd {
     min-height: 160px;
   }
   .ajm-doc-editor .doc-page {
-    min-height: 200px;
+    min-height: 140px;
   }
 }
 
