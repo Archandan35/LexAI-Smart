@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Card from '@/components/Card.jsx';
-import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import Badge from '@/components/Badge.jsx';
+import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
@@ -13,39 +11,41 @@ import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 
 const TABS = [
-  { key: 'sections', label: 'Sections / Summary' },
-  { key: 'citations', label: 'Citations' },
-  { key: 'bench', label: 'Bench' },
-  { key: 'hearing', label: 'Hearing' },
-  { key: 'orders', label: 'Orders' },
+  { key: 'overview', label: 'Overview' },
+  { key: 'legalPrinciples', label: 'Legal Principles' },
+  { key: 'acts', label: 'Acts & Sections' },
+  { key: 'applicability', label: 'Applicability' },
+  { key: 'documents', label: 'Documents' },
+  { key: 'notes', label: 'Notes' },
+  { key: 'linked', label: 'Linked Records' },
   { key: 'history', label: 'History' },
 ];
 
 function StatusBadge({ status }) {
-  if (!status) return null;
-  const cls = `jd-status-badge jd-status-badge--${status.toLowerCase()}`;
+  if (!status) return <span className="jd-status-pill jd-status-pill--active">Active</span>;
+  const cls = `jd-status-pill jd-status-pill--${status.toLowerCase()}`;
   return <span className={cls}>{status}</span>;
 }
 
-function MetaItem({ icon, label, value }) {
+function MetaItem({ icon, tone, label, value }) {
   if (!value) return null;
   return (
     <div className="jd-meta-item">
-      <div className="jd-meta-item__icon"><Icon name={icon} size={16} /></div>
-      <div>
-        <div className="jd-meta-item__label">{label}</div>
-        <div className="jd-meta-item__value">{value}</div>
+      <div className={`jd-meta-icon jd-meta-icon--${tone}`}><Icon name={icon} size={16} /></div>
+      <div className="jd-meta-text">
+        <div className="jd-meta-label">{label}</div>
+        <div className="jd-meta-value">{value}</div>
       </div>
+    </div>
+  );
+}
 
-      <AddJudgmentModal
-        open={showEditModal}
-        editing={judgment}
-        onClose={() => setShowEditModal(false)}
-        onSaved={() => {
-          setShowEditModal(false);
-          judgmentsRepository.getById(id).then((d) => d && setJudgment(d)).catch(() => {});
-        }}
-      />
+function InfoBlock({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="jd-info-block">
+      <div className="jd-info-label">{label}</div>
+      <div className="jd-info-value">{value}</div>
     </div>
   );
 }
@@ -54,10 +54,10 @@ function ActRow({ act }) {
   const name = typeof act === 'string' ? act : act?.name || act?.act || '';
   const section = typeof act === 'string' ? '' : act?.section || '';
   return (
-    <div className="jd-act-row">
+    <div className="jd-acts-row">
       <Icon name="file" size={14} />
-      <span className="jd-act-row__name">{name}</span>
-      {section && <span className="jd-act-row__section">(Section {section})</span>}
+      <span className="jd-acts-name">{name}</span>
+      {section && <span className="jd-acts-section">(Section {section})</span>}
     </div>
   );
 }
@@ -69,8 +69,8 @@ function DocRow({ doc }) {
     <div className="jd-doc-row">
       <div className="jd-doc-icon"><Icon name="file" size={16} /></div>
       <div className="jd-doc-info">
-        <div className="jd-doc-info__name">{name}</div>
-        {size && <div className="jd-doc-info__size">{size}</div>}
+        <div className="jd-doc-name">{name}</div>
+        {size && <div className="jd-doc-size">{size}</div>}
       </div>
       <Icon name="download" size={15} className="jd-dl-link" />
     </div>
@@ -84,7 +84,7 @@ export default function JudgmentDetail() {
   const [judgment, setJudgment] = useState(null);
   const [allJudgments, setAllJudgments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('sections');
+  const [tab, setTab] = useState('overview');
   const [favourite, setFavourite] = useState(false);
 
   const [courts, setCourts] = useState([]);
@@ -136,7 +136,6 @@ export default function JudgmentDetail() {
     return { court: build(courts), bench: build(benchTypes), judge: build(judges) };
   }, [courts, benchTypes, judges]);
 
-  // Resolve a single id or an array of ids to display names (falls back to the raw value).
   const judgeLabel = (val) => {
     if (!val) return '';
     if (Array.isArray(val)) return val.map((v) => nameMap.judge[v] || v).join(', ');
@@ -178,22 +177,23 @@ export default function JudgmentDetail() {
     }
   };
 
+  const handleCopyCitation = () => {
+    if (judgment?.citation && navigator.clipboard) {
+      navigator.clipboard.writeText(judgment.citation).catch(() => {});
+    }
+  };
+
   const classification = useMemo(() => {
     if (!judgment) return [];
     const rows = [];
-    if (judgment.court) rows.push({ key: 'Court Level', val: courtLabel(judgment.court) });
-    if (judgment.type) rows.push({ key: 'Type', val: judgment.type });
-    if (judgment.matterType) rows.push({ key: 'Matter Type', val: judgment.matterType });
-    if (judgment.bench) rows.push({ key: 'Bench', val: benchLabel(judgment.bench) });
-    if (judgment.judge) rows.push({ key: 'Judge', val: judgeLabel(judgment.judge) });
-    if (judgment.judges) rows.push({ key: 'Bench', val: judgeLabel(judgment.judges) });
+    if (judgment.subjectMatter) rows.push({ key: 'Matter Type', val: judgment.subjectMatter });
+    if (judgment.practiceArea) rows.push({ key: 'Practice Area', val: judgment.practiceArea });
+    if (judgment.category) rows.push({ key: 'Category', val: judgment.category });
+    if (judgment.caseType) rows.push({ key: 'Subject', val: judgment.caseType });
     return rows;
   }, [judgment]);
 
-  const tags = useMemo(() => {
-    if (!judgment?.keywords?.length) return [];
-    return judgment.keywords;
-  }, [judgment]);
+  const tags = useMemo(() => judgment?.keywords || [], [judgment]);
 
   if (loading) {
     return (
@@ -219,14 +219,21 @@ export default function JudgmentDetail() {
   }
 
   const {
-    title, citation, court, date, caseNumber, status,
+    title, citation, neutralCitation, reporterCitation, court, date, caseNumber, status,
     appellant, respondent, petitioner, respondentName,
+    plaintiff, defendant, plaintiffType, defendantType,
     summary, paragraphs, acts, documents,
-    citations, hearing, orders, history,
   } = judgment;
 
-  const partyA = appellant || petitioner || '';
-  const partyB = respondent || respondentName || '';
+  const benchText = benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
+  const judgeText = judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
+
+  const partyA = appellant || petitioner || plaintiff || '';
+  const partyB = respondent || respondentName || defendant || '';
+  const partyAType = appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (plaintiffType || 'Plaintiff') : '';
+  const partyBType = respondent ? 'Respondent' : defendant ? (defendantType || 'Defendant') : '';
+
+  const citationList = [citation, neutralCitation, reporterCitation].filter(Boolean);
 
   return (
     <div className="jd-page">
@@ -236,64 +243,61 @@ export default function JudgmentDetail() {
       </button>
 
       <div className="jd-toolbar">
-        <button className="jd-toolbar-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={13} /> Edit</button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={14} /></button>
+        <button className="jd-tool-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={13} /> Edit</button>
+        <button className="jd-tool-btn jd-tool-btn--icon" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={14} /></button>
         <button
-          className={`jd-toolbar-btn jd-toolbar-btn--icon${favourite ? ' jd-toolbar-btn--active' : ''}`}
+          className={`jd-tool-btn jd-tool-btn--icon${favourite ? ' jd-tool-btn--active' : ''}`}
+          title="Favourite"
           onClick={() => setFavourite(!favourite)}
         >
           <Icon name="heart" size={14} />
         </button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Notify" onClick={handleNotify}><Icon name="pin" size={14} /></button>
-        <div className="jd-toolbar-divider" />
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Share" onClick={handleShare}><Icon name="share" size={14} /></button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Print" onClick={() => window.print()}><Icon name="print" size={14} /></button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Download" onClick={handleShare}><Icon name="download" size={14} /></button>
-        <div className="jd-toolbar-divider" />
-        <button className="jd-toolbar-btn" onClick={() => navigator.clipboard && judgment && navigator.clipboard.writeText(judgment.citation || '').catch(() => {})}><Icon name="copy" size={13} /> Copy Citation</button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="more-horizontal" size={14} /></button>
+        <button className="jd-tool-btn jd-tool-btn--icon" title="Pin" onClick={handleNotify}><Icon name="pin" size={14} /></button>
+        <div className="jd-tool-divider" />
+        <button className="jd-tool-btn jd-tool-btn--icon" title="Share" onClick={handleShare}><Icon name="share" size={14} /></button>
+        <button className="jd-tool-btn jd-tool-btn--icon" title="Print" onClick={() => window.print()}><Icon name="print" size={14} /></button>
+        <button className="jd-tool-btn jd-tool-btn--icon" title="Download" onClick={handleShare}><Icon name="download" size={14} /></button>
+        <div className="jd-tool-divider" />
+        <button className="jd-tool-btn" onClick={handleCopyCitation}><Icon name="copy" size={13} /> Copy Citation</button>
+        <button className="jd-tool-btn jd-tool-btn--icon" title="More"><Icon name="more-horizontal" size={14} /></button>
       </div>
 
       <div className="jd-case-card">
-        <div className="jd-case-status-row">
-          <StatusBadge status={status} />
-          <button
-            className={`jd-favourite-toggle${favourite ? ' jd-favourite-toggle--active' : ''}`}
-            onClick={() => setFavourite(!favourite)}
-          >
-            <Icon name="heart" size={14} />
-          </button>
-        </div>
-
-        <h1 className="jd-case-title">{title || citation || 'Untitled'}</h1>
-        <div className="jd-case-citation">{citation}</div>
-
-        <div className="jd-case-meta-grid">
-          <MetaItem icon="building" label="Court" value={courtLabel(court)} />
-          <MetaItem icon="users" label="Bench / Judge" value={benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges)} />
-          <MetaItem icon="user" label="Judge(s)" value={judgeLabel(judgment.judge) || judgeLabel(judgment.judges)} />
-          <MetaItem icon="calendar" label="Judgment Date" value={date ? formatDate(date) : ''} />
-        </div>
-
-        {(partyA || partyB) && (
-          <div className="jd-party-row">
-            {partyA && (
-              <div className="jd-party-block">
-                <div className="jd-party-block__label">{appellant ? 'Appellant' : 'Petitioner'}</div>
-                <div className="jd-party-block__name">{partyA}</div>
-              </div>
-            )}
-            {partyB && (
-              <div className="jd-party-block">
-                <div className="jd-party-block__label">{respondent ? 'Respondent' : 'Respondent'}</div>
-                <div className="jd-party-block__name">{partyB}</div>
-              </div>
-            )}
+        <div className="jd-case-head">
+          <div className="jd-case-head-left">
+            <h1 className="jd-case-title">{title || citation || 'Untitled'}</h1>
+            <div className="jd-case-citations">
+              {citation && <span className="jd-cit-chip">{citation}</span>}
+              {neutralCitation && <span className="jd-cit-chip jd-cit-chip--muted">{neutralCitation}</span>}
+            </div>
           </div>
-        )}
+          <div className="jd-case-head-right">
+            <StatusBadge status={status} />
+          </div>
+        </div>
+
+        <div className="jd-case-meta-row">
+          <MetaItem icon="building" tone="purple" label="Court" value={courtLabel(court)} />
+          <MetaItem icon="balance" tone="blue" label="Bench" value={benchText} />
+          <MetaItem icon="user" tone="green" label="Judge(s)" value={judgeText} />
+          <MetaItem icon="calendar" tone="orange" label="Judgment Date" value={date ? formatDate(date) : ''} />
+        </div>
+
+        <div className="jd-case-info-row">
+          <InfoBlock label="Case Number" value={caseNumber} />
+          {(partyA || partyB) && (
+            <div className="jd-party-wrap">
+              <div className="jd-info-label">Parties</div>
+              <div className="jd-party-row">
+                {partyA && <span className="jd-party"><span className="jd-party-role">{partyAType}</span> {partyA}</span>}
+                {partyB && <span className="jd-party"><span className="jd-party-role">{partyBType}</span> {partyB}</span>}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="jd-two-col">
+      <div className="jd-body-grid">
         <div className="jd-main-col">
           <div className="jd-tabs">
             {TABS.map((t) => (
@@ -308,66 +312,90 @@ export default function JudgmentDetail() {
           </div>
 
           <div className="jd-tab-panel">
-            {tab === 'sections' && (
-              <div>
-                <h3 className="jd-section-title">Sections / Summary</h3>
-                <div className="jd-summary-text">
+            {tab === 'overview' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Headnote</h3>
+                <div className="jd-prose">
                   {summary || (paragraphs?.length ? paragraphs.join('\n\n') : 'No summary available for this judgment.')}
                 </div>
               </div>
             )}
 
-            {tab === 'citations' && (
-              <div>
-                <h3 className="jd-section-title">Citations</h3>
-                {citations?.length ? (
-                  <ul className="jd-citation-list">
-                    {citations.map((c, i) => (
-                      <li key={i}><Icon name="link" size={14} /> {typeof c === 'string' ? c : c.name || c.citation || c}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="jd-summary-text">No citations listed.</div>
+            {tab === 'legalPrinciples' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Legal Principle</h3>
+                <div className="jd-prose">{summary || 'No legal principles recorded for this judgment.'}</div>
+                <h3 className="jd-panel-title jd-panel-title--mt">Ratio Decidendi</h3>
+                <div className="jd-prose">{judgment.ratioDecidendi || 'Not specified.'}</div>
+                <h3 className="jd-panel-title jd-panel-title--mt">Key Findings</h3>
+                <div className="jd-prose">{judgment.keyFindings || 'Not specified.'}</div>
+                <h3 className="jd-panel-title jd-panel-title--mt">Final Decision</h3>
+                <div className="jd-prose">{judgment.finalDecision || status || 'Not specified.'}</div>
+              </div>
+            )}
+
+            {tab === 'acts' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Acts & Sections</h3>
+                {acts?.length ? acts.map((act, i) => <ActRow key={i} act={act} />) : (
+                  <div className="jd-prose jd-empty-text">No acts referenced.</div>
+                )}
+                {judgment.act && !acts?.length && (
+                  <div className="jd-prose jd-empty-text">{judgment.act}</div>
                 )}
               </div>
             )}
 
-            {tab === 'bench' && (
-              <div>
-                <h3 className="jd-section-title">Bench</h3>
-                <div className="jd-summary-text">
-                  {judgment.bench ? (
-                    <>{benchLabel(judgment.bench)} — {judgeLabel(judgment.judge) || judgeLabel(judgment.judges)}</>
-                  ) : (
-                    judgeLabel(judgment.judge) || judgeLabel(judgment.judges) || 'Bench information not available.'
-                  )}
+            {tab === 'applicability' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Applicability</h3>
+                <div className="jd-prose">
+                  {judgment.applicability || (judgment.precedentialValue
+                    ? `Precedential value: ${judgment.precedentialValue}.`
+                    : 'No applicability notes recorded.')}
                 </div>
               </div>
             )}
 
-            {tab === 'hearing' && (
-              <div>
-                <h3 className="jd-section-title">Hearing</h3>
-                <div className="jd-summary-text">
-                  {hearing || 'No hearing information available.'}
-                </div>
+            {tab === 'documents' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Documents</h3>
+                {documents?.length ? documents.map((doc, i) => <DocRow key={i} doc={doc} />) : (
+                  <div className="jd-prose jd-empty-text">No documents attached.</div>
+                )}
               </div>
             )}
 
-            {tab === 'orders' && (
-              <div>
-                <h3 className="jd-section-title">Orders</h3>
-                <div className="jd-summary-text">
-                  {orders || 'No orders available for this judgment.'}
-                </div>
+            {tab === 'notes' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Notes</h3>
+                <div className="jd-prose">{judgment.notes || 'No notes recorded for this judgment.'}</div>
+              </div>
+            )}
+
+            {tab === 'linked' && (
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">Linked Records</h3>
+                <div className="jd-prose jd-empty-text">No linked records.</div>
               </div>
             )}
 
             {tab === 'history' && (
-              <div>
-                <h3 className="jd-section-title">History</h3>
-                <div className="jd-summary-text">
-                  {history || 'No history available for this judgment.'}
+              <div className="jd-panel-section">
+                <h3 className="jd-panel-title">History</h3>
+                <div className="jd-history-list">
+                  {judgment.createdAt && (
+                    <div className="jd-history-row"><Icon name="plus" size={14} /><span>Created</span><span className="jd-history-date">{formatDate(judgment.createdAt)}</span></div>
+                  )}
+                  {judgment.updatedAt && (
+                    <div className="jd-history-row"><Icon name="refresh" size={14} /><span>Last updated</span><span className="jd-history-date">{formatDate(judgment.updatedAt)}</span></div>
+                  )}
+                  {judgment.uploadDate && (
+                    <div className="jd-history-row"><Icon name="upload" size={14} /><span>Uploaded</span><span className="jd-history-date">{formatDate(judgment.uploadDate)}</span></div>
+                  )}
+                  {!judgment.createdAt && !judgment.updatedAt && !judgment.uploadDate && (
+                    <div className="jd-prose jd-empty-text">No history available.</div>
+                  )}
                 </div>
               </div>
             )}
@@ -376,77 +404,89 @@ export default function JudgmentDetail() {
 
         <div className="jd-side-col">
           <div className="jd-rc-card">
-            <div className="jd-rc-card__head">
-              <span className="jd-rc-card__head-icon"><Icon name="tag" size={14} /></span>
-              Legal Classification
-            </div>
-            <div className="jd-rc-card__body">
+            <div className="jd-rc-title"><Icon name="tag" size={14} /> Legal Classification</div>
+            <div className="jd-rc-body">
               {classification.length ? classification.map((row, i) => (
-                <div key={i} className="jd-class-row">
-                  <span className="jd-class-row__key">{row.key}</span>
-                  <span className="jd-class-row__val">{row.val}</span>
+                <div key={i} className="jd-rc-row">
+                  <span className="jd-rc-key">{row.key}</span>
+                  <span className="jd-rc-val">{row.val}</span>
                 </div>
-              )) : <div className="jd-summary-text jd-summary-empty">No classification data.</div>}
-            </div>
-          </div>
-
-          <div className="jd-rc-card">
-            <div className="jd-rc-card__head">
-              <span className="jd-rc-card__head-icon"><Icon name="file" size={14} /></span>
-              Acts & Sections
-            </div>
-            <div className="jd-rc-card__body">
-              {acts?.length ? acts.map((act, i) => <ActRow key={i} act={act} />) : (
-                <div className="jd-summary-text jd-summary-empty">No acts referenced.</div>
+              )) : <div className="jd-empty-text">No classification data.</div>}
+              {tags.length > 0 && (
+                <div className="jd-tags">
+                  {tags.map((tag, i) => <span key={i} className="jd-tag">{tag}</span>)}
+                </div>
               )}
             </div>
           </div>
 
-          {tags.length > 0 && (
-            <div className="jd-rc-card">
-              <div className="jd-rc-card__head">
-                <span className="jd-rc-card__head-icon"><Icon name="tag" size={14} /></span>
-                Quick Info
-              </div>
-              <div className="jd-rc-card__body">
-                <div className="jd-tags">
-                  {tags.map((tag, i) => <span key={i} className="jd-tag">{tag}</span>)}
-                </div>
-              </div>
+          <div className="jd-rc-card">
+            <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
+            <div className="jd-rc-body">
+              {acts?.length ? acts.map((act, i) => <ActRow key={i} act={act} />) : (
+                judgment.act ? <div className="jd-empty-text">{judgment.act}</div> : <div className="jd-empty-text">No acts referenced.</div>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="jd-rc-card">
-            <div className="jd-rc-card__head">
-              <span className="jd-rc-card__head-icon"><Icon name="file" size={14} /></span>
-              Documents
+            <div className="jd-rc-title"><Icon name="info" size={14} /> Quick Info</div>
+            <div className="jd-rc-body">
+              <div className="jd-rc-row"><span className="jd-rc-key">Judgment Type</span><span className="jd-rc-val">{judgment.judgmentType || '—'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Authority</span><span className="jd-rc-val">{judgment.authorityLevel || '—'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Status</span><span className="jd-rc-val">{status || 'Active'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Upload Date</span><span className="jd-rc-val">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>
             </div>
-            <div className="jd-rc-card__body">
+          </div>
+
+          <div className="jd-rc-card">
+            <div className="jd-rc-title"><Icon name="file" size={14} /> Documents</div>
+            <div className="jd-rc-body">
               {documents?.length ? documents.map((doc, i) => <DocRow key={i} doc={doc} />) : (
-                <div className="jd-summary-text jd-summary-empty">No documents attached.</div>
+                <div className="jd-empty-text">No documents attached.</div>
               )}
             </div>
           </div>
         </div>
       </div>
 
+      {citationList.length > 1 && (
+        <div className="jd-rc-card jd-citation-card">
+          <div className="jd-rc-title"><Icon name="link" size={14} /> All Citations</div>
+          <div className="jd-rc-body jd-citation-body">
+            {citationList.map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
+          </div>
+        </div>
+      )}
+
       {related.length > 0 && (
-        <div className="jd-related-section">
-          <h3 className="jd-section-title jd-related-title">Related Judgments</h3>
+        <div className="jd-related-card">
+          <div className="jd-related-head"><Icon name="layers" size={14} /> Related Judgments</div>
           <div className="jd-related-grid">
             {related.map((r) => (
               <div key={r.id} className="jd-related-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
-                <div className="jd-related-item__title">{r.title || r.citation}</div>
-                <div className="jd-related-item__court">{courtLabel(r.court)}</div>
-                <div className="jd-related-item__footer">
-                  <span className="jd-related-item__date">{r.date ? formatDate(r.date) : ''}</span>
-                  <span className="jd-related-item__ref">{r.status || r.citation}</span>
+                <div className="jd-related-title">{r.title || r.citation}</div>
+                <div className="jd-related-court">{courtLabel(r.court)}</div>
+                <div className="jd-related-footer">
+                  <span className="jd-related-date">{r.date ? formatDate(r.date) : ''}</span>
+                  <span className="jd-related-ref">{r.status || r.citation}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      <AddJudgmentModal
+        open={showEditModal}
+        editing={judgment}
+        onClose={() => setShowEditModal(false)}
+        onSaved={() => {
+          setShowEditModal(false);
+          judgmentsRepository.getById(id).then((d) => d && setJudgment(d)).catch(() => {});
+        }}
+      />
     </div>
   );
 }
