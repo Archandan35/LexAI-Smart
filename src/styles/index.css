@@ -21129,8 +21129,9 @@ kbd.cmd__kbd {
 .tasks-search--icon-right input { order: 1; flex: 1 1 auto; }
 .tasks-search .tasks-arch-toggle { flex: 0 1 auto; margin-left: auto; }
 .tasks-arch-toggle {
-  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface);
-  border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border); background: var(--surface);
+  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
 }
 .tasks-arch-toggle.active { background: var(--navy-700); color: #fff; border-color: var(--navy-700); }
 .tasks-bulkbar { display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: var(--navy-50, #eef2fb); border-radius: 10px; font-weight: 600; }
@@ -21171,7 +21172,7 @@ kbd.cmd__kbd {
   .tasks-toolbar-right { flex-direction: row; align-items: stretch; flex-wrap: wrap; }
   .tasks-toolbar-right .btn { flex: 1 1 0; width: auto; justify-content: center; }
   .tasks-search { margin: 0 12px 12px; }
-  .tasks-search input { flex: 1 1 auto; order: 1; min-width: 0; }
+  .tasks-search input { flex: 1 1 100%; order: 1; min-width: 0; }
   .tasks-search svg { order: 2; }
   .tasks-search .tasks-arch-toggle { order: 3; flex: 1 1 100%; justify-content: center; margin-left: 0; }
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
