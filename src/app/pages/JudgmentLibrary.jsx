@@ -295,7 +295,7 @@ export default function JudgmentLibrary() {
       )}
 
       <div className="jl-toolbar">
-        <div className="jl-search-box">
+        <div className="jl-search-box jl-search-box--expanded">
           <Icon name="search" size={15} />
           <input
             placeholder="Search by title, citation, case number, party, judge, court, act, section, keyword..."
@@ -303,7 +303,6 @@ export default function JudgmentLibrary() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
-        <Button icon="plus">Add Judgment</Button>
         <Button variant="ghost" icon="download">Import</Button>
         <Button variant="ghost" icon="upload">Export</Button>
         <Button variant="ghost" icon="more-horizontal">More</Button>

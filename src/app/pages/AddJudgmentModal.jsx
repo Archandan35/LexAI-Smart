@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
+import CrudManager from '@/components/CrudManager.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
 import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
@@ -13,6 +14,15 @@ import { caseStagesRepository } from '@/data-layer/repositories/caseStagesReposi
 import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
 import { prioritiesRepository } from '@/data-layer/repositories/prioritiesRepository.js';
 import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
+import { courtsLogic } from '@/logic/courtsLogic.js';
+import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
+import { judgeLogic } from '@/logic/judgeLogic.js';
+import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
+import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
+import { caseStageLogic } from '@/logic/caseStageLogic.js';
+import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
+import { priorityLogic } from '@/logic/priorityLogic.js';
+import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
@@ -54,8 +64,7 @@ const INITIAL_FORM = {
   summary: '',
 };
 
-function SelectWithCrud({ label, required, value, onChange, placeholder, options, crudPath }) {
-  const navigate = useNavigate();
+function SelectWithCrud({ label, required, value, onChange, placeholder, options, onCrudClick }) {
   return (
     <div className="ajm-field">
       <label>
@@ -76,7 +85,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
           type="button"
           className="ajm-crud-btn"
           title={`Manage ${label}`}
-          onClick={() => navigate(crudPath)}
+          onClick={onCrudClick}
         >
           <Icon name="gear" size={15} />
         </button>
@@ -90,6 +99,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
   const [tab, setTab] = useState('general');
   const [form, setForm] = useState(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [existingJudgments, setExistingJudgments] = useState([]);
   const [courts, setCourts] = useState([]);
   const [benchTypes, setBenchTypes] = useState([]);
@@ -100,6 +110,28 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
   const [caseStatuses, setCaseStatuses] = useState([]);
   const [priorities, setPriorities] = useState([]);
   const [partyTypes, setPartyTypes] = useState([]);
+
+  const [showCourtCrud, setShowCourtCrud] = useState(false);
+  const [showBenchCrud, setShowBenchCrud] = useState(false);
+  const [showJudgeCrud, setShowJudgeCrud] = useState(false);
+  const [showCaseTypeCrud, setShowCaseTypeCrud] = useState(false);
+  const [showJurisdictionCrud, setShowJurisdictionCrud] = useState(false);
+  const [showStageCrud, setShowStageCrud] = useState(false);
+  const [showCaseStatusCrud, setShowCaseStatusCrud] = useState(false);
+  const [showPriorityCrud, setShowPriorityCrud] = useState(false);
+  const [showPartyTypeCrud, setShowPartyTypeCrud] = useState(false);
+
+  const refreshAll = useMemo(() => ({
+    courts: () => courtsRepository.getAll().then(setCourts).catch(() => {}),
+    benchTypes: () => benchTypesRepository.getAll().then(setBenchTypes).catch(() => {}),
+    judges: () => judgesRepository.getAll().then(setJudges).catch(() => {}),
+    caseTypes: () => caseTypesRepository.getAll().then(setCaseTypes).catch(() => {}),
+    jurisdictions: () => jurisdictionsRepository.getAll().then(setJurisdictions).catch(() => {}),
+    caseStages: () => caseStagesRepository.getAll().then(setCaseStages).catch(() => {}),
+    caseStatuses: () => caseStatusesRepository.getAll().then(setCaseStatuses).catch(() => {}),
+    priorities: () => prioritiesRepository.getAll().then(setPriorities).catch(() => {}),
+    partyTypes: () => partyTypesRepository.getAll().then(setPartyTypes).catch(() => {}),
+  }), []);
 
   useEffect(() => {
     if (!open) return;
@@ -156,7 +188,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
   const priorityOpts = useMemo(() => makeOpts(priorities), [priorities]);
   const partyTypeOpts = useMemo(() => makeOpts(partyTypes), [partyTypes]);
 
-
   const characterCount = form.summary.length;
 
   const progressPercent = useMemo(() => {
@@ -167,6 +198,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
 
   const handleSave = async (draft = false) => {
     setSaving(true);
+    setSaveError('');
     try {
       const entry = {
         ...form,
@@ -177,11 +209,14 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
         acts: [],
         paragraphs: [],
       };
-      await judgmentsRepository.create(entry);
+      const created = await judgmentsRepository.create(entry);
+      if (!created) throw new Error('Save returned no record');
       onSaved?.();
       onClose?.();
-    } catch {
-      /* error handling */
+    } catch (err) {
+      console.error('[AddJudgmentModal] save failed:', err);
+      const msg = err?.message || 'Unknown error';
+      setSaveError(`Could not save: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -197,8 +232,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
         </label>
         {type === 'date' ? (
           <div className="ajm-date-input">
-            <Icon name="calendar" size={14} />
-            {form[fieldKey] || placeholder}
+            <input
+              type="date"
+              className="ajm-input ajm-date-field"
+              value={form[fieldKey] || ''}
+              onChange={(e) => set(fieldKey, e.target.value)}
+            />
+            <span className="ajm-date-cal-icon"><Icon name="calendar" size={14} /></span>
           </div>
         ) : (
           <div className={readonly ? 'ajm-field-readonly' : ''}>
@@ -225,7 +265,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="users" size={15} /> Parties &amp; Case Title
+                <Icon name="users" size={15} /> Parties & Case Title
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-2">
@@ -243,7 +283,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
 
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="info" size={15} /> Citation &amp; Case Information
+                <Icon name="info" size={15} /> Citation & Case Information
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-3">
@@ -260,7 +300,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                     onChange={(e) => set('caseType', e.target.value)}
                     placeholder="Select case type"
                     options={caseTypeOpts}
-                    crudPath="/court-management/case-types"
+                    onCrudClick={() => setShowCaseTypeCrud(true)}
                   />
                 </div>
                 <div className="ajm-grid ajm-grid-3">
@@ -271,7 +311,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                     onChange={(e) => set('court', e.target.value)}
                     placeholder="Select court"
                     options={courtsOpts}
-                    crudPath="/court-management/courts"
+                    onCrudClick={() => setShowCourtCrud(true)}
                   />
                   <SelectWithCrud
                     label="Bench"
@@ -280,7 +320,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                     onChange={(e) => set('bench', e.target.value)}
                     placeholder="Select bench"
                     options={benchOpts}
-                    crudPath="/court-management/bench-types"
+                    onCrudClick={() => setShowBenchCrud(true)}
                   />
                   <SelectWithCrud
                     label="Judge(s)"
@@ -289,7 +329,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                     onChange={(e) => set('judges', e.target.value)}
                     placeholder="Select one or more judges"
                     options={judgesOpts}
-                    crudPath="/court-management/judges"
+                    onCrudClick={() => setShowJudgeCrud(true)}
                   />
                 </div>
               </div>
@@ -313,14 +353,14 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 <Icon name="gear" size={15} /> Other Details
               </div>
               <div className="ajm-section-card__body">
-                <div className="ajm-grid ajm-grid-4">
+                <div className="ajm-grid ajm-grid-3">
                   <SelectWithCrud
                     label="Jurisdiction"
                     value={form.jurisdiction}
                     onChange={(e) => set('jurisdiction', e.target.value)}
                     placeholder="Select jurisdiction"
                     options={jurisdictionOpts}
-                    crudPath="/court-management/jurisdictions"
+                    onCrudClick={() => setShowJurisdictionCrud(true)}
                   />
                   <SelectWithCrud
                     label="Stage"
@@ -328,7 +368,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                     onChange={(e) => set('stage', e.target.value)}
                     placeholder="Select stage"
                     options={stageOpts}
-                    crudPath="/court-management/case-stages"
+                    onCrudClick={() => setShowStageCrud(true)}
                   />
                   {renderField('Source', 'source', 'Enter source')}
                 </div>
@@ -367,7 +407,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 onChange={(e) => set('plaintiffType', e.target.value)}
                 placeholder="Select party type"
                 options={partyTypeOpts}
-                crudPath="/court-management/party-types"
+                onCrudClick={() => setShowPartyTypeCrud(true)}
               />
               {renderField('Plaintiff / Applicant Name', 'plaintiff', 'Enter plaintiff or applicant name', { required: true })}
             </div>
@@ -378,7 +418,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 onChange={(e) => set('defendantType', e.target.value)}
                 placeholder="Select party type"
                 options={partyTypeOpts}
-                crudPath="/court-management/party-types"
+                onCrudClick={() => setShowPartyTypeCrud(true)}
               />
               {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
             </div>
@@ -453,7 +493,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 onChange={(e) => set('jurisdictionalScope', e.target.value)}
                 placeholder="Select scope"
                 options={jurisdictionOpts}
-                crudPath="/court-management/jurisdictions"
+                onCrudClick={() => setShowJurisdictionCrud(true)}
               />
               <SelectWithCrud
                 label="Precedential Value"
@@ -461,7 +501,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 onChange={(e) => set('precedentialValue', e.target.value)}
                 placeholder="Select value"
                 options={priorityOpts}
-                crudPath="/court-management/priorities"
+                onCrudClick={() => setShowPriorityCrud(true)}
               />
             </div>
             <div className="ajm-field">
@@ -482,7 +522,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 onChange={(e) => set('authorityLevel', e.target.value)}
                 placeholder="Select level"
                 options={caseStatusOpts}
-                crudPath="/court-management/case-statuses"
+                onCrudClick={() => setShowCaseStatusCrud(true)}
               />
               {renderField('Judgment Type', 'judgmentType', 'Enter judgment type')}
             </div>
@@ -527,16 +567,14 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
         return (
           <>
             <div className="ajm-form-title">Review</div>
-            <div className="ajm-field">
-              <SelectWithCrud
-                label="Review Status"
-                value={form.reviewStatus}
-                onChange={(e) => set('reviewStatus', e.target.value)}
-                placeholder="Select review status"
-                options={caseStatusOpts}
-                crudPath="/court-management/case-statuses"
-              />
-            </div>
+            <SelectWithCrud
+              label="Review Status"
+              value={form.reviewStatus}
+              onChange={(e) => set('reviewStatus', e.target.value)}
+              placeholder="Select review status"
+              options={caseStatusOpts}
+              onCrudClick={() => setShowCaseStatusCrud(true)}
+            />
             <div className="ajm-field">
               <label>Review Comments</label>
               <textarea className="ajm-input ajm-textarea" placeholder="Enter review comments..." />
@@ -549,6 +587,109 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     }
   };
 
+  const courtConfig = {
+    logic: courtsLogic,
+    fields: [
+      { key: 'name', label: 'Court Name', required: true, placeholder: 'e.g. Supreme Court of India' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. SC-IND' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'level', label: 'Court Level', required: true, placeholder: 'e.g. 1 (Supreme), 2 (High Court)' },
+      { key: 'parent_id', label: 'Parent Court', required: false, placeholder: 'Parent court ID (optional)' },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active', level: '1' },
+  };
+
+  const benchConfig = {
+    logic: benchTypeLogic,
+    fields: [
+      { key: 'name', label: 'Bench Type Name', required: true, placeholder: 'e.g. Division Bench' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. DIV-BENCH' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const judgeConfig = {
+    logic: judgeLogic,
+    fields: [
+      { key: 'name', label: 'Judge Name', required: true, placeholder: 'e.g. Justice A.K. Sharma' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. J-AKS' },
+      { key: 'designation', label: 'Designation', required: true, placeholder: 'e.g. Chief Justice, Justice' },
+      { key: 'court', label: 'Court', required: false, placeholder: 'Associated court' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const caseTypeConfig = {
+    logic: caseTypeLogic,
+    fields: [
+      { key: 'name', label: 'Case Type Name', required: true, placeholder: 'e.g. Civil Appeal' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CA' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const jurisdictionConfig = {
+    logic: jurisdictionLogic,
+    fields: [
+      { key: 'name', label: 'Jurisdiction Name', required: true, placeholder: 'e.g. Civil' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CIV' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const stageConfig = {
+    logic: caseStageLogic,
+    fields: [
+      { key: 'name', label: 'Stage Name', required: true, placeholder: 'e.g. Pleading' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PL' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const caseStatusConfig = {
+    logic: caseStatusLogic,
+    fields: [
+      { key: 'name', label: 'Status Name', required: true, placeholder: 'e.g. Pending' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PND' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const priorityConfig = {
+    logic: priorityLogic,
+    fields: [
+      { key: 'name', label: 'Priority Name', required: true, placeholder: 'e.g. High' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. HI' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const partyTypeConfig = {
+    logic: partyTypeLogic,
+    fields: [
+      { key: 'name', label: 'Party Type Name', required: true, placeholder: 'e.g. Plaintiff' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PLT' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
   return (
     <Modal
       open={open}
@@ -559,6 +700,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
       className="ajm-overlay"
       footer={
         <div className="ajm-actions">
+          {saveError && <div className="ajm-save-error">{saveError}</div>}
           <Button variant="ghost" onClick={onClose} icon="close">Cancel</Button>
           <div className="ajm-actions-right">
             <Button variant="ghost" icon="save" onClick={() => handleSave(true)} disabled={saving}>Save as Draft</Button>
@@ -622,6 +764,17 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           </div>
         </aside>
       </div>
+
+      {/* CRUD Modals */}
+      <CrudManager open={showCourtCrud} onClose={() => { setShowCourtCrud(false); refreshAll.courts(); }} entity="Court" config={courtConfig} />
+      <CrudManager open={showBenchCrud} onClose={() => { setShowBenchCrud(false); refreshAll.benchTypes(); }} entity="Bench Type" config={benchConfig} />
+      <CrudManager open={showJudgeCrud} onClose={() => { setShowJudgeCrud(false); refreshAll.judges(); }} entity="Judge" config={judgeConfig} />
+      <CrudManager open={showCaseTypeCrud} onClose={() => { setShowCaseTypeCrud(false); refreshAll.caseTypes(); }} entity="Case Type" config={caseTypeConfig} />
+      <CrudManager open={showJurisdictionCrud} onClose={() => { setShowJurisdictionCrud(false); refreshAll.jurisdictions(); }} entity="Jurisdiction" config={jurisdictionConfig} />
+      <CrudManager open={showStageCrud} onClose={() => { setShowStageCrud(false); refreshAll.caseStages(); }} entity="Stage" config={stageConfig} />
+      <CrudManager open={showCaseStatusCrud} onClose={() => { setShowCaseStatusCrud(false); refreshAll.caseStatuses(); }} entity="Status" config={caseStatusConfig} />
+      <CrudManager open={showPriorityCrud} onClose={() => { setShowPriorityCrud(false); refreshAll.priorities(); }} entity="Priority" config={priorityConfig} />
+      <CrudManager open={showPartyTypeCrud} onClose={() => { setShowPartyTypeCrud(false); refreshAll.partyTypes(); }} entity="Party Type" config={partyTypeConfig} />
     </Modal>
   );
 }
