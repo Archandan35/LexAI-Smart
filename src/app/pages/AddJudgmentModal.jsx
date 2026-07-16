@@ -26,7 +26,6 @@ import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
-  { key: 'parties', label: 'Parties', icon: 'users' },
   { key: 'classification', label: 'Legal Classification', icon: 'tag' },
   { key: 'references', label: 'Legal References', icon: 'list' },
   { key: 'principle', label: 'Legal Principle', icon: 'pen' },
@@ -38,14 +37,18 @@ const TABS = [
 ];
 
 const PROGRESS_STEPS = [
-  'General Information', 'Parties', 'Legal Classification',
+  'General Information', 'Legal Classification',
   'Legal References', 'Legal Principle', 'Applicability',
-  'Authority & Type', 'Documents', 'Notes & Links',
+  'Authority & Type', 'Documents', 'Notes & Links', 'Review',
 ];
 
 const INITIAL_FORM = {
   plaintiff: '',
   defendant: '',
+  plaintiffType: '',
+  defendantType: '',
+  plaintiffCounsel: '',
+  defendantCounsel: '',
   title: '',
   citation: '',
   neutralCitation: '',
@@ -222,6 +225,19 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     }
   };
 
+  const toDisplayDate = (iso) => {
+    if (!iso) return '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (!m) return iso;
+    return `${m[2]}-${m[3]}-${m[1]}`;
+  };
+
+  const fromDisplayDate = (disp) => {
+    const m = /^(\d{2})-(\d{2})-(\d{4})/.exec(disp || '');
+    if (!m) return disp || '';
+    return `${m[3]}-${m[2]}-${m[1]}`;
+  };
+
   const renderField = (label, fieldKey, placeholder, opts = {}) => {
     const { required, readonly, type } = opts;
     return (
@@ -232,13 +248,15 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
         </label>
         {type === 'date' ? (
           <div className="ajm-date-input">
-            <input
-              type="date"
-              className="ajm-input ajm-date-field"
-              value={form[fieldKey] || ''}
-              onChange={(e) => set(fieldKey, e.target.value)}
-            />
             <span className="ajm-date-cal-icon"><Icon name="calendar" size={14} /></span>
+            <input
+              type="text"
+              inputMode="numeric"
+              className="ajm-input ajm-date-field"
+              placeholder={placeholder}
+              value={toDisplayDate(form[fieldKey])}
+              onChange={(e) => set(fieldKey, fromDisplayDate(e.target.value))}
+            />
           </div>
         ) : (
           <div className={readonly ? 'ajm-field-readonly' : ''}>
@@ -269,8 +287,30 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-2">
+                  <SelectWithCrud
+                    label="Party Type (Plaintiff)"
+                    value={form.plaintiffType}
+                    onChange={(e) => set('plaintiffType', e.target.value)}
+                    placeholder="Select party type"
+                    options={partyTypeOpts}
+                    onCrudClick={() => setShowPartyTypeCrud(true)}
+                  />
                   {renderField('Plaintiff / Applicant Name', 'plaintiff', 'Enter plaintiff or applicant name', { required: true })}
+                </div>
+                <div className="ajm-grid ajm-grid-2">
+                  <SelectWithCrud
+                    label="Party Type (Defendant)"
+                    value={form.defendantType}
+                    onChange={(e) => set('defendantType', e.target.value)}
+                    placeholder="Select party type"
+                    options={partyTypeOpts}
+                    onCrudClick={() => setShowPartyTypeCrud(true)}
+                  />
                   {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
+                </div>
+                <div className="ajm-grid ajm-grid-2">
+                  {renderField('Plaintiff Counsel', 'plaintiffCounsel', 'Enter counsel name')}
+                  {renderField('Defendant Counsel', 'defendantCounsel', 'Enter counsel name')}
                 </div>
                 <div className="ajm-grid ajm-grid-1">
                   {renderField('Judgment Title', 'title', 'Auto-generated from party names', {
@@ -341,9 +381,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-3">
-                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
-                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
-                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
+                  {renderField('Judgment Date', 'judgmentDate', 'dd-mm-yyyy', { type: 'date', required: true })}
+                  {renderField('Pronouncement Date', 'pronouncementDate', 'dd-mm-yyyy', { type: 'date' })}
+                  {renderField('Upload Date', 'uploadDate', 'dd-mm-yyyy', { type: 'date' })}
                 </div>
               </div>
             </div>
@@ -392,39 +432,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                   <div className="ajm-char-count">{characterCount}/500</div>
                 </div>
               </div>
-            </div>
-          </>
-        );
-
-      case 'parties':
-        return (
-          <>
-            <div className="ajm-form-title">Parties</div>
-            <div className="ajm-grid ajm-grid-2">
-              <SelectWithCrud
-                label="Party Type (Plaintiff)"
-                value={form.plaintiffType}
-                onChange={(e) => set('plaintiffType', e.target.value)}
-                placeholder="Select party type"
-                options={partyTypeOpts}
-                onCrudClick={() => setShowPartyTypeCrud(true)}
-              />
-              {renderField('Plaintiff / Applicant Name', 'plaintiff', 'Enter plaintiff or applicant name', { required: true })}
-            </div>
-            <div className="ajm-grid ajm-grid-2">
-              <SelectWithCrud
-                label="Party Type (Defendant)"
-                value={form.defendantType}
-                onChange={(e) => set('defendantType', e.target.value)}
-                placeholder="Select party type"
-                options={partyTypeOpts}
-                onCrudClick={() => setShowPartyTypeCrud(true)}
-              />
-              {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
-            </div>
-            <div className="ajm-grid ajm-grid-2">
-              {renderField('Plaintiff Counsel', 'plaintiffCounsel', 'Enter counsel name')}
-              {renderField('Defendant Counsel', 'defendantCounsel', 'Enter counsel name')}
             </div>
           </>
         );
@@ -736,16 +743,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           </div>
 
           <div className="ajm-side-card">
-            <h3><Icon name="info" size={15} /> Tips</h3>
-            <ul className="ajm-tips-list">
-              <li><Icon name="check" size={13} /> Add accurate citation for better search results.</li>
-              <li><Icon name="check" size={13} /> Select multiple judges by holding Ctrl (Windows) / Cmd (Mac).</li>
-              <li><Icon name="check" size={13} /> You can add multiple Acts, Sections, and Keywords in next steps.</li>
-              <li><Icon name="check" size={13} /> Upload judgment document in the Documents section.</li>
-            </ul>
-          </div>
-
-          <div className="ajm-side-card">
             <div className="ajm-progress-head">
               <h3>Progress</h3>
               <span className="ajm-progress-pct">{progressPercent}% Completed</span>
@@ -760,6 +757,16 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                   {step}
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div className="ajm-side-card">
+            <h3><Icon name="info" size={15} /> Tips</h3>
+            <ul className="ajm-tips-list">
+              <li><Icon name="check" size={13} /> Add accurate citation for better search results.</li>
+              <li><Icon name="check" size={13} /> Select multiple judges by holding Ctrl (Windows) / Cmd (Mac).</li>
+              <li><Icon name="check" size={13} /> You can add multiple Acts, Sections, and Keywords in next steps.</li>
+              <li><Icon name="check" size={13} /> Upload judgment document in the Documents section.</li>
             </ul>
           </div>
         </aside>

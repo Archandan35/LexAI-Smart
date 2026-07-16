@@ -22697,11 +22697,7 @@ kbd.cmd__kbd {
   font-size: 13px;
   color: var(--text);
   font-family: inherit;
-  cursor: pointer;
-}
-
-.ajm-date-field::-webkit-calendar-picker-indicator {
-  cursor: pointer;
+  cursor: text;
 }
 
 .ajm-date-cal-icon {
