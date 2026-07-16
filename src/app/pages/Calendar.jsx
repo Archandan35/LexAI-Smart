@@ -721,8 +721,6 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       )}
                     </div>
 
-                    <div className="task-card__divider" />
-
                     <div className="task-card__datetime-row">
                       <div className="task-card__dt-item">
                         <div className="task-card__dt-label-wrap">
@@ -764,6 +762,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       </div>
                     )}
 
+                    <div className="task-card__actions-sep" />
                     <div className="task-card__actions" role="toolbar" aria-label="Task actions">
                       <button className="cv-action-btn" onClick={() => openView(t)} aria-label="View"><Icon name="eye" size={16} /><span>View</span></button>
                       <button className="cv-action-btn" onClick={() => openEdit(t)} aria-label="Edit"><Icon name="edit" size={16} /><span>Edit</span></button>

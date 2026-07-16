@@ -21200,6 +21200,8 @@ kbd.cmd__kbd {
 .task-card__updated { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
 .task-card__updated svg { color: var(--text-faint); }
 
+.task-card__actions-sep { width: 90%; height: 1px; background: var(--border); margin: 0 auto 10px; }
+
 .task-card__actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .task-card__actions .cv-action-btn { flex: 1 1 calc(16.666% - 3px); min-width: 0; max-width: calc(16.666% - 3px); padding: 5px 3px; font-size: 9px; }
 .task-card__actions .cv-action-btn span { display: block; font-size: 8px; margin-top: 1px; }
