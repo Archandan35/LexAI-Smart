@@ -320,7 +320,7 @@ export default function ManageCases() {
             </div>
           </div>
 
-          <div className="cv-search-wrap">
+          <div className="cv-search-wrap" style={{ marginBottom: '12px' }}>
             <span className="cv-search-icon"><Icon name="search" size={16} /></span>
             <input
               type="text"
@@ -332,7 +332,7 @@ export default function ManageCases() {
             <span className="cv-filter-icon" role="button" aria-label="Filter"><Icon name="filter" size={16} /></span>
           </div>
 
-          <div className="cv-filter-grid">
+          <div className="cv-filter-grid" style={{ marginBottom: '12px' }}>
             <select className="cv-select" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
               <option value="">All courts</option>{uniqueCourtNames.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -347,7 +347,7 @@ export default function ManageCases() {
             </select>
           </div>
 
-          <div className="cv-seg">
+          <div className="cv-seg" style={{ marginBottom: '12px' }}>
             {['Active', 'Archived'].map((t) => (
               <button
                 key={t}
