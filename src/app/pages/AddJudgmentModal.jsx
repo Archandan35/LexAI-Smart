@@ -122,12 +122,12 @@ function parseToISO(str) {
 
 // Date field that honours the global date-format setting: shows the value in
 // the configured format, accepts typed input, and opens a native date picker
-// (single calendar icon) when clicked.
+// (single calendar icon) only when the calendar icon is clicked.
 function DateInput({ value, placeholder, onCommit }) {
   const hiddenRef = useRef(null);
   const openPicker = () => hiddenRef.current && hiddenRef.current.showPicker && hiddenRef.current.showPicker();
   return (
-    <div className="ajm-date-input" onClick={openPicker}>
+    <div className="ajm-date-input">
       <input
         type="text"
         className="ajm-input ajm-date-field"
@@ -135,7 +135,7 @@ function DateInput({ value, placeholder, onCommit }) {
         value={value ? DateEngine.formatDate(value) : ''}
         onChange={(e) => onCommit(parseToISO(e.target.value))}
       />
-      <span className="ajm-date-cal-icon" onClick={(e) => { e.stopPropagation(); openPicker(); }}>
+      <span className="ajm-date-cal-icon" onClick={openPicker}>
         <Icon name="calendar" size={14} />
       </span>
       <input

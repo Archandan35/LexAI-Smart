@@ -21589,8 +21589,10 @@ kbd.cmd__kbd {
   cursor: pointer;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
 }
 
 .jl-filter-select__label {
@@ -21598,6 +21600,7 @@ kbd.cmd__kbd {
   color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .jl-filter-select__value {
@@ -21607,6 +21610,8 @@ kbd.cmd__kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex: 1;
+  min-width: 0;
 }
 
 .jl-filter-select__value::after {
@@ -22702,12 +22707,16 @@ kbd.cmd__kbd {
 
 .ajm-date-hidden {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
   border: none;
-  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .ajm-date-cal-icon {
@@ -22716,7 +22725,12 @@ kbd.cmd__kbd {
   color: var(--text-faint);
   flex-shrink: 0;
   display: flex;
-  pointer-events: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.ajm-date-cal-icon:hover {
+  color: var(--accent);
 }
 
 .ajm-save-error {
