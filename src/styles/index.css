@@ -2529,8 +2529,8 @@ select {
   display: inline-flex;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 4px;
+  border-radius: 10px;
+  padding: 3px;
   gap: 2px;
 }
 
@@ -2541,9 +2541,9 @@ select {
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 11px 22px;
-  border-radius: 9px;
-  font-size: 14px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-soft);
   transition: all 0.16s var(--ease);
@@ -21038,20 +21038,20 @@ kbd.cmd__kbd {
   display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
 }
 .cal-cell-count { font-size: 11px; color: var(--text-faint); }
-.cal-cell-events { display: flex; flex-direction: column; gap: 6px; overflow: hidden; padding: 2px 0; }
+.cal-cell-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event {
-  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
-  border: none; background: var(--dot-bg, var(--surface-2)); border-radius: 6px; padding: 6px 9px;
+  display: flex; align-items: center; gap: 5px; width: 100%; text-align: left;
+  border: none; background: var(--dot-bg, var(--surface-2)); border-radius: 6px; padding: 3px 5px;
   font-size: 12px; cursor: pointer; color: var(--dot, var(--text));
 }
 .cal-event:hover { background: var(--dot-bg, var(--surface-3, #e7ecf6)); filter: brightness(0.97); }
-.cal-event-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dot, #6b7280); flex: 0 0 auto; margin: 0 2px; }
+.cal-event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, #6b7280); flex: 0 0 auto; }
 .cal-event-dot--blink { animation: cal-dot-blink 1.4s ease-in-out infinite; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
 @keyframes cal-dot-blink {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
   50% { opacity: .35; box-shadow: 0 0 0 3px transparent; }
 }
-.cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; padding: 1px 0; }
+.cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; }
 .cal-event-more { font-size: 11px; color: var(--text-faint); padding-left: 4px; }
 
 /* week */
@@ -21068,18 +21068,18 @@ kbd.cmd__kbd {
 .cal-week-col:last-child { border-right: none; }
 .cal-week-col--today { background: var(--navy-50, #eef2fb); }
 .cal-week-empty { color: var(--text-faint); text-align: center; padding: 20px 0; }
-.cal-event--block { padding: 9px 11px; border-radius: 8px; flex-direction: column; align-items: flex-start; gap: 5px; }
+.cal-event--block { padding: 6px 8px; border-radius: 8px; flex-direction: column; align-items: flex-start; gap: 2px; }
 .cal-event-time { font-size: 11px; color: var(--text-faint); }
 
 /* day */
 .cal-day { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .cal-day-event {
-  display: flex; align-items: flex-start; gap: 12px; text-align: left; width: 100%;
-  border: 1px solid var(--dot-bg, var(--border)); background: var(--dot-bg, var(--surface)); border-radius: 12px; padding: 16px; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 10px; text-align: left; width: 100%;
+  border: 1px solid var(--dot-bg, var(--border)); background: var(--dot-bg, var(--surface)); border-radius: 10px; padding: 12px; cursor: pointer;
 }
 .cal-day-event:hover { filter: brightness(0.97); }
-.cal-day-event-body { display: flex; flex-direction: column; gap: 7px; flex: 1; }
-.cal-day-event-title { font-weight: 700; color: var(--dot, var(--text)); padding: 2px 0; }
+.cal-day-event-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.cal-day-event-title { font-weight: 700; color: var(--dot, var(--text)); }
 .cal-day-event-time { font-size: 13px; color: var(--text-muted); }
 
 /* event/modal detail */
@@ -21183,4 +21183,6 @@ kbd.cmd__kbd {
   .cmp-pagination { flex-wrap: wrap; }
   .tasks-table-card .table-scroll { display: none; }
   .tasks-cards { display: block; padding: 12px 12px 4px; }
+  .seg { display: flex; width: 100%; }
+  .seg__btn { flex: 1; justify-content: center; padding: 12px 14px; font-size: 14px; }
 }
