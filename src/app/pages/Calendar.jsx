@@ -863,12 +863,14 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
         </div>
         <div className="task-field">
           <label className="cmp-label">Start Date</label>
-          <Input type="date" value={form.start_date} onChange={(e) => set('start_date', e.target.value)} />
+          <Input type="date" value={form.start_date} onChange={(e) => { set('start_date', e.target.value); if (!e.target.value) set('end_date', ''); }} />
         </div>
-        <div className="task-field">
-          <label className="cmp-label">End Date</label>
-          <Input type="date" value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
-        </div>
+        {form.start_date && (
+          <div className="task-field">
+            <label className="cmp-label">End Date</label>
+            <Input type="date" value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
+          </div>
+        )}
         <div className="task-field">
           <label className="cmp-label">Reminder</label>
           <Select value={form.reminder ? 'yes' : 'no'} onChange={(e) => set('reminder', e.target.value === 'yes')}>
@@ -876,10 +878,12 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
             <option value="yes">Yes</option>
           </Select>
         </div>
-        <div className="task-field">
-          <label className="cmp-label">Reminder Time</label>
-          <Input type="time" value={form.reminder_time} onChange={(e) => set('reminder_time', e.target.value)} />
-        </div>
+        {form.reminder && (
+          <div className="task-field">
+            <label className="cmp-label">Reminder Time</label>
+            <Input type="time" value={form.reminder_time} onChange={(e) => set('reminder_time', e.target.value)} />
+          </div>
+        )}
         <div className="task-field task-field--full">
           <label className="cmp-label">Color Swatch</label>
           <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
@@ -891,21 +895,17 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
             {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
           </Select>
         </div>
-        <div className="task-field">
-          <label className="cmp-label">Linked Hearing</label>
-          <Input value={form.hearing_id} placeholder="Hearing ID (optional)" onChange={(e) => set('hearing_id', e.target.value)} />
-        </div>
         <div className="task-field task-field--full">
           <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
           <Input value={form.tags} placeholder="urgent, client-meeting" onChange={(e) => set('tags', e.target.value)} />
         </div>
         <div className="task-field task-field--full">
-          <label className="cmp-label">Attachments <span className="cmp-optional">(comma separated URLs/notes)</span></label>
-          <Input value={form.attachments} placeholder="link1.pdf, note" onChange={(e) => set('attachments', e.target.value)} />
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Created By</label>
-          <Input value={user?.name || ''} disabled placeholder="Current user" />
+          <label className="cmp-label">Attachments <span className="cmp-optional">(upload file)</span></label>
+          <input type="file" className="input" onChange={(e) => {
+            const names = Array.from(e.target.files || []).map((f) => f.name);
+            set('attachments', names.join(', '));
+          }} />
+          {form.attachments && <div className="task-attach-list">{form.attachments}</div>}
         </div>
         <div className="task-field">
           <label className="cmp-label">Last Updated</label>

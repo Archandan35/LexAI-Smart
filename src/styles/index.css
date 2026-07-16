@@ -21158,6 +21158,7 @@ kbd.cmd__kbd {
   background: var(--surface); color: var(--text-muted); cursor: pointer; padding: 0;
 }
 .task-field-gear:hover { background: var(--surface-2); color: var(--navy-700); border-color: var(--navy-700); }
+.task-attach-list { font-size: 12px; color: var(--text-muted); margin-top: 4px; word-break: break-all; }
 
 /* responsive calendar/tasks */
 @media (max-width: 768px) {
