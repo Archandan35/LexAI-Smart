@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -16,10 +16,19 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 // Case Timeline — OCR-driven chronology from documents or pasted text.
 export default function CaseTimeline() {
   const toast = useToast();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
   const [events, setEvents] = useState(null);
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState('');
   const [caseId, setCaseId] = useState('');
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const fromFile = async (file) => {
     setBusy(true);
@@ -54,12 +63,29 @@ export default function CaseTimeline() {
 
   return (
     <div className="fade-in">
-      <PageHeader
-        icon="clock"
-        title="Case Timeline"
-        subtitle="Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline."
-        actions={events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}
-      />
+      {!isMobile ? (
+        <PageHeader
+          icon="clock"
+          title="Case Timeline"
+          subtitle="Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline."
+          actions={events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}
+        />
+      ) : (
+        <div className="cl-header">
+          <div className="cl-header__left">
+            <div className="cl-header__icon"><Icon name="clock" size={22} /></div>
+            <div>
+              <div className="cl-header__title">Case Timeline</div>
+              <div className="cl-header__sub">Auto-create a chronology from case documents.</div>
+            </div>
+          </div>
+          {events?.length > 0 && (
+            <button className="cl-header__add" type="button" onClick={exportTimeline}>
+              <Icon name="download" size={15} /> Export
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="grid-sidebar">
         <div className="flex-col gap-16">

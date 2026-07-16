@@ -21172,6 +21172,9 @@ kbd.cmd__kbd {
 .tasks-table { margin: 0; }
 .w40 { width: 40px; }
 .task-title-cell { display: flex; align-items: center; gap: 7px; }
+.task-case-cell { line-height: 1.3; }
+.task-case-cell__num { font-weight: 500; font-size: 12px; }
+.task-case-cell__party { font-size: 11px; color: var(--text-soft); }
 .link-btn { border: none; background: none; padding: 0; color: var(--navy-700); font-weight: 600; cursor: pointer; }
 .link-btn:hover { text-decoration: underline; }
 .task-reminder-ico { color: var(--amber); }

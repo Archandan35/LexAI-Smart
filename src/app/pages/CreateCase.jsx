@@ -26,6 +26,8 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
+import PageHeader from '@/components/PageHeader.jsx';
+import Button from '@/components/Button.jsx';
 
 
 const INITIAL_FORM = {
@@ -138,6 +140,15 @@ export default function CreateCase() {
   const toast = useToast();
   const nav = useNavigate();
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { names: stageNames, refresh: refreshStages } = useCaseStages();
@@ -292,20 +303,25 @@ export default function CreateCase() {
       )}
 
       {/* ---- Top bar ---- */}
-      <div className="cc-topbar">
-        <div className="cc-topbar__left">
-          <div className="cc-topbar__icon-wrap"><Icon name="pen" size={22} /></div>
-          <div>
-            <h1 className="cc-topbar__title">Create Cases</h1>
-            <p className="cc-topbar__sub">Fill in the details below to create a new case</p>
+      {!isMobile ? (
+        <PageHeader
+          icon="pen"
+          title="Create Cases"
+          subtitle="Fill in the details below to create a new case"
+          actions={<Button variant="ghost" icon="download">Load from Template</Button>}
+        />
+      ) : (
+        <div className="cl-header">
+          <div className="cl-header__left">
+            <div className="cl-header__icon"><Icon name="pen" size={22} /></div>
+            <div>
+              <div className="cl-header__title">Create Cases</div>
+              <div className="cl-header__sub">Fill in the details below to create a new case</div>
+            </div>
           </div>
+          <Button variant="ghost"><Icon name="download" size={15} /> Load</Button>
         </div>
-        <button
-          className="btn btn--ghost flex-row items-center gap-8"
-        >
-          <Icon name="download" size={16} /> Load from Template
-        </button>
-      </div>
+      )}
 
       {/* ---- 1. Case Header ---- */}
       <SectionCard num="1" title="Case Header">

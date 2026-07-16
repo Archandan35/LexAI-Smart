@@ -443,7 +443,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
   const caseDisplayMap = useMemo(() => {
     const map = {};
-    cases.forEach((c) => {     map[c.id] = c.case_display_number || c.caseNumber || ''; });
+    cases.forEach((c) => { map[c.id] = c.case_display_number || c.caseNumber || ''; });
+    return map;
+  }, [cases]);
+  const caseTitleMap = useMemo(() => {
+    const map = {};
+    cases.forEach((c) => { if (c.title) map[c.id] = c.title; });
     return map;
   }, [cases]);
 
@@ -650,7 +655,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     return (
                       <tr key={t.id} className={t.archived ? 'task-row--archived' : ''}>
                         <td><input type="checkbox" checked={selected.includes(t.id)} onChange={() => toggleOne(t.id)} /></td>
-                        <td>{(t.case_id || t.caseId) ? (caseDisplayMap[t.case_id || t.caseId] || 'Linked') : '—'}</td>
+                        <td>{(t.case_id || t.caseId) ? (
+                          <div className="task-case-cell">
+                            <div className="task-case-cell__num">{caseDisplayMap[t.case_id || t.caseId] || 'Linked'}</div>
+                            {caseTitleMap[t.case_id || t.caseId] && <div className="task-case-cell__party">{caseTitleMap[t.case_id || t.caseId]}</div>}
+                          </div>
+                        ) : '—'}</td>
                         <td>
                           <div className="task-title-cell">
                             <span className="cal-event-dot" style={{ '--dot': color }} />

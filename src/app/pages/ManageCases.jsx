@@ -222,25 +222,21 @@ export default function ManageCases() {
       )}
 
       {isMobile && (
-        <div className="cv-mobile-view fade-in">
+        <div className="cl-mobile-view fade-in">
 
-          <div className="cv-banner">
-            <div className="cv-banner__top">
-              <div className="cv-banner__icon">
-                <Icon name="folder" size={32} />
+          <div className="cl-header">
+            <div className="cl-header__left">
+              <div className="cl-header__icon"><Icon name="vault" size={22} /></div>
+              <div>
+                <div className="cl-header__title">Manage Cases</div>
+                <div className="cl-header__sub">Every matter with its documents, drafts, history, timeline and hearings in one secure place.</div>
               </div>
-              <div className="cv-banner__text">
-                <h2 className="cv-banner__title">Manage Cases</h2>
-              </div>
-              <PermissionGate perm="manageCase.create">
-                <button className="cv-banner__btn" onClick={() => setOpen(true)}>
-                  <Icon name="plus" size={20} />New Case
-                </button>
-              </PermissionGate>
             </div>
-            <p className="cv-banner__desc">
-              Every matter with its documents, drafts, history, timeline and hearings in one secure place.
-            </p>
+            <PermissionGate perm="manageCase.create">
+              <button className="cl-header__add" type="button" onClick={() => setOpen(true)}>
+                <Icon name="plus" size={15} /> New Case
+              </button>
+            </PermissionGate>
           </div>
 
           <div className="cv-search-wrap">
