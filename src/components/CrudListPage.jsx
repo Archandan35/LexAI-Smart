@@ -71,7 +71,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
             <div className="bench-types__hero-text">
               <h2>{title}</h2>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={() => setShowForm(!showForm)} style={{ marginTop: '12px' }}>{addLabel}</Button>
+              <Button icon="plus" onClick={() => setShowForm(!showForm)}>{addLabel}</Button>
             </div>
             <Icon name={icon} className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>

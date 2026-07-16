@@ -5,6 +5,7 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { useFormat } from '@/utils/format.js';
+import AddJudgmentModal from './AddJudgmentModal.jsx';
 
 const TABLE_HEADERS = [
   { key: 'checkbox', label: '' },
@@ -41,6 +42,7 @@ export default function JudgmentLibrary() {
   const [page, setPage] = useState(1);
   const perPage = 10;
 
+  const [showAddModal, setShowAddModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {
@@ -171,7 +173,7 @@ export default function JudgmentLibrary() {
               <p>Browse, search, and manage archived judgments and case precedents.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" style={{ marginLeft: 'auto' }}>Add Judgment</Button>
+            <Button icon="plus" style={{ marginLeft: 'auto' }} onClick={() => setShowAddModal(true)}>Add Judgment</Button>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -261,7 +263,7 @@ export default function JudgmentLibrary() {
               <h2>Case Precedents</h2>
               <p>Browse, search, and manage archived judgments.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" style={{ marginTop: '12px' }}>Add Judgment</Button>
+              <Button icon="plus">Add Judgment</Button>
             </div>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -448,6 +450,7 @@ export default function JudgmentLibrary() {
           <span>Calendar</span>
         </button>
       </nav>
+      <AddJudgmentModal open={showAddModal} onClose={() => setShowAddModal(false)} onSaved={() => judgmentsRepository.getAll().then((d) => setJudgments(d || [])).catch(() => {})} />
     </div>
   );
 }

@@ -170,7 +170,7 @@ export default function Advocates() {
               <h2>Advocates</h2>
               <p>Manage advocates in your practice.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openAdd} style={{ marginTop: '12px' }}>Add Advocate</Button>
+              <Button icon="plus" onClick={openAdd}>Add Advocate</Button>
             </div>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>

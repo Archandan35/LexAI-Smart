@@ -17430,17 +17430,26 @@ kbd.cmd__kbd {
     height: 56px;
   }
 
+  .bench-types__hero-text {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
   .bench-types__hero-text h2 {
+    flex: 0 0 100%;
     font-size: 24px;
   }
 
   .bench-types__hero-text p {
+    flex: 0 0 100%;
     font-size: 13px;
     max-width: 380px;
   }
 
   .bench-types__hero-accent {
-    margin-top: 10px;
+    margin-top: 0;
   }
 
   .bench-types__hero-watermark {

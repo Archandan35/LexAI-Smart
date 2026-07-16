@@ -167,7 +167,7 @@ export default function Clients() {
               <h2>Clients</h2>
               <p>Manage your clients and contacts.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openAdd} style={{ marginTop: '12px' }}>Add Client</Button>
+              <Button icon="plus" onClick={openAdd}>Add Client</Button>
             </div>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>

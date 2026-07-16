@@ -203,7 +203,7 @@ export default function Reminders() {
               <h2>Reminders</h2>
               <p>All hearing, filing, evidence & compliance deadlines.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openAdd} style={{ marginTop: '12px' }}>Add Reminder</Button>
+              <Button icon="plus" onClick={openAdd}>Add Reminder</Button>
             </div>
             <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>

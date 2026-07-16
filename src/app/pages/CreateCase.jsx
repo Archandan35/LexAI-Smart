@@ -320,7 +320,7 @@ export default function CreateCase() {
             <h2>Create Cases</h2>
             <p>Fill in the details below to create a new case</p>
             <div className="bench-types__hero-accent" />
-            <Button variant="ghost" icon="download" style={{ marginTop: '12px' }}>Load</Button>
+            <Button variant="ghost" icon="download">Load</Button>
           </div>
           <Icon name="pen" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>

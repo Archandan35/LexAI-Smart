@@ -639,7 +639,7 @@ export default function OrderSheet() {
               <h2>Cases</h2>
               <p>View and manage all hearings across your matters.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openNew} style={{ marginTop: '12px' }}>Add</Button>
+              <Button icon="plus" onClick={openNew}>Add</Button>
             </div>
             <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>

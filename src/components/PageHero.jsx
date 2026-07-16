@@ -9,7 +9,7 @@ export default function PageHero({ icon, title, subtitle, actions, watermark, is
         <h2>{title}</h2>
         {subtitle && <p>{subtitle}</p>}
         <div className="bench-types__hero-accent" />
-        {isMobile && actions && <div style={{ marginTop: '12px' }}>{actions}</div>}
+        {isMobile && actions && actions}
       </div>
       {!isMobile && actions && <div style={{ marginLeft: 'auto' }}>{actions}</div>}
       <Icon name={wm} className="bench-types__hero-watermark bench-types__watermark-icon" />

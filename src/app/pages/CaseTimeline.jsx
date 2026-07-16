@@ -80,7 +80,7 @@ export default function CaseTimeline() {
             <h2>Case Timeline</h2>
             <p>Auto-create a chronology from case documents.</p>
             <div className="bench-types__hero-accent" />
-            {events?.length > 0 && <Button variant="ghost" icon="download" style={{ marginTop: '12px' }} onClick={exportTimeline}>Export</Button>}
+            {events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}
           </div>
           <Icon name="clock" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>

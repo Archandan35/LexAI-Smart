@@ -198,7 +198,7 @@ export default function Calendar() {
             <h2>Calendar & Tasks</h2>
             <p>Manage hearings, events, reminders and tasks in one place.</p>
             <div className="bench-types__hero-accent" />
-            <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} style={{ marginTop: '12px' }}>Add Task</Button>
+            <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }}>Add Task</Button>
           </div>
           <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>

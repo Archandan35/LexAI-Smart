@@ -291,7 +291,7 @@ export default function ManageCases() {
               <p>Every matter with its documents, drafts, history, timeline and hearings in one secure place.</p>
               <div className="bench-types__hero-accent" />
               <PermissionGate perm="manageCase.create">
-                <Button icon="plus" onClick={() => setOpen(true)} style={{ marginTop: '12px' }}>New Case</Button>
+                <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>
               </PermissionGate>
             </div>
             <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
