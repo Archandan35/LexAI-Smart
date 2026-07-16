@@ -472,11 +472,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
 
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="edit" size={15} /> Summary
+                <Icon name="edit" size={15} /> Judgment Summary
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
-                  <label>Summary (Short)</label>
+                  <label>Judgment Summary</label>
                   <textarea
                     className="ajm-input ajm-textarea"
                     placeholder="Enter a brief summary of the judgment..."

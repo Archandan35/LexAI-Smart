@@ -384,7 +384,7 @@ export default function JudgmentDetail() {
           <div className="jd-tab-panel">
             {tab === 'overview' && (
               <div className="jd-panel-section">
-                <h3 className="jd-panel-title">Headnote</h3>
+                <h3 className="jd-panel-title">Judgment Summary</h3>
                 <div className="jd-prose">
                   {summary || (paragraphs?.length ? paragraphs.join('\n\n') : 'No summary available for this judgment.')}
                 </div>
