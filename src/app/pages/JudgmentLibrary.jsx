@@ -13,7 +13,7 @@ import AddJudgmentModal from './AddJudgmentModal.jsx';
 
 const TABLE_HEADERS = [
   { key: 'checkbox', label: '' },
-  { key: 'title', label: 'Judgment Title & Parties' },
+  { key: 'title', label: 'Case Title' },
   { key: 'citation', label: 'Citation', sortable: true },
   { key: 'court', label: 'Court / Bench' },
   { key: 'judges', label: 'Judge(s)' },
@@ -448,7 +448,7 @@ export default function JudgmentLibrary() {
                           {j.archived ? 'Archived' : 'Active'}
                         </span>
                       </td>
-                      <td>
+                      <td className="jl-fav-cell">
                         <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
                           <Icon name="heart" size={15} fill={isFav} />
                         </button>

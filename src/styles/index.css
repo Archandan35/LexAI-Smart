@@ -21720,6 +21720,10 @@ kbd.cmd__kbd {
   color: var(--amber);
 }
 
+.jl-fav-cell {
+  text-align: center;
+}
+
 .jl-heart-btn {
   background: none;
   border: none;

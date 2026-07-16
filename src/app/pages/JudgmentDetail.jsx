@@ -10,6 +10,7 @@ import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js'
 import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
 import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
 import { useFormat } from '@/utils/format.js';
+import AddJudgmentModal from './AddJudgmentModal.jsx';
 
 const TABS = [
   { key: 'sections', label: 'Sections / Summary' },
@@ -35,6 +36,16 @@ function MetaItem({ icon, label, value }) {
         <div className="jd-meta-item__label">{label}</div>
         <div className="jd-meta-item__value">{value}</div>
       </div>
+
+      <AddJudgmentModal
+        open={showEditModal}
+        editing={judgment}
+        onClose={() => setShowEditModal(false)}
+        onSaved={() => {
+          setShowEditModal(false);
+          judgmentsRepository.getById(id).then((d) => d && setJudgment(d)).catch(() => {});
+        }}
+      />
     </div>
   );
 }
@@ -79,6 +90,8 @@ export default function JudgmentDetail() {
   const [courts, setCourts] = useState([]);
   const [benchTypes, setBenchTypes] = useState([]);
   const [judges, setJudges] = useState([]);
+
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,7 +143,40 @@ export default function JudgmentDetail() {
     return nameMap.judge[val] || val;
   };
   const courtLabel = (val) => (val ? (nameMap.court[val] || val) : '');
-  const benchLabel = (val) => (val ? (nameMap.bench[val] || val) : '');
+  const benchLabel = (val) => (val ? (nameMap.bench[val] || nameMap.judge[val] || val) : '');
+
+  const handleDuplicate = () => {
+    if (!judgment) return;
+    const { id: _id, createdAt, updatedAt, ...rest } = judgment;
+    judgmentsRepository.create({
+      ...rest,
+      title: rest.title ? `${rest.title} (Copy)` : rest.title,
+      citation: rest.citation ? `${rest.citation} (Copy)` : rest.citation,
+      status: 'Draft',
+    })
+      .then(() => navigate('/research/judgment-library'))
+      .catch(() => {});
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: judgment?.title || 'Judgment', url }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).catch(() => {});
+    }
+  };
+
+  const handleNotify = () => {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      new Notification('Judgment reminder set', { body: judgment?.title || judgment?.citation || '' });
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then((p) => {
+        if (p === 'granted') new Notification('Judgment reminder set', { body: judgment?.title || judgment?.citation || '' });
+      }).catch(() => {});
+    }
+  };
 
   const classification = useMemo(() => {
     if (!judgment) return [];
@@ -190,21 +236,21 @@ export default function JudgmentDetail() {
       </button>
 
       <div className="jd-toolbar">
-        <button className="jd-toolbar-btn"><Icon name="pen" size={13} /> Edit</button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="copy" size={14} /></button>
+        <button className="jd-toolbar-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={13} /> Edit</button>
+        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={14} /></button>
         <button
           className={`jd-toolbar-btn jd-toolbar-btn--icon${favourite ? ' jd-toolbar-btn--active' : ''}`}
           onClick={() => setFavourite(!favourite)}
         >
           <Icon name="heart" size={14} />
         </button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="pin" size={14} /></button>
+        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Notify" onClick={handleNotify}><Icon name="pin" size={14} /></button>
         <div className="jd-toolbar-divider" />
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="share" size={14} /></button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="print" size={14} /></button>
-        <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="download" size={14} /></button>
+        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Share" onClick={handleShare}><Icon name="share" size={14} /></button>
+        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Print" onClick={() => window.print()}><Icon name="print" size={14} /></button>
+        <button className="jd-toolbar-btn jd-toolbar-btn--icon" title="Download" onClick={handleShare}><Icon name="download" size={14} /></button>
         <div className="jd-toolbar-divider" />
-        <button className="jd-toolbar-btn"><Icon name="copy" size={13} /> Copy Citation</button>
+        <button className="jd-toolbar-btn" onClick={() => navigator.clipboard && judgment && navigator.clipboard.writeText(judgment.citation || '').catch(() => {})}><Icon name="copy" size={13} /> Copy Citation</button>
         <button className="jd-toolbar-btn jd-toolbar-btn--icon"><Icon name="more-horizontal" size={14} /></button>
       </div>
 
@@ -391,7 +437,7 @@ export default function JudgmentDetail() {
             {related.map((r) => (
               <div key={r.id} className="jd-related-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
                 <div className="jd-related-item__title">{r.title || r.citation}</div>
-                <div className="jd-related-item__court">{r.court}</div>
+                <div className="jd-related-item__court">{courtLabel(r.court)}</div>
                 <div className="jd-related-item__footer">
                   <span className="jd-related-item__date">{r.date ? formatDate(r.date) : ''}</span>
                   <span className="jd-related-item__ref">{r.status || r.citation}</span>

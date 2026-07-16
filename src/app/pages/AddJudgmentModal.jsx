@@ -264,6 +264,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       });
       const entry = {
         ...cleaned,
+        date: cleaned.judgmentDate || null,
         status: draft ? 'Draft' : 'Active',
         updatedAt: new Date().toISOString(),
         keywords: [],
