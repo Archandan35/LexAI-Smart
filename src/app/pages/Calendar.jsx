@@ -443,7 +443,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
   const caseDisplayMap = useMemo(() => {
     const map = {};
-    cases.forEach((c) => { map[c.id] = c.case_display_number || c.caseNumber || c.title || ''; });
+    cases.forEach((c) => {     map[c.id] = c.case_display_number || c.caseNumber || ''; });
     return map;
   }, [cases]);
 
