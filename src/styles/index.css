@@ -22674,6 +22674,7 @@ kbd.cmd__kbd {
 }
 
 .ajm-date-input {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -23033,3 +23034,40 @@ kbd.cmd__kbd {
     flex-wrap: wrap;
   }
 }
+
+/* ===== Judgment inline-style replacements (moved from JSX) ===== */
+.jl-hero {
+  margin: 0 0 20px;
+}
+
+.jl-stat-cards-mobile {
+  margin: 0 0 18px;
+}
+
+.jl-add-btn {
+  margin-left: auto;
+}
+
+.jl-empty-cell {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-faint);
+}
+
+.jl-empty-text {
+  margin-top: 8px;
+}
+
+.jd-summary-empty {
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.jd-related-title {
+  margin-bottom: 14px;
+}
+
+.ajm-select-wrap--grow {
+  flex: 1;
+}
+

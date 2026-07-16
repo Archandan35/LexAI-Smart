@@ -312,7 +312,7 @@ export default function JudgmentDetail() {
                   <span className="jd-class-row__key">{row.key}</span>
                   <span className="jd-class-row__val">{row.val}</span>
                 </div>
-              )) : <div className="jd-summary-text" style={{ fontSize: 13, color: 'var(--text-faint)' }}>No classification data.</div>}
+              )) : <div className="jd-summary-text jd-summary-empty">No classification data.</div>}
             </div>
           </div>
 
@@ -323,7 +323,7 @@ export default function JudgmentDetail() {
             </div>
             <div className="jd-rc-card__body">
               {acts?.length ? acts.map((act, i) => <ActRow key={i} act={act} />) : (
-                <div className="jd-summary-text" style={{ fontSize: 13, color: 'var(--text-faint)' }}>No acts referenced.</div>
+                <div className="jd-summary-text jd-summary-empty">No acts referenced.</div>
               )}
             </div>
           </div>
@@ -349,7 +349,7 @@ export default function JudgmentDetail() {
             </div>
             <div className="jd-rc-card__body">
               {documents?.length ? documents.map((doc, i) => <DocRow key={i} doc={doc} />) : (
-                <div className="jd-summary-text" style={{ fontSize: 13, color: 'var(--text-faint)' }}>No documents attached.</div>
+                <div className="jd-summary-text jd-summary-empty">No documents attached.</div>
               )}
             </div>
           </div>
@@ -358,7 +358,7 @@ export default function JudgmentDetail() {
 
       {related.length > 0 && (
         <div className="jd-related-section">
-          <h3 className="jd-section-title" style={{ marginBottom: 14 }}>Related Judgments</h3>
+          <h3 className="jd-section-title jd-related-title">Related Judgments</h3>
           <div className="jd-related-grid">
             {related.map((r) => (
               <div key={r.id} className="jd-related-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>

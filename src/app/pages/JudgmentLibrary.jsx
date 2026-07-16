@@ -171,7 +171,7 @@ export default function JudgmentLibrary() {
               <p>Browse, search, and manage archived judgments and case precedents.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" style={{ marginLeft: 'auto' }} onClick={() => setShowAddModal(true)}>Add Judgment</Button>
+            <Button icon="plus" className="jl-add-btn" onClick={() => setShowAddModal(true)}>Add Judgment</Button>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -255,7 +255,7 @@ export default function JudgmentLibrary() {
         </>
       ) : (
         <>
-          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero jl-hero">
             <div className="bench-types__hero-icon"><Icon name="book" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Case Precedents</h2>
@@ -266,7 +266,7 @@ export default function JudgmentLibrary() {
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
-          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+          <div className="bench-types__stat-cards bench-types__mobile-only jl-stat-cards-mobile">
             <div className="bench-types__stat-card bench-types__stat-card--total">
               <div className="bench-types__stat-card-row1">
                 <div className="bench-types__stat-card-icon"><Icon name="book" size={18} /></div>
@@ -319,6 +319,12 @@ export default function JudgmentLibrary() {
           <option value="">All Types</option>
           {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
+        <div className="jl-filter-select jl-filter-select--matter">
+          <span className="jl-filter-select__value">All Matter Types</span>
+        </div>
+        <div className="jl-filter-select jl-filter-select--act">
+          <span className="jl-filter-select__value">All Acts</span>
+        </div>
         <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
           <option value="">All Years</option>
           {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
@@ -346,9 +352,9 @@ export default function JudgmentLibrary() {
             <tbody>
               {paged.length === 0 ? (
                 <tr>
-                  <td colSpan={TABLE_HEADERS.length} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-faint)' }}>
+                  <td colSpan={TABLE_HEADERS.length} className="jl-empty-cell">
                     <Icon name="book" size={24} />
-                    <p style={{ marginTop: 8 }}>No judgments found.</p>
+                    <p className="jl-empty-text">No judgments found.</p>
                   </td>
                 </tr>
               ) : (

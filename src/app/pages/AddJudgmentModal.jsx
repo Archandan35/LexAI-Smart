@@ -76,7 +76,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
         {required && <span className="ajm-req">*</span>}
       </label>
       <div className="ajm-select-crud-wrap">
-        <div className="ajm-select-wrap" style={{ flex: 1 }}>
+        <div className="ajm-select-wrap ajm-select-wrap--grow">
           <select className="ajm-select" value={value} onChange={onChange}>
             <option value="">{placeholder}</option>
             {options.map((o) => (
