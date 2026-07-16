@@ -1,8 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
+import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
+import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
+import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
+import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
+import { jurisdictionsRepository } from '@/data-layer/repositories/jurisdictionsRepository.js';
+import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
+import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
+import { prioritiesRepository } from '@/data-layer/repositories/prioritiesRepository.js';
+import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
@@ -45,19 +55,91 @@ const INITIAL_FORM = {
   summary: '',
 };
 
+const LANGUAGES = [
+  'English', 'Hindi', 'Arabic', 'Bengali', 'Chinese', 'French',
+  'German', 'Italian', 'Japanese', 'Korean', 'Portuguese', 'Russian',
+  'Spanish', 'Tamil', 'Telugu', 'Urdu',
+];
+
+const SOURCES = [
+  'Indian Kanoon', 'SCC Online', 'Manupatra', 'Legal Crystal',
+  'Court Website', 'Law Commission', 'High Court Library', 'Other',
+];
+
+function SelectWithCrud({ label, required, value, onChange, placeholder, options, crudPath }) {
+  const navigate = useNavigate();
+  return (
+    <div className="ajm-field">
+      <label>
+        {label}
+        {required && <span className="ajm-req">*</span>}
+      </label>
+      <div className="ajm-select-crud-wrap">
+        <div className="ajm-select-wrap" style={{ flex: 1 }}>
+          <select className="ajm-select" value={value} onChange={onChange}>
+            <option value="">{placeholder}</option>
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
+        </div>
+        <button
+          type="button"
+          className="ajm-crud-btn"
+          title={`Manage ${label}`}
+          onClick={() => navigate(crudPath)}
+        >
+          <Icon name="gear" size={15} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AddJudgmentModal({ open, onClose, onSaved }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState('general');
   const [form, setForm] = useState(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
   const [existingJudgments, setExistingJudgments] = useState([]);
+  const [courts, setCourts] = useState([]);
+  const [benchTypes, setBenchTypes] = useState([]);
+  const [judges, setJudges] = useState([]);
+  const [caseTypes, setCaseTypes] = useState([]);
+  const [jurisdictions, setJurisdictions] = useState([]);
+  const [caseStages, setCaseStages] = useState([]);
+  const [caseStatuses, setCaseStatuses] = useState([]);
+  const [priorities, setPriorities] = useState([]);
+  const [partyTypes, setPartyTypes] = useState([]);
 
   useEffect(() => {
     if (!open) return;
     setForm(INITIAL_FORM);
     setTab('general');
-    judgmentsRepository.getAll()
-      .then((data) => setExistingJudgments(data || []))
-      .catch(() => {});
+    Promise.all([
+      judgmentsRepository.getAll().catch(() => []),
+      courtsRepository.getAll().catch(() => []),
+      benchTypesRepository.getAll().catch(() => []),
+      judgesRepository.getAll().catch(() => []),
+      caseTypesRepository.getAll().catch(() => []),
+      jurisdictionsRepository.getAll().catch(() => []),
+      caseStagesRepository.getAll().catch(() => []),
+      caseStatusesRepository.getAll().catch(() => []),
+      prioritiesRepository.getAll().catch(() => []),
+      partyTypesRepository.getAll().catch(() => []),
+    ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt]) => {
+      setExistingJudgments(j);
+      setCourts(c);
+      setBenchTypes(bt);
+      setJudges(jg);
+      setCaseTypes(ct);
+      setJurisdictions(jr);
+      setCaseStages(cs);
+      setCaseStatuses(cst);
+      setPriorities(pr);
+      setPartyTypes(pt);
+    });
   }, [open]);
 
   const selectedTabIndex = useMemo(() => TABS.findIndex((t) => t.key === tab), [tab]);
@@ -74,30 +156,26 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     });
   };
 
-  const uniqueOptions = useMemo(() => {
-    const courts = new Set();
-    const types = new Set();
-    const judges = new Set();
-    existingJudgments.forEach((j) => {
-      if (j.court) courts.add(j.court);
-      if (j.type) types.add(j.type);
-      if (j.judge) judges.add(j.judge);
-      if (j.judges?.length) j.judges.forEach((jg) => judges.add(jg));
-    });
-    return {
-      courts: Array.from(courts).sort(),
-      types: Array.from(types).sort(),
-      judges: Array.from(judges).sort(),
-    };
-  }, [existingJudgments]);
+  const makeOpts = (data) => data.map((d) => ({ value: d.id, label: d.name }));
+
+  const courtsOpts = useMemo(() => makeOpts(courts), [courts]);
+  const benchOpts = useMemo(() => makeOpts(benchTypes), [benchTypes]);
+  const judgesOpts = useMemo(() => makeOpts(judges), [judges]);
+  const caseTypeOpts = useMemo(() => makeOpts(caseTypes), [caseTypes]);
+  const jurisdictionOpts = useMemo(() => makeOpts(jurisdictions), [jurisdictions]);
+  const stageOpts = useMemo(() => makeOpts(caseStages), [caseStages]);
+  const caseStatusOpts = useMemo(() => makeOpts(caseStatuses), [caseStatuses]);
+  const priorityOpts = useMemo(() => makeOpts(priorities), [priorities]);
+  const partyTypeOpts = useMemo(() => makeOpts(partyTypes), [partyTypes]);
+  const langOpts = useMemo(() => LANGUAGES.map((l) => ({ value: l, label: l })), []);
+  const sourceOpts = useMemo(() => SOURCES.map((s) => ({ value: s, label: s })), []);
 
   const characterCount = form.summary.length;
 
   const progressPercent = useMemo(() => {
     if (selectedTabIndex < 0) return 0;
     const totalSteps = PROGRESS_STEPS.length;
-    const basePct = Math.round((selectedTabIndex / totalSteps) * 100);
-    return Math.min(basePct, 100);
+    return Math.min(Math.round((selectedTabIndex / totalSteps) * 100), 100);
   }, [selectedTabIndex]);
 
   const handleSave = async (draft = false) => {
@@ -130,19 +208,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           {label}
           {required && <span className="ajm-req">*</span>}
         </label>
-        {type === 'select' ? (
-          <div className="ajm-select-wrap">
-            <select
-              className="ajm-select"
-              value={form[fieldKey]}
-              onChange={(e) => set(fieldKey, e.target.value)}
-            >
-              <option value="">{placeholder}</option>
-              {opts.options?.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
-            <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
-          </div>
-        ) : type === 'date' ? (
+        {type === 'date' ? (
           <div className="ajm-date-input">
             <Icon name="calendar" size={14} />
             {form[fieldKey] || placeholder}
@@ -153,7 +219,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
               className={`ajm-input${readonly ? ' ajm-input-readonly' : ''}`}
               type="text"
               placeholder={placeholder}
-              value={form[fieldKey]}
+              value={form[fieldKey] || ''}
               onChange={(e) => set(fieldKey, e.target.value)}
               readOnly={readonly}
             />
@@ -161,6 +227,31 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           </div>
         )}
         {opts.hint && <div className="ajm-field-hint">{opts.hint}</div>}
+      </div>
+    );
+  };
+
+  const renderSelectField = (label, fieldKey, placeholder, opts = {}) => {
+    const { required } = opts;
+    return (
+      <div className="ajm-field">
+        <label>
+          {label}
+          {required && <span className="ajm-req">*</span>}
+        </label>
+        <div className="ajm-select-wrap">
+          <select
+            className="ajm-select"
+            value={form[fieldKey] || ''}
+            onChange={(e) => set(fieldKey, e.target.value)}
+          >
+            <option value="">{placeholder}</option>
+            {opts.options?.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
+        </div>
       </div>
     );
   };
@@ -192,13 +283,45 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
 
             <div className="ajm-grid ajm-grid-2">
               {renderField('Case Number', 'caseNumber', 'e.g. Civil Appeal No. 1234 of 2024', { required: true })}
-              {renderField('Case Type', 'caseType', 'Select case type', { type: 'select', options: uniqueOptions.types })}
+              <SelectWithCrud
+                label="Case Type"
+                required
+                value={form.caseType}
+                onChange={(e) => set('caseType', e.target.value)}
+                placeholder="Select case type"
+                options={caseTypeOpts}
+                crudPath="/court-management/case-types"
+              />
             </div>
 
             <div className="ajm-grid ajm-grid-3">
-              {renderField('Court', 'court', 'Select court', { type: 'select', options: uniqueOptions.courts, required: true })}
-              {renderField('Bench', 'bench', 'Select bench', { type: 'select', options: [], required: true })}
-              {renderField('Judge(s)', 'judges', 'Select one or more judges', { type: 'select', options: uniqueOptions.judges, required: true })}
+              <SelectWithCrud
+                label="Court"
+                required
+                value={form.court}
+                onChange={(e) => set('court', e.target.value)}
+                placeholder="Select court"
+                options={courtsOpts}
+                crudPath="/court-management/courts"
+              />
+              <SelectWithCrud
+                label="Bench"
+                required
+                value={form.bench}
+                onChange={(e) => set('bench', e.target.value)}
+                placeholder="Select bench"
+                options={benchOpts}
+                crudPath="/court-management/bench-types"
+              />
+              <SelectWithCrud
+                label="Judge(s)"
+                required
+                value={form.judges}
+                onChange={(e) => set('judges', e.target.value)}
+                placeholder="Select one or more judges"
+                options={judgesOpts}
+                crudPath="/court-management/judges"
+              />
             </div>
 
             <div className="ajm-grid ajm-grid-3">
@@ -210,10 +333,24 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
             <div className="ajm-section-title">Other Details</div>
 
             <div className="ajm-grid ajm-grid-4">
-              {renderField('Jurisdiction', 'jurisdiction', 'Select jurisdiction', { type: 'select', options: [] })}
-              {renderField('Stage', 'stage', 'Select stage', { type: 'select', options: [] })}
-              {renderField('Language', 'language', 'Select language', { type: 'select', options: [] })}
-              {renderField('Source', 'source', 'Select source', { type: 'select', options: [] })}
+              <SelectWithCrud
+                label="Jurisdiction"
+                value={form.jurisdiction}
+                onChange={(e) => set('jurisdiction', e.target.value)}
+                placeholder="Select jurisdiction"
+                options={jurisdictionOpts}
+                crudPath="/court-management/jurisdictions"
+              />
+              <SelectWithCrud
+                label="Stage"
+                value={form.stage}
+                onChange={(e) => set('stage', e.target.value)}
+                placeholder="Select stage"
+                options={stageOpts}
+                crudPath="/court-management/case-stages"
+              />
+              {renderSelectField('Language', 'language', 'Select language', { options: langOpts })}
+              {renderSelectField('Source', 'source', 'Select source', { options: sourceOpts })}
             </div>
 
             <div className="ajm-field">
@@ -235,7 +372,25 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-form-title">Parties</div>
             <div className="ajm-grid ajm-grid-2">
+              <SelectWithCrud
+                label="Party Type (Plaintiff)"
+                value={form.plaintiffType}
+                onChange={(e) => set('plaintiffType', e.target.value)}
+                placeholder="Select party type"
+                options={partyTypeOpts}
+                crudPath="/court-management/party-types"
+              />
               {renderField('Plaintiff / Applicant Name', 'plaintiff', 'Enter plaintiff or applicant name', { required: true })}
+            </div>
+            <div className="ajm-grid ajm-grid-2">
+              <SelectWithCrud
+                label="Party Type (Defendant)"
+                value={form.defendantType}
+                onChange={(e) => set('defendantType', e.target.value)}
+                placeholder="Select party type"
+                options={partyTypeOpts}
+                crudPath="/court-management/party-types"
+              />
               {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
             </div>
             <div className="ajm-grid ajm-grid-2">
@@ -250,12 +405,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-form-title">Legal Classification</div>
             <div className="ajm-grid ajm-grid-2">
-              {renderField('Practice Area', 'practiceArea', 'Select practice area', { type: 'select', options: [] })}
-              {renderField('Subject Matter', 'subjectMatter', 'Select subject matter', { type: 'select', options: [] })}
+              {renderSelectField('Practice Area', 'practiceArea', 'Select practice area', { options: [] })}
+              {renderSelectField('Subject Matter', 'subjectMatter', 'Select subject matter', { options: [] })}
             </div>
             <div className="ajm-grid ajm-grid-2">
               {renderField('Keywords / Tags', 'keywords', 'Enter keywords separated by commas')}
-              {renderField('Category', 'category', 'Select category', { type: 'select', options: [] })}
+              {renderSelectField('Category', 'category', 'Select category', { options: [] })}
             </div>
           </>
         );
@@ -303,8 +458,22 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-form-title">Applicability</div>
             <div className="ajm-grid ajm-grid-2">
-              {renderField('Jurisdictional Scope', 'jurisdictionalScope', 'Select scope', { type: 'select', options: [] })}
-              {renderField('Precedential Value', 'precedentialValue', 'Select value', { type: 'select', options: [] })}
+              <SelectWithCrud
+                label="Jurisdictional Scope"
+                value={form.jurisdictionalScope}
+                onChange={(e) => set('jurisdictionalScope', e.target.value)}
+                placeholder="Select scope"
+                options={jurisdictionOpts}
+                crudPath="/court-management/jurisdictions"
+              />
+              <SelectWithCrud
+                label="Precedential Value"
+                value={form.precedentialValue}
+                onChange={(e) => set('precedentialValue', e.target.value)}
+                placeholder="Select value"
+                options={priorityOpts}
+                crudPath="/court-management/priorities"
+              />
             </div>
             <div className="ajm-field">
               <label>Applicable To</label>
@@ -318,8 +487,15 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-form-title">Authority & Type</div>
             <div className="ajm-grid ajm-grid-2">
-              {renderField('Authority Level', 'authorityLevel', 'Select level', { type: 'select', options: [] })}
-              {renderField('Judgment Type', 'judgmentType', 'Select type', { type: 'select', options: [] })}
+              <SelectWithCrud
+                label="Authority Level"
+                value={form.authorityLevel}
+                onChange={(e) => set('authorityLevel', e.target.value)}
+                placeholder="Select level"
+                options={caseStatusOpts}
+                crudPath="/court-management/case-statuses"
+              />
+              {renderSelectField('Judgment Type', 'judgmentType', 'Select type', { options: [] })}
             </div>
             <div className="ajm-grid ajm-grid-2">
               {renderField('Overruled By', 'overruledBy', 'If overruled, enter citation')}
@@ -365,7 +541,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
             <div className="ajm-field">
               <label>Review Status</label>
               <div className="ajm-select-wrap">
-                <select className="ajm-select"><option value="">Select review status</option><option value="pending">Pending Review</option><option value="approved">Approved</option><option value="needs-revision">Needs Revision</option></select>
+                <select className="ajm-select">
+                  <option value="">Select review status</option>
+                  <option value="pending">Pending Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="needs-revision">Needs Revision</option>
+                </select>
                 <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
               </div>
             </div>

@@ -17445,6 +17445,7 @@ kbd.cmd__kbd {
 
   .bench-types__hero-text p {
     flex: 0 0 100%;
+    margin: 0;
     font-size: 13px;
     max-width: 380px;
   }
@@ -22699,6 +22700,34 @@ kbd.cmd__kbd {
   font-size: 11px;
   color: var(--text-faint);
   margin-top: 5px;
+}
+
+.ajm-select-crud-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.ajm-crud-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+  margin-top: 0;
+}
+
+.ajm-crud-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+  background: var(--surface-2);
 }
 
 /* Sidebar cards */
