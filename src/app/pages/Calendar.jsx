@@ -597,8 +597,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
         )}
 
         <div className="tasks-search">
-          <Icon name="search" size={18} />
-          <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          <div className="tasks-search-inner">
+            <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+            <Icon name="search" size={18} />
+          </div>
           <button className={`tasks-arch-toggle${showArchived ? ' active' : ''}`} onClick={() => setShowArchived((s) => !s)}>
             <Icon name="history" size={15} /> {showArchived ? 'Hide Archived' : 'Show Archived'}
           </button>
