@@ -133,6 +133,107 @@ function TagInput({ label, values, onChange, placeholder, hint }) {
   );
 }
 
+function SearchableTagInput({ label, values = [], onChange, placeholder, options = [], hint }) {
+  const [input, setInput] = useState('');
+  const [open, setOpen] = useState(false);
+  const [focusedIdx, setFocusedIdx] = useState(-1);
+  const wrapperRef = useRef(null);
+
+  const filtered = useMemo(() => {
+    if (!input.trim()) return [];
+    const q = input.toLowerCase();
+    return options.filter((o) => o.label.toLowerCase().includes(q) && !values.includes(o.value));
+  }, [input, options, values]);
+
+  useEffect(() => {
+    function handle(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, []);
+
+  const addValue = (v) => {
+    const trimmed = v.trim();
+    if (!trimmed || values.includes(trimmed)) return;
+    onChange([...values, trimmed]);
+    setInput('');
+    setOpen(false);
+    setFocusedIdx(-1);
+  };
+
+  const remove = (idx) => onChange(values.filter((_, i) => i !== idx));
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      if (focusedIdx >= 0 && filtered[focusedIdx]) {
+        addValue(filtered[focusedIdx].value);
+      } else {
+        addValue(input);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedIdx((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div className="ajm-field" ref={wrapperRef}>
+      <label>{label}</label>
+      <div className="ajm-tag-input-wrap">
+        {values.map((v, i) => (
+          <span key={i} className="ajm-tag">
+            {v}
+            <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
+          </span>
+        ))}
+        <div className="ajm-tag-input-row" style={{ position: 'relative' }}>
+          <input
+            className="ajm-input ajm-tag-input"
+            type="text"
+            placeholder={placeholder}
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setOpen(true); setFocusedIdx(-1); }}
+            onKeyDown={handleKey}
+            onFocus={() => input.trim() && setOpen(true)}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData('text');
+              const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
+              if (lines.length > 1) {
+                e.preventDefault();
+                onChange([...values, ...lines.filter((l) => !values.includes(l))]);
+              }
+            }}
+          />
+          <button type="button" className="ajm-tag-add-btn" onClick={() => addValue(input)}><Icon name="plus" size={14} /></button>
+          {open && filtered.length > 0 && (
+            <div className="searchable-select__dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}>
+              {filtered.map((opt, i) => (
+                <div
+                  key={opt.value}
+                  className={`searchable-select__option${i === focusedIdx ? ' searchable-select__option--focused' : ''}`}
+                  onMouseDown={() => addValue(opt.value)}
+                  onMouseEnter={() => setFocusedIdx(i)}
+                >
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {hint && <div className="ajm-field-hint">{hint}</div>}
+    </div>
+  );
+}
+
 function MultiSelectWithCrud({ label, required, value = [], onChange, placeholder, options, onCrudClick }) {
   const handleChange = (e) => {
     const selected = Array.from(e.target.options).filter((o) => o.selected).map((o) => o.value);
@@ -290,7 +391,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [showAreaOfLawCrud, setShowAreaOfLawCrud] = useState(false);
   const [showTypeOfProceedingCrud, setShowTypeOfProceedingCrud] = useState(false);
   const [showNatureOfDisputeCrud, setShowNatureOfDisputeCrud] = useState(false);
-  const [showActCrud, setShowActCrud] = useState(false);
   const refreshAll = useMemo(() => ({
     courts: () => courtsRepository.getAll().then(setCourts).catch(() => {}),
     benchTypes: () => benchTypesRepository.getAll().then(setBenchTypes).catch(() => {}),
@@ -685,13 +785,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 options={natureOfDisputeOpts}
                 onCrudClick={() => setShowNatureOfDisputeCrud(true)}
               />
-              <MultiSelectWithCrud
+              <SearchableTagInput
                 label="Act"
-                value={form.acts || []}
+                values={form.acts || []}
                 onChange={(v) => set('acts', v)}
-                placeholder="Select acts..."
+                placeholder="Type to search and select acts..."
                 options={actOpts}
-                onCrudClick={() => setShowActCrud(true)}
               />
             </div>
             <div className="ajm-grid ajm-grid-2">
@@ -933,20 +1032,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     defaults: { status: 'Active' },
   };
 
-  const actConfig = {
-    logic: actLogic,
-    fields: [
-      { key: 'title', label: 'Act Title', required: true, placeholder: 'e.g. Indian Penal Code' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. IPC' },
-      { key: 'act_type', label: 'Act Type', required: true, placeholder: 'e.g. Criminal, Civil' },
-      { key: 'jurisdiction', label: 'Jurisdiction', required: false, placeholder: 'e.g. India' },
-      { key: 'year', label: 'Year', type: 'number', required: false, placeholder: 'e.g. 1860' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
-      { key: 'status', label: 'Status', required: true },
-    ],
-    defaults: { status: 'Active' },
-  };
-
   return (
     <Modal
       open={open}
@@ -1035,7 +1120,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       <CrudManager open={showAreaOfLawCrud} onClose={() => { setShowAreaOfLawCrud(false); refreshAll.areaOfLaws(); }} entity="Area of Law" config={areaOfLawConfig} />
       <CrudManager open={showTypeOfProceedingCrud} onClose={() => { setShowTypeOfProceedingCrud(false); refreshAll.typeOfProceedings(); }} entity="Type of Proceeding" config={typeOfProceedingConfig} />
       <CrudManager open={showNatureOfDisputeCrud} onClose={() => { setShowNatureOfDisputeCrud(false); refreshAll.natureOfDisputes(); }} entity="Nature of Dispute" config={natureOfDisputeConfig} />
-      <CrudManager open={showActCrud} onClose={() => { setShowActCrud(false); refreshAll.allActs(); }} entity="Act" config={actConfig} />
     </Modal>
   );
 }
