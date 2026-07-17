@@ -11,9 +11,17 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     this.key = config.credentials.supabaseAnonKey;
     this.serviceKey = config.credentials.supabaseServiceRoleKey;
     this._bootstrapped = false;
+    this._execSqlChecked = false;
     if (!this.url || !this.key) {
       console.warn('[LexAI] Supabase not configured; provider will fail on use.');
     }
+  }
+
+  async _initExecSql() {
+    if (this._execSqlChecked) return;
+    this._execSqlChecked = true;
+    if (!this.url) return;
+    await this._ensureExecSqlBootstrapped();
   }
 
   _headers() {
@@ -110,7 +118,8 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
         body: JSON.stringify({ query: sql }),
       });
       if (!res.ok) {
-        console.warn('[Supabase] bootstrap via /pg/v1/sql failed:', res.status);
+        const body = await res.text().catch(() => '');
+        console.warn('[Supabase] bootstrap via /pg/v1/sql failed:', res.status, body.slice(0, 300));
         return false;
       }
       this._bootstrapped = true;
@@ -198,7 +207,28 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       if (res.status === 405 && !this._bootstrapped) {
         const booted = await this._tryBootstrapExecSql();
         if (booted) {
-          // Retry the original SQL via the now-available RPC
+          // After bootstrap the RPC is still invisible to PostgREST until its
+          // schema cache is refreshed. Use the service-key SQL endpoint directly.
+          const h = this._serviceHeaders();
+          if (h) {
+            const retry = await fetch(`${this.url}/pg/v1/sql`, {
+              method: 'POST',
+              headers: h,
+              body: JSON.stringify({ query: sql }),
+            });
+            if (retry.ok) {
+              const body = await retry.text().catch(() => '');
+              if (!body) return { ok: true, raw: true };
+              try {
+                const data = JSON.parse(body);
+                return { ok: true, data: Array.isArray(data) ? data : [data], raw: true };
+              } catch {
+                return { ok: true, raw: true };
+              }
+            }
+            return { ok: false, error: await retry.text().catch(() => 'Retry failed') };
+          }
+          // Fallback: try the RPC anyway (won't work until cache refreshes)
           const retry = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
             method: 'POST',
             headers: { ...this._headers(), 'Content-Type': 'application/json' },
@@ -221,6 +251,17 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     } catch (e) {
       return { ok: false, error: e.message };
     }
+  }
+
+  async _ensureExecSqlBootstrapped() {
+    // Probe whether exec_sql responds. The first call through execSql will auto-bootstrap
+    // if the service key is available — this just checks the result.
+    const probe = await this.execSql('select 1 as ok');
+    if (!probe.ok) {
+      console.warn('[Supabase] exec_sql RPC unavailable. Auto-provisioning will fall through.');
+      console.warn('[Supabase] Run supabase_migration.sql in your Supabase SQL Editor once, or set VITE_SUPABASE_SERVICE_ROLE_KEY in .env.');
+    }
+    return probe.ok;
   }
 
   // Call a Postgres function via Supabase RPC
@@ -322,8 +363,18 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
   // schema cache") until the cache is reloaded. Notify PostgREST to refresh so
   // the very next request sees the new column. Best-effort only.
   async reloadSchema() {
+    // Try via exec_sql RPC first (works once cache is warm)
+    const viaRpc = await this.execSql("SELECT pg_notify('pgrst', 'reload schema');");
+    if (viaRpc.ok) return;
+    // Fallback: use the service-key SQL endpoint directly
+    const h = this._serviceHeaders();
+    if (!h) return;
     try {
-      await this.execSql("SELECT pg_notify('pgrst', 'reload schema');");
+      await fetch(`${this.url}/pg/v1/sql`, {
+        method: 'POST',
+        headers: h,
+        body: JSON.stringify({ query: "SELECT pg_notify('pgrst', 'reload schema');" }),
+      });
     } catch (e) {
       console.warn('[Supabase] schema cache reload failed:', e?.message);
     }

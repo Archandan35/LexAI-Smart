@@ -49,6 +49,19 @@ function denormalizeArrays(entityName, record) {
   return out;
 }
 
+function stripUnknownFields(entityName, record) {
+  if (!record) return record;
+  const schema = getSchema(entityName);
+  if (!schema || !schema.fields) return record;
+  const known = new Set(Object.keys(schema.fields));
+  known.add('id');
+  const out = {};
+  for (const [key, val] of Object.entries(record)) {
+    if (known.has(key) && val !== undefined) out[key] = val;
+  }
+  return out;
+}
+
 async function ensureCollectionExists(db, collection) {
   const providerName = EntityRegistry.providerTable(collection);
   const exists = await db.collectionExists(providerName).catch(() => false);
@@ -207,7 +220,8 @@ export function createRepository(collection) {
       const provider = p();
       const stamped = { ...patch, updatedAt: DateEngine.now() };
       const denormalized = denormalizeArrays(entityName, stamped);
-      const providerPatch = FieldMapper.toProvider(entityName, denormalized);
+      const stripped = stripUnknownFields(entityName, denormalized);
+      const providerPatch = FieldMapper.toProvider(entityName, stripped);
       try {
         const result = await provider.update(providerName(), id, providerPatch);
         return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
