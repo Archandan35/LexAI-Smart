@@ -22474,6 +22474,12 @@ kbd.cmd__kbd {
   flex: 1;
 }
 
+@media (min-width: 768px) {
+  .jd-prose-card {
+    margin-bottom: 16px;
+  }
+}
+
 .jd-prose-card .jd-panel-title {
   margin: 0 0 12px;
 }
