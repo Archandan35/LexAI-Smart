@@ -294,21 +294,88 @@ function MultiSelectWithCrud({ label, required, value = [], onChange, placeholde
 }
 
 function SelectWithCrud({ label, required, value, onChange, placeholder, options, onCrudClick }) {
+  const [input, setInput] = useState('');
+  const [open, setOpen] = useState(false);
+  const [focusedIdx, setFocusedIdx] = useState(-1);
+  const wrapperRef = useRef(null);
+
+  const labelMap = useMemo(() => {
+    const map = {};
+    (options || []).forEach((o) => { map[o.value] = o.label; });
+    return map;
+  }, [options]);
+
+  const filtered = useMemo(() => {
+    if (!input.trim()) return options || [];
+    const q = input.toLowerCase();
+    return (options || []).filter((o) => o.label.toLowerCase().includes(q));
+  }, [input, options]);
+
+  useEffect(() => {
+    function handle(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, []);
+
+  const select = (v) => {
+    onChange({ target: { value: v } });
+    setInput('');
+    setOpen(false);
+    setFocusedIdx(-1);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (focusedIdx >= 0 && filtered[focusedIdx]) {
+        select(filtered[focusedIdx].value);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedIdx((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setOpen(false);
+    }
+  };
+
   return (
-    <div className="ajm-field">
+    <div className="ajm-field" ref={wrapperRef}>
       <label>
         {label}
         {required && <span className="ajm-req">*</span>}
       </label>
       <div className="ajm-select-crud-wrap">
-        <div className="ajm-select-wrap ajm-select-wrap--grow">
-          <select className="ajm-select" value={value} onChange={onChange}>
-            <option value="">{placeholder}</option>
-            {options.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
+        <div className="ajm-select-wrap ajm-select-wrap--grow" style={{ position: 'relative' }}>
+          <input
+            className="ajm-input ajm-select-input"
+            type="text"
+            placeholder={value ? labelMap[value] || value : placeholder}
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setOpen(true); setFocusedIdx(-1); }}
+            onKeyDown={handleKey}
+            onFocus={() => setOpen(true)}
+          />
           <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
+          {open && filtered.length > 0 && (
+            <div className="searchable-select__dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}>
+              {filtered.map((opt, i) => (
+                <div
+                  key={opt.value}
+                  className={`searchable-select__option${opt.value === value ? ' searchable-select__option--selected' : ''}${i === focusedIdx ? ' searchable-select__option--focused' : ''}`}
+                  onMouseDown={() => select(opt.value)}
+                  onMouseEnter={() => setFocusedIdx(i)}
+                >
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <button
           type="button"

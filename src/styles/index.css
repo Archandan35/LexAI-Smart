@@ -23073,6 +23073,22 @@ kbd.cmd__kbd {
   position: relative;
 }
 
+.ajm-select-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 30px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.ajm-select-input:focus {
+  border-color: var(--accent);
+}
+
 .ajm-select-chevron {
   position: absolute;
   right: 10px;
