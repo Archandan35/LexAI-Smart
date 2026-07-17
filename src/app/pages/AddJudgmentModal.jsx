@@ -192,55 +192,60 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
 
   return (
     <div className="ajm-field" ref={wrapperRef}>
-      <label>
-        {label}
+      <label>{label}</label>
+      <div className="ajm-select-crud-wrap">
+        <div className="ajm-tag-input-wrap ajm-tag-input-wrap--grow">
+          {values.map((v, i) => (
+            <span key={i} className="ajm-tag">
+              {labelMap[v] || v}
+              <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
+            </span>
+          ))}
+          <div className="ajm-tag-input-row" style={{ position: 'relative' }}>
+            <input
+              className="ajm-input ajm-tag-input"
+              type="text"
+              placeholder={placeholder}
+              value={input}
+              onChange={(e) => { setInput(e.target.value); setOpen(true); setFocusedIdx(-1); }}
+              onKeyDown={handleKey}
+              onFocus={() => setOpen(true)}
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData('text');
+                const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
+                if (lines.length > 1) {
+                  e.preventDefault();
+                  onChange([...values, ...lines.filter((l) => !values.includes(l))]);
+                }
+              }}
+            />
+            <button type="button" className="ajm-tag-add-btn" onClick={() => addValue(input)}><Icon name="plus" size={14} /></button>
+            {open && filtered.length > 0 && (
+              <div className="searchable-select__dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}>
+                {filtered.map((opt, i) => (
+                  <div
+                    key={opt.value}
+                    className={`searchable-select__option${i === focusedIdx ? ' searchable-select__option--focused' : ''}`}
+                    onMouseDown={() => addValue(opt.value)}
+                    onMouseEnter={() => setFocusedIdx(i)}
+                  >
+                    {opt.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         {onCrudClick && (
-          <button type="button" className="ajm-crud-btn ajm-crud-btn--inline" title={`Manage ${label}`} onClick={onCrudClick}>
+          <button
+            type="button"
+            className="ajm-crud-btn"
+            title={`Manage ${label}`}
+            onClick={onCrudClick}
+          >
             <Icon name="gear" size={15} />
           </button>
         )}
-      </label>
-      <div className="ajm-tag-input-wrap">
-        {values.map((v, i) => (
-          <span key={i} className="ajm-tag">
-            {labelMap[v] || v}
-            <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
-          </span>
-        ))}
-        <div className="ajm-tag-input-row" style={{ position: 'relative' }}>
-          <input
-            className="ajm-input ajm-tag-input"
-            type="text"
-            placeholder={placeholder}
-            value={input}
-            onChange={(e) => { setInput(e.target.value); setOpen(true); setFocusedIdx(-1); }}
-            onKeyDown={handleKey}
-            onFocus={() => setOpen(true)}
-            onPaste={(e) => {
-              const pasted = e.clipboardData.getData('text');
-              const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
-              if (lines.length > 1) {
-                e.preventDefault();
-                onChange([...values, ...lines.filter((l) => !values.includes(l))]);
-              }
-            }}
-          />
-          <button type="button" className="ajm-tag-add-btn" onClick={() => addValue(input)}><Icon name="plus" size={14} /></button>
-          {open && filtered.length > 0 && (
-            <div className="searchable-select__dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}>
-              {filtered.map((opt, i) => (
-                <div
-                  key={opt.value}
-                  className={`searchable-select__option${i === focusedIdx ? ' searchable-select__option--focused' : ''}`}
-                  onMouseDown={() => addValue(opt.value)}
-                  onMouseEnter={() => setFocusedIdx(i)}
-                >
-                  {opt.label}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
       {hint && <div className="ajm-field-hint">{hint}</div>}
     </div>

@@ -23257,14 +23257,6 @@ kbd.cmd__kbd {
   margin-top: 0;
 }
 
-.ajm-crud-btn--inline {
-  display: inline-flex;
-  width: 24px;
-  height: 24px;
-  margin-left: 6px;
-  vertical-align: middle;
-  border-radius: 5px;
-}
 
 .ajm-crud-btn:hover {
   border-color: var(--border-strong);
@@ -23543,6 +23535,11 @@ kbd.cmd__kbd {
   font-size: 11px;
   color: var(--text-faint);
   margin-top: 4px;
+}
+
+.ajm-tag-input-wrap--grow {
+  flex: 1;
+  min-width: 0;
 }
 
 .ajm-tag-input-wrap {
