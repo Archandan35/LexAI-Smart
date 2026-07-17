@@ -15,6 +15,25 @@ import { getDatabaseProvider } from '@/providers/database/index.js';
 import { applyDefaults, validateRecord, getSchema } from '@/data-provider/schema/index.js';
 import { EntityRegistry, FieldMapper, IDEngine, DateEngine } from '@/core/index.js';
 
+const ARRAY_TYPES = new Set(['array', 'json', 'jsonb']);
+
+function normalizeArrays(entityName, record) {
+  if (!record) return record;
+  const schema = getSchema(entityName);
+  if (!schema || !schema.fields) return record;
+  const out = { ...record };
+  for (const [field, type] of Object.entries(schema.fields)) {
+    if (!ARRAY_TYPES.has(type)) continue;
+    const val = out[field];
+    if (typeof val === 'string') {
+      try { out[field] = JSON.parse(val); } catch { out[field] = []; }
+    } else if (!Array.isArray(val)) {
+      out[field] = [];
+    }
+  }
+  return out;
+}
+
 async function ensureCollectionExists(db, collection) {
   const providerName = EntityRegistry.providerTable(collection);
   const exists = await db.collectionExists(providerName).catch(() => false);
@@ -127,17 +146,17 @@ export function createRepository(collection) {
     getAll: (query = {}) => withProvisioning(p(), entityName,
       async () => {
         const rows = await p().list(providerName(), FieldMapper.filterToProvider(entityName, query));
-        return (rows || []).map((r) => FieldMapper.toLexAI(entityName, r));
+        return (rows || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
       }),
     getById: (id) => withProvisioning(p(), entityName,
       async () => {
         const row = await p().get(providerName(), id);
-        return row ? FieldMapper.toLexAI(entityName, row) : null;
+        return row ? normalizeArrays(entityName, FieldMapper.toLexAI(entityName, row)) : null;
       }),
     query: (query = {}) => withProvisioning(p(), entityName,
       async () => {
         const rows = await p().list(providerName(), FieldMapper.filterToProvider(entityName, query));
-        return (rows || []).map((r) => FieldMapper.toLexAI(entityName, r));
+        return (rows || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
       }),
     count: (query = {}) => withProvisioning(p(), entityName,
       () => p().count(providerName(), FieldMapper.filterToProvider(entityName, query))),
@@ -154,7 +173,7 @@ export function createRepository(collection) {
       const wasAutoId = !record.id;
       try {
         const result = await provider.create(providerName(), providerRecord);
-        return FieldMapper.toLexAI(entityName, result);
+        return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerRecord);
@@ -164,7 +183,7 @@ export function createRepository(collection) {
         }
         const retryRecord = FieldMapper.toProvider(entityName, enriched);
         const result = await provider.create(providerName(), retryRecord);
-        return FieldMapper.toLexAI(entityName, result);
+        return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
       }
     },
 
@@ -174,7 +193,7 @@ export function createRepository(collection) {
       const providerPatch = FieldMapper.toProvider(entityName, stamped);
       try {
         const result = await provider.update(providerName(), id, providerPatch);
-        return FieldMapper.toLexAI(entityName, result);
+        return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerPatch);
@@ -185,7 +204,7 @@ export function createRepository(collection) {
         for (let attempt = 0; attempt < 3; attempt += 1) {
           try {
             const result = await provider.update(providerName(), id, providerPatch);
-            return FieldMapper.toLexAI(entityName, result);
+            return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
           } catch (e) {
             lastErr = e;
             if (typeof provider.reloadSchema === 'function') {
@@ -212,12 +231,12 @@ export function createRepository(collection) {
       const providerRecords = withIds.map((r) => FieldMapper.toProvider(entityName, r));
       try {
         const results = await provider.bulkCreate(providerName(), providerRecords);
-        return (results || []).map((r) => FieldMapper.toLexAI(entityName, r));
+        return (results || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerRecords[0] || {});
         const results = await provider.bulkCreate(providerName(), providerRecords);
-        return (results || []).map((r) => FieldMapper.toLexAI(entityName, r));
+        return (results || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
       }
     },
 

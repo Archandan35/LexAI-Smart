@@ -523,8 +523,14 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   useEffect(() => {
     if (!open) return;
     const toArr = (v) => {
-      if (Array.isArray(v)) return v;
-      if (typeof v === 'string') { try { return JSON.parse(v); } catch { return []; } }
+      if (!v) return [];
+      if (Array.isArray(v)) {
+        return v.map((e) => { if (typeof e === 'string') { try { return JSON.parse(e); } catch { return e; } } return e; }).flat();
+      }
+      if (typeof v === 'string') {
+        try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch {}
+        return [v];
+      }
       return [];
     };
     const merged = editing ? { ...INITIAL_FORM, ...editing } : { ...INITIAL_FORM };
