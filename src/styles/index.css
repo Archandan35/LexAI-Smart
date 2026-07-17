@@ -22474,6 +22474,12 @@ kbd.cmd__kbd {
   flex: 1;
 }
 
+@media (min-width: 768px) {
+  .jd-overview-cards > .jd-prose-card {
+    margin-bottom: 24px;
+  }
+}
+
 .jd-prose-card .jd-panel-title {
   margin: 0 0 12px;
 }
@@ -22499,16 +22505,6 @@ kbd.cmd__kbd {
 
 .jd-prose-card > .jd-prose {
   padding-bottom: 18px;
-}
-
-@media (min-width: 768px) {
-  .jd-tab-panel {
-    padding-bottom: 38px;
-  }
-
-  .jd-prose-card > .jd-prose {
-    overflow-y: auto;
-  }
 }
 
 .jd-panel-section > .jd-prose {

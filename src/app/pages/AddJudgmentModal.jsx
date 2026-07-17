@@ -385,7 +385,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-3">
-                  {renderField('Citation', 'citation', 'e.g. (2024) 1 SCC 1', { required: true })}
+                  {renderField('SCR Citation', 'citation', 'e.g. (2024) 1 SCC 1', { required: true })}
                   {renderField('Neutral Citation', 'neutralCitation', 'e.g. 2024 INSC 1')}
                   {renderField('Reporter Citation', 'reporterCitation', 'e.g. AIR 2024 SC 1')}
                 </div>
