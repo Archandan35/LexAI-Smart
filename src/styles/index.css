@@ -22393,6 +22393,8 @@ kbd.cmd__kbd {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
+  padding-bottom: 16px;
 }
 
 /* Tabs */
