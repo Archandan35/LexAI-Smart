@@ -390,26 +390,18 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
   );
 }
 
-// Parse a date string typed in the configured format back to yyyy-mm-dd.
+// Parse a date string typed with dd/mm/yyyy or dd-mm-yyyy into yyyy-mm-dd.
 function parseToISO(str) {
   if (!str) return '';
   const s = String(str).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const fmt = DateEngine.getDateFormat();
-  const num = (re, order) => {
-    const m = re.exec(s);
-    if (!m) return null;
-    const [d, mo, y] = order.map((i) => m[i]);
+  const m = /^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/.exec(s);
+  if (m) {
+    const [d, mo, y] = [m[1], m[2], m[3]];
     const dt = new Date(`${y}-${mo}-${d}T00:00:00.000Z`);
     return Number.isNaN(dt.getTime()) ? '' : dt.toISOString().slice(0, 10);
-  };
-  if (fmt === '23.06.2026') return num(/^(\d{2})\.(\d{2})\.(\d{4})$/, [1, 2, 3]) || '';
-  if (fmt === '23-06-2026') return num(/^(\d{2})-(\d{2})-(\d{4})$/, [1, 2, 3]) || '';
-  if (fmt === '23/06/2026' || fmt === 'dmy') return num(/^(\d{2})\/(\d{2})\/(\d{4})$/, [1, 2, 3]) || '';
-  if (fmt === '06/23/2026' || fmt === 'mdy') return num(/^(\d{2})\/(\d{2})\/(\d{4})$/, [2, 1, 3]) || '';
-  // Word-based or ISO-like formats: rely on the Date parser.
-  const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+  }
+  return '';
 }
 
 // Date field that honours the global date-format setting: shows the value in
@@ -424,7 +416,12 @@ function DateInput({ value, placeholder, onCommit }) {
     if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
   };
 
-  const fmt = (v) => v ? DateEngine.formatDate(v) : '';
+  const fmt = (v) => {
+    if (!v) return '';
+    const p = v.split('T')[0].split('-');
+    if (p.length !== 3) return DateEngine.formatDate(v);
+    return `${p[2]}/${p[1]}/${p[0]}`;
+  };
 
   useEffect(() => {
     if (!focused) setText(fmt(value));
