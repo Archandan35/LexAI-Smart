@@ -140,6 +140,8 @@ export default function AppRoutes() {
         <Route path="/research/strategy" element={G('strategy', <StrategyEngine />)} />
         <Route path="/research/cross-examination" element={G('crossExamination', <CrossExamination />)} />
         <Route path="/research/evidence-gap" element={G('evidence', <EvidenceGap />)} />
+
+        {/* ── Knowledge Library ── */}
         <Route path="/research/act-library" element={G('research', <ActLibrary />)} />
         <Route path="/research/judgment-library" element={G('research', <JudgmentLibrary />)} />
         <Route path="/research/judgment-library/:id" element={G('research', <JudgmentDetail />)} />

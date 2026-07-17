@@ -102,6 +102,13 @@ export const NAV_GROUPS = [
           { to: '/admin/setup-wizard', label: 'Setup Wizard', icon: 'wrench', module: 'admin' },
         ],
       },
+      {
+        label: 'Knowledge Library', icon: 'book',
+        children: [
+          { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
+          { to: '/research/judgment-library', label: 'Judgment Library', icon: 'document', module: 'research' },
+        ],
+      },
     ],
   },
   { type: 'heading', label: 'DEVELOPMENT' },
