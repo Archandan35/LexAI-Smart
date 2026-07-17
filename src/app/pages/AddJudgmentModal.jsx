@@ -355,7 +355,6 @@ function DateInput({ value, placeholder, onCommit }) {
         placeholder={placeholder}
         value={value ? DateEngine.formatDate(value) : ''}
         onChange={(e) => onCommit(parseToISO(e.target.value))}
-        onFocus={(e) => { if (!e.target.value) openPicker(); }}
       />
       <button
         type="button"
