@@ -16,6 +16,7 @@ import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRe
 import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
 import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
 import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
+import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 
@@ -107,6 +108,7 @@ export default function JudgmentDetail() {
   const [areaOfLaws, setAreaOfLaws] = useState([]);
   const [typeOfProceedings, setTypeOfProceedings] = useState([]);
   const [natureOfDisputes, setNatureOfDisputes] = useState([]);
+  const [allActs, setAllActs] = useState([]);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -137,6 +139,7 @@ export default function JudgmentDetail() {
     areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {});
     typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
     natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
+    actsRepository.getAll().then(setAllActs).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -171,6 +174,12 @@ export default function JudgmentDetail() {
       natureOfDispute: build(natureOfDisputes),
     };
   }, [courts, benchTypes, judges, caseTypes, jurisdictions, caseStages, partyTypes, caseStatuses, areaOfLaws, typeOfProceedings, natureOfDisputes]);
+
+  const actNameMap = useMemo(() => {
+    const m = {};
+    (allActs || []).forEach((a) => { m[a.id] = a.title || a.name; });
+    return m;
+  }, [allActs]);
 
   const resolve = (map, val) => (val ? (map[val] || val) : '');
   const toArr = (v) => {
@@ -473,14 +482,14 @@ export default function JudgmentDetail() {
             {tab === 'acts' && (
               <div className="jd-panel-section">
                 <h3 className="jd-panel-title">Acts & Sections</h3>
-                {acts?.length ? acts.map((act, i) => <ActRow key={i} act={act} />) : (
+                {acts?.length ? acts.map((act, i) => <ActRow key={i} act={actNameMap[act] || act} />) : (
                   <div className="jd-prose jd-empty-text">No acts referenced.</div>
                 )}
                 {judgment.act && !acts?.length && (
                   <div className="jd-prose jd-empty-text">{judgment.act}</div>
                 )}
               </div>
-            )}
+            </div>
 
             {tab === 'documents' && (
               <div className="jd-panel-section">
@@ -551,7 +560,7 @@ export default function JudgmentDetail() {
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
             <div className="jd-rc-body">
-              {acts?.length ? acts.map((act, i) => <ActRow key={i} act={act} />) : (
+              {acts?.length ? acts.map((act, i) => <ActRow key={i} act={actNameMap[act] || act} />) : (
                 judgment.act ? <div className="jd-empty-text">{judgment.act}</div> : <div className="jd-empty-text">No acts referenced.</div>
               )}
             </div>
