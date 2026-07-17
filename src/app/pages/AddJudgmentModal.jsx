@@ -818,13 +818,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 label="Provision(s)"
                 values={form.provisions || []}
                 onChange={(v) => set('provisions', v)}
-                placeholder="Type a provision and press Enter or use comma"
+                placeholder="e.g. Section 151 CPC, Article 226"
               />
               <TagInput
                 label="Legal Issue"
                 values={form.legalIssue || []}
                 onChange={(v) => set('legalIssue', v)}
-                placeholder="Type a legal issue and press Enter"
+                placeholder="e.g. Oral Family Partition, Adverse Possession"
                 hint="This is the most valuable research field. Add every legal issue addressed in this judgment."
               />
             </div>
@@ -833,13 +833,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 label="Keywords"
                 values={form.keywords || []}
                 onChange={(v) => set('keywords', v)}
-                placeholder="Type a keyword and press Enter"
+                placeholder="e.g. family partition, oral partition, joint family"
               />
               <TagInput
                 label="Tags"
                 values={form.tags || []}
                 onChange={(v) => set('tags', v)}
-                placeholder="Type a tag and press Enter"
+                placeholder="e.g. expeditious disposal of suit, partition suit"
               />
             </div>
           </>
