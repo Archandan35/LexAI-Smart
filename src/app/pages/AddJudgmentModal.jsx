@@ -446,32 +446,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               </div>
             </div>
 
-            <div className="ajm-section-card">
-              <div className="ajm-section-card__head">
-                <Icon name="gear" size={15} /> Other Details
-              </div>
-              <div className="ajm-section-card__body">
-                <div className="ajm-grid ajm-grid-3">
-                  <SelectWithCrud
-                    label="Jurisdiction"
-                    value={form.jurisdiction}
-                    onChange={(e) => set('jurisdiction', e.target.value)}
-                    placeholder="Select jurisdiction"
-                    options={jurisdictionOpts}
-                    onCrudClick={() => setShowJurisdictionCrud(true)}
-                  />
-                  <SelectWithCrud
-                    label="Stage"
-                    value={form.stage}
-                    onChange={(e) => set('stage', e.target.value)}
-                    placeholder="Select stage"
-                    options={stageOpts}
-                    onCrudClick={() => setShowStageCrud(true)}
-                  />
-                  {renderField('Source', 'source', 'Enter source')}
-                </div>
-              </div>
-            </div>
 
           </>
         );

@@ -22440,7 +22440,7 @@ kbd.cmd__kbd {
   border-radius: 0 0 var(--radius) var(--radius);
   border: 1px solid var(--border);
   border-top: none;
-  padding: 22px 26px;
+  padding: 22px 26px 15px;
   flex: 1;
   min-height: 0;
   margin-bottom: 16px;
