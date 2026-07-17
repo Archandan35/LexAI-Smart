@@ -489,7 +489,7 @@ export default function JudgmentDetail() {
                   <div className="jd-prose jd-empty-text">{judgment.act}</div>
                 )}
               </div>
-            </div>
+            )}
 
             {tab === 'documents' && (
               <div className="jd-panel-section">
@@ -537,32 +537,6 @@ export default function JudgmentDetail() {
         </div>
 
         <div className="jd-side-col" ref={sideColRef}>
-
-          {related.length > 0 && (
-            <div className="jd-rc-card jd-related-slider-card">
-              <div className="jd-rc-title">
-                <span><Icon name="layers" size={14} /> Related Judgments</span>
-                <button className="jd-view-all-btn" onClick={() => navigate('/research/judgment-library')}>View All</button>
-              </div>
-              <div className="jd-related-slider-wrap">
-                <button className="jd-slide-btn jd-slide-left" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: -280, behavior: 'smooth' }); }}><Icon name="chevronLeft" size={18} /></button>
-                <div className="jd-related-slider">
-                  {related.map((r) => (
-                    <div key={r.id} className="jd-related-slide-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
-                      <div className="jd-related-slide-title">{r.title || r.citation}</div>
-                      <div className="jd-related-slide-court">{courtLabel(r.court)}</div>
-                      <div className="jd-related-slide-footer">
-                        <span>{r.date ? formatDate(r.date) : ''}</span>
-                        <span>{r.status || r.citation}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button className="jd-slide-btn jd-slide-right" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: 280, behavior: 'smooth' }); }}><Icon name="chevronRight" size={18} /></button>
-              </div>
-            </div>
-          )}
-
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="tag" size={14} /> Legal References</div>
             <div className="jd-rc-body">
@@ -572,19 +546,16 @@ export default function JudgmentDetail() {
                   <span className="jd-tag">{row.val}</span>
                 </div>
               )) : <div className="jd-empty-text">No classification data.</div>}
+              {tags.length > 0 && (
+                <div className="jd-rc-row jd-rc-row--tags">
+                  <span className="jd-rc-key">Keywords</span>
+                  <div className="jd-tags">
+                    {tags.map((tag, i) => <span key={i} className="jd-tag">{tag}</span>)}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          {tags.length > 0 && (
-            <div className="jd-rc-card">
-              <div className="jd-rc-title"><Icon name="search" size={14} /> Keywords</div>
-              <div className="jd-rc-body">
-                <div className="jd-tags">
-                  {tags.map((tag, i) => <span key={i} className="jd-tag">{tag}</span>)}
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
@@ -621,29 +592,35 @@ export default function JudgmentDetail() {
               )}
             </div>
           </div>
-
-          {(judgment.casesCited?.length > 0 || citationList.length > 1) && (
-            <>
-              {judgment.casesCited?.length > 0 && (
-                <div className="jd-rc-card jd-citation-card">
-                  <div className="jd-rc-title"><Icon name="link" size={14} /> Cases Cited in this case</div>
-                  <div className="jd-rc-body jd-citation-body">
-                    {toArr(judgment.casesCited).map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
-                  </div>
-                </div>
-              )}
-              {citationList.length > 1 && (
-                <div className="jd-rc-card jd-citation-card">
-                  <div className="jd-rc-title"><Icon name="bookmark" size={14} /> Citation</div>
-                  <div className="jd-rc-body jd-citation-body">
-                    {citationList.map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
+
+      {citationList.length > 1 && (
+        <div className="jd-rc-card jd-citation-card">
+          <div className="jd-rc-title"><Icon name="link" size={14} /> All Citations</div>
+          <div className="jd-rc-body jd-citation-body">
+            {citationList.map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
+          </div>
+        </div>
+      )}
+
+      {related.length > 0 && (
+        <div className="jd-related-card">
+          <div className="jd-related-head"><Icon name="layers" size={14} /> Related Judgments</div>
+          <div className="jd-related-grid">
+            {related.map((r) => (
+              <div key={r.id} className="jd-related-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
+                <div className="jd-related-title">{r.title || r.citation}</div>
+                <div className="jd-related-court">{courtLabel(r.court)}</div>
+                <div className="jd-related-footer">
+                  <span className="jd-related-date">{r.date ? formatDate(r.date) : ''}</span>
+                  <span className="jd-related-ref">{r.status || r.citation}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmDelete}
