@@ -2605,6 +2605,25 @@ select {
   padding: 3px 8px;
 }
 
+.auth-role-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.auth-role-note svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--brand-600);
+}
+
 .alert--mb {
   margin-bottom: 16px;
 }

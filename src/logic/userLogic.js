@@ -41,22 +41,35 @@ export const userLogic = {
       if (!data.email && !data.username) return fail('Email or username is required.');
       if (!data.password) return fail('Password is required.');
       const password = data.password;
-      const roleCode = data.roleCode;
+      // roleCode may be omitted on the public signup form (no selectable roles
+      // yet) — the first account is then auto-provisioned as Admin.
+      const roleCode = data.roleCode || 'Admin';
+
+      // Existing user count — used to decide first-account bootstrap and to
+      // block self-service admin assignment after install.
+      const { ok: usersOk, data: existingUsers } = await userService.list()
+        .then((u) => ({ ok: true, data: u })).catch(() => ({ ok: false, data: [] }));
+      const userCount = usersOk ? (existingUsers || []).length : 0;
+      const isFirstAccount = userCount === 0;
+
+      // SECURITY: never let a caller self-assign the Admin role once any user
+      // already exists. Admin must be granted by an existing admin in-app.
+      if (!isFirstAccount && roleCode.toLowerCase() === 'admin') {
+        return fail('Administrator role cannot be self-assigned. Contact an existing administrator.');
+      }
 
       const allRoles = await roleService.list();
       const roleExists = allRoles.some((r) => r.code === roleCode);
-      // First-account bootstrap: if no users exist yet and the requested role is
-      // missing, auto-provision it with FULL access so the very first signup
-      // (the administrator) always succeeds. Subsequent accounts must use a role
-      // that already exists in Role Management.
+      // First-account bootstrap: if the requested role is missing and this is
+      // the very first account, auto-provision it with FULL access so the
+      // initial administrator always succeeds. Subsequent accounts must use a
+      // role that already exists in Role Management.
       if (!roleExists) {
-        const { ok: usersOk, data: existingUsers } = await userService.list().then((u) => ({ ok: true, data: u })).catch(() => ({ ok: false, data: [] }));
-        const userCount = usersOk ? (existingUsers || []).length : 0;
-        if (userCount === 0) {
+        if (isFirstAccount) {
           const created = await roleService.create({
             id: 'role_admin',
-            code: roleCode,
-            name: data.roleName || roleCode,
+            code: 'Admin',
+            name: 'Administrator',
             description: 'Administrator with full system access (auto-provisioned on first install)',
             permissions: [],
             all: true,
@@ -65,7 +78,7 @@ export const userLogic = {
             status: 'Active',
             createdAt: nowISO(),
           });
-          if (!created) return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
+          if (!created) return fail('Failed to provision the initial administrator role.');
         } else {
           return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
         }

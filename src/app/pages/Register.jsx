@@ -58,25 +58,38 @@ export default function Register() {
   }
 
   // Load available roles (with their access) so the user can see what each
-  // role grants before choosing. The Admin role is seeded on first install;
-  // if none exist yet, the first account auto-provisions the Admin role.
+  // role grants before choosing. SECURITY: the Admin / system roles are NEVER
+  // offered on public self-registration — assigning admin must be done by an
+  // existing admin inside the app, never self-served. The first account on a
+  // fresh install is auto-provisioned as admin server-side (userLogic.create),
+  // so it does not need to be selectable here.
+  const isAdminRole = (r) => (r.code || r.name || '').toLowerCase() === 'admin' || r.system === true || r.all === true;
+
   useEffect(() => {
     (async () => {
       try {
-        const configured = settingsCache.get('defaultRole') || 'Admin';
         const res = await roleService.list();
         const list = Array.isArray(res) ? res : (res && res.data) || [];
-        const codes = list.map((r) => r.code || r.name).filter(Boolean);
-        const effective = codes.length ? list : [{ code: 'Admin', name: 'Administrator', all: true, permissions: [], description: 'Full system access (auto-created on first install)' }];
-        setRoles(effective);
-        const initial = effective.some((r) => r.code === configured)
-          ? configured
-          : (effective[0]?.code || 'Admin');
-        setSelectedRole(initial);
+        // Exclude admin/system/full-access roles from the public chooser.
+        const publicRoles = list.filter((r) => !isAdminRole(r));
+        if (publicRoles.length) {
+          setRoles(publicRoles);
+          const configured = settingsCache.get('defaultRole') || 'Admin';
+          const initial = publicRoles.some((r) => r.code === configured)
+            ? configured
+            : publicRoles[0].code;
+          setSelectedRole(initial);
+        } else {
+          // No public roles exist. This is either a fresh install (first
+          // account becomes admin automatically) or an admin has not yet
+          // created any assignable roles. In neither case do we expose Admin
+          // as a self-service option.
+          setRoles([]);
+          setSelectedRole('');
+        }
       } catch (_) {
-        const fallback = [{ code: 'Admin', name: 'Administrator', all: true, permissions: [], description: 'Full system access (auto-created on first install)' }];
-        setRoles(fallback);
-        setSelectedRole('Admin');
+        setRoles([]);
+        setSelectedRole('');
       } finally {
         setLoadingRoles(false);
       }
@@ -95,11 +108,14 @@ export default function Register() {
 
     setBusy(true);
 
+    // If a public role is selected, use it. If none is available (fresh
+    // install), omit roleCode so userLogic.create auto-provisions Admin for
+    // the very first account — but never let a user self-claim Admin here.
     const res = await userLogic.create({
       name: name.trim(),
       email: email.trim(),
       password,
-      roleCode: selectedRole || settingsCache.get('defaultRole') || 'Admin',
+      ...(selectedRole ? { roleCode: selectedRole } : {}),
     }, null);
 
     setBusy(false);
@@ -154,7 +170,7 @@ export default function Register() {
           <Field label="Select Role">
             {loadingRoles ? (
               <div className="auth-role-loading">Loading available roles…</div>
-            ) : (
+            ) : roles.length ? (
               <div className="auth-role-list">
                 {roles.map((r) => {
                   const code = r.code || r.name;
@@ -172,10 +188,18 @@ export default function Register() {
                         <span className="auth-role__access">{roleAccessSummary(r)}</span>
                         {r.description && <span className="auth-role__desc">{r.description}</span>}
                       </span>
-                      {r.all && <span className="auth-role__badge">Full Access</span>}
                     </button>
                   );
                 })}
+              </div>
+            ) : (
+              <div className="auth-role-note">
+                <Icon name="shield" size={14} />
+                <span>
+                  No assignable roles are configured yet. The <strong>first account</strong> you
+                  create will become the <strong>Administrator</strong> with full access. Additional
+                  users must be invited and assigned roles by an administrator later.
+                </span>
               </div>
             )}
           </Field>
