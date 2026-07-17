@@ -485,15 +485,23 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                   />
                   {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
                 </div>
-                <div className="ajm-grid ajm-grid-2">
-                  {renderField('Plaintiff Counsel', 'plaintiffCounsel', 'Enter counsel name')}
-                  {renderField('Defendant Counsel', 'defendantCounsel', 'Enter counsel name')}
-                </div>
                 <div className="ajm-grid ajm-grid-1">
                   {renderField('Judgment Title', 'title', 'Auto-generated from party names', {
                     readonly: true,
                     hint: 'This field is locked — it will be auto-generated once party names are entered.',
                   })}
+                </div>
+              </div>
+            </div>
+
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="users" size={15} /> Counsel Details
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-2">
+                  {renderField('Plaintiff Counsel', 'plaintiffCounsel', 'Enter counsel name')}
+                  {renderField('Defendant Counsel', 'defendantCounsel', 'Enter counsel name')}
                 </div>
               </div>
             </div>

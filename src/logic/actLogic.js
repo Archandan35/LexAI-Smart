@@ -19,7 +19,11 @@ export const actLogic = {
 
   async create(data) {
     try {
-      const row = await actService.create({ ...data, id: uid('act'), created_at: nowISO() });
+      const row = await actService.create({
+        ...data,
+        title: data.title || data.name || '',
+        id: uid('act'), created_at: nowISO(),
+      });
       return ok(row);
     } catch (e) {
       return fail(e);
