@@ -566,6 +566,12 @@ export default function JudgmentDetail() {
               <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Views</span><span className="jd-rc-val">{judgment.views ?? '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Favourites</span><span className="jd-rc-val">{judgment.favourites ?? '—'}</span></div>
+            {judgment.sourceUrl && (
+              <div className="jd-rc-row">
+                <span className="jd-rc-key">Judgment Link</span>
+                <span className="jd-rc-val"><a href={judgment.sourceUrl} target="_blank" rel="noopener noreferrer">{judgment.sourceUrl}</a></span>
+              </div>
+            )}
             </div>
           </div>
 

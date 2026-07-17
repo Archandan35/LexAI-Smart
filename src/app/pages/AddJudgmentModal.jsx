@@ -89,6 +89,12 @@ const INITIAL_FORM = {
   tags: [],
   casesCited: [],
   reviewStatus: '',
+  sourceUrl: '',
+  ratioDecidendi: '',
+  obiterDicta: '',
+  keyFindings: '',
+  notes: '',
+  reviewComments: '',
 };
 
 function flatValues(vals) {
@@ -840,7 +846,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
                   <label>External Links</label>
-                  <input className="ajm-input" type="text" placeholder="e.g. https://indiankanoon.org/doc/..." />
+                  <input className="ajm-input" type="text" placeholder="e.g. https://indiankanoon.org/doc/..." value={form.sourceUrl || ''} onChange={(e) => set('sourceUrl', e.target.value)} />
                 </div>
               </div>
             </div>
@@ -971,15 +977,15 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
             <div className="ajm-form-title">Legal Principle</div>
             <div className="ajm-field">
               <label>Ratio Decidendi</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter the ratio decidendi (legal reasoning)..." />
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter the ratio decidendi (legal reasoning)..." value={form.ratioDecidendi || ''} onChange={(e) => set('ratioDecidendi', e.target.value)} />
             </div>
             <div className="ajm-field">
               <label>Obiter Dicta</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter any obiter dicta..." />
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter any obiter dicta..." value={form.obiterDicta || ''} onChange={(e) => set('obiterDicta', e.target.value)} />
             </div>
             <div className="ajm-field">
               <label>Key Legal Findings</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter key legal findings..." />
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter key legal findings..." value={form.keyFindings || ''} onChange={(e) => set('keyFindings', e.target.value)} />
             </div>
           </>
         );
@@ -1005,7 +1011,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
             <div className="ajm-form-title">Notes</div>
             <div className="ajm-field">
               <label>Internal Notes</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter private notes..." />
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter private notes..." value={form.notes || ''} onChange={(e) => set('notes', e.target.value)} />
             </div>
           </>
         );
@@ -1024,7 +1030,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
             />
             <div className="ajm-field">
               <label>Review Comments</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter review comments..." />
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter review comments..." value={form.reviewComments || ''} onChange={(e) => set('reviewComments', e.target.value)} />
             </div>
           </>
         );
