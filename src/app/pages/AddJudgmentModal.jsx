@@ -140,7 +140,7 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
   const wrapperRef = useRef(null);
 
   const filtered = useMemo(() => {
-    if (!input.trim()) return [];
+    if (!input.trim()) return options.filter((o) => !values.includes(o.value));
     const q = input.toLowerCase();
     return options.filter((o) => o.label.toLowerCase().includes(q) && !values.includes(o.value));
   }, [input, options, values]);
