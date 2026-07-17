@@ -19,9 +19,10 @@ export const actLogic = {
 
   async create(data) {
     try {
+      const { name, ...rest } = data;
       const row = await actService.create({
-        ...data,
-        title: data.title || data.name || '',
+        ...rest,
+        title: rest.title || name || '',
         id: uid('act'), created_at: nowISO(),
       });
       return ok(row);
