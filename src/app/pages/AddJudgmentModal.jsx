@@ -46,14 +46,14 @@ const TABS = [
   { key: 'principle', label: 'Legal Principle', icon: 'pen' },
 
   { key: 'documents', label: 'Documents', icon: 'file' },
-  { key: 'notes', label: 'Notes & Links', icon: 'edit' },
+  { key: 'notes', label: 'Notes', icon: 'edit' },
   { key: 'review', label: 'Review', icon: 'check-circle' },
 ];
 
 const PROGRESS_STEPS = [
   'General Information', 'Citation', 'Headnote', 'Judgement',
   'Legal References', 'Legal Principle',
-  'Documents', 'Notes & Links', 'Review',
+  'Documents', 'Notes', 'Review',
 ];
 
 const INITIAL_FORM = {
@@ -658,7 +658,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 label="Area of Law"
                 value={form.practiceArea}
                 onChange={(e) => set('practiceArea', e.target.value)}
-                placeholder="civil law"
+                placeholder="Select area of law"
                 options={areaOfLawOpts}
                 onCrudClick={() => setShowAreaOfLawCrud(true)}
               />
@@ -762,7 +762,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       case 'notes':
         return (
           <>
-            <div className="ajm-form-title">Notes & Links</div>
+            <div className="ajm-form-title">Notes</div>
             <div className="ajm-field">
               <label>Internal Notes</label>
               <textarea className="ajm-input ajm-textarea" placeholder="Enter private notes..." />

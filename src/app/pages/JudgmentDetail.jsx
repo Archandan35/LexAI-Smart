@@ -20,7 +20,6 @@ const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'legalPrinciples', label: 'Judgment' },
   { key: 'acts', label: 'Acts & Sections' },
-  { key: 'applicability', label: 'Applicability' },
   { key: 'documents', label: 'Documents' },
   { key: 'notes', label: 'Notes' },
   { key: 'linked', label: 'Linked Records' },
@@ -462,17 +461,6 @@ export default function JudgmentDetail() {
                 {judgment.act && !acts?.length && (
                   <div className="jd-prose jd-empty-text">{judgment.act}</div>
                 )}
-              </div>
-            )}
-
-            {tab === 'applicability' && (
-              <div className="jd-panel-section">
-                <h3 className="jd-panel-title">Applicability</h3>
-                <div className="jd-prose">
-                  {judgment.applicability || (judgment.precedentialValue
-                    ? `Precedential value: ${judgment.precedentialValue}.`
-                    : 'No applicability notes recorded.')}
-                </div>
               </div>
             )}
 
