@@ -23175,6 +23175,10 @@ kbd.cmd__kbd {
   overflow-y: auto;
 }
 
+.ajm-doc-editor {
+  min-height: 320px;
+}
+
 /* Judgment Summary & Headnotes rich editors — auto-grow with content, no fixed height */
 .ajm-doc-editor .doc-canvas {
   padding: 12px;

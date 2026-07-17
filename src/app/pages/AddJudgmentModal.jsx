@@ -72,7 +72,7 @@ const INITIAL_FORM = {
   caseType: '',
   court: '',
   bench: '',
-  judges: '',
+  judges: [],
   judgmentDate: '',
   pronouncementDate: '',
   uploadDate: '',
@@ -89,7 +89,7 @@ const INITIAL_FORM = {
   tags: [],
 };
 
-function TagInput({ label, values, onChange, placeholder, hint }) {
+function TagInput({ label, values, onChange, placeholder, hint, onCrudClick }) {
   const [input, setInput] = useState('');
   const add = () => {
     const v = input.trim();
@@ -101,32 +101,39 @@ function TagInput({ label, values, onChange, placeholder, hint }) {
   return (
     <div className="ajm-field">
       <label>{label}</label>
-      <div className="ajm-tag-input-wrap">
-        {values.map((v, i) => (
-          <span key={i} className="ajm-tag">
-            {v}
-            <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
-          </span>
-        ))}
-        <div className="ajm-tag-input-row">
-          <input
-            className="ajm-input ajm-tag-input"
-            type="text"
-            placeholder={placeholder}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } }}
-            onPaste={(e) => {
-              const pasted = e.clipboardData.getData('text');
-              const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
-              if (lines.length > 1) {
-                e.preventDefault();
-                onChange([...values, ...lines]);
-              }
-            }}
-          />
-          <button type="button" className="ajm-tag-add-btn" onClick={add}><Icon name="plus" size={14} /></button>
+      <div className="ajm-select-crud-wrap">
+        <div className="ajm-tag-input-wrap ajm-tag-input-wrap--grow">
+          {values.map((v, i) => (
+            <span key={i} className="ajm-tag">
+              {v}
+              <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
+            </span>
+          ))}
+          <div className="ajm-tag-input-row">
+            <input
+              className="ajm-input ajm-tag-input"
+              type="text"
+              placeholder={placeholder}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } }}
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData('text');
+                const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
+                if (lines.length > 1) {
+                  e.preventDefault();
+                  onChange([...values, ...lines]);
+                }
+              }}
+            />
+            <button type="button" className="ajm-tag-add-btn" onClick={add}><Icon name="plus" size={14} /></button>
+          </div>
         </div>
+        {onCrudClick && (
+          <button type="button" className="ajm-crud-btn" title={`Manage ${label}`} onClick={onCrudClick}>
+            <Icon name="gear" size={15} />
+          </button>
+        )}
       </div>
       {hint && <div className="ajm-field-hint">{hint}</div>}
     </div>
@@ -480,7 +487,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
 
   const courtsOpts = useMemo(() => makeOpts(courts), [courts]);
   const benchOpts = useMemo(() => makeOpts(benchTypes), [benchTypes]);
-  const judgesOpts = useMemo(() => makeOpts(judges), [judges]);
   const caseTypeOpts = useMemo(() => makeOpts(caseTypes), [caseTypes]);
   const jurisdictionOpts = useMemo(() => makeOpts(jurisdictions), [jurisdictions]);
   const stageOpts = useMemo(() => makeOpts(caseStages), [caseStages]);
@@ -514,6 +520,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
         paragraphs: [],
       };
       if (!Array.isArray(entry.keywords)) entry.keywords = [];
+      if (!Array.isArray(entry.judges)) entry.judges = [];
       if (!Array.isArray(entry.acts)) entry.acts = [];
       if (!Array.isArray(entry.provisions)) entry.provisions = [];
       if (!Array.isArray(entry.legalIssue)) entry.legalIssue = [];
@@ -657,14 +664,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                     options={benchOpts}
                     onCrudClick={() => setShowBenchCrud(true)}
                   />
-                  <SelectWithCrud
+                  <TagInput
                     label="Judge(s)"
-                    required
-                    value={form.judges}
-                    onChange={(e) => set('judges', e.target.value)}
-                    placeholder="Select one or more judges"
-                    options={judgesOpts}
-                    onCrudClick={() => setShowJudgeCrud(true)}
+                    values={form.judges || []}
+                    onChange={(v) => set('judges', v)}
+                    placeholder="Type judge name and press Enter"
                   />
                 </div>
               </div>
@@ -1132,7 +1136,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
             <h3><Icon name="info" size={15} /> Tips</h3>
             <ul className="ajm-tips-list">
               <li><Icon name="check" size={13} /> Add accurate citation for better search results.</li>
-              <li><Icon name="check" size={13} /> Select multiple judges by holding Ctrl (Windows) / Cmd (Mac).</li>
+
               <li><Icon name="check" size={13} /> You can add multiple Acts, Sections, and Keywords in next steps.</li>
               <li><Icon name="check" size={13} /> Upload judgment document in the Documents section.</li>
             </ul>
