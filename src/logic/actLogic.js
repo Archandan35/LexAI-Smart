@@ -5,7 +5,7 @@ import { nowISO, uid } from '@/utils/id.js';
 export const actLogic = {
   async list() {
     const rows = await actService.list();
-    return [...rows].sort((a, b) => a.title?.localeCompare?.(b.title) || 0);
+    return [...rows].sort((a, b) => a.title?.localeCompare?.(b.title) || 0).map((r) => ({ ...r, name: r.title || r.name || '' }));
   },
 
   async get(id) {
