@@ -22398,7 +22398,8 @@ kbd.cmd__kbd {
 }
 
 /* Cases Cited full-width below the body grid */
-.jd-cases-cited-full {
+.jd-cases-cited-full,
+.jd-related-full {
   width: 100%;
   margin-bottom: 20px;
 }
@@ -22840,6 +22841,7 @@ kbd.cmd__kbd {
   cursor: pointer;
   font-weight: 500;
   padding: 0;
+  margin-left: auto;
 }
 .jd-view-all-btn:hover {
   text-decoration: underline;

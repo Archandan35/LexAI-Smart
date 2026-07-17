@@ -635,6 +635,33 @@ export default function JudgmentDetail() {
         </div>
       </div>
 
+      {related.length > 0 && (
+        <div className="jd-related-full">
+          <div className="jd-rc-card jd-related-slider-card">
+            <div className="jd-rc-title">
+              <span><Icon name="layers" size={14} /> Related Judgments</span>
+              <button className="jd-view-all-btn" onClick={() => navigate('/research/judgment-library')}>View All</button>
+            </div>
+            <div className="jd-related-slider-wrap">
+              <button className="jd-slide-btn jd-slide-left" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: -280, behavior: 'smooth' }); }}><Icon name="chevronLeft" size={18} /></button>
+              <div className="jd-related-slider">
+                {related.map((r) => (
+                  <div key={r.id} className="jd-related-slide-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
+                    <div className="jd-related-slide-title">{r.title || r.citation}</div>
+                    <div className="jd-related-slide-court">{courtLabel(r.court)}</div>
+                    <div className="jd-related-slide-footer">
+                      <span>{r.date ? formatDate(r.date) : ''}</span>
+                      <span>{r.status || r.citation}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button className="jd-slide-btn jd-slide-right" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: 280, behavior: 'smooth' }); }}><Icon name="chevronRight" size={18} /></button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {judgment.casesCited?.length > 0 && (
         <div className="jd-cases-cited-full">
           <div className="jd-rc-card jd-citation-card">
