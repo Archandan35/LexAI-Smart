@@ -278,7 +278,6 @@ export default function JudgmentDetail() {
     if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: toArr(judgment.legalIssue).join(', ') });
     if (judgment.tags?.length) rows.push({ key: 'Tags', val: toArr(judgment.tags).join(', ') });
     if (judgment.provisions?.length) rows.push({ key: 'Provision(s)', val: toArr(judgment.provisions).join(', ') });
-    if (judgment.casesCited?.length) rows.push({ key: 'Cases Cited', val: toArr(judgment.casesCited).join(', ') });
     return rows;
   }, [judgment, nameMap]);
 
@@ -604,14 +603,17 @@ export default function JudgmentDetail() {
               <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Views</span><span className="jd-rc-val">{judgment.views ?? '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Favourites</span><span className="jd-rc-val">{judgment.favourites ?? '—'}</span></div>
-            {judgment.sourceUrl && (
-              <div className="jd-rc-row">
-                <span className="jd-rc-key">Judgment Link</span>
-                <span className="jd-rc-val"><a href={judgment.sourceUrl} target="_blank" rel="noopener noreferrer">{judgment.sourceUrl}</a></span>
-              </div>
-            )}
             </div>
           </div>
+
+          {judgment.sourceUrl && (
+            <div className="jd-rc-card jd-source-link-card">
+              <div className="jd-rc-title"><Icon name="link" size={14} /> Judgment Link</div>
+              <div className="jd-rc-body">
+                <a href={judgment.sourceUrl} target="_blank" rel="noopener noreferrer" className="jd-source-link">{judgment.sourceUrl}</a>
+              </div>
+            </div>
+          )}
 
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="file" size={14} /> Documents</div>
@@ -622,28 +624,27 @@ export default function JudgmentDetail() {
             </div>
           </div>
 
-          {(judgment.casesCited?.length > 0 || citationList.length > 1) && (
-            <>
-              {judgment.casesCited?.length > 0 && (
-                <div className="jd-rc-card jd-citation-card">
-                  <div className="jd-rc-title"><Icon name="link" size={14} /> Cases Cited in this case</div>
-                  <div className="jd-rc-body jd-citation-body">
-                    {toArr(judgment.casesCited).map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
-                  </div>
-                </div>
-              )}
-              {citationList.length > 1 && (
-                <div className="jd-rc-card jd-citation-card">
-                  <div className="jd-rc-title"><Icon name="bookmark" size={14} /> Citation</div>
-                  <div className="jd-rc-body jd-citation-body">
-                    {citationList.map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
-                  </div>
-                </div>
-              )}
-            </>
+          {citationList.length > 1 && (
+            <div className="jd-rc-card jd-citation-card">
+              <div className="jd-rc-title"><Icon name="bookmark" size={14} /> Citation</div>
+              <div className="jd-rc-body jd-citation-body">
+                {citationList.map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
+              </div>
+            </div>
           )}
         </div>
       </div>
+
+      {judgment.casesCited?.length > 0 && (
+        <div className="jd-cases-cited-full">
+          <div className="jd-rc-card jd-citation-card">
+            <div className="jd-rc-title"><Icon name="link" size={14} /> Cases Cited in this case</div>
+            <div className="jd-rc-body jd-citation-body">
+              {toArr(judgment.casesCited).map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmDelete}

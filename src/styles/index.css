@@ -22397,6 +22397,23 @@ kbd.cmd__kbd {
   align-self: start;
 }
 
+/* Cases Cited full-width below the body grid */
+.jd-cases-cited-full {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.jd-source-link-card .jd-source-link {
+  word-break: break-all;
+  color: var(--navy-700);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.jd-source-link-card .jd-source-link:hover {
+  text-decoration: underline;
+}
+
 /* Tabs */
 .jd-tabs {
   display: flex;

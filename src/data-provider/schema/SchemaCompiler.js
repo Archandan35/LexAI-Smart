@@ -860,7 +860,7 @@ function systemSqlPolicies({ onlyCollections } = {}) {
   const managerAll = (t) => `create policy ${t}_manager_all on ${t} for all to authenticated using (current_user_role() = ANY(ARRAY['admin','manager'])) with check (current_user_role() = ANY(ARRAY['admin','manager']));`;
   const managerSelect = (t) => `create policy ${t}_manager_select on ${t} for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));`;
   const userSelect = (t) => `create policy ${t}_user_select on ${t} for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));`;
-  const anonSelect = (t) => `do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute 'create policy ${t}_anon_select on ${t} for select to anon using (true)'; end if; end $$;`;
+  const anonSelect = (t) => `do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute 'drop policy if exists ${t}_anon_select on ${t}'; execute 'create policy ${t}_anon_select on ${t} for select to anon using (true)'; end if; end $$;`;
 
   const allTables = [
     ...SYSTEM_POLICY_TABLES.map(t => ({ table: t, kind: 'system' })),
@@ -880,7 +880,7 @@ function systemSqlPolicies({ onlyCollections } = {}) {
       lines.push(policy(`${table}_manager_all`) + '\n' + managerAll(table));
       lines.push(policy(`${table}_user_select`) + '\n' + userSelect(table));
       lines.push(anonSelect(table));
-      lines.push(`do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute $p$create policy ${table}_anon_insert on ${table} for insert to anon with check (not exists (select 1 from ${table}))$p$; end if; end $$;`);
+      lines.push(`do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute $p$drop policy if exists ${table}_anon_insert on ${table}$p$; execute $p$create policy ${table}_anon_insert on ${table} for insert to anon with check (not exists (select 1 from ${table}))$p$; end if; end $$;`);
       lines.push(`grant insert on table ${table} to anon;`);
       lines.push(`grant select on table ${table} to anon;`);
     } else if (table === 'roles') {
