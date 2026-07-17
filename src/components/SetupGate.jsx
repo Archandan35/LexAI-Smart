@@ -51,7 +51,10 @@ export default function SetupGate({ children }) {
       // If detection was blocked/throttled, we cannot conclude the DB is
       // uninstalled — don't force the user into a misleading setup screen.
       if (res.data?.blocked) {
-        setDetectError(res.data.error || 'Database requests are being blocked or throttled. Cannot verify setup right now — the app may still work. Check your Supabase egress/rate limits.');
+        setDetectError(
+          (res.data.error || 'Database requests are being blocked or throttled. Cannot verify setup right now — the app may still work. Check your Supabase egress/rate limits.') +
+          ' If you just updated the Supabase keys, hard-refresh (Ctrl+Shift+R) or redeploy — the running bundle may be stale.'
+        );
         const next = 'ready';
         setState(next);
         writeCache(next);
