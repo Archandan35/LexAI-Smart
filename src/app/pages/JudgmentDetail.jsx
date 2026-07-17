@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
@@ -256,6 +256,47 @@ export default function JudgmentDetail() {
 
   const tags = useMemo(() => judgment?.keywords || [], [judgment]);
 
+  const mainColRef = useRef(null);
+  const sideColRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const main = mainColRef.current;
+    const side = sideColRef.current;
+    if (!main || !side) return;
+
+    const sync = () => {
+      if (window.innerWidth <= 1024) {
+        main.style.height = '';
+        return;
+      }
+      main.style.height = side.getBoundingClientRect().height + 'px';
+    };
+
+    sync();
+
+    const ro = new ResizeObserver(([entry]) => {
+      if (window.innerWidth <= 1024) return;
+      const h = entry.contentBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+      main.style.height = h + 'px';
+    });
+
+    ro.observe(side);
+
+    const onResize = () => {
+      if (window.innerWidth <= 1024) {
+        main.style.height = '';
+      } else {
+        sync();
+      }
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', onResize);
+    };
+  }, [loading]);
+
   if (loading) {
     return (
       <div className="jd-page">
@@ -368,7 +409,7 @@ export default function JudgmentDetail() {
       </div>
 
       <div className="jd-body-grid">
-        <div className="jd-main-col">
+        <div className="jd-main-col" ref={mainColRef}>
           <div className="jd-tabs">
             {TABS.map((t) => (
               <button
@@ -476,7 +517,7 @@ export default function JudgmentDetail() {
           </div>
         </div>
 
-        <div className="jd-side-col">
+        <div className="jd-side-col" ref={sideColRef}>
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="tag" size={14} /> Legal Classification</div>
             <div className="jd-rc-body">

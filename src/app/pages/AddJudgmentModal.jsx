@@ -28,6 +28,8 @@ import { DateEngine } from '@/core/DateEngine.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
+  { key: 'headnote', label: 'Headnote', icon: 'book' },
+  { key: 'judgement', label: 'Judgement', icon: 'edit' },
   { key: 'classification', label: 'Legal Classification', icon: 'tag' },
   { key: 'references', label: 'Legal References', icon: 'list' },
   { key: 'principle', label: 'Legal Principle', icon: 'pen' },
@@ -39,9 +41,10 @@ const TABS = [
 ];
 
 const PROGRESS_STEPS = [
-  'General Information', 'Legal Classification',
-  'Legal References', 'Legal Principle', 'Applicability',
-  'Authority & Type', 'Documents', 'Notes & Links', 'Review',
+  'General Information', 'Headnote', 'Judgement',
+  'Legal Classification', 'Legal References', 'Legal Principle',
+  'Applicability', 'Authority & Type', 'Documents',
+  'Notes & Links', 'Review',
 ];
 
 const INITIAL_FORM = {
@@ -470,6 +473,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               </div>
             </div>
 
+          </>
+        );
+
+      case 'headnote':
+        return (
+          <>
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
                 <Icon name="book" size={15} /> Headnotes
@@ -486,14 +495,19 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 </div>
               </div>
             </div>
+          </>
+        );
 
+      case 'judgement':
+        return (
+          <>
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="edit" size={15} /> Judgment Summary
+                <Icon name="edit" size={15} /> Judgement
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
-                  <label>Judgment Summary</label>
+                  <label>Judgement</label>
                   <div className="ajm-doc-editor">
                     <DocEditor
                       value={form.summary}

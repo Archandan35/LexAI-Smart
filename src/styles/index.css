@@ -22384,12 +22384,13 @@ kbd.cmd__kbd {
   grid-template-columns: 1fr 415px;
   gap: 22px;
   margin-bottom: 20px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .jd-main-col {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Tabs */

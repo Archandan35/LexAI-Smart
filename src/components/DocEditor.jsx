@@ -180,6 +180,11 @@ export default function DocEditor({
           contentEditable={!readOnly}
           suppressContentEditableWarning
           onInput={() => { emit(); force((n) => n + 1); }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const text = e.clipboardData?.getData('text/plain');
+            if (text) insertHTML(escapeHtml(text));
+          }}
         />
       </div>
     </div>
