@@ -44,7 +44,6 @@ const TABS = [
   { key: 'classification', label: 'Legal References', icon: 'tag' },
 
   { key: 'principle', label: 'Legal Principle', icon: 'pen' },
-  { key: 'applicability', label: 'Applicability', icon: 'star' },
 
   { key: 'documents', label: 'Documents', icon: 'file' },
   { key: 'notes', label: 'Notes & Links', icon: 'edit' },
@@ -54,8 +53,7 @@ const TABS = [
 const PROGRESS_STEPS = [
   'General Information', 'Citation', 'Headnote', 'Judgement',
   'Legal References', 'Legal Principle',
-  'Applicability', 'Documents',
-  'Notes & Links', 'Review',
+  'Documents', 'Notes & Links', 'Review',
 ];
 
 const INITIAL_FORM = {
@@ -502,34 +500,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
 
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="calendar" size={15} /> Judgment Dates
+                <Icon name="folder" size={15} /> Case Information
               </div>
               <div className="ajm-section-card__body">
-                <div className="ajm-grid ajm-grid-3">
-                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
-                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
-                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
-                </div>
-              </div>
-            </div>
-
-
-          </>
-        );
-
-      case 'citation':
-        return (
-          <>
-            <div className="ajm-section-card">
-              <div className="ajm-section-card__head">
-                <Icon name="info" size={15} /> Citation & Case Information
-              </div>
-              <div className="ajm-section-card__body">
-                <div className="ajm-grid ajm-grid-3">
-                  {renderField('SCR Citation', 'citation', 'e.g. (2024) 1 SCC 1', { required: true })}
-                  {renderField('Neutral Citation', 'neutralCitation', 'e.g. 2024 INSC 1')}
-                  {renderField('Reporter Citation', 'reporterCitation', 'e.g. AIR 2024 SC 1')}
-                </div>
                 <div className="ajm-grid ajm-grid-2">
                   {renderField('Case Number', 'caseNumber', 'e.g. Civil Appeal No. 1234 of 2024', { required: true })}
                   <SelectWithCrud
@@ -573,9 +546,28 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 </div>
               </div>
             </div>
+
+          </>
+        );
+
+      case 'citation':
+        return (
+          <>
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="book" size={15} /> Cases Cited
+                <Icon name="info" size={15} /> Citation Details
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-3">
+                  {renderField('SCR Citation', 'citation', 'e.g. (2024) 1 SCC 1', { required: true })}
+                  {renderField('Neutral Citation', 'neutralCitation', 'e.g. 2024 INSC 1')}
+                  {renderField('Reporter Citation', 'reporterCitation', 'e.g. AIR 2024 SC 1')}
+                </div>
+              </div>
+            </div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="book" size={15} /> Cases Cited in this case
               </div>
               <div className="ajm-section-card__body">
                 <TagInput
@@ -585,6 +577,29 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                   placeholder="Type a citation and press Enter or use comma"
                   hint="Add citations referenced in this judgment. Separate with commas or press Enter."
                 />
+              </div>
+            </div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="calendar" size={15} /> Judgment Dates
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-3">
+                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
+                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
+                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
+                </div>
+              </div>
+            </div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="link" size={15} /> Judgment Link
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-field">
+                  <label>External Links</label>
+                  <input className="ajm-input" type="text" placeholder="e.g. https://indiankanoon.org/doc/..." />
+                </div>
               </div>
             </div>
           </>
@@ -729,37 +744,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           </>
         );
 
-      case 'applicability':
-        return (
-          <>
-            <div className="ajm-form-title">Applicability</div>
-            <div className="ajm-grid ajm-grid-2">
-              <SelectWithCrud
-                label="Jurisdictional Scope"
-                value={form.jurisdictionalScope}
-                onChange={(e) => set('jurisdictionalScope', e.target.value)}
-                placeholder="Select scope"
-                options={jurisdictionOpts}
-                onCrudClick={() => setShowJurisdictionCrud(true)}
-              />
-              <SelectWithCrud
-                label="Precedential Value"
-                value={form.precedentialValue}
-                onChange={(e) => set('precedentialValue', e.target.value)}
-                placeholder="Select value"
-                options={priorityOpts}
-                onCrudClick={() => setShowPriorityCrud(true)}
-              />
-            </div>
-            <div className="ajm-field">
-              <label>Applicable To</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Describe whom this judgment applies to..." />
-            </div>
-          </>
-        );
-
-
-
       case 'documents':
         return (
           <>
@@ -782,10 +766,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
             <div className="ajm-field">
               <label>Internal Notes</label>
               <textarea className="ajm-input ajm-textarea" placeholder="Enter private notes..." />
-            </div>
-            <div className="ajm-field">
-              <label>External Links</label>
-              <input className="ajm-input" type="text" placeholder="e.g. https://indiankanoon.org/doc/..." />
             </div>
           </>
         );
