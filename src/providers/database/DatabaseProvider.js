@@ -48,6 +48,26 @@ export default class DatabaseProvider {
     return removed;
   }
 
+  // Classify whether a collection is reachable. Returns one of:
+  //   'present'  — table exists and is queryable
+  //   'missing'  — table does not exist (404 / not found)
+  //   'blocked'  — request was rejected/throttled (403, auth, network, timeout)
+  //                i.e. we CANNOT determine existence; do NOT report as missing.
+  // Default impl derives the state from collectionExists() + thrown error text.
+  async checkCollection(name) {
+    try {
+      const exists = await this.collectionExists(name);
+      return exists ? 'present' : 'missing';
+    } catch (e) {
+      const msg = (e && e.message) || '';
+      if (/throttl|egress|rate.?limit|429/i.test(msg)) return 'blocked';
+      if (/auth denied|401|403|forbidden|unauthorized/i.test(msg)) return 'blocked';
+      if (/timeout|abort|network|fetch failed|failed to fetch/i.test(msg)) return 'blocked';
+      // Unknown error — treat as blocked (cannot safely assume missing).
+      return 'blocked';
+    }
+  }
+
   // Remove every row in a collection; returns count removed.
   async clear(collection) {
     const rows = await this.list(collection, {});

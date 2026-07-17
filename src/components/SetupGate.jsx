@@ -48,6 +48,15 @@ export default function SetupGate({ children }) {
       if (res.data?.authError) {
         setDetectError(`Auth error: ${res.data.authError}. Check the provider API key and ensure it has access to the project.`);
       }
+      // If detection was blocked/throttled, we cannot conclude the DB is
+      // uninstalled — don't force the user into a misleading setup screen.
+      if (res.data?.blocked) {
+        setDetectError(res.data.error || 'Database requests are being blocked or throttled. Cannot verify setup right now — the app may still work. Check your Supabase egress/rate limits.');
+        const next = 'ready';
+        setState(next);
+        writeCache(next);
+        return;
+      }
       const users = await userService.list().catch(() => []);
       const next = !users || users.length === 0 || !res.ok ? 'setup' : 'ready';
       setState(next);
@@ -77,6 +86,15 @@ export default function SetupGate({ children }) {
     if (location.pathname === '/admin/setup') return children;
     return <Navigate to="/admin/setup" replace />;
   }
-  return children;
+  return (
+    <>
+      {detectError && (
+        <div className="wizard-alert-box wizard-alert-box--amber wizard-alert-box--mb" role="alert">
+          {detectError}
+        </div>
+      )}
+      {children}
+    </>
+  );
 }
 

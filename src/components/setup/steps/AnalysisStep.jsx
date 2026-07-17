@@ -45,10 +45,20 @@ export default function AnalysisStep({ onAnalyzed, back }) {
     { label: 'Schema Valid', label2: validation?.valid ? 'Yes' : validation?.valid === false ? 'No' : '?', status: validation?.valid ? 'ok' : validation?.valid === false ? 'fail' : 'warn' },
   ];
 
+  const blocked = scanResult?.blocked?.length || 0;
+
   return (
     <div>
+      {blocked > 0 && (
+        <div className="wizard-alert-box wizard-alert-box--amber wizard-alert-box--mb" role="alert">
+          <div className="wizard-alert-title wizard-alert-title--amber">Cannot fully verify database</div>
+          <div className="wizard-alert-text">
+            {scanResult?.error || `${blocked} table(s) could not be checked because requests are being blocked or throttled (e.g. Supabase egress/rate limit exceeded).`} These are NOT necessarily missing — retry after the limit resets or upgrade your plan.
+          </div>
+        </div>
+      )}
       <p className="wizard-desc">
-        Database scan complete. {scanResult?.present?.length} component(s) found, {scanResult?.missing?.length} missing.
+        Database scan complete. {scanResult?.present?.length} component(s) found, {scanResult?.missing?.length} missing{blocked > 0 ? `, ${blocked} unverifiable` : ''}.
       </p>
       <div className="wizard-info-grid">
         {items.map(item => (

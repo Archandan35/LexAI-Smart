@@ -345,6 +345,33 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     }
   }
 
+  // Classify whether a collection is reachable (overrides base default to use
+  // the real HTTP status so 404 = missing, 403/throttle = blocked).
+  async checkCollection(name) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    try {
+      const res = await fetch(`${this._endpoint(name)}?limit=1`, {
+        headers: this._headers(),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok || res.status === 200 || res.status === 206) return 'present';
+      if (res.status === 404) return 'missing';
+      // 401/403/429/5xx/other → we cannot determine existence; treat as blocked
+      // (do NOT report as missing — e.g. egress throttle, RLS, key issue).
+      return 'blocked';
+    } catch (e) {
+      clearTimeout(timer);
+      const msg = e && e.message ? e.message : '';
+      if (e && e.name === 'AbortError') return 'blocked';
+      if (/throttl|egress|rate.?limit|429/i.test(msg)) return 'blocked';
+      if (/auth denied|401|403|forbidden|unauthorized/i.test(msg)) return 'blocked';
+      if (/timeout|abort|network|fetch failed|failed to fetch/i.test(msg)) return 'blocked';
+      return 'blocked';
+    }
+  }
+
   // Efficient Postgres count via PostgREST range header.
   // Throws on auth errors (401/403).
   async count(collection, query = {}) {

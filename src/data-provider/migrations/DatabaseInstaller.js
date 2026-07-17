@@ -20,6 +20,8 @@ export const databaseInstaller = {
 
     const present = [];
     const missing = [];
+    const blocked = [];
+    let blockedError = null;
     let coreMissing = false;
     let authError = null;
     let timeout = false;
@@ -31,17 +33,25 @@ export const databaseInstaller = {
     for (const [i, s] of schemas.entries()) {
       if (timeout) break;
       if (onProgress) onProgress({ step: i + 1, total: schemas.length, label: `Checking ${s.collection}...`, status: 'working' });
-      let exists = false;
+      let state = 'missing';
       try {
-        exists = await provider.collectionExists(s.collection);
+        state = await provider.checkCollection(s.collection);
       } catch (e) {
         if (e.message && (e.message.includes('auth denied') || e.message.includes('Auth denied'))) {
           authError = authError || e.message;
         }
-        exists = false;
+        state = 'blocked';
       }
-      (exists ? present : missing).push(s.collection);
-      if (!exists && s.core) coreMissing = true;
+      if (state === 'present') {
+        present.push(s.collection);
+      } else if (state === 'missing') {
+        missing.push(s.collection);
+        if (s.core) coreMissing = true;
+      } else {
+        // 'blocked' — cannot determine; do NOT count as missing.
+        blocked.push(s.collection);
+        blockedError = blockedError || 'Database is reachable but requests are being blocked or throttled (e.g. Supabase egress/rate limit exceeded). Cannot verify tables right now.';
+      }
     }
     clearTimeout(timer);
 
@@ -59,6 +69,24 @@ export const databaseInstaller = {
       };
     }
 
+    if (blocked.length > 0) {
+      // We could not reliably verify the schema. Treat as "indeterminate":
+      // surface a clear message instead of falsely reporting tables missing.
+      return {
+        provider: providerName,
+        installed: false,
+        version,
+        targetVersion: schemaVersionManager.targetVersion(),
+        present,
+        missing,
+        blocked,
+        needsSetup: true,
+        partialInstall: false,
+        blocked: true,
+        error: blockedError,
+      };
+    }
+
     if (timeout) {
       return {
         provider: providerName,
@@ -67,6 +95,7 @@ export const databaseInstaller = {
         targetVersion: schemaVersionManager.targetVersion(),
         present,
         missing,
+        blocked,
         needsSetup: true,
         partialInstall: present.length > 0 && !coreMissing && version === 0,
         timeout: true,
@@ -83,6 +112,7 @@ export const databaseInstaller = {
       targetVersion: schemaVersionManager.targetVersion(),
       present,
       missing,
+      blocked,
       needsSetup: version === 0 || coreMissing,
       partialInstall,
     };
