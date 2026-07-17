@@ -269,7 +269,7 @@ export default function JudgmentDetail() {
         main.style.height = '';
         return;
       }
-      main.style.height = Math.floor(side.getBoundingClientRect().height) + 'px';
+      main.style.height = Math.round(side.getBoundingClientRect().height) + 'px';
     };
 
     sync();
@@ -277,7 +277,7 @@ export default function JudgmentDetail() {
     const ro = new ResizeObserver(([entry]) => {
       if (window.innerWidth <= 1024) return;
       const h = entry.contentBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
-      main.style.height = Math.floor(h) + 'px';
+      main.style.height = Math.round(h) + 'px';
     });
 
     ro.observe(side);

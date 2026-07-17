@@ -21401,7 +21401,7 @@ kbd.cmd__kbd {
   min-width: 0;
 }
 .task-card__dt-item + .task-card__dt-item {
-  margin-left: -6px;
+  margin-left: -15px;
 }
 .task-card__dt-label {
   font-size: 10px;
@@ -22393,8 +22393,7 @@ kbd.cmd__kbd {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-sizing: border-box;
-  padding-bottom: 16px;
+  align-self: start;
 }
 
 /* Tabs */
@@ -22444,6 +22443,7 @@ kbd.cmd__kbd {
   padding: 22px 26px;
   flex: 1;
   min-height: 0;
+  margin-bottom: 16px;
   overflow-y: auto;
 }
 
