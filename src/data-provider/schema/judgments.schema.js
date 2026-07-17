@@ -11,7 +11,7 @@ export const JudgmentsSchema = {
     reporterCitation: 'string',
     court: 'string',
     bench: 'string',
-    judges: 'string',
+    judges: 'array',
     caseNumber: 'string',
     caseType: 'string',
     jurisdiction: 'string',
@@ -56,7 +56,7 @@ export const JudgmentsSchema = {
     pinned: 'boolean',
   },
   required: ['citation'],
-  defaults: { keywords: [], acts: [], paragraphs: [], provisions: [], legalIssue: [], tags: [] },
+  defaults: { keywords: [], acts: [], paragraphs: [], provisions: [], legalIssue: [], tags: [], judges: [] },
   relations: [],
   indexes: ['court', 'caseType', 'jurisdiction'],
 };

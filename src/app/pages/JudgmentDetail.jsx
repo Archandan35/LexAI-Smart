@@ -161,10 +161,14 @@ export default function JudgmentDetail() {
   }, [courts, benchTypes, judges, caseTypes, jurisdictions, caseStages, partyTypes, caseStatuses]);
 
   const resolve = (map, val) => (val ? (map[val] || val) : '');
+  const toArr = (v) => {
+    if (!v) return [];
+    if (Array.isArray(v)) return v.flatMap((e) => { if (typeof e === 'string') { try { return JSON.parse(e); } catch { return e; } } return e; });
+    if (typeof v === 'string') { try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch {} return [v]; }
+    return [];
+  };
   const judgeLabel = (val) => {
-    if (!val) return '';
-    const list = Array.isArray(val) ? val : String(val).split(',');
-    return list.map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).join(', ');
+    return toArr(val).map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).join(', ');
   };
   const courtLabel = (val) => resolve(nameMap.court, val);
   const benchLabel = (val) => resolve(nameMap.bench, val) || judgeLabel(val);
@@ -250,12 +254,12 @@ export default function JudgmentDetail() {
     if (judgment.caseType) rows.push({ key: 'Subject', val: caseTypeLabel(judgment.caseType) });
     if (judgment.jurisdiction) rows.push({ key: 'Jurisdiction', val: jurisdictionLabel(judgment.jurisdiction) });
     if (judgment.stage) rows.push({ key: 'Stage', val: stageLabel(judgment.stage) });
-    if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: judgment.legalIssue.join(', ') });
-    if (judgment.tags?.length) rows.push({ key: 'Tags', val: judgment.tags.join(', ') });
+    if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: toArr(judgment.legalIssue).join(', ') });
+    if (judgment.tags?.length) rows.push({ key: 'Tags', val: toArr(judgment.tags).join(', ') });
     return rows;
   }, [judgment, nameMap]);
 
-  const tags = useMemo(() => judgment?.keywords || [], [judgment]);
+  const tags = useMemo(() => toArr(judgment?.keywords), [judgment]);
 
   const mainColRef = useRef(null);
   const sideColRef = useRef(null);
