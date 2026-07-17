@@ -954,6 +954,22 @@ function systemSqlGrants() {
     '  grant select on all tables in schema public to anon;',
     '  alter default privileges in schema public grant select on tables to anon;',
     'end if; end $$;',
+    '',
+    '-- Function-level grants for system functions',
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then",
+    "  grant execute on function exec_sql(text) to authenticated; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
+    "  grant execute on function exec_sql(text) to anon; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'service_role') then",
+    "  grant execute on function exec_sql(text) to service_role; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then",
+    "  grant execute on function safe_ddl(text) to authenticated; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
+    "  grant execute on function safe_ddl(text) to anon; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'service_role') then",
+    "  grant execute on function safe_ddl(text) to service_role; end if; end $$;",
+    "do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then",
+    "  grant execute on function next_lx_id(text) to anon; end if; end $$;",
   ].join('\n');
 }
 

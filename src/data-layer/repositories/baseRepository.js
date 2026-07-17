@@ -136,7 +136,6 @@ async function grantCollectionAccess(db, collection) {
     drop policy if exists "_sequences_anon_all" on "_sequences";
     create policy "_sequences_anon_all" on "_sequences" for all to anon using (true) with check (true);
     grant insert, select, update, delete on table "_sequences" to anon;
-    grant execute on function next_lx_id(text) to anon;
   `;
   const res = await db.execSql(sql);
   if (res?.needsManual) {

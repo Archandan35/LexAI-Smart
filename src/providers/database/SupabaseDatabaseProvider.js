@@ -102,8 +102,11 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     lines.push('');
     lines.push('grant execute on function exec_sql(text) to authenticated;');
     lines.push('grant execute on function exec_sql(text) to anon;');
+    lines.push('grant execute on function exec_sql(text) to service_role;');
     lines.push('grant execute on function safe_ddl(text) to authenticated;');
     lines.push('grant execute on function safe_ddl(text) to anon;');
+    lines.push('grant execute on function safe_ddl(text) to service_role;');
+    lines.push('grant execute on function next_lx_id(text) to anon;');
     return lines.join('\n');
   }
 
@@ -256,7 +259,37 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
           // Bootstrap worked but RPC still fails — caller will fall back to /pg/v1/sql
         }
       }
-      return { ok: false, needsManual: res.status === 405, error: await res.text().catch(() => 'Unknown error') };
+      // 401/403 = function exists but role lacks execute → try with service key directly
+      // (REST API has open CORS, unlike /pg/v1/sql)
+      if ((res.status === 401 || res.status === 403) && this.serviceKey) {
+        try {
+          const svcRes = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+            method: 'POST',
+            headers: { ...this._serviceHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sql }),
+          });
+          if (svcRes.ok) {
+            const body = await svcRes.text().catch(() => '');
+            // Auto-fix: grant exec_sql + next_lx_id to anon so future calls work directly
+            try {
+              await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+                method: 'POST',
+                headers: { ...this._serviceHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sql: 'grant execute on function exec_sql(text) to anon; grant execute on function next_lx_id(text) to anon;' }),
+              });
+            } catch (_) {}
+            if (!body) return { ok: true };
+            try {
+              const data = JSON.parse(body);
+              return { ok: true, data: Array.isArray(data) ? data : [data] };
+            } catch {
+              return { ok: true };
+            }
+          }
+        } catch (_) {}
+        // Both anon and service key failed — can't bootstrap from client
+      }
+      return { ok: false, needsManual: res.status === 405 ? !this.serviceKey : true, error: await res.text().catch(() => 'Unknown error') };
     } catch (e) {
       return { ok: false, error: e.message };
     }
