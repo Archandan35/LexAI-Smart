@@ -296,6 +296,7 @@ function MultiSelectWithCrud({ label, required, value = [], onChange, placeholde
 function SelectWithCrud({ label, required, value, onChange, placeholder, options, onCrudClick }) {
   const [input, setInput] = useState('');
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const wrapperRef = useRef(null);
 
@@ -313,7 +314,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
 
   useEffect(() => {
     function handle(e) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) { setOpen(false); setFocused(false); }
     }
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
@@ -323,6 +324,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
     onChange({ target: { value: v } });
     setInput('');
     setOpen(false);
+    setFocused(false);
     setFocusedIdx(-1);
   };
 
@@ -344,6 +346,8 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
     }
   };
 
+  const display = focused ? input : (value ? labelMap[value] || value : '');
+
   return (
     <div className="ajm-field" ref={wrapperRef}>
       <label>
@@ -355,11 +359,12 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
           <input
             className="ajm-input ajm-select-input"
             type="text"
-            placeholder={value ? labelMap[value] || value : placeholder}
-            value={input}
+            placeholder={!focused && !value ? placeholder : ''}
+            value={display}
             onChange={(e) => { setInput(e.target.value); setOpen(true); setFocusedIdx(-1); }}
             onKeyDown={handleKey}
-            onFocus={() => setOpen(true)}
+            onFocus={() => { setOpen(true); setFocused(true); }}
+            onBlur={() => { setFocused(false); setInput(''); }}
           />
           <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
           {open && filtered.length > 0 && (
@@ -517,8 +522,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
 
   useEffect(() => {
     if (!open) return;
+    const toArr = (v) => {
+      if (Array.isArray(v)) return v;
+      if (typeof v === 'string') { try { return JSON.parse(v); } catch { return []; } }
+      return [];
+    };
     const merged = editing ? { ...INITIAL_FORM, ...editing } : { ...INITIAL_FORM };
-    if (!Array.isArray(merged.judges)) merged.judges = [];
+    ['judges', 'acts', 'provisions', 'legalIssue', 'keywords', 'tags'].forEach((k) => { merged[k] = toArr(merged[k]); });
     setForm(merged);
     setTab('general');
     Promise.all([
