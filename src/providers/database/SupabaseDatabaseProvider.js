@@ -351,24 +351,28 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const res = await fetch(`${this._endpoint(name)}?limit=1`, {
+      const res = await fetch(`${this.url}/rest/v1/${name}?limit=1`, {
         headers: this._headers(),
         signal: controller.signal,
       });
       clearTimeout(timer);
       if (res.ok || res.status === 200 || res.status === 206) return 'present';
       if (res.status === 404) return 'missing';
-      // 401/403/429/5xx/other → we cannot determine existence; treat as blocked
-      // (do NOT report as missing — e.g. egress throttle, RLS, key issue).
-      return 'blocked';
+      // Explicit auth/throttle rejections → we cannot determine existence.
+      if (res.status === 401 || res.status === 403 || res.status === 429) return 'blocked';
+      // Any other status (5xx, etc.) → treat as missing rather than falsely
+      // flagging the whole setup as "blocked/throttled".
+      return 'missing';
     } catch (e) {
       clearTimeout(timer);
       const msg = e && e.message ? e.message : '';
-      if (e && e.name === 'AbortError') return 'blocked';
+      // Only a definitive auth/throttle rejection means "blocked".
+      if (e && e.name === 'AbortError') return 'missing';
       if (/throttl|egress|rate.?limit|429/i.test(msg)) return 'blocked';
       if (/auth denied|401|403|forbidden|unauthorized/i.test(msg)) return 'blocked';
-      if (/timeout|abort|network|fetch failed|failed to fetch/i.test(msg)) return 'blocked';
-      return 'blocked';
+      // Network/CORS/unknown errors on a fresh project → assume missing
+      // (don't falsely report the setup as blocked/throttled).
+      return 'missing';
     }
   }
 
