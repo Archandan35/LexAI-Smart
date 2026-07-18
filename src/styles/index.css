@@ -16171,7 +16171,7 @@ kbd.cmd__kbd {
 }
 
 .dmc-body {
-  padding: 28px 0 60px;
+  padding: 28px 32px 60px;
   width: 100%;
 }
 
@@ -22696,11 +22696,10 @@ kbd.cmd__kbd {
 .bench-types__grid-card-actions {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   padding: 12px 0 8px;
   position: relative;
   margin-top: 4px;
-  flex-wrap: wrap;
 }
 .bench-types__grid-card-actions::before {
   content: '';
@@ -22712,16 +22711,24 @@ kbd.cmd__kbd {
   background: var(--border);
 }
 
-.bench-types__grid-card-actions .cmp-act-btn {
+.bench-types__grid-card-action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.bench-types__grid-card-action-item .cmp-act-btn {
   background: transparent;
   border: 1px solid transparent;
-  padding: 8px 12px;
+  padding: 6px 10px;
   cursor: pointer;
   color: var(--text-faint);
   border-radius: 8px;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
+  line-height: 1;
 }
-.bench-types__grid-card-actions .cmp-act-btn:hover {
+.bench-types__grid-card-action-item .cmp-act-btn:hover {
   background: #fff;
   border-color: var(--border);
   color: var(--text);
@@ -22729,20 +22736,12 @@ kbd.cmd__kbd {
   box-shadow: 0 4px 14px rgba(0,0,0,0.1);
 }
 
-.bench-types__grid-card-action-labels {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 4px 6px 0;
-}
-.bench-types__grid-card-action-labels span {
+.bench-types__grid-card-action-item .cmp-act-label {
   font-size: 9.5px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: var(--text-faint);
   text-align: center;
-  width: 42px;
 }
 
 .bench-types__bottom-nav {

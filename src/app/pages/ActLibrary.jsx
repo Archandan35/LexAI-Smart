@@ -724,15 +724,21 @@ export default function ActLibrary() {
                     </div>
                   </div>
                   <div className="bench-types__grid-card-actions">
-                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                    <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
-                    <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="bench-types__grid-card-action-labels">
-                      <span>View</span>
-                      <span>Edit</span>
-                      <span>Copy</span>
-                      <span>Delete</span>
+                    <div className="bench-types__grid-card-action-item">
+                      <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={20} /></button>
+                      <span className="cmp-act-label">View</span>
+                    </div>
+                    <div className="bench-types__grid-card-action-item">
+                      <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={20} /></button>
+                      <span className="cmp-act-label">Edit</span>
+                    </div>
+                    <div className="bench-types__grid-card-action-item">
+                      <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={20} /></button>
+                      <span className="cmp-act-label">Copy</span>
+                    </div>
+                    <div className="bench-types__grid-card-action-item">
+                      <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={20} /></button>
+                      <span className="cmp-act-label">Delete</span>
                     </div>
                   </div>
                 </div>
