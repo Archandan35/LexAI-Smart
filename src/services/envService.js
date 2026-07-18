@@ -49,10 +49,25 @@ function catalogMeta(name) {
   return { category: 'Custom', secret: /KEY|SECRET|TOKEN|PASSWORD/i.test(name) };
 }
 
+let cachedList = null;
+let cachedListTs = 0;
+const CACHE_TTL = 60_000;
+
+async function getOverrides() {
+  if (cachedList && Date.now() - cachedListTs < CACHE_TTL) return cachedList;
+  cachedList = await envVarsRepository.getAll();
+  cachedListTs = Date.now();
+  return cachedList;
+}
+
+function invalidateCache() { cachedList = null; cachedListTs = 0; }
+
 export const envService = {
+  invalidateCache,
+
   // Merge catalog + config snapshot + DB overrides into a single row list.
   async list() {
-    const overrides = await envVarsRepository.getAll();
+    const overrides = await getOverrides();
     const byName = Object.fromEntries(overrides.map((o) => [o.name, o]));
     const snap = snapshot();
     const rows = [];
@@ -94,7 +109,7 @@ export const envService = {
 
   async upsert({ name, value, status }, user) {
     const meta = catalogMeta(name);
-    const existing = (await envVarsRepository.getAll()).find((o) => o.name === name);
+    const existing = (await getOverrides()).find((o) => o.name === name);
     const patch = {
       name, value: value ?? existing?.value ?? '', status: status || existing?.status || 'enabled',
       category: meta.category, secret: meta.secret, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin',
@@ -103,20 +118,22 @@ export const envService = {
     if (existing) row = await envVarsRepository.update(existing.id, patch);
     else row = await envVarsRepository.create({ id: uid('env'), createdAt: DateEngine.now(), ...patch });
 
+    invalidateCache();
     await this.recordHistory(name, existing?.value, patch.value, meta.secret, user);
     await auditService.record({ action: existing ? 'env.update' : 'env.create', module: 'env', user, details: name });
     return row;
   },
 
   async remove(name, user) {
-    const existing = (await envVarsRepository.getAll()).find((o) => o.name === name);
+    const existing = (await getOverrides()).find((o) => o.name === name);
     if (existing) await envVarsRepository.delete(existing.id);
+    invalidateCache();
     await auditService.record({ action: 'env.delete', module: 'env', user, details: name });
   },
 
   async setStatus(name, status, user) {
-    const existing = (await envVarsRepository.getAll()).find((o) => o.name === name);
-    if (existing) await envVarsRepository.update(existing.id, { status, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin' });
+    const existing = (await getOverrides()).find((o) => o.name === name);
+    if (existing) { await envVarsRepository.update(existing.id, { status, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin' }); invalidateCache(); }
     else await this.upsert({ name, status }, user);
     await auditService.record({ action: status === 'enabled' ? 'env.enable' : 'env.disable', module: 'env', user, details: name });
   },

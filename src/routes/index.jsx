@@ -23,7 +23,6 @@ const CaseDocuments = lazy(() => import('@/app/pages/CaseDocuments.jsx'));
 const ActLibrary = lazy(() => import('@/app/pages/ActLibrary.jsx'));
 const JudgmentLibrary = lazy(() => import('@/app/pages/JudgmentLibrary.jsx'));
 const JudgmentDetail = lazy(() => import('@/app/pages/JudgmentDetail.jsx'));
-const PrecedentVault = lazy(() => import('@/app/pages/PrecedentVault.jsx'));
 const CreateCase = lazy(() => import('@/app/pages/CreateCase.jsx'));
 
 const Dashboard = lazy(() => import('@/app/pages/Dashboard.jsx'));
@@ -145,7 +144,6 @@ export default function AppRoutes() {
         <Route path="/research/act-library" element={G('research', <ActLibrary />)} />
         <Route path="/research/judgment-library" element={G('research', <JudgmentLibrary />)} />
         <Route path="/research/judgment-library/:id" element={G('research', <JudgmentDetail />)} />
-        <Route path="/research/precedent-vault" element={G('research', <PrecedentVault />)} />
         <Route path="/research" element={G('research', <LegalResearch />)} />
 
         {/* ── Court Management ── */}

@@ -37,6 +37,18 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { taskCategoryLogic } from '@/logic/taskCategoryLogic.js';
 import { taskStatusLogic } from '@/logic/taskStatusLogic.js';
 
+const REF_CACHE_TTL = 300_000;
+let refCache = {};
+let refCacheTs = 0;
+
+async function cachedRef(name, fn) {
+  if (refCache[name] && Date.now() - refCacheTs < REF_CACHE_TTL) return refCache[name];
+  const data = await fn();
+  refCache[name] = data;
+  refCacheTs = Date.now();
+  return data;
+}
+
 const TABS = ['calendar', 'tasks'];
 
 /* ---------- helpers ---------- */
@@ -78,11 +90,11 @@ export default function Calendar() {
       hearingsRepository.getAll().catch(() => []),
       remindersRepository.getAll().catch(() => []),
       taskLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-      casesRepository.getAll().catch(() => []),
-      priorityLogic.list().catch(() => []),
-      taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-      taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-      caseStatusLogic.list().catch(() => []),
+      casesRepository.getAll({ select: 'id,title,caseNumber,nextHearing,status' }).catch(() => []),
+      cachedRef('priorities', () => priorityLogic.list().catch(() => [])),
+      cachedRef('categories', () => taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
+      cachedRef('statuses', () => taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
+      cachedRef('caseStatuses', () => caseStatusLogic.list().catch(() => [])),
     ]).then(([h, rm, t, c, p, cat, st, cst]) => {
       setHearings(Array.isArray(h) ? h : []);
       setReminders(Array.isArray(rm) ? rm : []);

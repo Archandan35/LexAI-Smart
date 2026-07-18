@@ -40,7 +40,6 @@ import { ActsSchema } from './acts.schema.js';
 import { PromptsSchema } from './prompts.schema.js';
 import { TemplatesSchema } from './templates.schema.js';
 import { LegalNoticesSchema } from './legal_notices.schema.js';
-import { PrecedentsSchema } from './precedents.schema.js';
 import { ReportsSchema } from './reports.schema.js';
 import { CaseStatusesSchema } from './case_statuses.schema.js';
 import { PrioritiesSchema } from './priorities.schema.js';
@@ -97,7 +96,6 @@ export const schemas = {
   prompts: PromptsSchema,
   templates: TemplatesSchema,
   legal_notices: LegalNoticesSchema,
-  precedents: PrecedentsSchema,
   reports: ReportsSchema,
   case_statuses: CaseStatusesSchema,
   priorities: PrioritiesSchema,

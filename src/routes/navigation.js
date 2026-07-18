@@ -6,8 +6,9 @@ export const NAV_GROUPS = [
       { to: '/dashboard', label: 'Dashboard', icon: 'grid', end: true, module: 'dashboard' },
     ],
   },
+  { type: 'heading', label: 'Case Management' },
   {
-    label: 'Case Management',
+    label: '',
     items: [
       {
         label: 'Cases', icon: 'folder',
@@ -38,8 +39,9 @@ export const NAV_GROUPS = [
       { to: '/contacts', label: 'Contacts', icon: 'book' },
     ],
   },
+  { type: 'heading', label: 'Document Center' },
   {
-    label: 'Document Center',
+    label: '',
     items: [
       { to: '/documents', label: 'Case Documents', icon: 'folder', end: true, module: 'caseManage' },
       { to: '/documents/review', label: 'Document Review', icon: 'scan', module: 'documents' },
@@ -53,8 +55,9 @@ export const NAV_GROUPS = [
       { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
     ],
   },
+  { type: 'heading', label: 'Drafting Center' },
   {
-    label: 'Drafting Center',
+    label: '',
     items: [
       { to: '/drafting', label: 'Drafting Studio', icon: 'pen', end: true, module: 'drafting' },
       { to: '/drafting/templates', label: 'Templates Library', icon: 'copy', module: 'drafting' },
@@ -63,8 +66,9 @@ export const NAV_GROUPS = [
       { to: '/drafting/archive', label: 'Document Archive', icon: 'folder', module: 'drafting' },
     ],
   },
+  { type: 'heading', label: 'Research & Analysis' },
   {
-    label: 'Research & Analysis',
+    label: '',
     items: [
       { to: '/research', label: 'Legal Research', icon: 'book', end: true, module: 'research' },
       { to: '/research/citations', label: 'Citation Search', icon: 'search', module: 'citations' },
@@ -74,8 +78,6 @@ export const NAV_GROUPS = [
       { to: '/research/cross-examination', label: 'Cross Examination', icon: 'mic', module: 'crossExamination' },
       { to: '/research/evidence-gap', label: 'Evidence Gap Analysis', icon: 'layers', module: 'evidence' },
       { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
-      { to: '/research/judgment-library', label: 'Judgment Library', icon: 'database', module: 'research' },
-      { to: '/research/precedent-vault', label: 'Precedent Vault', icon: 'star', module: 'research' },
     ],
   },
   { type: 'heading', label: 'COURT MANAGEMENT' },

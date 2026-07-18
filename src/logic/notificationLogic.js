@@ -7,6 +7,9 @@ import { preferencesService } from '@/services/preferencesService.js';
 // preferences provider so the bell badge behaves
 // naturally without a backend.
 const DISMISS_KEY = 'lexai.notifs.dismissed.v1';
+const CACHE_TTL = 60_000;
+let cache = null;
+let cacheTs = 0;
 
 function readDismissed() {
   const arr = preferencesService.get(DISMISS_KEY, []);
@@ -23,7 +26,10 @@ function dayDiff(date) {
 }
 
 export const notificationLogic = {
+  invalidateCache() { cache = null; cacheTs = 0; },
+
   async list({ windowDays = 7 } = {}) {
+    if (cache && Date.now() - cacheTs < CACHE_TTL) return cache;
     const dismissed = readDismissed();
     let hearings = [];
     let reminders = [];
@@ -70,13 +76,18 @@ export const notificationLogic = {
       });
     });
 
-    return notifs.sort((a, b) => a.sortKey - b.sortKey);
+    const result = notifs.sort((a, b) => a.sortKey - b.sortKey);
+    cache = result;
+    cacheTs = Date.now();
+    return result;
   },
 
   dismiss(id) {
+    invalidateCache();
     const d = readDismissed(); d.add(id); writeDismissed(d);
   },
   dismissAll(ids) {
+    invalidateCache();
     const d = readDismissed(); ids.forEach((i) => d.add(i)); writeDismissed(d);
   },
 };
