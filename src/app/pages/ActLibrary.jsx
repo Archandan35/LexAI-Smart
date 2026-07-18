@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react';
 import Card from '@/components/Card.jsx';
+import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import { Select } from '@/components/Field.jsx';
+import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { actLogic } from '@/logic/actLogic.js';
+import { useToast } from '@/data-layer/ToastContext.jsx';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import Modal from '@/components/Modal.jsx';
+
+const ACTIONS = [
+  { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
+  { key: 'edit', label: 'Edit', icon: 'edit', variant: 'outline' },
+  { key: 'delete', label: 'Delete', icon: 'trash', variant: 'danger-outline' },
+  { key: 'import', label: 'Import', icon: 'upload', variant: 'outline' },
+];
 
 export default function ActLibrary() {
+  const toast = useToast();
   const [items, setItems] = useState([]);
   const [stats, setStats] = useState({ totalActs: 0, totalSections: 0, totalAmendments: 0, lastUpdated: '—' });
   const [loading, setLoading] = useState(true);
@@ -14,6 +26,37 @@ export default function ActLibrary() {
   const [viewMode, setViewMode] = useState('list');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [activeAction, setActiveAction] = useState(null);
+  const [subMode, setSubMode] = useState('single');
+
+  const [newTitle, setNewTitle] = useState('');
+  const [newType, setNewType] = useState('');
+  const [newJurisdiction, setNewJurisdiction] = useState('');
+  const [newYear, setNewYear] = useState('');
+  const [newSections, setNewSections] = useState('');
+  const [newAmendments, setNewAmendments] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newStatus, setNewStatus] = useState('Active');
+  const [newCode, setNewCode] = useState('');
+
+  const [editId, setEditId] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editType, setEditType] = useState('');
+  const [editJurisdiction, setEditJurisdiction] = useState('');
+  const [editYear, setEditYear] = useState('');
+  const [editSections, setEditSections] = useState('');
+  const [editAmendments, setEditAmendments] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editStatus, setEditStatus] = useState('Active');
+  const [editCode, setEditCode] = useState('');
+
+  const [delId, setDelId] = useState('');
+  const [viewItem, setViewItem] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [dupTarget, setDupTarget] = useState(null);
+  const [confirmState, setConfirmState] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [importFile, setImportFile] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -27,7 +70,7 @@ export default function ActLibrary() {
   const types = [...new Set(items.map(i => i.act_type).filter(Boolean))];
 
   const filtered = items.filter(i => {
-    if (search && !i.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !i.title?.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterType && i.act_type !== filterType) return false;
     return true;
   }).sort((a, b) => {
@@ -47,24 +90,133 @@ export default function ActLibrary() {
 
   useEffect(() => { setPage(1); }, [search, filterType]);
 
-  if (loading) return <div className="fade-in bench-types__loading"><div className="spinner" /></div>;
+  const reset = () => {
+    setActiveAction(null);
+    setSubMode('single');
+    setNewTitle(''); setNewType(''); setNewJurisdiction(''); setNewYear(''); setNewSections(''); setNewAmendments(''); setNewDesc(''); setNewStatus('Active'); setNewCode('');
+    setEditId(''); setEditTitle(''); setEditType(''); setEditJurisdiction(''); setEditYear(''); setEditSections(''); setEditAmendments(''); setEditDesc(''); setEditStatus('Active'); setEditCode('');
+    setDelId(''); setImportFile(null);
+    setEditTarget(null); setDupTarget(null);
+    setPage(1);
+  };
 
-  const heroIcon = 'book';
-  const heroWatermark = 'book';
+  const activate = (key) => {
+    if (activeAction === key) { reset(); return; }
+    setActiveAction(key);
+    setSubMode('single');
+  };
+
+  const doAdd = async () => {
+    if (!newTitle.trim()) { toast.push('Title is required.', 'error'); return; }
+    setBusy(true);
+    const res = await actLogic.create({ title: newTitle, act_type: newType, jurisdiction: newJurisdiction, year: parseInt(newYear) || 0, sections_count: parseInt(newSections) || 0, amendments_count: parseInt(newAmendments) || 0, description: newDesc, status: newStatus, short_code: newCode });
+    setBusy(false);
+    if (res.ok) { reset(); toast.push('Act added.', 'success'); load(); }
+    else toast.push(res.error || 'Failed to add act.', 'error');
+  };
+
+  const doEdit = async () => {
+    if (!editId) { toast.push('Select an act to edit.', 'error'); return; }
+    if (!editTitle.trim()) { toast.push('Title cannot be empty.', 'error'); return; }
+    setBusy(true);
+    const res = await actLogic.update(editId, { title: editTitle, act_type: editType, jurisdiction: editJurisdiction, year: parseInt(editYear) || 0, sections_count: parseInt(editSections) || 0, amendments_count: parseInt(editAmendments) || 0, description: editDesc, status: editStatus, short_code: editCode });
+    setBusy(false);
+    if (res.ok) { setEditId(''); setEditTarget(null); reset(); toast.push('Act updated.', 'success'); load(); }
+    else toast.push(res.error || 'Failed to update act.', 'error');
+  };
+
+  const doDelete = async () => {
+    if (!delId) { toast.push('Select an act to delete.', 'error'); return; }
+    const item = items.find(x => x.id === delId);
+    setConfirmState({
+      title: 'Delete Act',
+      message: `Delete act "${item?.title}"?`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await actLogic.remove(delId);
+        setBusy(false);
+        if (res.ok || !res.error) { setDelId(''); toast.push('Act deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
+  };
+
+  const doImport = async () => {
+    if (!importFile) { toast.push('Select a CSV file.', 'error'); return; }
+    setBusy(true);
+    toast.push('CSV import coming soon.', 'info');
+    setBusy(false);
+  };
+
+  const startEdit = (item) => {
+    setEditId(item.id);
+    setEditTitle(item.title || '');
+    setEditType(item.act_type || '');
+    setEditJurisdiction(item.jurisdiction || '');
+    setEditYear(item.year?.toString() || '');
+    setEditSections(item.sections_count?.toString() || '');
+    setEditAmendments(item.amendments_count?.toString() || '');
+    setEditDesc(item.description || '');
+    setEditStatus(item.status || 'Active');
+    setEditCode(item.short_code || '');
+    setEditTarget(item);
+  };
+
+  const startDelete = (item) => {
+    setActiveAction('delete');
+    setSubMode('single');
+    setDelId(item.id);
+  };
+
+  const startDuplicate = (item) => {
+    setNewTitle((item.title || '') + ' (copy)');
+    setNewType(item.act_type || '');
+    setNewJurisdiction(item.jurisdiction || '');
+    setNewYear(item.year?.toString() || '');
+    setNewSections(item.sections_count?.toString() || '');
+    setNewAmendments(item.amendments_count?.toString() || '');
+    setNewDesc(item.description || '');
+    setNewStatus(item.status || 'Active');
+    setNewCode(item.short_code || '');
+    setDupTarget(item);
+  };
+
+  const confirmDeleteItem = (item) => {
+    setConfirmState({
+      title: 'Delete Act',
+      message: `Delete act "${item?.title}"? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await actLogic.remove(item.id);
+        setBusy(false);
+        if (res.ok || !res.error) { toast.push('Act deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
+  };
+
+  if (loading) return <div className="fade-in bench-types__loading"><div className="spinner" /></div>;
 
   return (
     <div className="fade-in bench-types">
       <div className="bench-types__hero">
-        <div className="bench-types__hero-icon"><Icon name={heroIcon} size={34} /></div>
+        <div className="bench-types__hero-icon"><Icon name="book" size={34} /></div>
         <div className="bench-types__hero-text">
           <h2>Acts Library</h2>
           <p>Browse and search legal acts, their sections, and amendments.</p>
           <div className="bench-types__hero-accent" />
         </div>
-        <Icon name={heroWatermark} className="bench-types__hero-watermark bench-types__watermark-icon" />
+        <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
       </div>
 
-      {/* ── Desktop 6-stat row ── */}
       <div className="bench-types__stats-row">
         <div className="bench-types__statcard">
           <div className="bench-types__statcard-icon bench-types__statcard-icon--total"><Icon name="book" size={16} /></div>
@@ -116,29 +268,22 @@ export default function ActLibrary() {
         </div>
       </div>
 
-      {/* ── Toolbar: search, filters, view toggle ── */}
-      <Card bodyClass="card__body--flush" style={{ marginBottom: 16 }}>
-        <div style={{ padding: '14px 18px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 220, position: 'relative' }}>
-            <div className="bench-types__search">
-              <Icon name="search" size={18} />
-              <input value={search} placeholder="Search acts by title..." autoComplete="off" onChange={e => setSearch(e.target.value)} style={{ width: '100%' }} />
-            </div>
-          </div>
-          <div style={{ width: 160 }}>
-            <Select value={filterType} onChange={e => setFilterType(e.target.value)}>
-              <option value="">All Types</option>
-              {types.map(t => <option key={t} value={t}>{t}</option>)}
-            </Select>
-          </div>
-          <div style={{ width: 160 }}>
-            <Select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-              <option value="title">Sort: Title</option>
-              <option value="type">Sort: Type</option>
-              <option value="sections">Sort: Sections</option>
-              <option value="amendments">Sort: Amendments</option>
-            </Select>
-          </div>
+      {/* ── Toolbar: actions + search + filters + view toggle ── */}
+      <div className="bench-types__toolbar">
+        <div className="bench-types__toolbar-left">
+          {ACTIONS.map(a => (
+            <Button
+              key={a.key}
+              icon={a.icon}
+              variant={activeAction === a.key ? a.variant : 'ghost'}
+              onClick={() => activate(a.key)}
+              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+            >
+              {a.label}
+            </Button>
+          ))}
+        </div>
+        <div className="bench-types__toolbar-right">
           <div className="bench-types__view-toggle">
             <button className={`bench-types__view-btn${viewMode === 'list' ? ' active' : ''}`} onClick={() => setViewMode('list')} title="List view">
               <Icon name="list" size={16} />
@@ -148,7 +293,179 @@ export default function ActLibrary() {
             </button>
           </div>
         </div>
-      </Card>
+      </div>
+
+      <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={16} /> Import
+      </button>
+
+      {/* ── Action forms ── */}
+      {activeAction && (
+        <Card className="bench-types__form">
+          <div className="bench-types__form-header">
+            <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
+            <span className="bench-types__form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Act</span>
+            <button className="iconbtn bench-types__form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
+          </div>
+          <div className="bench-types__form-body">
+            {activeAction === 'add' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Title <span className="bench-types__required">*</span></label>
+                  <Input value={newTitle} placeholder="e.g., Indian Penal Code" onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Short Code</label>
+                  <Input value={newCode} placeholder="e.g., IPC" onChange={e => setNewCode(e.target.value)} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Type</label>
+                  <Input value={newType} placeholder="e.g., Criminal" onChange={e => setNewType(e.target.value)} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Jurisdiction</label>
+                  <Input value={newJurisdiction} placeholder="e.g., National" onChange={e => setNewJurisdiction(e.target.value)} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Year</label>
+                  <Input type="number" value={newYear} placeholder="e.g., 1860" onChange={e => setNewYear(e.target.value)} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Sections</label>
+                  <Input type="number" value={newSections} placeholder="0" onChange={e => setNewSections(e.target.value)} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Amendments</label>
+                  <Input type="number" value={newAmendments} placeholder="0" onChange={e => setNewAmendments(e.target.value)} />
+                </div>
+                <div className="bench-types__field">
+                  <label className="bench-types__label">Status</label>
+                  <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </Select>
+                </div>
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Description <span className="bench-types__optional">(optional)</span></label>
+                  <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={500} />
+                </div>
+              </div>
+            )}
+            {activeAction === 'edit' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Select Act <span className="bench-types__required">*</span></label>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditTitle(item.title || ''); setEditType(item.act_type || ''); setEditJurisdiction(item.jurisdiction || ''); setEditYear(item.year?.toString() || ''); setEditSections(item.sections_count?.toString() || ''); setEditAmendments(item.amendments_count?.toString() || ''); setEditDesc(item.description || ''); setEditStatus(item.status || 'Active'); setEditCode(item.short_code || ''); } }}>
+                    <option value="">— choose —</option>
+                    {items.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
+                  </Select>
+                </div>
+                {editId && (
+                  <>
+                    <div className="bench-types__field bench-types__field--full">
+                      <label className="bench-types__label">Title <span className="bench-types__required">*</span></label>
+                      <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Short Code</label>
+                      <Input value={editCode} onChange={e => setEditCode(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Type</label>
+                      <Input value={editType} onChange={e => setEditType(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Jurisdiction</label>
+                      <Input value={editJurisdiction} onChange={e => setEditJurisdiction(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Year</label>
+                      <Input type="number" value={editYear} onChange={e => setEditYear(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Sections</label>
+                      <Input type="number" value={editSections} onChange={e => setEditSections(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Amendments</label>
+                      <Input type="number" value={editAmendments} onChange={e => setEditAmendments(e.target.value)} />
+                    </div>
+                    <div className="bench-types__field">
+                      <label className="bench-types__label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </Select>
+                    </div>
+                    <div className="bench-types__field bench-types__field--full">
+                      <label className="bench-types__label">Description</label>
+                      <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} maxLength={500} />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            {activeAction === 'delete' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Select Act <span className="bench-types__required">*</span></label>
+                  <Select value={delId} onChange={e => setDelId(e.target.value)}>
+                    <option value="">— choose —</option>
+                    {items.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
+                  </Select>
+                </div>
+                {delId && (
+                  <div className="bench-types__warning">
+                    <Icon name="alert" size={16} />
+                    <span>This action cannot be undone. All associated data will be removed.</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeAction === 'import' && (
+              <div className="bench-types__import">
+                <div className="bench-types__import-icon"><Icon name="upload" size={28} /></div>
+                <div className="bench-types__import-title">Import from CSV</div>
+                <div className="bench-types__import-hint">CSV columns: title, act_type, jurisdiction, year, sections_count, amendments_count</div>
+                <label className="bench-types__import-btn">
+                  <input type="file" accept=".csv" className="bench-types__file-input" onChange={e => setImportFile(e.target.files[0])} />
+                  <span className="btn btn--ghost">{importFile ? importFile.name : 'Choose CSV file'}</span>
+                </label>
+                {importFile && <div className="bench-types__import-file">Selected: {importFile.name}</div>}
+              </div>
+            )}
+          </div>
+          <div className="bench-types__form-footer">
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>}
+            {activeAction === 'edit' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
+            {activeAction === 'delete' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Search & filter bar ── */}
+      <div className="bench-types__search">
+        <Icon name="search" size={18} />
+        <input value={search} placeholder="Search acts by title..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+      </div>
+      <div style={{ display: 'flex', gap: 12, margin: '8px 0 16px', flexWrap: 'wrap' }}>
+        <div style={{ width: 180 }}>
+          <Select value={filterType} onChange={e => setFilterType(e.target.value)}>
+            <option value="">All Types</option>
+            {types.map(t => <option key={t} value={t}>{t}</option>)}
+          </Select>
+        </div>
+        <div style={{ width: 180 }}>
+          <Select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+            <option value="title">Sort: Title</option>
+            <option value="type">Sort: Type</option>
+            <option value="sections">Sort: Sections</option>
+            <option value="amendments">Sort: Amendments</option>
+          </Select>
+        </div>
+      </div>
 
       {/* ── Mobile stat cards ── */}
       <div className="bench-types__stat-cards bench-types__mobile-only">
@@ -175,6 +492,7 @@ export default function ActLibrary() {
         </div>
       </div>
 
+      {/* ── List view ── */}
       {viewMode === 'list' ? (
         <>
           <div className="bench-types__table-card">
@@ -185,13 +503,15 @@ export default function ActLibrary() {
                   <th>TITLE</th>
                   <th>TYPE</th>
                   <th>JURISDICTION</th>
+                  <th>YEAR</th>
                   <th>SECTIONS</th>
                   <th>AMENDMENTS</th>
+                  <th className="bench-types__th--w136">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.length === 0 ? (
-                  <tr><td className="bench-types__empty" colSpan={6}>No acts found.</td></tr>
+                  <tr><td className="bench-types__empty" colSpan={8}>No acts found.</td></tr>
                 ) : paged.map((item, idx) => (
                   <tr key={item.id}>
                     <td><span className="cmp-order-num">{(safePage - 1) * perPage + idx + 1}</span></td>
@@ -203,8 +523,17 @@ export default function ActLibrary() {
                     </td>
                     <td>{item.act_type ? <span className="badge badge--info">{item.act_type}</span> : '—'}</td>
                     <td>{item.jurisdiction || '—'}</td>
+                    <td>{item.year || '—'}</td>
                     <td>{item.sections_count || 0}</td>
                     <td>{item.amendments_count || 0}</td>
+                    <td>
+                      <div className="cmp-actions">
+                        <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                        <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                        <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                        <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -237,7 +566,7 @@ export default function ActLibrary() {
           <div className="bench-types__mobile-list bench-types__mobile-only">
             {paged.length === 0 ? (
               <div className="bench-types__empty">No acts found.</div>
-            ) : paged.map((item, idx) => (
+            ) : paged.map((item) => (
               <div key={item.id} className="bench-types__mobile-card">
                 <div className="bench-types__mobile-card-row1">
                   <span className="bench-types__mobile-avatar"><Icon name="book" size={18} /></span>
@@ -249,12 +578,32 @@ export default function ActLibrary() {
                     <span className="bench-types__mobile-code">{item.jurisdiction || '—'} · {item.sections_count || 0} sections</span>
                   </div>
                 </div>
+                <div className="bench-types__mobile-divider"></div>
+                <div className="bench-types__mobile-card-row2">
+                  <button className="bench-types__mobile-action" title="View" onClick={() => setViewItem(item)}>
+                    <span className="bench-types__mobile-action-icon"><Icon name="eye" size={15} /></span>
+                    <span className="bench-types__mobile-action-label">View</span>
+                  </button>
+                  <button className="bench-types__mobile-action" title="Edit" onClick={() => startEdit(item)}>
+                    <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
+                    <span className="bench-types__mobile-action-label">Edit</span>
+                  </button>
+                  <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}>
+                    <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
+                    <span className="bench-types__mobile-action-label">Duplicate</span>
+                  </button>
+                  <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
+                    <span className="bench-types__mobile-action-icon"><Icon name="trash" size={15} /></span>
+                    <span className="bench-types__mobile-action-label">Delete</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </>
       ) : (
         <>
+          {/* ── Grid view ── */}
           <div className="bench-types__table-footer bench-types__desktop-only">
             <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} acts</div>
             <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
@@ -299,6 +648,12 @@ export default function ActLibrary() {
                       <span className="bench-types__grid-card-stat-label">Amendments</span>
                     </div>
                   </div>
+                  <div className="cmp-actions" style={{ marginTop: 8 }}>
+                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                  </div>
                 </div>
                 <div className="bench-types__grid-card-footer">
                   <span className="bench-types__mobile-code">{item.short_code || '—'}</span>
@@ -322,6 +677,167 @@ export default function ActLibrary() {
             )}
           </div>
         </>
+      )}
+
+      {/* ── View Modal ── */}
+      <Modal open={!!viewItem} title={viewItem?.title || 'Act Details'} onClose={() => setViewItem(null)}>
+        <div className="bench-types__detail-body">
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Title</span>
+            <span className="bench-types__detail-value">{viewItem?.title || '—'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Short Code</span>
+            <span className="bench-types__detail-value">{viewItem?.short_code || '—'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Type</span>
+            <span className="bench-types__detail-value">{viewItem?.act_type || '—'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Jurisdiction</span>
+            <span className="bench-types__detail-value">{viewItem?.jurisdiction || '—'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Year</span>
+            <span className="bench-types__detail-value">{viewItem?.year || '—'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Sections</span>
+            <span className="bench-types__detail-value">{viewItem?.sections_count || 0}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Amendments</span>
+            <span className="bench-types__detail-value">{viewItem?.amendments_count || 0}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Status</span>
+            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>{viewItem?.status || 'Active'}</span>
+          </div>
+          <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Description</span>
+            <span className="bench-types__detail-value">{viewItem?.description || '—'}</span>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Edit Modal ── */}
+      <Modal open={!!editTarget} title="Edit Act" onClose={() => setEditTarget(null)}
+        footer={<div className="cmp-modal-footer">
+          <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
+        </div>}>
+        <div className="bench-types__form-grid">
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Title <span className="bench-types__required">*</span></label>
+            <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Short Code</label>
+            <Input value={editCode} onChange={e => setEditCode(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Type</label>
+            <Input value={editType} onChange={e => setEditType(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Jurisdiction</label>
+            <Input value={editJurisdiction} onChange={e => setEditJurisdiction(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Year</label>
+            <Input type="number" value={editYear} onChange={e => setEditYear(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Sections</label>
+            <Input type="number" value={editSections} onChange={e => setEditSections(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Amendments</label>
+            <Input type="number" value={editAmendments} onChange={e => setEditAmendments(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Status</label>
+            <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Description</label>
+            <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} maxLength={500} />
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Duplicate Modal ── */}
+      <Modal open={!!dupTarget} title="Duplicate Act" onClose={() => setDupTarget(null)}
+        footer={<div className="cmp-modal-footer">
+          <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
+          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>
+        </div>}>
+        <div className="bench-types__form-grid">
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Title <span className="bench-types__required">*</span></label>
+            <Input value={newTitle} onChange={e => setNewTitle(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Short Code</label>
+            <Input value={newCode} onChange={e => setNewCode(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Type</label>
+            <Input value={newType} onChange={e => setNewType(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Jurisdiction</label>
+            <Input value={newJurisdiction} onChange={e => setNewJurisdiction(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Year</label>
+            <Input type="number" value={newYear} onChange={e => setNewYear(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Sections</label>
+            <Input type="number" value={newSections} onChange={e => setNewSections(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Amendments</label>
+            <Input type="number" value={newAmendments} onChange={e => setNewAmendments(e.target.value)} />
+          </div>
+          <div className="bench-types__field">
+            <label className="bench-types__label">Status</label>
+            <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+              <option>Active</option>
+              <option>Inactive</option>
+            </Select>
+          </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Description</label>
+            <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} maxLength={500} />
+          </div>
+        </div>
+      </Modal>
+
+      {busy && (
+        <div className="bench-types__busy-overlay">
+          <div className="bench-types__busy-box">
+            <div className="spinner" />
+            <span>Please wait…</span>
+          </div>
+        </div>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          open={true}
+          title={confirmState.title}
+          message={confirmState.message}
+          variant={confirmState.variant}
+          confirmLabel={confirmState.confirmLabel}
+          onConfirm={confirmState.onConfirm}
+          onCancel={confirmState.onCancel}
+        />
       )}
     </div>
   );

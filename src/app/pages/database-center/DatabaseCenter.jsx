@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 
 const TABS = [
@@ -14,15 +14,18 @@ const TABS = [
 ];
 
 export default function DatabaseCenter() {
+  const location = useLocation();
   return (
     <div className="dmc">
       <nav className="dmc-header">
-        {TABS.map((t) => (
-          <NavLink key={t.to} to={t.to} end={t.end} className={({ isActive }) => `dmc-tab${isActive ? ' dmc-tab--active' : ''}`}>
-            <Icon name={t.icon} size={15} />
-            {t.label}
-          </NavLink>
-        ))}
+        <div className="dmc-header__inner">
+          {TABS.map((t) => (
+            <NavLink key={t.to} to={t.to} end={t.end} className={({ isActive }) => `dmc-tab${isActive ? ' dmc-tab--active' : ''}`}>
+              <Icon name={t.icon} size={16} />
+              <span className="dmc-tab__label">{t.label}</span>
+            </NavLink>
+          ))}
+        </div>
       </nav>
       <div className="dmc-body">
         <Outlet />
