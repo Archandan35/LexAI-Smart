@@ -24,36 +24,42 @@ export const databaseInstaller = {
     let blockedError = null;
     let coreMissing = false;
     let authError = null;
-    let timeout = false;
 
     const schemas = listSchemas();
-    const controller = new AbortController();
-    const timer = setTimeout(() => { controller.abort(); timeout = true; }, 30000);
 
-    for (const [i, s] of schemas.entries()) {
-      if (timeout) break;
-      if (onProgress) onProgress({ step: i + 1, total: schemas.length, label: `Checking ${s.collection}...`, status: 'working' });
-      let state = 'missing';
-      try {
-        state = await provider.checkCollection(s.collection);
-      } catch (e) {
-        if (e.message && (e.message.includes('auth denied') || e.message.includes('Auth denied'))) {
-          authError = authError || e.message;
+    if (onProgress) onProgress({ step: 1, total: 1, label: 'Checking collections...', status: 'working' });
+
+    const results = await Promise.allSettled(
+      schemas.map(async (s) => {
+        let state = 'missing';
+        try {
+          state = await provider.checkCollection(s.collection);
+        } catch (e) {
+          if (e.message && (e.message.includes('auth denied') || e.message.includes('Auth denied'))) {
+            authError = authError || e.message;
+          }
+          state = 'blocked';
         }
-        state = 'blocked';
-      }
+        return { collection: s.collection, core: s.core, state };
+      })
+    );
+
+    if (onProgress) onProgress({ step: 1, total: 1, label: 'Done', status: 'done' });
+
+    for (const r of results) {
+      if (r.status !== 'fulfilled') continue;
+      const { collection, core, state } = r.value;
       if (state === 'present') {
-        present.push(s.collection);
+        present.push(collection);
       } else if (state === 'missing') {
-        missing.push(s.collection);
-        if (s.core) coreMissing = true;
+        missing.push(collection);
+        if (core) coreMissing = true;
       } else {
         // 'blocked' — cannot determine; do NOT count as missing.
-        blocked.push(s.collection);
+        blocked.push(collection);
         blockedError = blockedError || 'Database is reachable but requests are being blocked or throttled (e.g. Supabase egress/rate limit exceeded). Cannot verify tables right now.';
       }
     }
-    clearTimeout(timer);
 
     if (authError) {
       return {
@@ -95,22 +101,6 @@ export const databaseInstaller = {
         partialInstall: false,
         blocked: true,
         error: blockedError,
-      };
-    }
-
-    if (timeout) {
-      return {
-        provider: providerName,
-        installed: present.length > 0 && !coreMissing,
-        version,
-        targetVersion: schemaVersionManager.targetVersion(),
-        present,
-        missing,
-        blocked,
-        needsSetup: true,
-        partialInstall: present.length > 0 && !coreMissing && version === 0,
-        timeout: true,
-        error: `Detection timed out after 30s. ${present.length} of ${schemas.length} collections checked.`,
       };
     }
 
