@@ -3,12 +3,24 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { backupLogic } from '@/logic/backupLogic.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
+import { listSchemas } from '@/data-provider/schema/index.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 
 const STEPS = ['Upload', 'Detect', 'Validate', 'Preview', 'Import', 'Verify', 'Complete'];
 const FORMATS = ['.udb', 'JSON', 'CSV', 'SQL', 'Excel', 'XML', 'BSON'];
+
+function extractCollections(data) {
+  if (!data || typeof data !== 'object') return [];
+  return Object.entries(data)
+    .filter(([, rows]) => Array.isArray(rows) && rows.length > 0)
+    .map(([name, rows]) => ({ name, count: rows.length }));
+}
+
+function getKnownNames() {
+  try { return new Set(listSchemas().map(s => s.collection)); } catch { return new Set(); }
+}
 
 export default function DmcImportCenter() {
   const toast = useToast();
@@ -21,6 +33,8 @@ export default function DmcImportCenter() {
   const [validation, setValidation] = useState(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
+  const [fileCollections, setFileCollections] = useState([]);
+  const [selectedImport, setSelectedImport] = useState({});
 
   const detectFormat = (name) => {
     if (!name) return 'Unknown';
@@ -47,19 +61,67 @@ export default function DmcImportCenter() {
     if (file.name.endsWith('.udb')) {
       const parsed = await backupLogic.parseImport(text);
       setValidation(parsed);
+      if (parsed.ok) {
+        const cols = extractCollections(parsed.snapshot.data);
+        setFileCollections(cols);
+        setSelectedImport(Object.fromEntries(cols.map(c => [c.name, true])));
+      } else {
+        setFileCollections([]);
+        setSelectedImport({});
+      }
       setStep(parsed.ok ? 2 : 2);
     } else if (file.name.endsWith('.json')) {
-      try { JSON.parse(text); setValidation({ ok: true, reason: 'Valid JSON' }); } catch { setValidation({ ok: false, reason: 'Invalid JSON' }); }
+      let data;
+      try {
+        data = JSON.parse(text);
+        const ok = { ok: true, reason: 'Valid JSON' };
+        setValidation(ok);
+        const source = data.data || data;
+        const cols = extractCollections(source);
+        setFileCollections(cols);
+        setSelectedImport(Object.fromEntries(cols.map(c => [c.name, true])));
+      } catch {
+        setValidation({ ok: false, reason: 'Invalid JSON' });
+        setFileCollections([]);
+        setSelectedImport({});
+      }
     } else {
-      setValidation({ ok: true, reason: `Format: ${detectFormat(file.name)}` });
+      setValidation({ ok: true, reason: `Format: ${detectFormat(file.name)} — preview not available` });
     }
   };
 
+  const toggleImport = (name) => {
+    setSelectedImport(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const selectAllImport = () => {
+    setSelectedImport(Object.fromEntries(fileCollections.map(c => [c.name, true])));
+  };
+
+  const deselectAllImport = () => {
+    setSelectedImport({});
+  };
+
+  const selectedImportCount = Object.values(selectedImport).filter(Boolean).length;
+  const knownNames = getKnownNames();
+
   const doImport = async () => {
+    if (!selectedImportCount && fileCollections.length > 0) {
+      toast.push('Select at least one collection to import.', 'warn');
+      return;
+    }
     setImporting(true);
     try {
       if (detectedFormat === '.udb' && validation?.ok) {
-        const res = await backupLogic.importBackup(validation.snapshot || JSON.parse(fileContent), { restoreNow: false }, user);
+        const snap = validation.snapshot || JSON.parse(fileContent);
+        if (selectedImportCount < fileCollections.length) {
+          const filtered = { ...snap, data: {} };
+          for (const [name, rows] of Object.entries(snap.data || {})) {
+            if (selectedImport[name]) filtered.data[name] = rows;
+          }
+          snap.data = filtered.data;
+        }
+        const res = await backupLogic.importBackup(snap, { restoreNow: false }, user);
         if (res.ok) {
           setResult({ success: true, name: res.value.backup.name, records: res.value.backup.counts });
           setStep(5);
@@ -68,12 +130,18 @@ export default function DmcImportCenter() {
           setStep(5);
         }
       } else if (detectedFormat === 'JSON') {
-        const data = JSON.parse(fileContent);
-        if (data.data) {
-          await databaseAdminService.restore(data.data);
-        } else {
-          await databaseAdminService.restore(data);
+        const raw = JSON.parse(fileContent);
+        const source = raw.data || raw;
+        const toImport = {};
+        for (const [name, rows] of Object.entries(source)) {
+          if (selectedImport[name]) toImport[name] = rows;
         }
+        if (Object.keys(toImport).length === 0) {
+          toast.push('No data to import.', 'warn');
+          setImporting(false);
+          return;
+        }
+        await databaseAdminService.restore(toImport);
         setResult({ success: true, name: fileName });
         setStep(5);
       } else {
@@ -87,11 +155,11 @@ export default function DmcImportCenter() {
     setImporting(false);
   };
 
-  const reset = () => { setStep(0); setFileName(''); setFileContent(null); setValidation(null); setResult(null); if (fileRef.current) fileRef.current.value = ''; };
+  const reset = () => { setStep(0); setFileName(''); setFileContent(null); setValidation(null); setResult(null); setFileCollections([]); setSelectedImport({}); if (fileRef.current) fileRef.current.value = ''; };
 
   return (
     <>
-      <PageHeader icon="download" title="Import Center" subtitle="Universal data import with automatic format detection, validation, and rollback." />
+      <PageHeader icon="download" title="Import Center" subtitle="Upload a file, review the data it contains, then import." />
 
       <div className="dmc-wizard">
         <div className="dmc-wizard__steps">
@@ -126,6 +194,29 @@ export default function DmcImportCenter() {
                 </tbody>
               </table>
 
+              {step === 2 && fileCollections.length > 0 && (
+                <>
+                  <div className="dmc-import-preview-title">
+                    <Icon name="layers" size={15} /> Collections detected in file
+                    <span className="dmc-import-count-badge">{selectedImportCount} / {fileCollections.length} selected</span>
+                  </div>
+                  <div className="dmc-import-collection-list">
+                    <div className="dmc-import-select-actions">
+                      <Button variant="ghost" size="sm" onClick={selectAllImport}>Select All</Button>
+                      <Button variant="ghost" size="sm" onClick={deselectAllImport}>Deselect All</Button>
+                    </div>
+                    {fileCollections.map(c => (
+                      <label key={c.name} className="dmc-import-collection-item">
+                        <input type="checkbox" checked={!!selectedImport[c.name]} onChange={() => toggleImport(c.name)} />
+                        <span className="dmc-import-collection-name">{c.name}</span>
+                        <span className="dmc-import-collection-count">{c.count} records</span>
+                        {!knownNames.has(c.name) && <span className="dmc-badge dmc-badge--red">unknown schema</span>}
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {step < 5 && (
                 <div className="dmc-wizard__actions">
                   <Button variant="ghost" onClick={reset}>Cancel</Button>
@@ -150,7 +241,7 @@ export default function DmcImportCenter() {
               {step === 4 && (
                 <div className="dmc-wizard__actions dmc-wizard-actions-end">
                   <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
-                  <Button variant="danger" onClick={doImport} disabled={importing}>{importing ? 'Importing…' : 'Import Data'}</Button>
+                  <Button variant="danger" onClick={doImport} disabled={importing || (fileCollections.length > 0 && selectedImportCount === 0)}>{importing ? 'Importing…' : 'Import Data'}</Button>
                 </div>
               )}
 

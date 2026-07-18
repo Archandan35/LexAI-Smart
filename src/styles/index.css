@@ -18334,6 +18334,18 @@ kbd.cmd__kbd {
 .dmc-export-estimate { margin-top: 14px; font-size: 13px; color: var(--text-soft); }
 .dmc-export-complete { margin-top: 16px; padding: 14px; background: var(--green-soft); border-radius: var(--radius-sm); color: var(--green); font-size: 13px; }
 
+.dmc-export-select-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.dmc-export-count { font-size: 13px; font-weight: 600; color: var(--text-soft); }
+.dmc-export-select-actions { display: flex; gap: 6px; }
+.dmc-export-collection-list { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; }
+.dmc-export-collection-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.dmc-export-collection-item:hover { background: var(--hover); }
+.dmc-export-collection-item.is-selected { background: var(--accent-soft); }
+.dmc-export-collection-item input { margin: 0; }
+.dmc-export-collection-label { font-weight: 500; min-width: 140px; }
+.dmc-export-collection-name { font-size: 11.5px; color: var(--text-faint); font-family: var(--mono); min-width: 120px; }
+.dmc-export-collection-count { margin-left: auto; font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+
 /* DmcImportCenter */
 .dmc-import-upload-area { text-align: center; padding: 32px 0; }
 .dmc-import-icon { margin-bottom: 16px; opacity: 0.3; }
@@ -18348,6 +18360,15 @@ kbd.cmd__kbd {
 .dmc-result-text-bold { font-weight: 600; }
 .dmc-result-text-soft { color: var(--text-soft); font-size: 13px; }
 .dmc-import-new-btn { margin-top: 16px; }
+.dmc-import-preview-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; margin: 16px 0 8px; }
+.dmc-import-count-badge { margin-left: auto; font-size: 12px; color: var(--text-soft); background: var(--bg-soft); padding: 2px 8px; border-radius: 10px; }
+.dmc-import-select-actions { display: flex; gap: 6px; margin-bottom: 6px; }
+.dmc-import-collection-list { max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 14px; }
+.dmc-import-collection-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.dmc-import-collection-item:hover { background: var(--hover); }
+.dmc-import-collection-item input { margin: 0; }
+.dmc-import-collection-name { font-weight: 500; min-width: 140px; }
+.dmc-import-collection-count { margin-left: auto; font-size: 12px; color: var(--text-soft); white-space: nowrap; }
 
 /* DmcMaintenance */
 .dmc-card-clickable { cursor: pointer; }

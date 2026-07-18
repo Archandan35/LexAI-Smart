@@ -80,20 +80,17 @@ export const databaseInstaller = {
       };
     }
 
-    // If NOTHING was found present but some checks were "blocked", this is
-    // almost certainly a brand-new/empty project (every table 404s) rather than
-    // a throttle — a throttle would still let at least one known table respond.
-    // Reclassify blocked→missing so the wizard offers a正常 install instead of
-    // a misleading "requests are being blocked / egress exceeded" banner.
-    if (present.length === 0 && blocked.length > 0) {
+    // If ANY collection responded 'present', the database is clearly working.
+    // Treat 'blocked' responses as 'missing' — they're likely permission/RLS
+    // issues on that specific table, not a database-wide throttle.
+    if (blocked.length > 0 && present.length > 0) {
       missing.push(...blocked);
       blocked.length = 0;
       blockedError = null;
     }
 
+    // Only show 'blocked' if EVERY collection was blocked (genuine outage).
     if (blocked.length > 0) {
-      // We could not reliably verify the schema. Treat as "indeterminate":
-      // surface a clear message instead of falsely reporting tables missing.
       return {
         provider: providerName,
         installed: false,
