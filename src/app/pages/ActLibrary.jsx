@@ -564,6 +564,7 @@ export default function ActLibrary() {
             <table className="bench-types__table">
               <thead>
                 <tr>
+                  <th className="bench-types__th--w32"></th>
                   <th>#</th>
                   <th>TITLE</th>
                   <th>TYPE</th>
@@ -576,9 +577,17 @@ export default function ActLibrary() {
               </thead>
               <tbody>
                 {paged.length === 0 ? (
-                  <tr><td className="bench-types__empty" colSpan={8}>No acts found.</td></tr>
+                  <tr><td className="bench-types__empty" colSpan={9}>No acts found.</td></tr>
                 ) : paged.map((item, idx) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} draggable={!search}
+                    onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
+                    onDragOver={(e) => handleDragOver(e, (safePage - 1) * perPage + idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`bench-types__row${dragIdx === (safePage - 1) * perPage + idx ? ' bench-types__row--dragging' : ''}`}
+                  >
+                    <td className="cmp-drag-cell">
+                      <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
+                    </td>
                     <td><span className="cmp-order-num">{(safePage - 1) * perPage + idx + 1}</span></td>
                     <td>
                       <div className="cmp-name-cell">
@@ -751,7 +760,7 @@ export default function ActLibrary() {
       )}
 
       {/* ── View Modal ── */}
-      <Modal open={!!viewItem} title={viewItem?.title || 'Act Details'} onClose={() => setViewItem(null)}>
+      <Modal open={!!viewItem} title={viewItem?.title || 'Act Details'} onClose={() => setViewItem(null)} size="lg" className="modal--sixty">
         <div className="bench-types__detail-body">
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Title</span>
@@ -796,7 +805,7 @@ export default function ActLibrary() {
       </Modal>
 
       {/* ── Edit Modal ── */}
-      <Modal open={!!editTarget} title="Edit Act" onClose={() => setEditTarget(null)}
+      <Modal open={!!editTarget} title="Edit Act" onClose={() => setEditTarget(null)} size="lg" className="modal--sixty"
         footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
@@ -852,7 +861,7 @@ export default function ActLibrary() {
       </Modal>
 
       {/* ── Duplicate Modal ── */}
-      <Modal open={!!dupTarget} title="Duplicate Act" onClose={() => setDupTarget(null)}
+      <Modal open={!!dupTarget} title="Duplicate Act" onClose={() => setDupTarget(null)} size="lg" className="modal--sixty"
         footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>

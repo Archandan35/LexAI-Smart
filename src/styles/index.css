@@ -2055,6 +2055,10 @@ select {
   width: 90vw;
 }
 
+.modal--sixty {
+  max-width: 60vw;
+}
+
 .modal__head {
   padding: 18px 22px;
   border-bottom: 1px solid var(--border);
