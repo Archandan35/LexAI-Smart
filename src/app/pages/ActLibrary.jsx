@@ -7,6 +7,7 @@ import { actLogic } from '@/logic/actLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -38,6 +39,7 @@ export default function ActLibrary() {
   const [newDesc, setNewDesc] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
   const [newCode, setNewCode] = useState('');
+  const [newColor, setNewColor] = useState('#6b7280');
 
   const [editId, setEditId] = useState('');
   const [editTitle, setEditTitle] = useState('');
@@ -49,6 +51,7 @@ export default function ActLibrary() {
   const [editDesc, setEditDesc] = useState('');
   const [editStatus, setEditStatus] = useState('Active');
   const [editCode, setEditCode] = useState('');
+  const [editColor, setEditColor] = useState('#6b7280');
 
   const [delId, setDelId] = useState('');
   const [viewItem, setViewItem] = useState(null);
@@ -93,8 +96,8 @@ export default function ActLibrary() {
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewTitle(''); setNewType(''); setNewJurisdiction(''); setNewYear(''); setNewSections(''); setNewAmendments(''); setNewDesc(''); setNewStatus('Active'); setNewCode('');
-    setEditId(''); setEditTitle(''); setEditType(''); setEditJurisdiction(''); setEditYear(''); setEditSections(''); setEditAmendments(''); setEditDesc(''); setEditStatus('Active'); setEditCode('');
+    setNewTitle(''); setNewType(''); setNewJurisdiction(''); setNewYear(''); setNewSections(''); setNewAmendments(''); setNewDesc(''); setNewStatus('Active'); setNewCode(''); setNewColor('#6b7280');
+    setEditId(''); setEditTitle(''); setEditType(''); setEditJurisdiction(''); setEditYear(''); setEditSections(''); setEditAmendments(''); setEditDesc(''); setEditStatus('Active'); setEditCode(''); setEditColor('#6b7280');
     setDelId(''); setImportFile(null);
     setEditTarget(null); setDupTarget(null);
     setPage(1);
@@ -109,7 +112,7 @@ export default function ActLibrary() {
   const doAdd = async () => {
     if (!newTitle.trim()) { toast.push('Title is required.', 'error'); return; }
     setBusy(true);
-    const res = await actLogic.create({ title: newTitle, act_type: newType, jurisdiction: newJurisdiction, year: parseInt(newYear) || 0, sections_count: parseInt(newSections) || 0, amendments_count: parseInt(newAmendments) || 0, description: newDesc, status: newStatus, short_code: newCode });
+    const res = await actLogic.create({ title: newTitle, act_type: newType, jurisdiction: newJurisdiction, year: parseInt(newYear) || 0, sections_count: parseInt(newSections) || 0, amendments_count: parseInt(newAmendments) || 0, description: newDesc, status: newStatus, short_code: newCode, color: newColor });
     setBusy(false);
     if (res.ok) { reset(); toast.push('Act added.', 'success'); load(); }
     else toast.push(res.error || 'Failed to add act.', 'error');
@@ -119,7 +122,7 @@ export default function ActLibrary() {
     if (!editId) { toast.push('Select an act to edit.', 'error'); return; }
     if (!editTitle.trim()) { toast.push('Title cannot be empty.', 'error'); return; }
     setBusy(true);
-    const res = await actLogic.update(editId, { title: editTitle, act_type: editType, jurisdiction: editJurisdiction, year: parseInt(editYear) || 0, sections_count: parseInt(editSections) || 0, amendments_count: parseInt(editAmendments) || 0, description: editDesc, status: editStatus, short_code: editCode });
+    const res = await actLogic.update(editId, { title: editTitle, act_type: editType, jurisdiction: editJurisdiction, year: parseInt(editYear) || 0, sections_count: parseInt(editSections) || 0, amendments_count: parseInt(editAmendments) || 0, description: editDesc, status: editStatus, short_code: editCode, color: editColor });
     setBusy(false);
     if (res.ok) { setEditId(''); setEditTarget(null); reset(); toast.push('Act updated.', 'success'); load(); }
     else toast.push(res.error || 'Failed to update act.', 'error');
@@ -164,7 +167,7 @@ export default function ActLibrary() {
     commercial: '#0d9488',
     environmental: '#16a34a',
   };
-  const getTypeColor = (type) => typeColors[type?.toLowerCase()] || '#6b7280';
+  const getTypeColor = (type, item) => item?.color || typeColors[type?.toLowerCase()] || '#6b7280';
 
   const startEdit = (item) => {
     setActiveAction(null);
@@ -178,6 +181,7 @@ export default function ActLibrary() {
     setEditDesc(item.description || '');
     setEditStatus(item.status || 'Active');
     setEditCode(item.short_code || '');
+    setEditColor(item.color || '#6b7280');
     setEditTarget(item);
   };
 
@@ -197,6 +201,7 @@ export default function ActLibrary() {
     setNewDesc(item.description || '');
     setNewStatus(item.status || 'Active');
     setNewCode(item.short_code || '');
+    setNewColor(item.color || '#6b7280');
     setDupTarget(item);
   };
 
@@ -364,6 +369,13 @@ export default function ActLibrary() {
                   <label className="bench-types__label">Description <span className="bench-types__optional">(optional)</span></label>
                   <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={500} />
                 </div>
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Badge Colour</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className="cmp-color-swatch-lg" style={{ '--swatch-color': newColor }} />
+                    <ColorPicker value={newColor} onChange={setNewColor} />
+                  </div>
+                </div>
               </div>
             )}
             {activeAction === 'edit' && (
@@ -415,6 +427,13 @@ export default function ActLibrary() {
                     <div className="bench-types__field bench-types__field--full">
                       <label className="bench-types__label">Description</label>
                       <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} maxLength={500} />
+                    </div>
+                    <div className="bench-types__field bench-types__field--full">
+                      <label className="bench-types__label">Badge Colour</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className="cmp-color-swatch-lg" style={{ '--swatch-color': editColor }} />
+                        <ColorPicker value={editColor} onChange={setEditColor} />
+                      </div>
                     </div>
                   </>
                 )}
@@ -532,7 +551,7 @@ export default function ActLibrary() {
                     <td><span className="cmp-order-num">{(safePage - 1) * perPage + idx + 1}</span></td>
                     <td>
                       <div className="cmp-name-cell">
-                        <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(item.act_type) }} />
+                        <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(item.act_type, item) }} />
                         <span className="cmp-name-avatar"><Icon name="book" size={15} /></span>
                         <span className="cmp-cell-name">{item.title}</span>
                       </div>
@@ -648,7 +667,7 @@ export default function ActLibrary() {
             ) : paged.map((item) => (
               <div key={item.id} className="bench-types__grid-card">
                 <div className="bench-types__grid-card-header">
-                  <div className="bench-types__grid-card-icon" style={{ background: `${getTypeColor(item.act_type)}1a`, color: getTypeColor(item.act_type) }}><Icon name="book" size={22} /></div>
+                  <div className="bench-types__grid-card-icon" style={{ background: `${getTypeColor(item.act_type, item)}1a`, color: getTypeColor(item.act_type, item) }}><Icon name="book" size={22} /></div>
                   <div className="bench-types__grid-card-title">{item.title}</div>
                 </div>
                 <div className="bench-types__grid-card-body">
@@ -706,7 +725,7 @@ export default function ActLibrary() {
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Title</span>
             <span className="bench-types__detail-value">
-              <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(viewItem?.act_type), marginRight: 8 }} />
+              <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(viewItem?.act_type, viewItem), marginRight: 8 }} />
               {viewItem?.title || '—'}
             </span>
           </div>
@@ -791,11 +810,18 @@ export default function ActLibrary() {
             <label className="bench-types__label">Description</label>
             <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} maxLength={500} />
           </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Badge Colour</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="cmp-color-swatch-lg" style={{ '--swatch-color': editColor }} />
+              <ColorPicker value={editColor} onChange={setEditColor} />
+            </div>
+          </div>
         </div>
       </Modal>
 
       {/* ── Duplicate Modal ── */}
-      <Modal open={!!editTarget} title="Edit Act" onClose={() => setEditTarget(null)}
+      <Modal open={!!dupTarget} title="Duplicate Act" onClose={() => setDupTarget(null)}
         footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>
@@ -839,6 +865,13 @@ export default function ActLibrary() {
           <div className="bench-types__field bench-types__field--full">
             <label className="bench-types__label">Description</label>
             <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} maxLength={500} />
+          </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Badge Colour</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="cmp-color-swatch-lg" style={{ '--swatch-color': newColor }} />
+              <ColorPicker value={newColor} onChange={setNewColor} />
+            </div>
           </div>
         </div>
       </Modal>
