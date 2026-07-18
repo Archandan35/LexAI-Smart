@@ -22687,8 +22687,9 @@ kbd.cmd__kbd {
 
 .bench-types__grid-card-actions {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
   align-items: center;
+  gap: 6px;
   padding: 12px 0 8px;
   position: relative;
   margin-top: 4px;
@@ -22702,29 +22703,54 @@ kbd.cmd__kbd {
   height: 1px;
   background: var(--border);
 }
-.bench-types__grid-card-actions .cmp-act-btn {
-  background: #fff;
+
+.bench-types__grid-card-action-box {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
-  padding: 6px 12px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.bench-types__grid-card-action-box:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.bench-types__grid-card-action-box .cmp-act-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
   cursor: pointer;
   color: var(--text-faint);
   border-radius: 6px;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.bench-types__grid-card-action-box .cmp-act-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+  transform: scale(1.12);
+}
+
+.bench-types__grid-card-action-labels {
   display: flex;
-  flex-direction: column;
+  justify-content: space-around;
   align-items: center;
-  gap: 3px;
+  width: 100%;
+  padding: 0 6px;
+}
+.bench-types__grid-card-action-labels span {
   font-size: 9.5px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.bench-types__grid-card-actions .cmp-act-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border-color: var(--primary);
+  color: var(--text-faint);
+  text-align: center;
+  width: 40px;
 }
 
 .bench-types__bottom-nav {

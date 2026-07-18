@@ -556,9 +556,6 @@ export default function ActLibrary() {
             </table>
             <div className="bench-types__table-footer">
               <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} acts</div>
-              <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
-                {perPage} / page <Icon name="chevronDown" size={13} />
-              </span>
               {totalPages > 1 && (
                 <div className="bench-types__pagination">
                   <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
@@ -571,6 +568,9 @@ export default function ActLibrary() {
                   <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
                 </div>
               )}
+              <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+                {perPage} / page <Icon name="chevronDown" size={13} />
+              </span>
             </div>
           </div>
 
@@ -622,9 +622,6 @@ export default function ActLibrary() {
           {/* ── Grid view ── */}
           <div className="bench-types__table-footer bench-types__desktop-only">
             <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} acts</div>
-            <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
-              {perPage} / page <Icon name="chevronDown" size={13} />
-            </span>
             {totalPages > 1 && (
               <div className="bench-types__pagination">
                 <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
@@ -637,6 +634,9 @@ export default function ActLibrary() {
                 <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
               </div>
             )}
+            <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+              {perPage} / page <Icon name="chevronDown" size={13} />
+            </span>
           </div>
           <div className="bench-types__mobile-section-header bench-types__mobile-only">
             <span className="bench-types__mobile-section-title">All Acts</span>
@@ -665,10 +665,18 @@ export default function ActLibrary() {
                     </div>
                   </div>
                   <div className="bench-types__grid-card-actions">
-                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /><span>View</span></button>
-                    <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /><span>Edit</span></button>
-                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /><span>Copy</span></button>
-                    <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /><span>Delete</span></button>
+                    <div className="bench-types__grid-card-action-box">
+                      <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                      <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                      <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                      <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                    </div>
+                    <div className="bench-types__grid-card-action-labels">
+                      <span>View</span>
+                      <span>Edit</span>
+                      <span>Copy</span>
+                      <span>Delete</span>
+                    </div>
                   </div>
                 </div>
               </div>
