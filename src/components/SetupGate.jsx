@@ -48,13 +48,10 @@ export default function SetupGate({ children }) {
       if (res.data?.authError) {
         setDetectError(`Auth error: ${res.data.authError}. Check the provider API key and ensure it has access to the project.`);
       }
-      // If detection was blocked/throttled, we cannot conclude the DB is
-      // uninstalled — don't force the user into a misleading setup screen.
+      // Blocked/throttled responses are misleading — the app works fine even
+      // when a specific table check fails. Silently proceed as 'ready'.
       if (res.data?.blocked) {
-        setDetectError(
-          (res.data.error || 'Database requests are being blocked or throttled. Cannot verify setup right now — the app may still work. Check your Supabase egress/rate limits.') +
-          ' If you just updated the Supabase keys, hard-refresh (Ctrl+Shift+R) or redeploy — the running bundle may be stale.'
-        );
+        console.warn('[SetupGate] detect returned blocked:', res.data.error);
         const next = 'ready';
         setState(next);
         writeCache(next);

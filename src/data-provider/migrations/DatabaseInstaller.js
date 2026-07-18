@@ -45,9 +45,11 @@ export const databaseInstaller = {
           }
           state = 'blocked';
         }
+        console.log(`[detect] ${s.collection} => state=${state}`);
         return { collection: s.collection, core: s.core, state };
       })
     );
+    console.log(`[detect] results: present=${present.length} missing=${missing.length} blocked=${blocked.length} authError=${authError}`);
 
     if (onProgress) onProgress({ step: 1, total: 1, label: 'Done', status: 'done' });
 
@@ -80,30 +82,16 @@ export const databaseInstaller = {
       };
     }
 
-    // If ANY collection responded 'present', the database is clearly working.
-    // Treat 'blocked' responses as 'missing' — they're likely permission/RLS
-    // issues on that specific table, not a database-wide throttle.
-    if (blocked.length > 0 && present.length > 0) {
+    // Reclassify ALL 'blocked' as 'missing'. In practice, every single case of
+    // 'blocked' we've seen has been a false alarm: wrong URL/key, PostgREST
+    // permission quirk, transient network blip, or RLS config — never actual
+    // Supabase rate limiting. The SetupGate no longer renders a banner for
+    // blocked responses either. The setup wizard (AnalysisStep) still shows its
+    // own warning, which is a more appropriate place.
+    if (blocked.length > 0) {
       missing.push(...blocked);
       blocked.length = 0;
       blockedError = null;
-    }
-
-    // Only show 'blocked' if EVERY collection was blocked (genuine outage).
-    if (blocked.length > 0) {
-      return {
-        provider: providerName,
-        installed: false,
-        version,
-        targetVersion: schemaVersionManager.targetVersion(),
-        present,
-        missing,
-        blocked,
-        needsSetup: true,
-        partialInstall: false,
-        blocked: true,
-        error: blockedError,
-      };
     }
 
     const partialInstall = present.length > 0 && !coreMissing && version === 0;

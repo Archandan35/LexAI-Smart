@@ -101,7 +101,7 @@ export default function DmcMaintenance() {
                   </div>
                   <div className="dmc-db-statcard__body">
                     <div className="dmc-db-statcard__label">{t.label}</div>
-                    <div className="dmc-db-statcard__value dmc-db-statcard__value--sm">{running === t.id ? 'Running…' : 'Run Task'}</div>
+                    <div className="dmc-db-statcard__value" style={{ fontSize: 14 }}>{running === t.id ? 'Running…' : 'Run Task'}</div>
                     <div className="dmc-db-statcard__sub">{t.desc}</div>
                     {results[t.id] && <div className={`dmc-result-msg${results[t.id].ok ? ' dmc-result-msg--ok' : ' dmc-result-msg--fail'}`}>{results[t.id].message}</div>}
                   </div>

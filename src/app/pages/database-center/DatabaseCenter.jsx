@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 
 const TABS = [
@@ -14,7 +14,6 @@ const TABS = [
 ];
 
 export default function DatabaseCenter() {
-  const location = useLocation();
   return (
     <div className="dmc">
       <nav className="dmc-header">

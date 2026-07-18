@@ -152,7 +152,22 @@ export default function ActLibrary() {
     setBusy(false);
   };
 
+  const typeColors = {
+    criminal: '#dc2626',
+    civil: '#2563eb',
+    corporate: '#7c3aed',
+    tax: '#ca8a04',
+    labour: '#0891b2',
+    constitutional: '#be123c',
+    family: '#db2777',
+    property: '#65a30d',
+    commercial: '#0d9488',
+    environmental: '#16a34a',
+  };
+  const getTypeColor = (type) => typeColors[type?.toLowerCase()] || '#6b7280';
+
   const startEdit = (item) => {
+    setActiveAction(null);
     setEditId(item.id);
     setEditTitle(item.title || '');
     setEditType(item.act_type || '');
@@ -517,6 +532,7 @@ export default function ActLibrary() {
                     <td><span className="cmp-order-num">{(safePage - 1) * perPage + idx + 1}</span></td>
                     <td>
                       <div className="cmp-name-cell">
+                        <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(item.act_type) }} />
                         <span className="cmp-name-avatar"><Icon name="book" size={15} /></span>
                         <span className="cmp-cell-name">{item.title}</span>
                       </div>
@@ -632,7 +648,7 @@ export default function ActLibrary() {
             ) : paged.map((item) => (
               <div key={item.id} className="bench-types__grid-card">
                 <div className="bench-types__grid-card-header">
-                  <div className="bench-types__grid-card-icon"><Icon name="book" size={22} /></div>
+                  <div className="bench-types__grid-card-icon" style={{ background: `${getTypeColor(item.act_type)}1a`, color: getTypeColor(item.act_type) }}><Icon name="book" size={22} /></div>
                   <div className="bench-types__grid-card-title">{item.title}</div>
                 </div>
                 <div className="bench-types__grid-card-body">
@@ -649,14 +665,11 @@ export default function ActLibrary() {
                     </div>
                   </div>
                   <div className="bench-types__grid-card-actions">
-                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                    <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
-                    <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /><span>View</span></button>
+                    <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /><span>Edit</span></button>
+                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /><span>Copy</span></button>
+                    <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /><span>Delete</span></button>
                   </div>
-                </div>
-                <div className="bench-types__grid-card-footer">
-                  <span className="bench-types__mobile-code">{item.short_code || '—'}</span>
                 </div>
               </div>
             ))}
@@ -684,7 +697,10 @@ export default function ActLibrary() {
         <div className="bench-types__detail-body">
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Title</span>
-            <span className="bench-types__detail-value">{viewItem?.title || '—'}</span>
+            <span className="bench-types__detail-value">
+              <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(viewItem?.act_type), marginRight: 8 }} />
+              {viewItem?.title || '—'}
+            </span>
           </div>
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Short Code</span>
@@ -771,7 +787,7 @@ export default function ActLibrary() {
       </Modal>
 
       {/* ── Duplicate Modal ── */}
-      <Modal open={!!dupTarget} title="Duplicate Act" onClose={() => setDupTarget(null)}
+      <Modal open={!!editTarget} title="Edit Act" onClose={() => setEditTarget(null)}
         footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>

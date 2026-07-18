@@ -141,12 +141,12 @@ export const caseLogic = {
       const [
         cases, draftCount, drafts, docCount, documents, hearings, tasks,
       ] = await Promise.all([
-        caseService.listCases({ select: 'id,status,case_type,title,caseNumber,next_hearing,archived' }),
-        draftsRepository.count(),
-        draftsRepository.getAll({ limit: 5, order: 'updatedAt.desc' }),
-        documentsRepository.count(),
-        documentsRepository.getAll({ limit: 5, order: 'uploadedAt.desc' }),
-        caseService.listHearings(),
+        caseService.listCases({ select: 'id,status,case_type,title,caseNumber,next_hearing,archived' }).catch(() => []),
+        draftsRepository.count().catch(() => 0),
+        draftsRepository.getAll({ limit: 5, order: 'updatedAt.desc' }).catch(() => []),
+        documentsRepository.count().catch(() => 0),
+        documentsRepository.getAll({ limit: 5, order: 'uploadedAt.desc' }).catch(() => []),
+        caseService.listHearings().catch(() => []),
         (async () => { try { const m = await import('@/logic/taskLogic.js'); const r = await m.taskLogic.list(); return r.ok ? r.data || [] : []; } catch { return []; } })(),
       ]);
       const live = cases.filter((c) => !c.archived);
