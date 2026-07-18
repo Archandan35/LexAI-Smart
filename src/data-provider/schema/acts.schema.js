@@ -16,11 +16,12 @@ export const ActsSchema = {
     description: 'text',
     last_updated: 'string',
     status: 'string',
+    display_order: 'number',
     created_at: 'datetime',
     updated_at: 'datetime',
   },
   required: ['title'],
-  defaults: { status: 'Active', sections_count: 0, amendments_count: 0, description: '', color: '#6b7280' },
+  defaults: { status: 'Active', sections_count: 0, amendments_count: 0, description: '', color: '#6b7280', display_order: 0 },
   relations: [],
   indexes: ['title', 'short_code', 'act_type', 'jurisdiction', 'status'],
 };

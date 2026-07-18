@@ -1,11 +1,17 @@
 import { actService } from '@/services/actService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
+import { orderComparator, normalizeDisplayOrder, nextDisplayOrder } from '@/utils/displayOrder.js';
 
 export const actLogic = {
   async list() {
     const rows = await actService.list();
-    return [...rows].sort((a, b) => a.title?.localeCompare?.(b.title) || 0).map((r) => ({ ...r, name: r.title || r.name || '' }));
+    return [...rows].sort(orderComparator).map((r) => ({ ...r, name: r.title || r.name || '' }));
+  },
+
+  async normalizeOrder() {
+    const rows = await actService.list();
+    return normalizeDisplayOrder(rows, (id, patch) => actService.update(id, patch));
   },
 
   async get(id) {
@@ -17,13 +23,23 @@ export const actLogic = {
     }
   },
 
+  async reorder(orderedIds) {
+    try {
+      for (let i = 0; i < orderedIds.length; i += 1) {
+        await actService.update(orderedIds[i], { display_order: i + 1 });
+      }
+      return ok(true);
+    } catch (err) { return fail(err); }
+  },
+
   async create(data) {
     try {
       const { name, ...rest } = data;
+      const all = await actService.list();
       const row = await actService.create({
         ...rest,
         title: rest.title || name || '',
-        id: uid('act'), created_at: nowISO(),
+        id: uid('act'), created_at: nowISO(), display_order: nextDisplayOrder(all),
       });
       return ok(row);
     } catch (e) {

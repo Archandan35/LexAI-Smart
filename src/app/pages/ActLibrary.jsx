@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -8,6 +8,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
+import { orderComparator } from '@/utils/displayOrder.js';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -60,10 +61,12 @@ export default function ActLibrary() {
   const [confirmState, setConfirmState] = useState(null);
   const [busy, setBusy] = useState(false);
   const [importFile, setImportFile] = useState(null);
+  const [dragIdx, setDragIdx] = useState(null);
+  const dragOrder = useRef(null);
 
   const load = () => {
     setLoading(true);
-    Promise.all([actLogic.list(), actLogic.stats()]).then(([list, s]) => {
+    Promise.all([actLogic.normalizeOrder().then(() => actLogic.list()), actLogic.stats()]).then(([list, s]) => {
       setItems(Array.isArray(list) ? list : []);
       if (s && !s.error) setStats(s);
     }).catch(() => {}).finally(() => setLoading(false));
@@ -203,6 +206,34 @@ export default function ActLibrary() {
     setNewCode(item.short_code || '');
     setNewColor(item.color || '#6b7280');
     setDupTarget(item);
+  };
+
+  const handleDragStart = (e, idx) => {
+    setDragIdx(idx);
+    dragOrder.current = filtered.map((t) => t.id);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', filtered[idx]?.id);
+  };
+
+  const handleDragOver = (e, idx) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx || !dragOrder.current || search) return;
+    const ids = [...dragOrder.current];
+    const [moved] = ids.splice(dragIdx, 1);
+    ids.splice(idx, 0, moved);
+    dragOrder.current = ids;
+    setDragIdx(idx);
+  };
+
+  const handleDragEnd = async () => {
+    if (dragIdx === null || !dragOrder.current) { setDragIdx(null); return; }
+    const ids = dragOrder.current;
+    setDragIdx(null);
+    dragOrder.current = null;
+    setBusy(true);
+    await actLogic.reorder(ids);
+    setBusy(false);
+    load();
   };
 
   const confirmDeleteItem = (item) => {
