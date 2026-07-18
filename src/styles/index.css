@@ -16129,8 +16129,6 @@ kbd.cmd__kbd {
   display: flex;
   gap: 0;
   overflow-x: auto;
-  max-width: 1440px;
-  margin: 0 auto;
 }
 
 .dmc-tab {
@@ -16176,8 +16174,7 @@ kbd.cmd__kbd {
 }
 
 .dmc-body__inner {
-  max-width: 1440px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 /* ── Dashboard Hero ── */
@@ -22721,7 +22718,7 @@ kbd.cmd__kbd {
 .bench-types__grid-card-action-item .cmp-act-btn {
   background: transparent;
   border: 1px solid transparent;
-  padding: 6px 10px;
+  padding: 0;
   cursor: pointer;
   color: var(--text-faint);
   border-radius: 8px;

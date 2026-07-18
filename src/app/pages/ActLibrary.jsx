@@ -725,19 +725,19 @@ export default function ActLibrary() {
                   </div>
                   <div className="bench-types__grid-card-actions">
                     <div className="bench-types__grid-card-action-item">
-                      <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={20} /></button>
+                      <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" /></button>
                       <span className="cmp-act-label">View</span>
                     </div>
                     <div className="bench-types__grid-card-action-item">
-                      <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={20} /></button>
+                      <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
                       <span className="cmp-act-label">Edit</span>
                     </div>
                     <div className="bench-types__grid-card-action-item">
-                      <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={20} /></button>
+                      <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" /></button>
                       <span className="cmp-act-label">Copy</span>
                     </div>
                     <div className="bench-types__grid-card-action-item">
-                      <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={20} /></button>
+                      <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" /></button>
                       <span className="cmp-act-label">Delete</span>
                     </div>
                   </div>
