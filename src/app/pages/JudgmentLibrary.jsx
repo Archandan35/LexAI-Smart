@@ -141,11 +141,6 @@ export default function JudgmentLibrary() {
   }, [courts, benchTypes, judges, acts]);
 
   const resolveName = (map, val) => (val ? (map[val] || val) : '—');
-  const resolveJudges = (val) => {
-    if (!val) return '—';
-    const arr = Array.isArray(val) ? val : [val];
-    return arr.map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).filter(Boolean).join(', ');
-  };
 
   const uniqueValues = useMemo(() => {
     const courts = new Set();
@@ -565,7 +560,7 @@ export default function JudgmentLibrary() {
                           {resolveName(nameMap.court, j.court)}
                           {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
                         </td>
-                        <td data-label="Judge(s)" className="jl-cell-strong">{resolveJudges(j.judges || j.judge)}</td>
+                        <td data-label="Judge(s)" className="jl-cell-strong">{resolveName(nameMap.judge, j.judges || j.judge) || '—'}</td>
                         <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
                         <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
                         <td data-label="Status">
