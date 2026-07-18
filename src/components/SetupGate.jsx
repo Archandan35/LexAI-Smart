@@ -45,6 +45,7 @@ export default function SetupGate({ children }) {
   const runCheck = useCallback(async () => {
     try {
       const res = await databaseManagerLogic.detect();
+      console.log('[SetupGate] detect result:', JSON.parse(JSON.stringify(res)));
       if (res.data?.authError) {
         setDetectError(`Auth error: ${res.data.authError}. Check the provider API key and ensure it has access to the project.`);
       }

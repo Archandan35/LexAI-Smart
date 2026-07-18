@@ -22555,16 +22555,10 @@ kbd.cmd__kbd {
 /* Bottom nav is mobile-only — hidden on desktop/tablet by default */
 .bench-types__view-toggle {
   display: flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  transition: box-shadow 0.25s ease, transform 0.2s ease;
-}
-.bench-types__view-toggle:hover {
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-  transform: translateY(-1px);
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border-radius: 10px;
 }
 
 .bench-types__view-btn {
@@ -22572,22 +22566,22 @@ kbd.cmd__kbd {
   border: none;
   padding: 7px 14px;
   cursor: pointer;
-  color: var(--text-faint);
+  color: var(--text-soft);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.25s, color 0.25s, transform 0.2s;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.16s var(--ease, ease);
 }
 .bench-types__view-btn:hover {
-  transform: scale(1.1);
+  color: var(--navy-700);
 }
 .bench-types__view-btn.active {
-  background: var(--primary);
-  color: #fff;
-}
-.bench-types__view-btn:not(.active):hover {
-  background: var(--hover-bg);
-  color: var(--text);
+  background: #fff;
+  color: var(--navy-700);
+  box-shadow: var(--shadow-sm);
 }
 
 .bench-types__grid {
