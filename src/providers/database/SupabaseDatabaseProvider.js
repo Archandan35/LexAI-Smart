@@ -358,8 +358,8 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       clearTimeout(timer);
       if (res.ok || res.status === 200 || res.status === 206) return 'present';
       if (res.status === 404) return 'missing';
-      // Explicit auth/throttle rejections → we cannot determine existence.
-      if (res.status === 401 || res.status === 403 || res.status === 429) return 'blocked';
+      if (res.status === 401 || res.status === 403) return 'missing';
+      if (res.status === 429) return 'blocked';
       // Any other status (5xx, etc.) → treat as missing rather than falsely
       // flagging the whole setup as "blocked/throttled".
       return 'missing';
@@ -369,7 +369,6 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       // Only a definitive auth/throttle rejection means "blocked".
       if (e && e.name === 'AbortError') return 'missing';
       if (/throttl|egress|rate.?limit|429/i.test(msg)) return 'blocked';
-      if (/auth denied|401|403|forbidden|unauthorized/i.test(msg)) return 'blocked';
       // Network/CORS/unknown errors on a fresh project → assume missing
       // (don't falsely report the setup as blocked/throttled).
       return 'missing';
