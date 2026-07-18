@@ -235,33 +235,14 @@ export default function DmcImportCenter() {
                     </>
                   )}
 
-                  {step < 5 && (
-                    <div className="dmc-db-wizard__actions">
-                      <Button variant="ghost" onClick={reset}>Cancel</Button>
-                      <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!validation?.ok}>Continue</Button>
-                    </div>
-                  )}
-
-                  {step === 2 && validation?.ok && (
-                    <div className="dmc-db-wizard__actions">
-                      <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
-                      <Button variant="primary" onClick={() => setStep(3)}>Preview</Button>
-                    </div>
-                  )}
-
-                  {step === 3 && (
-                    <div className="dmc-db-wizard__actions">
-                      <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
-                      <Button variant="primary" onClick={() => setStep(4)}>Continue to Import</Button>
-                    </div>
-                  )}
-
-                  {step === 4 && (
-                    <div className="dmc-db-wizard__actions" style={{ justifyContent: 'flex-end' }}>
-                      <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>
-                      <Button variant="danger" onClick={doImport} disabled={importing || (fileCollections.length > 0 && selectedImportCount === 0)}>{importing ? 'Importing…' : 'Import Data'}</Button>
-                    </div>
-                  )}
+                  <div className="dmc-db-wizard__actions">
+                    {step > 0 && step < 5 && <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
+                    {step === 0 && <Button variant="ghost" onClick={reset}>Cancel</Button>}
+                    {step === 1 && <Button variant="primary" onClick={() => setStep(2)} disabled={!validation?.ok}>Continue</Button>}
+                    {step === 2 && <Button variant="primary" onClick={() => setStep(3)}>Preview</Button>}
+                    {step === 3 && <Button variant="primary" onClick={() => setStep(4)}>Continue to Import</Button>}
+                    {step === 4 && <Button variant="danger" onClick={doImport} disabled={importing || (fileCollections.length > 0 && selectedImportCount === 0)}>{importing ? 'Importing…' : 'Import Data'}</Button>}
+                  </div>
 
                   {step === 5 && (
                     <div className="dmc-import-result">

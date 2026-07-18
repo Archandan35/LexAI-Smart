@@ -4,7 +4,6 @@ import { caseService } from '@/services/caseService.js';
 import { bytes, useFormat } from '@/utils/format.js';
 import { storageService } from '@/services/storageService.js';
 import Icon from '@/components/Icon.jsx';
-import Button from '@/components/Button.jsx';
 
 const COLLECTIONS = ['documents', 'cases', 'drafts', 'notes', 'case_folders', 'hearings'];
 
@@ -75,7 +74,7 @@ export default function DmcDataExplorer() {
           <span className="dmc-db-section__badge">{filtered.length} record(s)</span>
         </div>
         <div className="dmc-db-section__body">
-          <div className="dmc-db-toolbar" style={{ marginBottom: 16 }}>
+          <div className="dmc-db-toolbar">
             <div className="dmc-db-toolbar__left">
               <select className="dmc-db-select" value={collection} onChange={(e) => { setCollection(e.target.value); setPreviewDoc(null); }}>
                 {COLLECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -111,24 +110,32 @@ export default function DmcDataExplorer() {
             </div>
           )}
 
-          <div className="dmc-db-table-wrap">
-            <table className="dmc-db-table">
-              <thead>
-                <tr>{fields.map((f) => <th key={f}>{f}</th>)}</tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr><td colSpan={fields.length} className="dmc-empty-cell">{loading ? 'Loading…' : 'No records found.'}</td></tr>
-                ) : (
-                  filtered.slice(0, 50).map((r) => (
-                    <tr key={r.id}>
-                      {fields.map((f) => <td key={f}>{renderCell(r, f)}</td>)}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          {filtered.length === 0 && !loading ? (
+            <div className="dmc-empty" style={{ padding: '40px 0' }}>
+              <div className="dmc-empty__icon"><Icon name="layers" size={32} /></div>
+              <div className="dmc-empty__title">No records found</div>
+              <div className="dmc-empty__hint">Try a different collection or search term.</div>
+            </div>
+          ) : (
+            <div className="dmc-db-table-wrap">
+              <table className="dmc-db-table">
+                <thead>
+                  <tr>{fields.map((f) => <th key={f}>{f}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr><td colSpan={fields.length} className="dmc-empty-cell">Loading…</td></tr>
+                  ) : (
+                    filtered.slice(0, 50).map((r) => (
+                      <tr key={r.id}>
+                        {fields.map((f) => <td key={f}>{renderCell(r, f)}</td>)}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </>

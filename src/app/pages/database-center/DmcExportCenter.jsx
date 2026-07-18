@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
-import { backupLogic } from '@/logic/backupLogic.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { downloadFile } from '@/utils/exportData.js';
 import { bytes } from '@/utils/format.js';
@@ -21,7 +19,6 @@ const FORMATS = [
 
 export default function DmcExportCenter() {
   const toast = useToast();
-  const { user } = useAuth();
   const [format, setFormat] = useState('udb');
   const [includeAttachments, setIncludeAttachments] = useState(true);
   const [includeMetadata, setIncludeMetadata] = useState(true);

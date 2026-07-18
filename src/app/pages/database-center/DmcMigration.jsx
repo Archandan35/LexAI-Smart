@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import Button from '@/components/Button.jsx';
@@ -17,7 +16,6 @@ const PROVIDERS = [
 
 export default function DmcMigration() {
   const toast = useToast();
-  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [sourceProvider, setSourceProvider] = useState('');
   const [targetProvider, setTargetProvider] = useState('');

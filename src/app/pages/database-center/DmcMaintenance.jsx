@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import Icon from '@/components/Icon.jsx';
@@ -18,7 +17,6 @@ const VARIANTS = ['indigo', 'green', 'amber', 'blue', 'purple', 'cyan'];
 
 export default function DmcMaintenance() {
   const toast = useToast();
-  const { user } = useAuth();
   const [running, setRunning] = useState(null);
   const [results, setResults] = useState({});
 
