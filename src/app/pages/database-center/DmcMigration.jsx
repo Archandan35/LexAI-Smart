@@ -33,11 +33,14 @@ export default function DmcMigration() {
   const startValidation = async () => {
     try {
       await databaseAdminService.connectionStatus();
-      setReport({ source: sourceProvider, target: targetProvider, schemaVersion: String(databaseAdminService.schemaVersion()), collections: databaseAdminService.knownCollections().length, status: 'ready' });
+      setReport({
+        source: sourceProvider, target: targetProvider,
+        schemaVersion: String(databaseAdminService.schemaVersion()),
+        collections: databaseAdminService.knownCollections().length,
+        status: 'ready',
+      });
       toast.push('Validation ready. Schema mapping complete.', 'info');
-    } catch (e) {
-      toast.push(e.message, 'error');
-    }
+    } catch (e) { toast.push(e.message, 'error'); }
   };
 
   const doMigrate = async () => {
@@ -65,9 +68,7 @@ export default function DmcMigration() {
   return (
     <>
       <div className="dmc-db-hero dmc-db-hero--sm">
-        <div className="dmc-db-hero__icon">
-          <Icon name="migrate" size={26} />
-        </div>
+        <div className="dmc-db-hero__icon"><Icon name="migrate" size={26} /></div>
         <div className="dmc-db-hero__text">
           <div className="dmc-db-hero__accent" />
           <h2>Migration</h2>
@@ -77,124 +78,118 @@ export default function DmcMigration() {
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="migrate" size={18} /> Migration Wizard
-          </div>
+          <div className="dmc-db-section__title"><Icon name="migrate" size={18} /> Migration Wizard</div>
           <span className="dmc-db-section__badge">Step {step + 1} of {STEPS.length}</span>
         </div>
+        <div className="dmc-db-wizard__steps">
+          {STEPS.map((s, i) => (
+            <div key={s} className={`dmc-db-wizard__step${i < step ? ' dmc-db-wizard__step--done' : ''}${i === step ? ' dmc-db-wizard__step--active' : ''}`}>
+              <span className="dmc-db-wizard__step-num">{i < step ? '\u2713' : i + 1}</span>
+              {s}
+            </div>
+          ))}
+        </div>
         <div className="dmc-db-section__body">
-          <div className="dmc-db-wizard">
-            <div className="dmc-db-wizard__steps">
-              {STEPS.map((s, i) => (
-                <div key={s} className={`dmc-db-wizard__step${i < step ? ' dmc-db-wizard__step--done' : ''}${i === step ? ' dmc-db-wizard__step--active' : ''}`}>
-                  <span className="dmc-db-wizard__step-num">{i < step ? '\u2713' : i + 1}</span>
-                  {s}
-                </div>
-              ))}
+          {step === 0 && (
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Source Provider</div>
+              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 12 }}>The current database provider containing your data.</p>
+              <select className="dmc-db-select" style={{ minWidth: 300 }} value={sourceProvider} onChange={(e) => setSourceProvider(e.target.value)}>
+                <option value="">Select source provider\u2026</option>
+                {PROVIDERS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+              </select>
             </div>
+          )}
 
-            <div className="dmc-db-wizard__content" style={{ minHeight: 200 }}>
-              {step === 0 && (
-                <div>
-                  <label className="dmc-migration-label">Source Provider</label>
-                  <p className="dmc-migration-desc">The current database provider containing your data.</p>
-                  <select className="dmc-db-select" style={{ minWidth: 300 }} value={sourceProvider} onChange={(e) => setSourceProvider(e.target.value)}>
-                    <option value="">Select source provider…</option>
-                    {PROVIDERS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-                  </select>
-                </div>
-              )}
+          {step === 1 && (
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Target Provider</div>
+              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 12 }}>The destination provider. Must differ from the source.</p>
+              <select className="dmc-db-select" style={{ minWidth: 300 }} value={targetProvider} onChange={(e) => setTargetProvider(e.target.value)}>
+                <option value="">Select target provider\u2026</option>
+                {PROVIDERS.filter((p) => p.value !== sourceProvider).map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+              </select>
+            </div>
+          )}
 
-              {step === 1 && (
-                <div>
-                  <label className="dmc-migration-label">Target Provider</label>
-                  <p className="dmc-migration-desc">The destination provider. Must differ from the source.</p>
-                  <select className="dmc-db-select" style={{ minWidth: 300 }} value={targetProvider} onChange={(e) => setTargetProvider(e.target.value)}>
-                    <option value="">Select target provider…</option>
-                    {PROVIDERS.filter((p) => p.value !== sourceProvider).map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-                  </select>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div>
-                  <label className="dmc-migration-label">Schema Mapping</label>
-                  <p className="dmc-migration-desc">Review and confirm the field type mapping between {sourceProvider} and {targetProvider}.</p>
-                  <div className="dmc-db-table-wrap" style={{ marginBottom: 12 }}>
-                    <table className="dmc-db-table">
-                      <thead><tr><th>Source Type</th><th>Target Type</th><th>Status</th></tr></thead>
-                      <tbody>
-                        <tr><td>String / Text</td><td>String / Text</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                        <tr><td>Number / Integer</td><td>Number / Integer</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                        <tr><td>Boolean</td><td>Boolean</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                        <tr><td>Date / DateTime</td><td>Date / DateTime</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                        <tr><td>JSON / Object</td><td>JSON / Object</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={startValidation}>Validate Mapping</Button>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div>
-                  <label className="dmc-migration-label">Validation Report</label>
-                  {report ? (
-                    <div className="dmc-db-table-wrap" style={{ marginBottom: 12 }}>
-                      <table className="dmc-db-table">
-                        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-                        <tbody>
-                          <tr><td>Source</td><td>{report.source}</td></tr>
-                          <tr><td>Target</td><td>{report.target}</td></tr>
-                          <tr><td>Schema Version</td><td>{report.schemaVersion}</td></tr>
-                          <tr><td>Collections</td><td>{report.collections}</td></tr>
-                          <tr><td>Status</td><td><span className="dmc-badge dmc-badge--green">{report.status}</span></td></tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <p className="dmc-migration-hint">Run validation from the previous step.</p>
-                  )}
-                  <label className="dmc-migration-check-label">
-                    <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview without applying)
-                  </label>
-                </div>
-              )}
-
-              {step === 4 && (
-                <div className="dmc-migration-center">
-                  <p className="dmc-migration-ready-text">Ready to {dryRun ? 'simulate' : 'execute'} migration</p>
-                  <p className="dmc-migration-provider-info">{sourceProvider} → {targetProvider}</p>
-                  <Button variant="danger" onClick={doMigrate} disabled={migrating}>
-                    {migrating ? 'Processing…' : dryRun ? 'Start Dry Run' : 'Execute Migration'}
-                  </Button>
-                </div>
-              )}
-
-              {step === 5 && (
-                <div className="dmc-migration-result">
-                  {result?.ok ? (
-                    <>
-                      <div className="dmc-result-icon-lg"><Icon name="check" size={32} className="dmc-result-icon-green" /></div>
-                      <p className="dmc-result-text-bold">{result.dryRun ? 'Dry Run Passed' : 'Migration Complete'}</p>
-                      <p className="dmc-result-text-soft">{result.message}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="dmc-result-icon-lg"><Icon name="alert" size={32} className="dmc-result-icon-red" /></div>
-                      <p className="dmc-result-text-bold">Migration Failed</p>
-                      <p className="dmc-result-text-soft">{result?.message || 'Unknown error'}</p>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="dmc-db-wizard__actions">
-                {step > 0 && step < 5 && <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
-                {step < 4 && <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!canContinue()}>Continue</Button>}
-                {step === 5 && <Button variant="primary" onClick={reset}>New Migration</Button>}
+          {step === 2 && (
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Schema Mapping</div>
+              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 12 }}>Review and confirm the field type mapping between {sourceProvider} and {targetProvider}.</p>
+              <div className="dmc-db-table-wrap" style={{ marginBottom: 12 }}>
+                <table className="dmc-db-table">
+                  <thead><tr><th>Source Type</th><th>Target Type</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td>String / Text</td><td>String / Text</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
+                    <tr><td>Number / Integer</td><td>Number / Integer</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
+                    <tr><td>Boolean</td><td>Boolean</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
+                    <tr><td>Date / DateTime</td><td>Date / DateTime</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
+                    <tr><td>JSON / Object</td><td>JSON / Object</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
+                  </tbody>
+                </table>
               </div>
+              <Button size="sm" variant="ghost" onClick={startValidation}>Validate Mapping</Button>
             </div>
+          )}
+
+          {step === 3 && (
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Validation Report</div>
+              {report ? (
+                <div className="dmc-db-table-wrap" style={{ marginBottom: 12 }}>
+                  <table className="dmc-db-table">
+                    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                    <tbody>
+                      <tr><td>Source</td><td>{report.source}</td></tr>
+                      <tr><td>Target</td><td>{report.target}</td></tr>
+                      <tr><td>Schema Version</td><td>{report.schemaVersion}</td></tr>
+                      <tr><td>Collections</td><td>{report.collections}</td></tr>
+                      <tr><td>Status</td><td><span className="dmc-badge dmc-badge--green">{report.status}</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-soft)', fontSize: 13 }}>Run validation from the previous step.</p>
+              )}
+              <label className="dmc-checkbox-label" style={{ marginTop: 8, display: 'inline-flex' }}>
+                <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview without applying)
+              </label>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <p style={{ fontWeight: 600, marginBottom: 4 }}>Ready to {dryRun ? 'simulate' : 'execute'} migration</p>
+              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 16 }}>{sourceProvider} \u2192 {targetProvider}</p>
+              <Button variant="danger" onClick={doMigrate} disabled={migrating}>
+                {migrating ? 'Processing\u2026' : dryRun ? 'Start Dry Run' : 'Execute Migration'}
+              </Button>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              {result?.ok ? (
+                <>
+                  <div style={{ marginBottom: 12 }}><Icon name="check" size={32} style={{ color: 'var(--green)' }} /></div>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{result.dryRun ? 'Dry Run Passed' : 'Migration Complete'}</div>
+                  <div style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 16 }}>{result.message}</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 12 }}><Icon name="alert" size={32} style={{ color: 'var(--red)' }} /></div>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Migration Failed</div>
+                  <div style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 16 }}>{result?.message || 'Unknown error'}</div>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className="dmc-db-wizard__actions">
+            {step > 0 && step < 5 && <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
+            <div />
+            {step < 4 && <Button variant="primary" onClick={() => setStep(step + 1)} disabled={!canContinue()}>Continue</Button>}
+            {step === 5 && <Button variant="primary" onClick={reset}>New Migration</Button>}
           </div>
         </div>
       </div>

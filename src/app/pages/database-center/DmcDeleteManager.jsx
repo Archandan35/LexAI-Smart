@@ -33,20 +33,14 @@ export default function DmcDeleteManager() {
   const analyze = async () => {
     setPreview(null);
     if (scope === 'user' && !selectedUserId) { toast.push('Select a user first.', 'error'); return; }
-
     if (scope === 'user') {
       const targetUser = users.find((u) => u.id === selectedUserId);
       const userCases = cases.filter((c) => c.advocate === targetUser?.name || c.createdBy === targetUser?.id);
       const userDocs = await documentsRepository.getAll({ uploadedBy: targetUser?.id || targetUser?.name }).catch(() => []);
       setPreview({
-        type: 'user',
-        label: `Data for ${targetUser?.name || selectedUserId}`,
-        cases: userCases.length,
-        documents: userDocs.length,
-        collections: 1,
-        records: userCases.length + userDocs.length,
-        userCases,
-        userDocs,
+        type: 'user', label: `Data for ${targetUser?.name || selectedUserId}`,
+        cases: userCases.length, documents: userDocs.length, collections: 1,
+        records: userCases.length + userDocs.length, userCases, userDocs,
       });
     } else {
       const repo = { documents: documentsRepository }[selectedCollection];
@@ -86,9 +80,7 @@ export default function DmcDeleteManager() {
   return (
     <>
       <div className="dmc-db-hero dmc-db-hero--sm">
-        <div className="dmc-db-hero__icon">
-          <Icon name="trash" size={26} />
-        </div>
+        <div className="dmc-db-hero__icon"><Icon name="trash" size={26} /></div>
         <div className="dmc-db-hero__text">
           <div className="dmc-db-hero__accent" />
           <h2>Delete Manager</h2>
@@ -98,21 +90,13 @@ export default function DmcDeleteManager() {
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="layers" size={18} /> Delete Scope
-          </div>
+          <div className="dmc-db-section__title"><Icon name="layers" size={18} /> Delete Scope</div>
         </div>
         <div className="dmc-db-section__body">
           <div className="dmc-db-toolbar">
-            <div className="dmc-db-toolbar__left" style={{ gap: 16 }}>
-              <label className="dmc-filter-chip" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="scope" checked={scope === 'collection'} onChange={() => setScope('collection')} style={{ marginRight: 6 }} />
-                Collection Cleanup
-              </label>
-              <label className="dmc-filter-chip" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="scope" checked={scope === 'user'} onChange={() => setScope('user')} style={{ marginRight: 6 }} />
-                User Data Cleanup
-              </label>
+            <div className="dmc-db-toolbar__left">
+              <label className="dmc-checkbox-label"><input type="radio" name="scope" checked={scope === 'collection'} onChange={() => setScope('collection')} /> Collection Cleanup</label>
+              <label className="dmc-checkbox-label"><input type="radio" name="scope" checked={scope === 'user'} onChange={() => setScope('user')} /> User Data Cleanup</label>
             </div>
             <div className="dmc-db-toolbar__right">
               <Button size="sm" variant="primary" onClick={analyze}>{dryRun ? 'Preview' : 'Analyze'}</Button>
@@ -120,85 +104,39 @@ export default function DmcDeleteManager() {
           </div>
 
           {scope === 'user' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <select className="dmc-db-select" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
-                <option value="">Select user…</option>
-                {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-              {selectedUserId && (
-                <span style={{ fontSize: 13, color: 'var(--text-soft)' }}>
-                  Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
-                </span>
-              )}
+            <div className="dmc-db-toolbar">
+              <div className="dmc-db-toolbar__left">
+                <select className="dmc-db-select" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
+                  <option value="">Select user\u2026</option>
+                  {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                {selectedUserId && (
+                  <span style={{ fontSize: 13, color: 'var(--text-soft)' }}>
+                    Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
+                  </span>
+                )}
+              </div>
             </div>
           )}
 
           {scope === 'collection' && (
-            <select className="dmc-db-select" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)}>
-              {COLLECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <div className="dmc-db-toolbar">
+              <div className="dmc-db-toolbar__left">
+                <select className="dmc-db-select" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)}>
+                  {COLLECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-soft)', cursor: 'pointer' }}>
-              <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} />
-              Dry Run (preview only)
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-soft)', cursor: 'pointer' }}>
-              <input type="checkbox" checked={backupFirst} onChange={() => setBackupFirst(!backupFirst)} disabled={dryRun} />
-              Backup before delete
-            </label>
+          <div className="dmc-db-toolbar">
+            <div className="dmc-db-toolbar__left">
+              <label className="dmc-checkbox-label"><input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview only)</label>
+              <label className="dmc-checkbox-label"><input type="checkbox" checked={backupFirst} onChange={() => setBackupFirst(!backupFirst)} disabled={dryRun} /> Backup before delete</label>
+            </div>
           </div>
         </div>
       </div>
-
-      {preview && (
-        <div className="dmc-db-section">
-          <div className="dmc-db-section__head">
-            <div className="dmc-db-section__title">
-              <Icon name="eye" size={18} /> Delete Preview
-            </div>
-            <span className="dmc-db-section__badge">{preview.records} records</span>
-          </div>
-          <div className="dmc-db-section__body">
-            <div className="dmc-db-table-wrap">
-              <table className="dmc-db-table">
-                <thead><tr><th>Scope</th><th>Collections</th><th>Records</th></tr></thead>
-                <tbody>
-                  <tr>
-                    <td>{preview.label}</td>
-                    <td>{preview.collections}</td>
-                    <td><strong>{preview.records}</strong></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {preview.type === 'user' && preview.userCases?.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>Affected Cases ({preview.cases})</div>
-                <div className="dmc-db-table-wrap">
-                  <table className="dmc-db-table">
-                    <thead><tr><th>Case</th><th>Documents</th></tr></thead>
-                    <tbody>
-                      {preview.userCases.slice(0, 10).map((c) => (
-                        <tr key={c.id}><td>{c.caseNumber || c.case_display_number || c.id}</td><td>{preview.userDocs.filter((d) => d.caseId === c.id).length}</td></tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {!dryRun && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Confirm Delete'}</Button>
-                <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {!preview && (
         <div className="dmc-db-section">
@@ -206,6 +144,48 @@ export default function DmcDeleteManager() {
             <div className="dmc-empty__icon"><Icon name="trash" size={36} /></div>
             <div className="dmc-empty__title">No scope selected</div>
             <div className="dmc-empty__hint">Choose a scope above and click Preview to analyze before deleting.</div>
+          </div>
+        </div>
+      )}
+
+      {preview && (
+        <div className="dmc-db-section">
+          <div className="dmc-db-section__head">
+            <div className="dmc-db-section__title"><Icon name="eye" size={18} /> Delete Preview</div>
+            <span className="dmc-db-section__badge">{preview.records} records</span>
+          </div>
+          <div className="dmc-db-table-wrap">
+            <table className="dmc-db-table">
+              <thead><tr><th>Scope</th><th>Collections</th><th>Records</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>{preview.label}</td>
+                  <td>{preview.collections}</td>
+                  <td><strong>{preview.records}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {preview.type === 'user' && preview.userCases?.length > 0 && (
+            <div className="dmc-db-section__body">
+              <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>Affected Cases ({preview.cases})</div>
+              <div className="dmc-db-table-wrap">
+                <table className="dmc-db-table">
+                  <thead><tr><th>Case</th><th>Documents</th></tr></thead>
+                  <tbody>
+                    {preview.userCases.slice(0, 10).map((c) => (
+                      <tr key={c.id}><td>{c.caseNumber || c.case_display_number || c.id}</td><td>{preview.userDocs.filter((d) => d.caseId === c.id).length}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          <div className="dmc-db-section__body">
+            <div style={{ display: 'flex', gap: 8 }}>
+              {!dryRun && <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting\u2026' : 'Confirm Delete'}</Button>}
+              <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
+            </div>
           </div>
         </div>
       )}

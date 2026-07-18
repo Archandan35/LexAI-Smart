@@ -30,7 +30,7 @@ export default function DmcBackupRecovery() {
     const res = await backupLogic.create({ type: 'manual' }, user);
     setCreating(false);
     if (res.ok) {
-      const removed = res.data.removed?.length ? ` · ${res.data.removed.length} old removed` : '';
+      const removed = res.data.removed?.length ? ` \u00b7 ${res.data.removed.length} old removed` : '';
       toast.push(`Backup created (${bytes(res.data.backup.size)}, ${res.data.backup.durationMs}ms)${removed}.`, 'success');
       refresh();
     } else toast.push(res.error, 'error');
@@ -40,19 +40,25 @@ export default function DmcBackupRecovery() {
 
   const tabs = ['overview', 'history', 'settings', 'restore'];
 
+  const TAB_BG = { background: 'var(--bg-subtle)', borderRadius: 8, padding: 2, display: 'inline-flex', gap: 4 };
+  const TAB_BTN = (isActive) => ({
+    padding: '6px 14px', borderRadius: 6, fontSize: 13, border: 'none', cursor: 'pointer',
+    background: isActive ? 'var(--bg)' : 'transparent',
+    color: isActive ? 'var(--text)' : 'var(--text-soft)',
+    fontWeight: isActive ? 600 : 400,
+  });
+
   return (
     <>
       <div className="dmc-db-hero dmc-db-hero--sm">
-        <div className="dmc-db-hero__icon">
-          <Icon name="refresh" size={26} />
-        </div>
+        <div className="dmc-db-hero__icon"><Icon name="refresh" size={26} /></div>
         <div className="dmc-db-hero__text">
           <div className="dmc-db-hero__accent" />
           <h2>Backup & Recovery</h2>
           <p>Create, restore, schedule, and manage database backups.</p>
           <div className="dmc-db-hero__actions">
             <PermissionGate perm="backup.create">
-              <Button variant="primary" size="sm" icon="plus" onClick={createNow} disabled={creating}>{creating ? 'Creating…' : 'Create Backup Now'}</Button>
+              <Button variant="primary" size="sm" icon="plus" onClick={createNow} disabled={creating}>{creating ? 'Creating\u2026' : 'Create Backup Now'}</Button>
             </PermissionGate>
             <PermissionGate perm="backup.import">
               <Button variant="ghost" size="sm" icon="download" onClick={() => setImportOpen(true)}>Import</Button>
@@ -63,24 +69,19 @@ export default function DmcBackupRecovery() {
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="refresh" size={18} /> Backup & Recovery
-          </div>
-          <div style={{ display: 'flex', gap: 4, background: 'var(--bg-subtle)', borderRadius: 8, padding: 2 }}>
+          <div className="dmc-db-section__title"><Icon name="refresh" size={18} /> Backup & Recovery</div>
+          <div style={TAB_BG}>
             {tabs.map((t) => (
-              <button
-                key={t}
-                className={`dmc-tab-underline${tab === t ? ' active' : ''}`}
-                onClick={() => setTab(t)}
-                style={{ padding: '6px 14px', borderRadius: 6, fontSize: 13, border: 'none', cursor: 'pointer', background: tab === t ? 'var(--bg)' : 'transparent', color: tab === t ? 'var(--text)' : 'var(--text-soft)', fontWeight: tab === t ? 600 : 400 }}
-              >{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+              <button key={t} style={TAB_BTN(tab === t)} onClick={() => setTab(t)}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
             ))}
           </div>
         </div>
 
         {tab === 'overview' && (
           <div className="dmc-db-section__body">
-            <div className="dmc-db-stats-row" style={{ marginBottom: 24 }}>
+            <div className="dmc-db-stats-row">
               {[
                 { label: 'Total Backups', value: backups.length, sub: 'All time', variant: 'indigo', icon: 'refresh' },
                 { label: 'Protected', value: String(stats?.protectedCount || 0), sub: 'Safe from cleanup', variant: 'green', icon: 'shield' },
@@ -88,9 +89,7 @@ export default function DmcBackupRecovery() {
                 { label: 'Last Backup', value: stats?.lastBackup ? formatDateTime(stats.lastBackup) : 'Never', sub: stats?.lastBackup ? 'Latest' : 'No backup', variant: 'amber', icon: 'clock' },
               ].map((c) => (
                 <div key={c.label} className="dmc-db-statcard">
-                  <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${c.variant}`}>
-                    <Icon name={c.icon} size={18} />
-                  </div>
+                  <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${c.variant}`}><Icon name={c.icon} size={18} /></div>
                   <div className="dmc-db-statcard__body">
                     <div className="dmc-db-statcard__label">{c.label}</div>
                     <div className="dmc-db-statcard__value">{c.value}</div>
@@ -118,7 +117,7 @@ export default function DmcBackupRecovery() {
           <div className="dmc-db-section__body">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <Icon name="gear" size={18} />
-              <strong style={{ color: 'var(--text)' }}>Backup Settings</strong>
+              <strong>Backup Settings</strong>
             </div>
             <p style={{ color: 'var(--text-soft)', fontSize: 14, marginBottom: 12 }}>Configure backup retention, scheduling, and storage options.</p>
             <Button variant="primary" size="sm" onClick={() => nav('/admin/backup/settings')}>Open Settings</Button>
@@ -129,13 +128,16 @@ export default function DmcBackupRecovery() {
           <div className="dmc-db-section__body">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <Icon name="history" size={18} />
-              <strong style={{ color: 'var(--text)' }}>Restore Database</strong>
+              <strong>Restore Database</strong>
             </div>
             <p style={{ color: 'var(--text-soft)', fontSize: 14, marginBottom: 12 }}>Select a backup to restore from the history table above, then click Restore.</p>
             {backups.length > 0 ? (
               <BackupHistoryTable backups={backups} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} limit={0} />
             ) : (
-              <div className="dmc-empty"><div className="dmc-empty__icon"><Icon name="history" size={32} /></div><div className="dmc-empty__title">No backups yet</div></div>
+              <div className="dmc-empty">
+                <div className="dmc-empty__icon"><Icon name="history" size={32} /></div>
+                <div className="dmc-empty__title">No backups yet</div>
+              </div>
             )}
           </div>
         )}

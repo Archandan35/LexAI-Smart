@@ -31,34 +31,26 @@ export default function DmcAuditActivity() {
     return 'navy';
   };
 
-  const counts = {
-    all: logs.length,
-    backup: logs.filter(l => l.action?.startsWith('backup')).length,
-    restore: logs.filter(l => l.action?.startsWith('restore')).length,
-    import: logs.filter(l => l.action?.startsWith('import')).length,
-    export: logs.filter(l => l.action?.startsWith('export')).length,
-    delete: logs.filter(l => l.action?.startsWith('delete')).length,
-    user: logs.filter(l => l.action?.startsWith('user')).length,
-    system: logs.filter(l => l.action?.startsWith('system') || (!l.action?.startsWith('backup') && !l.action?.startsWith('restore') && !l.action?.startsWith('import') && !l.action?.startsWith('export') && !l.action?.startsWith('delete') && !l.action?.startsWith('user'))).length,
+  const getCount = (key) => {
+    if (key === 'all') return logs.length;
+    return logs.filter(l => l.action?.startsWith(key)).length;
   };
 
   const tabs = [
-    { key: 'all', label: 'All Events', count: logs.length },
-    { key: 'backup', label: 'Backup', count: counts.backup },
-    { key: 'restore', label: 'Restore', count: counts.restore },
-    { key: 'import', label: 'Import', count: counts.import },
-    { key: 'export', label: 'Export', count: counts.export },
-    { key: 'delete', label: 'Delete', count: counts.delete },
-    { key: 'user', label: 'User', count: counts.user },
-    { key: 'system', label: 'System', count: counts.system },
+    { key: 'all', label: 'All Events' },
+    { key: 'backup', label: 'Backup' },
+    { key: 'restore', label: 'Restore' },
+    { key: 'import', label: 'Import' },
+    { key: 'export', label: 'Export' },
+    { key: 'delete', label: 'Delete' },
+    { key: 'user', label: 'User' },
+    { key: 'system', label: 'System' },
   ];
 
   return (
     <>
       <div className="dmc-db-hero dmc-db-hero--sm">
-        <div className="dmc-db-hero__icon">
-          <Icon name="activity" size={26} />
-        </div>
+        <div className="dmc-db-hero__icon"><Icon name="activity" size={26} /></div>
         <div className="dmc-db-hero__text">
           <div className="dmc-db-hero__accent" />
           <h2>Audit & Activity</h2>
@@ -68,29 +60,34 @@ export default function DmcAuditActivity() {
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="activity" size={18} /> Activity Log
-          </div>
+          <div className="dmc-db-section__title"><Icon name="activity" size={18} /> Activity Log</div>
           <div className="dmc-db-search">
             <Icon name="search" size={14} />
-            <input placeholder="Search events…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input placeholder="Search events\u2026" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
         </div>
         <div className="dmc-db-section__body" style={{ padding: 0 }}>
-          <div style={{ display: 'flex', gap: 4, padding: '12px 20px', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', overflowX: 'auto', padding: '0 20px' }}>
             {tabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setFilter(t.key)}
-                style={{ padding: '6px 14px', fontSize: 13, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', borderRadius: 6, background: filter === t.key ? 'var(--bg-subtle)' : 'transparent', color: filter === t.key ? 'var(--text)' : 'var(--text-soft)', fontWeight: filter === t.key ? 600 : 400 }}
-              >{t.label} <span style={{ color: 'var(--text-faint)', marginLeft: 4 }}>{t.count}</span></button>
+                style={{
+                  padding: '10px 14px', fontSize: 13, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer',
+                  background: 'none', color: filter === t.key ? 'var(--brand)' : 'var(--text-soft)',
+                  fontWeight: filter === t.key ? 600 : 400,
+                  borderBottom: '2px solid transparent',
+                  borderBottomColor: filter === t.key ? 'var(--brand)' : 'transparent',
+                  marginBottom: -1,
+                }}
+              >{t.label} <span style={{ color: 'var(--text-faint)', marginLeft: 2 }}>{getCount(t.key)}</span></button>
             ))}
           </div>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <div style={{ marginBottom: 8, opacity: 0.4 }}><Icon name="activity" size={32} /></div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>No events found</div>
-              <div style={{ fontSize: 13, color: 'var(--text-soft)' }}>Try a different filter or search term.</div>
+            <div className="dmc-empty">
+              <div className="dmc-empty__icon"><Icon name="activity" size={32} /></div>
+              <div className="dmc-empty__title">No events found</div>
+              <div className="dmc-empty__hint">Try a different filter or search term.</div>
             </div>
           ) : (
             <>
@@ -102,11 +99,11 @@ export default function DmcAuditActivity() {
                   <tbody>
                     {filtered.slice(0, 100).map((l, i) => (
                       <tr key={l.id || i}>
-                        <td><span className={`dmc-badge dmc-badge--${actionColor(l.action)}`}>{l.action || '—'}</span></td>
+                        <td><span className={`dmc-badge dmc-badge--${actionColor(l.action)}`}>{l.action || '\u2014'}</span></td>
                         <td>{l.user || l.userName || 'system'}</td>
-                        <td>{l.module || '—'}</td>
+                        <td>{l.module || '\u2014'}</td>
                         <td>{formatDate(l.createdAt || l.created_at || l.timestamp)}</td>
-                        <td className="dmc-cell-truncate">{l.details || l.description || '—'}</td>
+                        <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-soft)' }}>{l.details || l.description || '\u2014'}</td>
                       </tr>
                     ))}
                   </tbody>

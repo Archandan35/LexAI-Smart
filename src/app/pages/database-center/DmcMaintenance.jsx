@@ -12,7 +12,6 @@ const TASKS = [
   { id: 'logs', label: 'Cleanup Logs', icon: 'clock', desc: 'Remove audit and activity logs older than retention period.', variant: 'indigo' },
 ];
 
-const VARIANT_MAP = { indigo: 0, green: 1, amber: 2, blue: 3, purple: 4, cyan: 5 };
 const VARIANTS = ['indigo', 'green', 'amber', 'blue', 'purple', 'cyan'];
 
 export default function DmcMaintenance() {
@@ -41,9 +40,7 @@ export default function DmcMaintenance() {
   return (
     <>
       <div className="dmc-db-hero dmc-db-hero--sm">
-        <div className="dmc-db-hero__icon">
-          <Icon name="wrench" size={26} />
-        </div>
+        <div className="dmc-db-hero__icon"><Icon name="wrench" size={26} /></div>
         <div className="dmc-db-hero__text">
           <div className="dmc-db-hero__accent" />
           <h2>Maintenance</h2>
@@ -53,25 +50,21 @@ export default function DmcMaintenance() {
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="activity" size={18} /> Health Check
-          </div>
+          <div className="dmc-db-section__title"><Icon name="activity" size={18} /> Health Check</div>
           {results.validate && <span className={`dmc-badge dmc-badge--${results.validate.ok ? 'green' : 'red'}`}>{results.validate.ok ? 'Pass' : 'Fail'}</span>}
         </div>
         <div className="dmc-db-section__body">
-          <div
-            className="dmc-db-statcard"
-            style={{ cursor: 'pointer', maxWidth: 400 }}
-            onClick={() => run('validate')}
-          >
-            <div className="dmc-db-statcard__icon dmc-db-statcard__icon--indigo">
-              <Icon name="server" size={18} />
-            </div>
+          <div className="dmc-db-statcard" style={{ cursor: 'pointer', maxWidth: 400 }} onClick={() => run('validate')}>
+            <div className="dmc-db-statcard__icon dmc-db-statcard__icon--indigo"><Icon name="server" size={18} /></div>
             <div className="dmc-db-statcard__body">
               <div className="dmc-db-statcard__label">Health Check</div>
-              <div className="dmc-db-statcard__value">{running === 'validate' ? 'Running…' : 'Run Health Check'}</div>
+              <div className="dmc-db-statcard__value">{running === 'validate' ? 'Running\u2026' : 'Run Health Check'}</div>
               <div className="dmc-db-statcard__sub">Validate schema integrity and connection status</div>
-              {results.validate && <div className={`dmc-result-msg${results.validate.ok ? ' dmc-result-msg--ok' : ' dmc-result-msg--fail'}`}>{results.validate.message}</div>}
+              {results.validate && (
+                <div style={{ marginTop: 4, fontSize: 12, color: results.validate.ok ? 'var(--green)' : 'var(--red)' }}>
+                  {results.validate.message}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -79,52 +72,40 @@ export default function DmcMaintenance() {
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="wrench" size={18} /> Maintenance Tasks
-          </div>
+          <div className="dmc-db-section__title"><Icon name="wrench" size={18} /> Maintenance Tasks</div>
         </div>
         <div className="dmc-db-section__body">
           <div className="dmc-db-stats-row">
-            {TASKS.map((t) => {
-              const vi = VARIANT_MAP[t.variant] ?? 0;
-              return (
-                <div
-                  key={t.id}
-                  className="dmc-db-statcard"
-                  style={{ cursor: 'pointer', flex: '1 1 calc(33.33% - 10px)', minWidth: 200 }}
-                  onClick={() => run(t.id)}
-                >
-                  <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${VARIANTS[vi]}`}>
-                    <Icon name={t.icon} size={18} />
-                  </div>
-                  <div className="dmc-db-statcard__body">
-                    <div className="dmc-db-statcard__label">{t.label}</div>
-                    <div className="dmc-db-statcard__value" style={{ fontSize: 14 }}>{running === t.id ? 'Running…' : 'Run Task'}</div>
-                    <div className="dmc-db-statcard__sub">{t.desc}</div>
-                    {results[t.id] && <div className={`dmc-result-msg${results[t.id].ok ? ' dmc-result-msg--ok' : ' dmc-result-msg--fail'}`}>{results[t.id].message}</div>}
-                  </div>
+            {TASKS.map((t, i) => (
+              <div key={t.id} className="dmc-db-statcard" style={{ cursor: 'pointer', flex: '1 1 calc(33.33% - 10px)', minWidth: 200 }} onClick={() => run(t.id)}>
+                <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${VARIANTS[(i + 1) % 6]}`}><Icon name={t.icon} size={18} /></div>
+                <div className="dmc-db-statcard__body">
+                  <div className="dmc-db-statcard__label">{t.label}</div>
+                  <div className="dmc-db-statcard__value" style={{ fontSize: 14 }}>{running === t.id ? 'Running\u2026' : 'Run Task'}</div>
+                  <div className="dmc-db-statcard__sub">{t.desc}</div>
                   {results[t.id] && (
-                    <span className={`dmc-badge dmc-badge--${results[t.id].ok ? 'green' : 'red'}`} style={{ flexShrink: 0, marginLeft: 8 }}>
-                      {results[t.id].ok ? 'Done' : 'Error'}
-                    </span>
+                    <div style={{ marginTop: 4, fontSize: 12, color: results[t.id].ok ? 'var(--green)' : 'var(--red)' }}>
+                      {results[t.id].message}
+                    </div>
                   )}
                 </div>
-              );
-            })}
+                {results[t.id] && (
+                  <span className={`dmc-badge dmc-badge--${results[t.id].ok ? 'green' : 'red'}`} style={{ flexShrink: 0, marginLeft: 8 }}>
+                    {results[t.id].ok ? 'Done' : 'Error'}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
-          <div className="dmc-db-section__title">
-            <Icon name="info" size={18} /> Maintenance Log
-          </div>
+          <div className="dmc-db-section__title"><Icon name="info" size={18} /> Maintenance Log</div>
         </div>
-        <div className="dmc-db-section__body">
-          <div style={{ textAlign: 'center', padding: '24px 0' }}>
-            <div className="dmc-empty__hint">Completed tasks appear above with status indicators. No persistent log stored.</div>
-          </div>
+        <div className="dmc-db-section__body" style={{ textAlign: 'center' }}>
+          <div className="dmc-empty__hint">Completed tasks appear above with status indicators. No persistent log stored.</div>
         </div>
       </div>
     </>

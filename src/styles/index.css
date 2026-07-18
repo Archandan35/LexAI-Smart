@@ -16171,7 +16171,7 @@ kbd.cmd__kbd {
 }
 
 .dmc-body {
-  padding: 28px 32px 60px;
+  padding: 28px 0 60px;
   width: 100%;
 }
 
@@ -17722,6 +17722,8 @@ kbd.cmd__kbd {
   color: #94A3B8;
   gap: 16px;
   border-top: 1px solid #E2E8F0;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .bench-types__table-footer>div:first-child {
@@ -22616,7 +22618,6 @@ kbd.cmd__kbd {
 .bench-types__grid-card:hover {
   box-shadow: 0 8px 28px rgba(0,0,0,0.1);
   transform: translateY(-4px);
-  border-color: var(--primary);
 }
 
 .bench-types__grid-card-header {
@@ -22712,17 +22713,17 @@ kbd.cmd__kbd {
 }
 
 .bench-types__grid-card-actions .cmp-act-btn {
-  background: #fff;
-  border: 1px solid var(--border);
+  background: transparent;
+  border: 1px solid transparent;
   padding: 8px 12px;
   cursor: pointer;
   color: var(--text-faint);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 .bench-types__grid-card-actions .cmp-act-btn:hover {
-  background: var(--hover-bg);
+  background: #fff;
+  border-color: var(--border);
   color: var(--text);
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(0,0,0,0.1);
