@@ -97,6 +97,7 @@ const INITIAL_FORM = {
   obiterDicta: '',
   keyFindings: '',
   notes: '',
+  researchNotes: '',
   reviewComments: '',
   applicableStages: [],
   legalPrinciple: '',
@@ -1075,6 +1076,10 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
             <div className="ajm-field">
               <label>Internal Notes</label>
               <textarea className="ajm-input ajm-textarea" placeholder="Enter private notes..." value={form.notes || ''} onChange={(e) => set('notes', e.target.value)} />
+            </div>
+            <div className="ajm-field">
+              <label>Research Notes</label>
+              <textarea className="ajm-input ajm-textarea" placeholder="Enter research notes..." value={form.researchNotes || ''} onChange={(e) => set('researchNotes', e.target.value)} />
             </div>
           </>
         );

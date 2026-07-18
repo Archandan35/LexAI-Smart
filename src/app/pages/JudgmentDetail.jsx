@@ -23,7 +23,9 @@ import AddJudgmentModal from './AddJudgmentModal.jsx';
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'legalPrinciples', label: 'Judgment' },
+  { key: 'applicability', label: 'Applicability' },
   { key: 'acts', label: 'Acts & Sections' },
+  { key: 'legalAnalysis', label: 'Legal Principles' },
   { key: 'documents', label: 'Documents' },
   { key: 'notes', label: 'Notes' },
   { key: 'linked', label: 'Linked Records' },
@@ -449,23 +451,6 @@ export default function JudgmentDetail() {
           <div className="jd-tab-panel">
             {tab === 'overview' && (
               <div className="jd-overview-cards">
-                {/* Judgment Link / Source URL Section */}
-                {judgment.sourceUrl && (
-                  <div className="jd-prose-card jd-source-link-section">
-                    <h3 className="jd-panel-title">Judgment Link</h3>
-                    <div className="jd-source-link-wrap">
-                      <a
-                        href={judgment.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="jd-source-link"
-                      >
-                        {judgment.sourceUrl}
-                      </a>
-                    </div>
-                  </div>
-                )}
-
                 {/* Headnotes Section (Readonly) */}
                 <div className="jd-prose-card">
                   <h3 className="jd-panel-title">Headnotes</h3>
@@ -497,6 +482,23 @@ export default function JudgmentDetail() {
                   </div>
                 </div>
 
+                {/* Judgment Link / Source URL Section */}
+                {judgment.sourceUrl && (
+                  <div className="jd-prose-card jd-source-link-section jd-panel-title--mt">
+                    <h3 className="jd-panel-title">Judgment Link</h3>
+                    <div className="jd-source-link-wrap">
+                      <a
+                        href={judgment.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="jd-source-link"
+                      >
+                        {judgment.sourceUrl}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 {/* Section 2 — Judgment Text */}
                 <h3 className="jd-panel-title jd-panel-title--mt">Judgment Text</h3>
                 <div className="jd-prose-card jd-judgment-text-card">
@@ -509,31 +511,199 @@ export default function JudgmentDetail() {
               </div>
             )}
 
+            {tab === 'applicability' && (
+              <div className="jd-panel-section">
+                {/* Section 1 — Applicable Stage */}
+                <h3 className="jd-panel-title">Applicable Stage</h3>
+                <div className="jd-tags jd-tags--readonly">
+                  {toArr(judgment.applicableStages).length ? (
+                    toArr(judgment.applicableStages).map((stage, i) => (
+                      <span key={i} className="jd-tag">{stage}</span>
+                    ))
+                  ) : (
+                    <div className="jd-prose jd-empty-text">No applicable stages specified.</div>
+                  )}
+                </div>
+
+                {/* Section 2 — Legal Principle */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Legal Principle</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.legalPrinciple
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.legalPrinciple }} />
+                      : 'No legal principle recorded for this judgment.'}
+                  </div>
+                </div>
+
+                {/* Section 3 — Usage Notes */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Usage Notes</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.usageNotes
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.usageNotes }} />
+                      : 'No usage notes recorded for this judgment.'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {tab === 'acts' && (
               <div className="jd-panel-section">
-                <h3 className="jd-panel-title">Acts & Sections</h3>
-                {acts?.length ? acts.map((act, i) => <ActRow key={i} act={actNameMap[act] || act} />) : (
-                  <div className="jd-prose jd-empty-text">No acts referenced.</div>
-                )}
-                {judgment.act && !acts?.length && (
-                  <div className="jd-prose jd-empty-text">{judgment.act}</div>
-                )}
+                {/* Section 1 — Legal References (2-column) */}
+                <h3 className="jd-panel-title">Legal References</h3>
+                <div className="jd-refs-grid">
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Area of Law</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {judgment.practiceArea ? <span className="jd-tag">{areaOfLawLabel(judgment.practiceArea)}</span> : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Type of Proceeding</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {judgment.typeOfProceeding ? <span className="jd-tag">{typeOfProceedingLabel(judgment.typeOfProceeding)}</span> : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Nature of Dispute</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {judgment.natureOfDispute ? <span className="jd-tag">{natureOfDisputeLabel(judgment.natureOfDispute)}</span> : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Act</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {acts?.length ? acts.map((act, i) => <span key={i} className="jd-tag">{actNameMap[act] || act}</span>) : (
+                        judgment.act ? <span className="jd-tag">{judgment.act}</span> : <span className="jd-ref-empty">—</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Provision(s)</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {toArr(judgment.provisions).length ? toArr(judgment.provisions).map((p, i) => <span key={i} className="jd-tag">{p}</span>) : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Legal Issue</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {toArr(judgment.legalIssue).length ? toArr(judgment.legalIssue).map((item, i) => <span key={i} className="jd-tag">{item}</span>) : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2 — Other References (2-column) */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Other References</h3>
+                <div className="jd-refs-grid">
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Keywords</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {toArr(judgment.keywords).length ? toArr(judgment.keywords).map((tag, i) => <span key={i} className="jd-tag">{tag}</span>) : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Tags</span>
+                    <div className="jd-tags jd-tags--readonly">
+                      {toArr(judgment.tags).length ? toArr(judgment.tags).map((tag, i) => <span key={i} className="jd-tag">{tag}</span>) : <span className="jd-ref-empty">—</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'legalAnalysis' && (
+              <div className="jd-panel-section">
+                {/* Judicial Analysis */}
+                <h3 className="jd-panel-title">Judicial Analysis</h3>
+
+                {/* Section 1 — Ratio Decidendi */}
+                <h3 className="jd-panel-title jd-panel-title--sub">Ratio Decidendi</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.ratioDecidendi
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.ratioDecidendi }} />
+                      : 'No ratio decidendi recorded for this judgment.'}
+                  </div>
+                </div>
+
+                {/* Section 2 — Obiter Dicta */}
+                <h3 className="jd-panel-title jd-panel-title--sub jd-panel-title--mt">Obiter Dicta</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.obiterDicta
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.obiterDicta }} />
+                      : 'No obiter dicta recorded for this judgment.'}
+                  </div>
+                </div>
+
+                {/* Section 3 — Key Legal Findings */}
+                <h3 className="jd-panel-title jd-panel-title--sub jd-panel-title--mt">Key Legal Findings</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.keyFindings
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.keyFindings }} />
+                      : 'No key legal findings recorded for this judgment.'}
+                  </div>
+                </div>
               </div>
             )}
 
             {tab === 'documents' && (
               <div className="jd-panel-section">
+                {/* Section 1 — Documents */}
                 <h3 className="jd-panel-title">Documents</h3>
                 {documents?.length ? documents.map((doc, i) => <DocRow key={i} doc={doc} />) : (
                   <div className="jd-prose jd-empty-text">No documents attached.</div>
+                )}
+
+                {/* Section 2 — Annexures */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Annexures</h3>
+                {toArr(judgment.annexures).length ? toArr(judgment.annexures).map((doc, i) => <DocRow key={i} doc={doc} />) : (
+                  <div className="jd-prose jd-empty-text">No annexures attached.</div>
+                )}
+
+                {/* Section 3 — Supporting Documents */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Supporting Documents</h3>
+                {toArr(judgment.supportingDocuments).length ? toArr(judgment.supportingDocuments).map((doc, i) => <DocRow key={i} doc={doc} />) : (
+                  <div className="jd-prose jd-empty-text">No supporting documents attached.</div>
+                )}
+
+                {/* Section 4 — External References */}
+                <h3 className="jd-panel-title jd-panel-title--mt">External References</h3>
+                {toArr(judgment.externalReferences).length ? (
+                  <div className="jd-tags jd-tags--readonly">
+                    {toArr(judgment.externalReferences).map((ref, i) => {
+                      const url = typeof ref === 'string' ? ref : ref?.url || ref?.name || '';
+                      return (
+                        <a key={i} className="jd-tag jd-ext-ref" href={url} target="_blank" rel="noopener noreferrer">
+                          {typeof ref === 'string' ? ref : (ref?.name || ref?.url || ref)}
+                        </a>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="jd-prose jd-empty-text">No external references added.</div>
                 )}
               </div>
             )}
 
             {tab === 'notes' && (
               <div className="jd-panel-section">
-                <h3 className="jd-panel-title">Notes</h3>
-                <div className="jd-prose">{judgment.notes || 'No notes recorded for this judgment.'}</div>
+                {/* Section 1 — Personal Notes */}
+                <h3 className="jd-panel-title">Personal Notes</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.notes ? judgment.notes : 'No personal notes recorded for this judgment.'}
+                  </div>
+                </div>
+
+                {/* Section 2 — Research Notes */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Research Notes</h3>
+                <div className="jd-prose-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.researchNotes ? judgment.researchNotes : 'No research notes recorded for this judgment.'}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -546,20 +716,50 @@ export default function JudgmentDetail() {
 
             {tab === 'history' && (
               <div className="jd-panel-section">
-                <h3 className="jd-panel-title">History</h3>
-                <div className="jd-history-list">
-                  {judgment.createdAt && (
-                    <div className="jd-history-row"><Icon name="plus" size={14} /><span>Created</span><span className="jd-history-date">{formatDate(judgment.createdAt)}</span></div>
-                  )}
-                  {judgment.updatedAt && (
-                    <div className="jd-history-row"><Icon name="refresh" size={14} /><span>Last updated</span><span className="jd-history-date">{formatDate(judgment.updatedAt)}</span></div>
-                  )}
-                  {judgment.uploadDate && (
-                    <div className="jd-history-row"><Icon name="upload" size={14} /><span>Uploaded</span><span className="jd-history-date">{formatDate(judgment.uploadDate)}</span></div>
-                  )}
-                  {!judgment.createdAt && !judgment.updatedAt && !judgment.uploadDate && (
-                    <div className="jd-prose jd-empty-text">No history available.</div>
-                  )}
+                {/* Section 1 — Audit History (2-column) */}
+                <h3 className="jd-panel-title">Audit History</h3>
+                <div className="jd-refs-grid">
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Created By</span>
+                    <span className="jd-ref-value">{judgment.createdBy || '—'}</span>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Created On</span>
+                    <span className="jd-ref-value">{judgment.createdAt ? formatDate(judgment.createdAt) : '—'}</span>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Last Modified By</span>
+                    <span className="jd-ref-value">{judgment.modifiedBy || '—'}</span>
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Last Modified On</span>
+                    <span className="jd-ref-value">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span>
+                  </div>
+                </div>
+
+                {/* Section 2 — Logs (2-column) */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Logs</h3>
+                <div className="jd-refs-grid">
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Version History</span>
+                    {toArr(judgment.versionHistory).length ? (
+                      <div className="jd-log-list">
+                        {toArr(judgment.versionHistory).map((v, i) => (
+                          <div key={i} className="jd-log-item">{typeof v === 'string' ? v : (v?.label || v?.version || JSON.stringify(v))}</div>
+                        ))}
+                      </div>
+                    ) : <span className="jd-ref-empty">—</span>}
+                  </div>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Change Log</span>
+                    {toArr(judgment.changeLog).length ? (
+                      <div className="jd-log-list">
+                        {toArr(judgment.changeLog).map((c, i) => (
+                          <div key={i} className="jd-log-item">{typeof c === 'string' ? c : (c?.label || c?.message || JSON.stringify(c))}</div>
+                        ))}
+                      </div>
+                    ) : <span className="jd-ref-empty">—</span>}
+                  </div>
                 </div>
               </div>
             )}
