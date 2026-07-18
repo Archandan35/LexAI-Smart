@@ -16826,14 +16826,23 @@ kbd.cmd__kbd {
 .bench-types__ft-perpage {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
-  color: #94A3B8;
-  transition: color 0.15s;
+  color: #64748B;
+  font-weight: 500;
+  padding: 6px 14px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: all 0.2s ease;
 }
 
 .bench-types__ft-perpage:hover {
+  border-color: #7C3AED;
   color: #7C3AED;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.12);
+  transform: translateY(-1px);
 }
 
 .bench-types__form {
@@ -17711,15 +17720,17 @@ kbd.cmd__kbd {
 .bench-types__table-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 14px 16px;
   font-size: 12.5px;
   color: #94A3B8;
   gap: 16px;
   border-top: 1px solid #E2E8F0;
 }
-.bench-types__table-footer > div:first-child {
-  margin-right: auto;
+.bench-types__ft-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .bench-types__pagination {
@@ -17968,14 +17979,9 @@ kbd.cmd__kbd {
   }
 
   .bench-types__table-footer {
-    flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 12px;
     padding: 8px 4px 0;
-  }
-
-  .bench-types__table-footer>div:first-child {
-    margin-right: auto;
   }
 
   .bench-types__pagination {
