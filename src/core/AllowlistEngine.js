@@ -2,18 +2,18 @@
 // operations. Used by safe_ddl to block dangerous DDL and DML. Also provides
 // client-side validation in the Setup Wizard before sending SQL to the provider.
 
-const BLOCKED_PATTERNS =
+const BLOCKED_PATTERNS = [
   { pattern: /^\s*DROP\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)/i, reason: 'DROP is not permitted' },
   { pattern: /^\s*TRUNCATE\s/i, reason: 'TRUNCATE is not permitted' },
-{ pattern: /ALTER\s+TABLE.*DROP\s+(COLUMN|CONSTRAINT)/i, reason: 'ALTER TABLE DROP is not permitted' },
-{ pattern: /^\s*(GRANT|REVOKE)\s/i, reason: 'GRANT/REVOKE is not permitted' },
-{ pattern: /^\s*(DELETE|UPDATE|INSERT|TRUNCATE)\s/i, reason: 'DML statements are not permitted; use CRUD APIs' },
-{ pattern: /^\s*ALTER\s+(DATABASE|SCHEMA|ROLE|USER)\s/i, reason: 'ALTER DATABASE/SCHEMA/ROLE/USER is not permitted' },
-{ pattern: /^\s*CREATE\s+(DATABASE|SCHEMA|ROLE|USER|EXTENSION)\s/i, reason: 'CREATE DATABASE/SCHEMA/ROLE/USER/EXTENSION is not permitted' },
-{ pattern: /^\s*REINDEX\s/i, reason: 'REINDEX is not permitted' },
-{ pattern: /^\s*CLUSTER\s/i, reason: 'CLUSTER is not permitted' },
-{ pattern: /^\s*VACUUM\s/i, reason: 'VACUUM is not permitted' },
-{ pattern: /^\s*ANALYZE\s/i, reason: 'ANALYZE is not permitted' },
+  { pattern: /ALTER\s+TABLE.*DROP\s+(COLUMN|CONSTRAINT)/i, reason: 'ALTER TABLE DROP is not permitted' },
+  { pattern: /^\s*(GRANT|REVOKE)\s/i, reason: 'GRANT/REVOKE is not permitted' },
+  { pattern: /^\s*(DELETE|UPDATE|INSERT|TRUNCATE)\s/i, reason: 'DML statements are not permitted; use CRUD APIs' },
+  { pattern: /^\s*ALTER\s+(DATABASE|SCHEMA|ROLE|USER)\s/i, reason: 'ALTER DATABASE/SCHEMA/ROLE/USER is not permitted' },
+  { pattern: /^\s*CREATE\s+(DATABASE|SCHEMA|ROLE|USER|EXTENSION)\s/i, reason: 'CREATE DATABASE/SCHEMA/ROLE/USER/EXTENSION is not permitted' },
+  { pattern: /^\s*REINDEX\s/i, reason: 'REINDEX is not permitted' },
+  { pattern: /^\s*CLUSTER\s/i, reason: 'CLUSTER is not permitted' },
+  { pattern: /^\s*VACUUM\s/i, reason: 'VACUUM is not permitted' },
+  { pattern: /^\s*ANALYZE\s/i, reason: 'ANALYZE is not permitted' },
 ];
 
 const ALLOWED_PATTERNS = [
