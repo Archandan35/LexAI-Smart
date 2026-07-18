@@ -16118,7 +16118,6 @@ kbd.cmd__kbd {
 .dmc-header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 32px;
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -16169,7 +16168,7 @@ kbd.cmd__kbd {
 }
 
 .dmc-body {
-  padding: 28px 32px 60px;
+  padding: 28px 0 60px;
   width: 100%;
 }
 
@@ -16648,11 +16647,10 @@ kbd.cmd__kbd {
 
 @media (max-width: 900px) {
   .dmc-body {
-    padding: 20px 16px 40px;
+    padding: 20px 0 40px;
   }
 
   .dmc-header {
-    padding: 0 16px;
     overflow-x: auto;
   }
 
