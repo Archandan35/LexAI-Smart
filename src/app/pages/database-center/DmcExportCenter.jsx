@@ -9,7 +9,6 @@ import { listSchemas } from '@/data-provider/schema/index.js';
 import { config } from '@/config/config.js';
 import { sha256Hex } from '@/utils/crypto.js';
 import { backupFileName } from '@/logic/backupLogic.js';
-import PageHeader from '@/components/PageHeader.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 
@@ -111,67 +110,88 @@ export default function DmcExportCenter() {
 
   return (
     <>
-      <PageHeader icon="upload" title="Export Center" subtitle="Select the data you want to export, then choose a format and generate." />
-
-      <div className="dmc-section">
-        <div className="dmc-section__title"><Icon name="layers" size={17} /> Data Selection</div>
-        <div className="dmc-export-select-toolbar">
-          <span className="dmc-export-count">{selectedCount} / {collections.length} collections selected</span>
-          <div className="dmc-export-select-actions">
-            <Button variant="ghost" size="sm" onClick={selectAll}>Select All</Button>
-            <Button variant="ghost" size="sm" onClick={deselectAll}>Deselect All</Button>
-          </div>
+      <div className="dmc-db-hero dmc-db-hero--sm">
+        <div className="dmc-db-hero__icon">
+          <Icon name="upload" size={26} />
         </div>
-        <div className="dmc-export-collection-list">
-          {collections.map(c => (
-            <label key={c.name} className={`dmc-export-collection-item${selected[c.name] ? ' is-selected' : ''}${c.core ? ' is-core' : ''}`}>
-              <input type="checkbox" checked={!!selected[c.name]} onChange={() => toggle(c.name)} />
-              <span className="dmc-export-collection-label">{c.label}</span>
-              <span className="dmc-export-collection-name">{c.name}</span>
-              <span className="dmc-export-collection-count">{c.count} records</span>
-              {c.core && <span className="dmc-badge dmc-badge--navy">core</span>}
-            </label>
-          ))}
+        <div className="dmc-db-hero__text">
+          <div className="dmc-db-hero__accent" />
+          <h2>Export Center</h2>
+          <p>Select the data you want to export, then choose a format and generate.</p>
         </div>
       </div>
 
-      <div className="dmc-section">
-        <div className="dmc-section__title"><Icon name="settings" size={17} /> Export Options</div>
-        <div className="dmc-export-grid">
-          <div>
-            <label className="dmc-field-label">Format</label>
-            <select className="dmc-select dmc-select-full" value={format} onChange={(e) => setFormat(e.target.value)}>
-              {FORMATS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
+      <div className="dmc-db-section">
+        <div className="dmc-db-section__head">
+          <div className="dmc-db-section__title">
+            <Icon name="layers" size={18} /> Data Selection
+          </div>
+          <span className="dmc-db-section__badge">{selectedCount} / {collections.length} selected</span>
+        </div>
+        <div className="dmc-db-section__body">
+          <div className="dmc-export-select-toolbar">
+            <div className="dmc-export-select-actions">
+              <Button variant="ghost" size="sm" onClick={selectAll}>Select All</Button>
+              <Button variant="ghost" size="sm" onClick={deselectAll}>Deselect All</Button>
+            </div>
+          </div>
+          <div className="dmc-export-collection-list" style={{ marginBottom: 0 }}>
+            {collections.map(c => (
+              <label key={c.name} className={`dmc-export-collection-item${selected[c.name] ? ' is-selected' : ''}${c.core ? ' is-core' : ''}`}>
+                <input type="checkbox" checked={!!selected[c.name]} onChange={() => toggle(c.name)} />
+                <span className="dmc-export-collection-label">{c.label}</span>
+                <span className="dmc-export-collection-name">{c.name}</span>
+                <span className="dmc-export-collection-count">{c.count} records</span>
+                {c.core && <span className="dmc-badge dmc-badge--navy">core</span>}
+              </label>
+            ))}
           </div>
         </div>
+      </div>
 
-        <div className="dmc-export-checkboxes">
-          <label className="dmc-checkbox-label">
-            <input type="checkbox" checked={includeAttachments} onChange={() => setIncludeAttachments(!includeAttachments)} /> Include file attachments
-          </label>
-          <label className="dmc-checkbox-label">
-            <input type="checkbox" checked={includeMetadata} onChange={() => setIncludeMetadata(!includeMetadata)} /> Include audit logs
-          </label>
-        </div>
-
-        <div className="dmc-export-actions">
-          <Button variant="ghost" size="sm" onClick={estimateSize} disabled={!selectedCount}>Estimate Size</Button>
-          <Button variant="primary" onClick={generate} disabled={generating || !selectedCount}>{generating ? 'Generating…' : 'Generate Export'}</Button>
-          {done && <Button variant="ghost" onClick={reset}>New Export</Button>}
-        </div>
-
-        {estimate && (
-          <div className="dmc-export-estimate">
-            Estimated: {bytes(estimate.size)} · {estimate.collections} collections
+      <div className="dmc-db-section">
+        <div className="dmc-db-section__head">
+          <div className="dmc-db-section__title">
+            <Icon name="settings" size={18} /> Export Options
           </div>
-        )}
-
-        {done && (
-          <div className="dmc-export-complete">
-            <Icon name="check" size={15} /> Export complete. File download started.
+        </div>
+        <div className="dmc-db-section__body">
+          <div className="dmc-export-grid" style={{ maxWidth: 400, marginBottom: 12 }}>
+            <div>
+              <label className="dmc-field-label">Format</label>
+              <select className="dmc-db-select" style={{ width: '100%' }} value={format} onChange={(e) => setFormat(e.target.value)}>
+                {FORMATS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </div>
           </div>
-        )}
+
+          <div className="dmc-export-checkboxes">
+            <label className="dmc-checkbox-label">
+              <input type="checkbox" checked={includeAttachments} onChange={() => setIncludeAttachments(!includeAttachments)} /> Include file attachments
+            </label>
+            <label className="dmc-checkbox-label">
+              <input type="checkbox" checked={includeMetadata} onChange={() => setIncludeMetadata(!includeMetadata)} /> Include audit logs
+            </label>
+          </div>
+
+          <div className="dmc-export-actions">
+            <Button variant="ghost" size="sm" onClick={estimateSize} disabled={!selectedCount}>Estimate Size</Button>
+            <Button variant="primary" onClick={generate} disabled={generating || !selectedCount}>{generating ? 'Generating…' : 'Generate Export'}</Button>
+            {done && <Button variant="ghost" onClick={reset}>New Export</Button>}
+          </div>
+
+          {estimate && (
+            <div className="dmc-export-estimate">
+              Estimated: {bytes(estimate.size)} · {estimate.collections} collections
+            </div>
+          )}
+
+          {done && (
+            <div className="dmc-export-complete">
+              <Icon name="check" size={15} /> Export complete. File download started.
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

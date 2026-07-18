@@ -5,8 +5,6 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { backupLogic } from '@/logic/backupLogic.js';
-import PageHeader from '@/components/PageHeader.jsx';
-import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
@@ -32,7 +30,7 @@ export default function DmcBackupRecovery() {
     const res = await backupLogic.create({ type: 'manual' }, user);
     setCreating(false);
     if (res.ok) {
-      const removed = res.data.removed?.length ? ` \u00b7 ${res.data.removed.length} old removed` : '';
+      const removed = res.data.removed?.length ? ` · ${res.data.removed.length} old removed` : '';
       toast.push(`Backup created (${bytes(res.data.backup.size)}, ${res.data.backup.durationMs}ms)${removed}.`, 'success');
       refresh();
     } else toast.push(res.error, 'error');
@@ -44,61 +42,90 @@ export default function DmcBackupRecovery() {
 
   return (
     <>
-      <PageHeader icon="refresh" title="Backup & Recovery" subtitle="Create, restore, schedule, and manage database backups.">
-        <PermissionGate perm="backup.create">
-          <Button variant="primary" icon="plus" onClick={createNow} disabled={creating}>{creating ? 'Creating…' : 'Create Backup Now'}</Button>
-        </PermissionGate>
-        <PermissionGate perm="backup.import">
-          <Button variant="ghost" icon="download" onClick={() => setImportOpen(true)}>Import</Button>
-        </PermissionGate>
-      </PageHeader>
-
-      <div className="dmc-backup-tabs">
-        {tabs.map((t) => (
-          <button key={t} className={`dmc-tab dmc-tab-underline${tab === t ? ' dmc-tab--active' : ''}`} onClick={() => setTab(t)}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
-        ))}
+      <div className="dmc-db-hero dmc-db-hero--sm">
+        <div className="dmc-db-hero__icon">
+          <Icon name="refresh" size={26} />
+        </div>
+        <div className="dmc-db-hero__text">
+          <div className="dmc-db-hero__accent" />
+          <h2>Backup & Recovery</h2>
+          <p>Create, restore, schedule, and manage database backups.</p>
+          <div className="dmc-db-hero__actions">
+            <PermissionGate perm="backup.create">
+              <Button variant="primary" size="sm" icon="plus" onClick={createNow} disabled={creating}>{creating ? 'Creating…' : 'Create Backup Now'}</Button>
+            </PermissionGate>
+            <PermissionGate perm="backup.import">
+              <Button variant="ghost" size="sm" icon="download" onClick={() => setImportOpen(true)}>Import</Button>
+            </PermissionGate>
+          </div>
+        </div>
       </div>
 
-      {tab === 'overview' && (
-        <>
-          <div className="dmc-backup-grid">
-            <Card title="Total Backups" sub={String(backups.length)} />
-            <Card title="Protected" sub={String(stats?.protectedCount || 0)} />
-            <Card title="Total Size" sub={bytes(stats?.totalBytes || 0)} />
-            <Card title="Last Backup" sub={stats?.lastBackup ? formatDateTime(stats.lastBackup) : 'Never'} />
+      <div className="dmc-db-section">
+        <div className="dmc-db-section__head" style={{ paddingBottom: 0, borderBottom: 'none' }}>
+          <div className="dmc-backup-tabs" style={{ marginBottom: 0, width: '100%' }}>
+            {tabs.map((t) => (
+              <button key={t} className={`dmc-tab-underline${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+            ))}
           </div>
-          <BackupHistoryTable backups={backups.slice(0, 5)} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} />
-          {backups.length > 5 && (
-            <div className="dmc-backup-view-all">
-              <Button variant="ghost" size="sm" onClick={() => setTab('history')}>View All ({backups.length})</Button>
+        </div>
+
+        {tab === 'overview' && (
+          <div className="dmc-db-section__body">
+            <div className="dmc-db-stats-row" style={{ marginBottom: 24 }}>
+              {[
+                { label: 'Total Backups', value: backups.length, sub: 'All time', variant: 'indigo', icon: 'refresh' },
+                { label: 'Protected', value: String(stats?.protectedCount || 0), sub: 'Safe from cleanup', variant: 'green', icon: 'shield' },
+                { label: 'Total Size', value: bytes(stats?.totalBytes || 0), sub: 'Storage used', variant: 'blue', icon: 'archive' },
+                { label: 'Last Backup', value: stats?.lastBackup ? formatDateTime(stats.lastBackup) : 'Never', sub: stats?.lastBackup ? 'Latest' : 'No backup', variant: 'amber', icon: 'clock' },
+              ].map((c) => (
+                <div key={c.label} className="dmc-db-statcard">
+                  <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${c.variant}`}>
+                    <Icon name={c.icon} size={18} />
+                  </div>
+                  <div className="dmc-db-statcard__body">
+                    <div className="dmc-db-statcard__label">{c.label}</div>
+                    <div className="dmc-db-statcard__value">{c.value}</div>
+                    <div className="dmc-db-statcard__sub">{c.sub}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </>
-      )}
+            <BackupHistoryTable backups={backups.slice(0, 5)} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} />
+            {backups.length > 5 && (
+              <div className="dmc-backup-view-all">
+                <Button variant="ghost" size="sm" onClick={() => setTab('history')}>View All ({backups.length})</Button>
+              </div>
+            )}
+          </div>
+        )}
 
-      {tab === 'history' && (
-        <BackupHistoryTable backups={backups} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} limit={0} />
-      )}
-
-      {tab === 'settings' && (
-        <div className="dmc-section">
-          <div className="dmc-section__title"><Icon name="gear" size={17} /> Backup Settings</div>
-          <p className="dmc-section-desc">Configure backup retention, scheduling, and storage options.</p>
-          <Button variant="primary" size="sm" onClick={() => nav('/admin/backup/settings')}>Open Settings</Button>
-        </div>
-      )}
-
-      {tab === 'restore' && (
-        <div className="dmc-section">
-          <div className="dmc-section__title"><Icon name="history" size={17} /> Restore Database</div>
-          <p className="dmc-section-desc">Select a backup to restore from the history table above, then click Restore.</p>
-          {backups.length > 0 ? (
+        {tab === 'history' && (
+          <div className="dmc-db-section__body">
             <BackupHistoryTable backups={backups} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} limit={0} />
-          ) : (
-            <div className="dmc-empty"><div className="dmc-empty__icon"><Icon name="history" size={32} /></div><div className="dmc-empty__title">No backups yet</div></div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+
+        {tab === 'settings' && (
+          <div className="dmc-db-section__body">
+            <div className="dmc-db-section__title" style={{ marginBottom: 8 }}><Icon name="gear" size={18} /> Backup Settings</div>
+            <p className="dmc-section-desc">Configure backup retention, scheduling, and storage options.</p>
+            <Button variant="primary" size="sm" onClick={() => nav('/admin/backup/settings')}>Open Settings</Button>
+          </div>
+        )}
+
+        {tab === 'restore' && (
+          <div className="dmc-db-section__body">
+            <div className="dmc-db-section__title" style={{ marginBottom: 8 }}><Icon name="history" size={18} /> Restore Database</div>
+            <p className="dmc-section-desc">Select a backup to restore from the history table above, then click Restore.</p>
+            {backups.length > 0 ? (
+              <BackupHistoryTable backups={backups} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} limit={0} />
+            ) : (
+              <div className="dmc-empty"><div className="dmc-empty__icon"><Icon name="history" size={32} /></div><div className="dmc-empty__title">No backups yet</div></div>
+            )}
+          </div>
+        )}
+      </div>
 
       {restoreTarget && <RestoreBackupModal backup={restoreTarget} open={!!restoreTarget} actor={user} onClose={() => setRestoreTarget(null)} onRestored={onRestored} />}
       {importOpen && <ImportBackupModal open={importOpen} actor={user} onClose={() => setImportOpen(false)} onImported={() => { setImportOpen(false); refresh(); }} />}

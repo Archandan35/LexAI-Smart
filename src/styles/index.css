@@ -18546,10 +18546,48 @@ kbd.cmd__kbd {
 
 /* DmcBackupRecovery */
 .dmc-backup-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
-.dmc-tab-underline { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.dmc-tab-underline { background: none; border: none; padding: 10px 18px; font-size: 13px; font-weight: 500; color: var(--text-soft); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.dmc-tab-underline:hover { color: var(--text); border-bottom-color: var(--border-strong); }
+.dmc-tab-underline.active,
+.dmc-tab-underline.dmc-tab--active { color: var(--brand); border-bottom-color: var(--brand); }
 .dmc-backup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
 .dmc-backup-view-all { margin-top: 12px; }
 .dmc-section-desc { color: var(--text-soft); font-size: 13px; margin-bottom: 16px; }
+
+/* ── Shared DMC utilities ── */
+.dmc-db-hero--sm { min-height: 80px; padding: 20px 28px; }
+.dmc-db-hero--sm .dmc-db-hero__icon { width: 48px; height: 48px; }
+.dmc-db-hero--sm .dmc-db-hero__text h2 { font-size: 22px; }
+
+.dmc-db-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 0; flex-wrap: wrap; }
+.dmc-db-toolbar__left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dmc-db-toolbar__right { display: flex; align-items: center; gap: 8px; }
+.dmc-db-search { display: flex; align-items: center; gap: 8px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; min-width: 200px; color: var(--text-faint); transition: border-color 0.15s, box-shadow 0.15s; }
+.dmc-db-search:focus-within { border-color: var(--navy-600); box-shadow: 0 0 0 3px var(--brand-soft); background: #fff; }
+.dmc-db-search input { border: none; outline: none; background: transparent; flex: 1; font-size: 13px; color: var(--text); }
+.dmc-db-search input::placeholder { color: var(--text-faint); }
+.dmc-db-select { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; background: var(--surface-2); color: var(--text); outline: none; transition: border-color 0.15s; }
+.dmc-db-select:focus { border-color: var(--navy-600); box-shadow: 0 0 0 3px var(--brand-soft); }
+
+.dmc-db-section__body { padding: 20px; }
+
+.dmc-db-wizard { max-width: 800px; }
+.dmc-db-wizard__steps { display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
+.dmc-db-wizard__step { flex: 1; display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 12.5px; font-weight: 500; color: var(--text-faint); background: var(--surface); border-right: 1px solid var(--border); }
+.dmc-db-wizard__step:last-child { border-right: none; }
+.dmc-db-wizard__step--done { color: var(--green); background: var(--green-soft); }
+.dmc-db-wizard__step--active { color: var(--brand); background: var(--brand-soft); font-weight: 600; }
+.dmc-db-wizard__step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: var(--border); color: var(--text-faint); flex-shrink: 0; }
+.dmc-db-wizard__step--done .dmc-db-wizard__step-num { background: var(--green); color: #fff; }
+.dmc-db-wizard__step--active .dmc-db-wizard__step-num { background: var(--brand); color: #fff; }
+.dmc-db-wizard__content { min-height: 200px; }
+.dmc-db-wizard__actions { display: flex; gap: 10px; margin-top: 24px; justify-content: space-between; }
+
+.dmc-db-statcard-row { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+.dmc-db-statcard-row .dmc-db-statcard { flex: 1; min-width: 160px; }
+
+/* ── Fix old dmc-section to look decent alongside new styles ── */
+.dmc-section { margin-bottom: 32px; }
 
 /* DmcDataExplorer */
 .dmc-explorer-link { color: var(--brand); text-decoration: none; }
@@ -22485,6 +22523,11 @@ kbd.cmd__kbd {
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s;
+}
+.bench-types__view-toggle:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .bench-types__view-btn {
@@ -22496,7 +22539,10 @@ kbd.cmd__kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.bench-types__view-btn:hover {
+  transform: scale(1.08);
 }
 .bench-types__view-btn.active {
   background: var(--primary);
@@ -22522,20 +22568,22 @@ kbd.cmd__kbd {
 }
 
 .bench-types__grid-card {
-  background: var(--card-bg);
+  background: #fff;
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
-  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
 .bench-types__grid-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  border-color: var(--primary);
 }
 
 .bench-types__grid-card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   padding: 16px 16px 0;
 }
@@ -22547,9 +22595,9 @@ kbd.cmd__kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-bg);
+  background: #eef2ff;
   color: var(--primary);
-  border-radius: 8px;
+  border-radius: 50%;
 }
 
 .bench-types__grid-card-title {
@@ -22604,6 +22652,38 @@ kbd.cmd__kbd {
   border-top: 1px solid var(--border);
   font-size: 11px;
   color: var(--text-faint);
+}
+
+.bench-types__grid-card-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+  position: relative;
+  margin-top: 4px;
+}
+.bench-types__grid-card-actions::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 5%;
+  width: 90%;
+  height: 1px;
+  background: var(--border);
+}
+.bench-types__grid-card-actions .cmp-act-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text-faint);
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.bench-types__grid-card-actions .cmp-act-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+  transform: scale(1.1);
 }
 
 .bench-types__bottom-nav {

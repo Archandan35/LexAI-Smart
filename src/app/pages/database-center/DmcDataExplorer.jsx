@@ -3,8 +3,8 @@ import { documentsRepository } from '@/data-layer/repositories/documentsReposito
 import { caseService } from '@/services/caseService.js';
 import { bytes, useFormat } from '@/utils/format.js';
 import { storageService } from '@/services/storageService.js';
-import PageHeader from '@/components/PageHeader.jsx';
 import Icon from '@/components/Icon.jsx';
+import Button from '@/components/Button.jsx';
 
 const COLLECTIONS = ['documents', 'cases', 'drafts', 'notes', 'case_folders', 'hearings'];
 
@@ -56,60 +56,81 @@ export default function DmcDataExplorer() {
 
   return (
     <>
-      <PageHeader icon="layers" title="Data Explorer" subtitle="Browse, search, and inspect database collections." />
-
-      <div className="dmc-toolbar">
-        <div className="dmc-toolbar__left">
-          <select className="dmc-select" value={collection} onChange={(e) => { setCollection(e.target.value); setPreviewDoc(null); }}>
-            {COLLECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <input className="dmc-search" placeholder="Search records…" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="dmc-db-hero dmc-db-hero--sm">
+        <div className="dmc-db-hero__icon">
+          <Icon name="layers" size={26} />
         </div>
-        <div className="dmc-toolbar__right">
-          <span className="dmc-record-count">{filtered.length} record(s)</span>
+        <div className="dmc-db-hero__text">
+          <div className="dmc-db-hero__accent" />
+          <h2>Data Explorer</h2>
+          <p>Browse, search, and inspect database collections.</p>
         </div>
       </div>
 
-      {previewDoc && (
-        <div className="dmc-card dmc-preview-card">
-          <div className="dmc-preview-header">
-            <strong>{previewDoc.name || previewDoc.title}</strong>
-            <button className="iconbtn" onClick={() => setPreviewDoc(null)}><Icon name="close" size={16} /></button>
+      <div className="dmc-db-section">
+        <div className="dmc-db-section__head">
+          <div className="dmc-db-section__title">
+            <Icon name="layers" size={18} /> Collection Browser
           </div>
-          <div className="dmc-preview-grid">
-            <div><span className="dmc-label-faint">ID:</span> {previewDoc.id}</div>
-            <div><span className="dmc-label-faint">Folder:</span> {previewDoc.folder || '—'}</div>
-            <div><span className="dmc-label-faint">Size:</span> {bytes(previewDoc.size || 0)}</div>
-            <div><span className="dmc-label-faint">Type:</span> {previewDoc.mime || '—'}</div>
-            <div><span className="dmc-label-faint">Uploaded:</span> {formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)}</div>
-            <div><span className="dmc-label-faint">Sync:</span> {previewDoc.syncStatus || '—'}</div>
+          <span className="dmc-db-section__badge">{filtered.length} record(s)</span>
+        </div>
+        <div className="dmc-db-section__body">
+          <div className="dmc-db-toolbar" style={{ marginBottom: 16 }}>
+            <div className="dmc-db-toolbar__left">
+              <select className="dmc-db-select" value={collection} onChange={(e) => { setCollection(e.target.value); setPreviewDoc(null); }}>
+                {COLLECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <div className="dmc-db-search">
+                <Icon name="search" size={14} />
+                <input placeholder="Search records…" value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
+            </div>
           </div>
-          {previewDoc.ref && (
-            <div className="dmc-preview-actions">
-              <button className="btn btn--sm btn--ghost" onClick={() => storageService.getUrl(previewDoc.ref).then((url) => url && window.open(url, '_blank'))}>
-                <Icon name="eye" size={14} /> View File
-              </button>
+
+          {previewDoc && (
+            <div className="dmc-card dmc-preview-card">
+              <div className="dmc-preview-header">
+                <strong>{previewDoc.name || previewDoc.title}</strong>
+                <button className="iconbtn" onClick={() => setPreviewDoc(null)}><Icon name="close" size={16} /></button>
+              </div>
+              <div className="dmc-preview-grid">
+                <div><span className="dmc-label-faint">ID:</span> {previewDoc.id}</div>
+                <div><span className="dmc-label-faint">Folder:</span> {previewDoc.folder || '—'}</div>
+                <div><span className="dmc-label-faint">Size:</span> {bytes(previewDoc.size || 0)}</div>
+                <div><span className="dmc-label-faint">Type:</span> {previewDoc.mime || '—'}</div>
+                <div><span className="dmc-label-faint">Uploaded:</span> {formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)}</div>
+                <div><span className="dmc-label-faint">Sync:</span> {previewDoc.syncStatus || '—'}</div>
+              </div>
+              {previewDoc.ref && (
+                <div className="dmc-preview-actions">
+                  <button className="btn btn--sm btn--ghost" onClick={() => storageService.getUrl(previewDoc.ref).then((url) => url && window.open(url, '_blank'))}>
+                    <Icon name="eye" size={14} /> View File
+                  </button>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      <table className="dmc-table">
-        <thead>
-          <tr>{fields.map((f) => <th key={f}>{f}</th>)}</tr>
-        </thead>
-        <tbody>
-          {filtered.length === 0 ? (
-            <tr><td colSpan={fields.length} className="dmc-empty-cell">{loading ? 'Loading…' : 'No records found.'}</td></tr>
-          ) : (
-            filtered.slice(0, 50).map((r) => (
-              <tr key={r.id}>
-                {fields.map((f) => <td key={f}>{renderCell(r, f)}</td>)}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+          <div className="dmc-db-table-wrap">
+            <table className="dmc-db-table">
+              <thead>
+                <tr>{fields.map((f) => <th key={f}>{f}</th>)}</tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={fields.length} className="dmc-empty-cell">{loading ? 'Loading…' : 'No records found.'}</td></tr>
+                ) : (
+                  filtered.slice(0, 50).map((r) => (
+                    <tr key={r.id}>
+                      {fields.map((f) => <td key={f}>{renderCell(r, f)}</td>)}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

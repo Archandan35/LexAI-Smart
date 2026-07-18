@@ -445,12 +445,12 @@ export default function ActLibrary() {
         </Card>
       )}
 
-      {/* ── Search & filter bar ── */}
-      <div className="bench-types__search">
-        <Icon name="search" size={18} />
-        <input value={search} placeholder="Search acts by title..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-      </div>
-      <div style={{ display: 'flex', gap: 12, margin: '8px 0 16px', flexWrap: 'wrap' }}>
+      {/* ── Search & filter bar in one row ── */}
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', margin: '0 0 16px', flexWrap: 'wrap' }}>
+        <div className="bench-types__search" style={{ flex: 1, minWidth: 220 }}>
+          <Icon name="search" size={18} />
+          <input value={search} placeholder="Search acts by title..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+        </div>
         <div style={{ width: 180 }}>
           <Select value={filterType} onChange={e => setFilterType(e.target.value)}>
             <option value="">All Types</option>
@@ -648,11 +648,11 @@ export default function ActLibrary() {
                       <span className="bench-types__grid-card-stat-label">Amendments</span>
                     </div>
                   </div>
-                  <div className="cmp-actions" style={{ marginTop: 8 }}>
-                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                  <div className="bench-types__grid-card-actions">
+                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                   </div>
                 </div>
                 <div className="bench-types__grid-card-footer">

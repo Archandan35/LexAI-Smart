@@ -6,11 +6,8 @@ import { caseService } from '@/services/caseService.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { storageService } from '@/services/storageService.js';
-import { caseFolderService } from '@/services/caseFolderService.js';
 import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
-import { fileLogic } from '@/logic/fileLogic.js';
 import Button from '@/components/Button.jsx';
-import PageHeader from '@/components/PageHeader.jsx';
 import Icon from '@/components/Icon.jsx';
 
 export default function DmcDeleteManager() {
@@ -88,94 +85,122 @@ export default function DmcDeleteManager() {
 
   return (
     <>
-      <PageHeader icon="trash" title="Delete Manager" subtitle="Safely delete data with dry-run, dependency checks, and backup-before-delete." />
-
-      <div className="dmc-section">
-        <div className="dmc-section__title"><Icon name="layers" size={17} /> Delete Scope</div>
-        <div className="dmc-delete-scope">
-          <label className="dmc-select dmc-radio-label">
-            <input type="radio" name="scope" checked={scope === 'collection'} onChange={() => setScope('collection')} /> Collection Cleanup
-          </label>
-          <label className="dmc-select dmc-radio-label">
-            <input type="radio" name="scope" checked={scope === 'user'} onChange={() => setScope('user')} /> User Data Cleanup
-          </label>
+      <div className="dmc-db-hero dmc-db-hero--sm">
+        <div className="dmc-db-hero__icon">
+          <Icon name="trash" size={26} />
         </div>
+        <div className="dmc-db-hero__text">
+          <div className="dmc-db-hero__accent" />
+          <h2>Delete Manager</h2>
+          <p>Safely delete data with dry-run, dependency checks, and backup-before-delete.</p>
+        </div>
+      </div>
 
-        {scope === 'user' && (
-          <div className="dmc-delete-row">
-            <select className="dmc-select dmc-select-minw" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
-              <option value="">Select user…</option>
-              {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            {selectedUserId && (
-              <span className="dmc-related-info">
-                Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
-              </span>
-            )}
+      <div className="dmc-db-section">
+        <div className="dmc-db-section__head">
+          <div className="dmc-db-section__title">
+            <Icon name="layers" size={18} /> Delete Scope
           </div>
-        )}
-
-        {scope === 'collection' && (
-          <div className="dmc-delete-row">
-            <select className="dmc-select dmc-select-minw" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)}>
-              {collections.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+        </div>
+        <div className="dmc-db-section__body">
+          <div className="dmc-delete-scope">
+            <label className="dmc-select dmc-radio-label">
+              <input type="radio" name="scope" checked={scope === 'collection'} onChange={() => setScope('collection')} /> Collection Cleanup
+            </label>
+            <label className="dmc-select dmc-radio-label">
+              <input type="radio" name="scope" checked={scope === 'user'} onChange={() => setScope('user')} /> User Data Cleanup
+            </label>
           </div>
-        )}
 
-        <div className="dmc-delete-options">
-          <label className="dmc-checkbox-label">
-            <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview only)
-          </label>
-          <label className="dmc-checkbox-label">
-            <input type="checkbox" checked={backupFirst} onChange={() => setBackupFirst(!backupFirst)} disabled={dryRun} /> Backup before delete
-          </label>
-          <Button size="sm" variant="primary" onClick={analyze}>{dryRun ? 'Preview' : 'Analyze'}</Button>
+          {scope === 'user' && (
+            <div className="dmc-delete-row">
+              <select className="dmc-db-select" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
+                <option value="">Select user…</option>
+                {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+              {selectedUserId && (
+                <span className="dmc-related-info">
+                  Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
+                </span>
+              )}
+            </div>
+          )}
+
+          {scope === 'collection' && (
+            <div className="dmc-delete-row">
+              <select className="dmc-db-select" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)}>
+                {collections.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div className="dmc-delete-options">
+            <label className="dmc-checkbox-label">
+              <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview only)
+            </label>
+            <label className="dmc-checkbox-label">
+              <input type="checkbox" checked={backupFirst} onChange={() => setBackupFirst(!backupFirst)} disabled={dryRun} /> Backup before delete
+            </label>
+            <Button size="sm" variant="primary" onClick={analyze}>{dryRun ? 'Preview' : 'Analyze'}</Button>
+          </div>
         </div>
       </div>
 
       {preview && (
-        <div className="dmc-section">
-          <div className="dmc-section__title"><Icon name="eye" size={17} /> Delete Preview</div>
-          <table className="dmc-table">
-            <thead><tr><th>Scope</th><th>Collections</th><th>Records</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>{preview.label}</td>
-                <td>{preview.collections}</td>
-                <td><strong>{preview.records}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-
-          {preview.type === 'user' && preview.userCases?.length > 0 && (
-            <div className="dmc-affected-cases">
-              <div className="dmc-section-subtitle">Affected Cases ({preview.cases})</div>
-              <table className="dmc-table">
-                <thead><tr><th>Case</th><th>Documents</th></tr></thead>
+        <div className="dmc-db-section">
+          <div className="dmc-db-section__head">
+            <div className="dmc-db-section__title">
+              <Icon name="eye" size={18} /> Delete Preview
+            </div>
+            <span className="dmc-db-section__badge">{preview.records} records</span>
+          </div>
+          <div className="dmc-db-section__body">
+            <div className="dmc-db-table-wrap">
+              <table className="dmc-db-table">
+                <thead><tr><th>Scope</th><th>Collections</th><th>Records</th></tr></thead>
                 <tbody>
-                  {preview.userCases.slice(0, 10).map((c) => (
-                    <tr key={c.id}><td>{c.caseNumber || c.case_display_number || c.id}</td><td>{preview.userDocs.filter((d) => d.caseId === c.id).length}</td></tr>
-                  ))}
+                  <tr>
+                    <td>{preview.label}</td>
+                    <td>{preview.collections}</td>
+                    <td><strong>{preview.records}</strong></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
-          )}
 
-          {!dryRun && (
-            <div className="dmc-delete-confirm">
-              <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Confirm Delete'}</Button>
-              <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
-            </div>
-          )}
+            {preview.type === 'user' && preview.userCases?.length > 0 && (
+              <div className="dmc-affected-cases">
+                <div className="dmc-section-subtitle">Affected Cases ({preview.cases})</div>
+                <div className="dmc-db-table-wrap">
+                  <table className="dmc-db-table">
+                    <thead><tr><th>Case</th><th>Documents</th></tr></thead>
+                    <tbody>
+                      {preview.userCases.slice(0, 10).map((c) => (
+                        <tr key={c.id}><td>{c.caseNumber || c.case_display_number || c.id}</td><td>{preview.userDocs.filter((d) => d.caseId === c.id).length}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {!dryRun && (
+              <div className="dmc-delete-confirm">
+                <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Confirm Delete'}</Button>
+                <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {!preview && (
-        <div className="dmc-empty">
-          <div className="dmc-empty__icon"><Icon name="trash" size={36} /></div>
-          <div className="dmc-empty__title">No scope selected</div>
-          <div className="dmc-empty__hint">Choose a scope above and click Preview to analyze before deleting.</div>
+        <div className="dmc-db-section">
+          <div className="dmc-db-section__body" style={{ textAlign: 'center', padding: '48px 20px' }}>
+            <div className="dmc-empty__icon"><Icon name="trash" size={36} /></div>
+            <div className="dmc-empty__title">No scope selected</div>
+            <div className="dmc-empty__hint">Choose a scope above and click Preview to analyze before deleting.</div>
+          </div>
         </div>
       )}
     </>
