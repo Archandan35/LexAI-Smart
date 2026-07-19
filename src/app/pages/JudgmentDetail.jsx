@@ -17,6 +17,7 @@ import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawReposito
 import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
 import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
+import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 
@@ -62,12 +63,45 @@ function InfoBlock({ label, value }) {
 
 function ActRow({ act }) {
   const name = typeof act === 'string' ? act : act?.name || act?.act || '';
-  const section = typeof act === 'string' ? '' : act?.section || '';
   return (
     <div className="jd-acts-row">
       <Icon name="file" size={14} />
       <span className="jd-acts-name">{name}</span>
-      {section && <span className="jd-acts-section">(Section {section})</span>}
+    </div>
+  );
+}
+
+function ActsSectionsGroup({ acts, provisions, actLabel, provisionLabel }) {
+  const resolvedActs = (acts || []).map((a, i) => ({ key: i, label: actLabel(a) }));
+  const resolvedProvisions = (provisions || []).map((p, i) => ({ key: i, label: provisionLabel(p) }));
+  if (!resolvedActs.length && !resolvedProvisions.length) {
+    return <div className="jd-empty-text">No acts referenced.</div>;
+  }
+  const singleAct = resolvedActs.length === 1;
+  return (
+    <div className="jd-acts-group">
+      {resolvedActs.map((act) => (
+        <div className="jd-acts-group-item" key={`act-${act.key}`}>
+          <ActRow act={act.label} />
+          {singleAct && resolvedProvisions.length > 0 && (
+            <ul className="jd-acts-sections">
+              {resolvedProvisions.map((p) => (
+                <li key={`prov-${p.key}`} className="jd-acts-section-item">{p.label}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+      {!singleAct && resolvedProvisions.length > 0 && (
+        <>
+          <div className="jd-acts-group-label">Sections / Provisions</div>
+          <ul className="jd-acts-sections">
+            {resolvedProvisions.map((p) => (
+              <li key={`prov-${p.key}`} className="jd-acts-section-item">{p.label}</li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
@@ -85,6 +119,10 @@ function DocRow({ doc }) {
       <Icon name="download" size={15} className="jd-dl-link" />
     </div>
   );
+}
+
+function looksLikeId(s) {
+  return typeof s === 'string' && (/^PROV/i.test(s) || /^[A-Za-z]+_[A-Za-z0-9]+$/.test(s));
 }
 
 export default function JudgmentDetail() {
@@ -110,6 +148,8 @@ export default function JudgmentDetail() {
   const [typeOfProceedings, setTypeOfProceedings] = useState([]);
   const [natureOfDisputes, setNatureOfDisputes] = useState([]);
   const [allActs, setAllActs] = useState([]);
+  const [allProvisions, setAllProvisions] = useState([]);
+  const [provisionDetailsMap, setProvisionDetailsMap] = useState({});
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -165,6 +205,7 @@ export default function JudgmentDetail() {
     typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
     natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
     actsRepository.getAll().then((data) => { if (!cancelled) setAllActs(data || []); }).catch(() => {});
+    provisionsRepository.getAll().then((data) => { if (!cancelled) setAllProvisions(data || []); }).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -185,6 +226,22 @@ export default function JudgmentDetail() {
     });
     return () => { cancelled = true; };
   }, [judgment, allActs]);
+
+  useEffect(() => {
+    if (!judgment) return;
+    const provIds = toArr(judgment.provisions).filter((p) => typeof p === 'string' && looksLikeId(p));
+    if (!provIds.length) return;
+    const missing = provIds.filter((pid) => pid && !provisionDetailsMap[pid] && !(allProvisions || []).some((p) => p.id === pid));
+    if (!missing.length) return;
+    let cancelled = false;
+    missing.forEach((pid) => {
+      provisionsRepository.getById(pid).then((prov) => {
+        if (cancelled || !prov) return;
+        setProvisionDetailsMap((prev) => ({ ...prev, [pid]: prov }));
+      }).catch(() => {});
+    });
+    return () => { cancelled = true; };
+  }, [judgment, allProvisions]);
 
   const related = useMemo(() => {
     if (!judgment) return [];
@@ -227,6 +284,15 @@ export default function JudgmentDetail() {
     return m;
   }, [allActs, actDetailsMap]);
 
+  const provisionNameMap = useMemo(() => {
+    const m = {};
+    (allProvisions || []).forEach((p) => { m[p.id] = p.name || p.short_code || p.id; });
+    Object.entries(provisionDetailsMap).forEach(([id, p]) => {
+      if (!m[id]) m[id] = p.name || p.short_code || p.id;
+    });
+    return m;
+  }, [allProvisions, provisionDetailsMap]);
+
   const resolve = (map, val) => (val ? (map[val] || val) : '');
   const toArr = (v) => {
     if (!v) return [];
@@ -240,7 +306,18 @@ export default function JudgmentDetail() {
   const actLabel = (val) => {
     if (!val) return '';
     const id = typeof val === 'string' ? val : (val?.id || '');
-    return actNameMap[id] || actDetailsMap[id]?.title || actDetailsMap[id]?.name || actDetailsMap[id]?.short_code || (typeof val === 'string' ? val : (val?.name || val?.title || val?.short_code || ''));
+    const resolved = actNameMap[id] || actDetailsMap[id]?.title || actDetailsMap[id]?.name || actDetailsMap[id]?.short_code
+      || (typeof val === 'string' ? (looksLikeId(val) ? '' : val) : (val?.name || val?.title || val?.short_code || ''));
+    return resolved || 'Unknown Act';
+  };
+  const provisionLabel = (val) => {
+    if (!val) return '';
+    if (typeof val !== 'string') {
+      return val?.name || val?.title || val?.short_code || 'Unknown Section';
+    }
+    if (provisionNameMap[val]) return provisionNameMap[val];
+    if (looksLikeId(val)) return 'Unknown Section';
+    return val;
   };
   const judgeLabel = (val) => {
     return toArr(val).map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).join(', ');
@@ -668,7 +745,7 @@ export default function JudgmentDetail() {
                   <div className="jd-ref-item">
                     <span className="jd-ref-label">Provision(s)</span>
                     <div className="jd-tags jd-tags--readonly">
-                      {toArr(judgment.provisions).length ? toArr(judgment.provisions).map((p, i) => <span key={i} className="jd-tag">{p}</span>) : <span className="jd-ref-empty">—</span>}
+                      {toArr(judgment.provisions).length ? toArr(judgment.provisions).map((p, i) => <span key={i} className="jd-tag">{provisionLabel(p)}</span>) : <span className="jd-ref-empty">—</span>}
                     </div>
                   </div>
                   <div className="jd-ref-item">
@@ -886,22 +963,12 @@ export default function JudgmentDetail() {
             <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
             <div className="jd-rc-body">
               {(acts?.length || judgment.provisions?.length) ? (
-                <>
-                  {acts?.length ? acts.map((act, i) => {
-                    const resolvedName = actLabel(act);
-                    return <ActRow key={i} act={resolvedName} />;
-                  }) : judgment.act ? <ActRow key="single" act={actLabel(judgment.act)} /> : null}
-                  {toArr(judgment.provisions).length ? (
-                    <div className="jd-acts-sections-list" style={{ marginTop: acts?.length ? 8 : 0 }}>
-                      {toArr(judgment.provisions).map((p, i) => (
-                        <div key={i} className="jd-acts-row">
-                          <Icon name="file" size={14} />
-                          <span className="jd-acts-section">{p}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </>
+                <ActsSectionsGroup
+                  acts={acts?.length ? acts : (judgment.act ? [judgment.act] : [])}
+                  provisions={toArr(judgment.provisions)}
+                  actLabel={actLabel}
+                  provisionLabel={provisionLabel}
+                />
               ) : <div className="jd-empty-text">No acts referenced.</div>}
             </div>
           </div>
