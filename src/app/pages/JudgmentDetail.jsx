@@ -476,7 +476,7 @@ export default function JudgmentDetail() {
   }
 
   const {
-    title, citation, neutralCitation, reporterCitation, court, date, caseNumber, status,
+    title, citation, neutralCitation, reporterCitation, court, date, caseNumber, caseType, status,
     appellant, respondent, petitioner, respondentName,
     plaintiff, defendant, plaintiffType, defendantType,
     summary, paragraphs, acts, documents,
@@ -485,6 +485,10 @@ export default function JudgmentDetail() {
 
   const benchText = benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
   const judgeText = judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
+  const caseYear = date ? new Date(date).getFullYear() : '';
+  const formattedCaseNumber = caseType && caseNumber
+    ? `${caseType} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
+    : caseNumber;
 
   const partyA = appellant || petitioner || plaintiff || '';
   const partyB = respondent || respondentName || defendant || '';
@@ -555,7 +559,7 @@ export default function JudgmentDetail() {
         </div>
 
         <div className="jd-case-info-row">
-          <InfoBlock label="Case Number" value={caseNumber} />
+          <InfoBlock label="Case Number" value={formattedCaseNumber} />
           {(partyA || partyB) && (
             <div className="jd-party-wrap">
               <div className="jd-info-label">Parties</div>

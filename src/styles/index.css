@@ -21858,7 +21858,8 @@ kbd.cmd__kbd {
   display: flex; flex-wrap: wrap; gap: 10px; padding: 0 14px 12px;
   align-items: center;
 }
-.tasks-filter-row .select, .tasks-filter-row .input { min-width: 130px; flex: 0 1 auto; }
+.tasks-filter-row .select { min-width: 130px; flex: 0 1 auto; width: auto; }
+.tasks-filter-row .input[type="date"] { min-width: 0; width: 140px; flex: 0 0 auto; }
 .tasks-filter-row .tasks-arch-toggle { flex: 0 0 auto; }
 .tasks-filter-row .btn--ghost { flex: 0 0 auto; }
 .tasks-search { display: none; }
