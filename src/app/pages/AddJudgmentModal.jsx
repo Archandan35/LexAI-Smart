@@ -170,13 +170,15 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const wrapperRef = useRef(null);
 
-  const chips = useMemo(() => flatValues(values), [values]);
-
   const labelMap = useMemo(() => {
     const map = {};
     options.forEach((o) => { map[o.value] = o.label; });
     return map;
   }, [options]);
+
+  const chips = useMemo(() => {
+    return flatValues(values).map((v, i) => ({ v, i })).filter(({ v }) => labelMap[v]);
+  }, [values, labelMap]);
 
   const filtered = useMemo(() => {
     if (!input.trim()) return options.filter((o) => !values.includes(o.value));
@@ -195,6 +197,8 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
   const addValue = (v) => {
     const trimmed = v.trim();
     if (!trimmed || values.includes(trimmed)) return;
+    const match = options.find((o) => o.value === trimmed);
+    if (!match) return;
     onChange([...values, trimmed]);
     setInput('');
     setOpen(false);
@@ -228,9 +232,9 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
       <label>{label}</label>
       <div className="ajm-select-crud-wrap">
         <div className="ajm-tag-input-wrap ajm-tag-input-wrap--grow">
-          {chips.map((v, i) => (
+          {chips.map(({ v, i }) => (
             <span key={i} className="ajm-tag">
-              {labelMap[v] || v}
+              {labelMap[v]}
               <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
             </span>
           ))}
@@ -248,7 +252,8 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
                 const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
                 if (lines.length > 1) {
                   e.preventDefault();
-                  onChange([...values, ...lines.filter((l) => !values.includes(l))]);
+                  const validValues = lines.filter((l) => !values.includes(l) && options.some((o) => o.value === l));
+                  if (validValues.length) onChange([...values, ...validValues]);
                 }
               }}
             />
@@ -372,7 +377,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
     }
   };
 
-  const display = focused ? input : (value ? labelMap[value] || value : '');
+  const display = focused ? input : (value && labelMap[value] ? labelMap[value] : '');
 
   return (
     <div className="ajm-field" ref={wrapperRef}>
@@ -527,19 +532,19 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [showTypeOfProceedingCrud, setShowTypeOfProceedingCrud] = useState(false);
   const [showNatureOfDisputeCrud, setShowNatureOfDisputeCrud] = useState(false);
   const refreshAll = useMemo(() => ({
-    courts: () => courtsRepository.getAll().then(setCourts).catch(() => {}),
-    benchTypes: () => benchTypesRepository.getAll().then(setBenchTypes).catch(() => {}),
-    judges: () => judgesRepository.getAll().then(setJudges).catch(() => {}),
-    caseTypes: () => caseTypesRepository.getAll().then(setCaseTypes).catch(() => {}),
-    jurisdictions: () => jurisdictionsRepository.getAll().then(setJurisdictions).catch(() => {}),
-    caseStages: () => caseStagesRepository.getAll().then(setCaseStages).catch(() => {}),
-    caseStatuses: () => caseStatusesRepository.getAll().then(setCaseStatuses).catch(() => {}),
-    priorities: () => prioritiesRepository.getAll().then(setPriorities).catch(() => {}),
-    partyTypes: () => partyTypesRepository.getAll().then(setPartyTypes).catch(() => {}),
-    areaOfLaws: () => areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {}),
-    typeOfProceedings: () => typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {}),
-    natureOfDisputes: () => natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {}),
-    allActs: () => actsRepository.getAll().then(setAllActs).catch(() => {}),
+    courts: () => courtsRepository.getAll({ status: 'Active' }).then(setCourts).catch(() => {}),
+    benchTypes: () => benchTypesRepository.getAll({ status: 'Active' }).then(setBenchTypes).catch(() => {}),
+    judges: () => judgesRepository.getAll({ status: 'Active' }).then(setJudges).catch(() => {}),
+    caseTypes: () => caseTypesRepository.getAll({ status: 'Active' }).then(setCaseTypes).catch(() => {}),
+    jurisdictions: () => jurisdictionsRepository.getAll({ status: 'Active' }).then(setJurisdictions).catch(() => {}),
+    caseStages: () => caseStagesRepository.getAll({ status: 'Active' }).then(setCaseStages).catch(() => {}),
+    caseStatuses: () => caseStatusesRepository.getAll({ status: 'Active' }).then(setCaseStatuses).catch(() => {}),
+    priorities: () => prioritiesRepository.getAll({ status: 'Active' }).then(setPriorities).catch(() => {}),
+    partyTypes: () => partyTypesRepository.getAll({ status: 'Active' }).then(setPartyTypes).catch(() => {}),
+    areaOfLaws: () => areaOfLawRepository.getAll({ status: 'Active' }).then(setAreaOfLaws).catch(() => {}),
+    typeOfProceedings: () => typeOfProceedingRepository.getAll({ status: 'Active' }).then(setTypeOfProceedings).catch(() => {}),
+    natureOfDisputes: () => natureOfDisputeRepository.getAll({ status: 'Active' }).then(setNatureOfDisputes).catch(() => {}),
+    allActs: () => actsRepository.getAll({ status: 'Active' }).then(setAllActs).catch(() => {}),
   }), []);
 
   useEffect(() => {
@@ -561,19 +566,19 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     setTab('general');
     Promise.all([
       judgmentsRepository.getAll().catch(() => []),
-      courtsRepository.getAll().catch(() => []),
-      benchTypesRepository.getAll().catch(() => []),
-      judgesRepository.getAll().catch(() => []),
-      caseTypesRepository.getAll().catch(() => []),
-      jurisdictionsRepository.getAll().catch(() => []),
-      caseStagesRepository.getAll().catch(() => []),
-      caseStatusesRepository.getAll().catch(() => []),
-      prioritiesRepository.getAll().catch(() => []),
-      partyTypesRepository.getAll().catch(() => []),
-      areaOfLawRepository.getAll().catch(() => []),
-      typeOfProceedingRepository.getAll().catch(() => []),
-      natureOfDisputeRepository.getAll().catch(() => []),
-      actsRepository.getAll().catch(() => []),
+      courtsRepository.getAll({ status: 'Active' }).catch(() => []),
+      benchTypesRepository.getAll({ status: 'Active' }).catch(() => []),
+      judgesRepository.getAll({ status: 'Active' }).catch(() => []),
+      caseTypesRepository.getAll({ status: 'Active' }).catch(() => []),
+      jurisdictionsRepository.getAll({ status: 'Active' }).catch(() => []),
+      caseStagesRepository.getAll({ status: 'Active' }).catch(() => []),
+      caseStatusesRepository.getAll({ status: 'Active' }).catch(() => []),
+      prioritiesRepository.getAll({ status: 'Active' }).catch(() => []),
+      partyTypesRepository.getAll({ status: 'Active' }).catch(() => []),
+      areaOfLawRepository.getAll({ status: 'Active' }).catch(() => []),
+      typeOfProceedingRepository.getAll({ status: 'Active' }).catch(() => []),
+      natureOfDisputeRepository.getAll({ status: 'Active' }).catch(() => []),
+      actsRepository.getAll({ status: 'Active' }).catch(() => []),
     ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt, al, top, nod, act]) => {
       setExistingJudgments(j);
       setCourts(c);
@@ -589,6 +594,32 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       setTypeOfProceedings(top);
       setNatureOfDisputes(nod);
       setAllActs(act);
+      const validCourt = new Set((c || []).map((x) => x.id));
+      const validBench = new Set((bt || []).map((x) => x.id));
+      const validCaseType = new Set((ct || []).map((x) => x.id));
+      const validJurisdiction = new Set((jr || []).map((x) => x.id));
+      const validStage = new Set((cs || []).map((x) => x.id));
+      const validStatus = new Set((cst || []).map((x) => x.id));
+      const validPartyType = new Set((pt || []).map((x) => x.id));
+      const validAol = new Set((al || []).map((x) => x.id));
+      const validTop = new Set((top || []).map((x) => x.id));
+      const validNod = new Set((nod || []).map((x) => x.id));
+      const validAct = new Set((act || []).map((x) => x.id));
+      setForm((prev) => ({
+        ...prev,
+        court: validCourt.has(prev.court) ? prev.court : '',
+        bench: validBench.has(prev.bench) ? prev.bench : '',
+        caseType: validCaseType.has(prev.caseType) ? prev.caseType : '',
+        jurisdiction: validJurisdiction.has(prev.jurisdiction) ? prev.jurisdiction : '',
+        applicableStages: (prev.applicableStages || []).filter((id) => validStage.has(id)),
+        reviewStatus: validStatus.has(prev.reviewStatus) ? prev.reviewStatus : '',
+        plaintiffType: validPartyType.has(prev.plaintiffType) ? prev.plaintiffType : '',
+        defendantType: validPartyType.has(prev.defendantType) ? prev.defendantType : '',
+        practiceArea: validAol.has(prev.practiceArea) ? prev.practiceArea : '',
+        typeOfProceeding: validTop.has(prev.typeOfProceeding) ? prev.typeOfProceeding : '',
+        natureOfDispute: validNod.has(prev.natureOfDispute) ? prev.natureOfDispute : '',
+        acts: (prev.acts || []).filter((id) => validAct.has(id)),
+      }));
     });
   }, [open]);
 

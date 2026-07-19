@@ -23816,28 +23816,12 @@ kbd.cmd__kbd {
 }
 
 /* Judgment Text reader */
-.jd-judgment-text-card {
-  margin-top: 4px;
-  min-height: 320px;
-  border: 1px solid #E5E7EB;
-  border-radius: 14px;
-  background: #FFFFFF;
-  padding: 28px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-}
-
-.jd-judgment-text-card--auto {
-  min-height: 0;
-  height: auto;
-}
-
 .jd-judgment-reader {
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.7;
   color: var(--text);
-  max-width: 100%;
   white-space: pre-wrap;
-  padding: 0;
+  flex: 1;
 }
 
 .jd-judgment-empty {
