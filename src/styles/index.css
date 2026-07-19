@@ -6531,6 +6531,14 @@ kbd.cmd__kbd {
   max-width: 520px;
 }
 
+@media (min-width: 768px) {
+  .manage-cases__search {
+    flex: 0 0 79%;
+    width: 79%;
+    max-width: none;
+  }
+}
+
 .manage-cases__filter-court {
   max-width: 180px;
 }
