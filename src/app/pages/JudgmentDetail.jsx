@@ -810,17 +810,18 @@ export default function JudgmentDetail() {
                   </>
                 )}
 
-                {/* Section 2 — Other References (2-column) */}
-                <h3 className="jd-panel-title jd-panel-title--mt">Other References</h3>
+                <h3 className="jd-panel-title jd-panel-title--mt">Keywords</h3>
                 <div className="jd-refs-grid">
-                  <div className="jd-ref-item">
-                    <span className="jd-ref-label">Keywords</span>
+                  <div className="jd-ref-item" style={{ gridColumn: '1 / -1' }}>
                     <div className="jd-tags jd-tags--readonly">
                       {toArr(judgment.keywords).length ? toArr(judgment.keywords).map((tag, i) => <span key={i} className="jd-tag">{tag}</span>) : <span className="jd-ref-empty">—</span>}
                     </div>
                   </div>
-                  <div className="jd-ref-item">
-                    <span className="jd-ref-label">Tags</span>
+                </div>
+
+                <h3 className="jd-panel-title jd-panel-title--mt">Tags</h3>
+                <div className="jd-refs-grid">
+                  <div className="jd-ref-item" style={{ gridColumn: '1 / -1' }}>
                     <div className="jd-tags jd-tags--readonly">
                       {toArr(judgment.tags).length ? toArr(judgment.tags).map((tag, i) => <span key={i} className="jd-tag">{tag}</span>) : <span className="jd-ref-empty">—</span>}
                     </div>
