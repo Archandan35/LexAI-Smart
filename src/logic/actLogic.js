@@ -59,6 +59,7 @@ export const actLogic = {
   async update(id, data) {
     try {
       if (data.short_code !== undefined) data.short_code = (data.short_code || '').trim().toUpperCase();
+      if (data.color !== undefined) data.color = data.color || '#6b7280';
       const row = await actService.update(id, data);
       return ok(row);
     } catch (e) {

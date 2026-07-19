@@ -49,6 +49,24 @@ function denormalizeArrays(entityName, record) {
   return out;
 }
 
+function coerceNumericFields(entityName, record) {
+  if (!record) return record;
+  const schema = getSchema(entityName);
+  if (!schema || !schema.fields) return record;
+  const out = { ...record };
+  for (const [field, type] of Object.entries(schema.fields)) {
+    if (type !== 'number') continue;
+    const val = out[field];
+    if (typeof val === 'string') {
+      const n = Number(val);
+      out[field] = Number.isFinite(n) ? n : 0;
+    } else if (val === null || val === undefined) {
+      out[field] = 0;
+    }
+  }
+  return out;
+}
+
 function stripUnknownFields(entityName, record) {
   if (!record) return record;
   const schema = getSchema(entityName);
@@ -198,7 +216,8 @@ export function createRepository(collection) {
         enriched.id = await IDEngine.generate(entityName);
       }
       const denormalized = denormalizeArrays(entityName, enriched);
-      const providerRecord = FieldMapper.toProvider(entityName, denormalized);
+      const coerced = coerceNumericFields(entityName, denormalized);
+      const providerRecord = FieldMapper.toProvider(entityName, coerced);
       const wasAutoId = !record.id;
       try {
         const result = await provider.create(providerName(), providerRecord);
@@ -210,7 +229,7 @@ export function createRepository(collection) {
         if (wasAutoId) {
           enriched.id = await IDEngine.generate(entityName);
         }
-        const retryRecord = FieldMapper.toProvider(entityName, denormalizeArrays(entityName, enriched));
+        const retryRecord = FieldMapper.toProvider(entityName, coerceNumericFields(entityName, denormalizeArrays(entityName, enriched)));
         const result = await provider.create(providerName(), retryRecord);
         return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
       }
@@ -221,7 +240,8 @@ export function createRepository(collection) {
       const stamped = { ...patch, updatedAt: DateEngine.now() };
       const denormalized = denormalizeArrays(entityName, stamped);
       const stripped = stripUnknownFields(entityName, denormalized);
-      const providerPatch = FieldMapper.toProvider(entityName, stripped);
+      const coerced = coerceNumericFields(entityName, stripped);
+      const providerPatch = FieldMapper.toProvider(entityName, coerced);
       try {
         const result = await provider.update(providerName(), id, providerPatch);
         return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
@@ -259,7 +279,7 @@ export function createRepository(collection) {
         if (!r.id) r.id = await IDEngine.generate(entityName);
         return r;
       }));
-      const providerRecords = withIds.map((r) => FieldMapper.toProvider(entityName, denormalizeArrays(entityName, r)));
+      const providerRecords = withIds.map((r) => FieldMapper.toProvider(entityName, coerceNumericFields(entityName, denormalizeArrays(entityName, r))));
       try {
         const results = await provider.bulkCreate(providerName(), providerRecords);
         return (results || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));

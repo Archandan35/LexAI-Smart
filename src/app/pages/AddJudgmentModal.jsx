@@ -1219,47 +1219,51 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     logic: areaOfLawLogic,
     fields: [
       { key: 'name', label: 'Area of Law Name', required: true, placeholder: 'e.g. Civil Law' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CIV-LAW' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'ARLA-<AREA-OF-LAW>', hint: 'Example: ARLA-CIVIL-LAW' },
       { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const typeOfProceedingConfig = {
     logic: typeOfProceedingLogic,
     fields: [
       { key: 'name', label: 'Type of Proceeding Name', required: true, placeholder: 'e.g. Appeal' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. APP' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'TOPR-<TYPE-OF-PROCEEDING>', hint: 'Example: TOPR-APPEAL' },
       { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const natureOfDisputeConfig = {
     logic: natureOfDisputeLogic,
     fields: [
       { key: 'name', label: 'Nature of Dispute Name', required: true, placeholder: 'e.g. Contract Dispute' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CONT' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'NADI-<NATURE-OF-DISPUTE>', hint: 'Example: NADI-PARTITION' },
       { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const actConfig = {
     logic: actLogic,
     fields: [
       { key: 'title', label: 'Act Title', required: true, placeholder: 'e.g. Indian Penal Code' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. IPC' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'ACTY-<ACT-NAME>', hint: 'Example: ACTY-CPC' },
       { key: 'act_type', label: 'Act Type', placeholder: 'e.g. Central, State' },
       { key: 'jurisdiction', label: 'Jurisdiction', placeholder: 'e.g. India' },
       { key: 'year', label: 'Year', placeholder: 'e.g. 1860' },
       { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   return (

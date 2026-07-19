@@ -10,7 +10,7 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 
-const ENTITY_PREFIX = 'ACTS';
+const ENTITY_PREFIX = 'ACTY';
 
 const autoCode = (title) => {
   const slug = title.trim().replace(/\s+/g, '-').toUpperCase();
@@ -472,8 +472,8 @@ export default function ActLibrary() {
                 </div>
                 <div className="bench-types__field">
                   <label className="bench-types__label">Short Code</label>
-                  <Input value={newCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setNewCode(e.target.value.toUpperCase())} />
-                  <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
+                  <Input value={newCode} placeholder="ACTY-<ACT-NAME>" onChange={e => setNewCode(e.target.value.toUpperCase())} />
+                  <span className="bench-types__hint">Example: ACTY-INDIAN-PENAL-CODE</span>
                 </div>
                 <div className="bench-types__field">
                   <label className="bench-types__label">Type</label>
@@ -524,7 +524,7 @@ export default function ActLibrary() {
                     onChange={e => setBulkAddText(e.target.value)}
                     rows={8}
                   />
-                  <span className="bench-types__hint">One per line. Optionally append <code>:SHORTCODE</code> for custom short code. Default: ACTS-{'{TITLE}'}</span>
+                  <span className="bench-types__hint">One per line. Optionally append <code>:SHORTCODE</code> for custom short code. Default: ACTY-{'{TITLE}'}</span>
                 </div>
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Badge Colour</label>
@@ -552,8 +552,8 @@ export default function ActLibrary() {
                     </div>
                     <div className="bench-types__field">
                       <label className="bench-types__label">Short Code</label>
-                      <Input value={editCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setEditCode(e.target.value.toUpperCase())} />
-                      <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
+                      <Input value={editCode} placeholder="ACTY-<ACT-NAME>" onChange={e => setEditCode(e.target.value.toUpperCase())} />
+                      <span className="bench-types__hint">Example: ACTY-INDIAN-PENAL-CODE</span>
                     </div>
                     <div className="bench-types__field">
                       <label className="bench-types__label">Type</label>
@@ -1003,8 +1003,8 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Short Code</label>
-            <Input value={editCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setEditCode(e.target.value.toUpperCase())} />
-            <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
+            <Input value={editCode} placeholder="ACTY-<ACT-NAME>" onChange={e => setEditCode(e.target.value.toUpperCase())} />
+            <span className="bench-types__hint">Example: ACTY-INDIAN-PENAL-CODE</span>
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Type</label>
@@ -1060,8 +1060,8 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Short Code</label>
-            <Input value={newCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setNewCode(e.target.value.toUpperCase())} />
-            <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
+            <Input value={newCode} placeholder="ACTY-<ACT-NAME>" onChange={e => setNewCode(e.target.value.toUpperCase())} />
+            <span className="bench-types__hint">Example: ACTY-INDIAN-PENAL-CODE</span>
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Type</label>

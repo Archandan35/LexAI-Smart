@@ -48,7 +48,7 @@ export const typeOfProceedingLogic = {
       if (data.short_code !== undefined) patch.short_code = (data.short_code || '').trim().toUpperCase();
       if (data.description !== undefined) patch.description = (data.description || '').trim();
       if (data.display_order !== undefined) patch.display_order = data.display_order;
-      if (data.color !== undefined) patch.color = data.color;
+      if (data.color !== undefined) patch.color = data.color || '#6b7280';
       if (data.status !== undefined) patch.status = data.status || 'Active';
       const row = await typeOfProceedingService.update(id, patch);
       return ok(row);
