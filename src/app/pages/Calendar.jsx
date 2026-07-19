@@ -661,7 +661,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           </div>
         </div>
 
-        <div className="tasks-filter-row">
+        <div className="tasks-search-row">
           <div className="tasks-search-inner">
             <Icon name="search" size={18} />
             <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
@@ -669,6 +669,9 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
             {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
           </Button>
+        </div>
+
+        <div className="tasks-filter-row">
           <input type="date" className="input" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
           <Select value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="due_asc">Sort: Due (earliest)</option>
