@@ -22342,31 +22342,21 @@ kbd.cmd__kbd {
 .jl-cit-line {
   font-size: 12px;
   font-weight: 600;
-  color: var(--navy-700);
-  background: var(--brand-soft);
+  color: #FFFFFF;
+  background: #2563EB;
   padding: 3px 9px;
   border-radius: 6px;
   white-space: nowrap;
   line-height: 1.4;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
 }
 
-.jl-cit-line--muted {
-  color: var(--text-soft);
-  background: var(--surface-2);
-}
-
-.jl-judge-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.jl-judge-line {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.4;
-}
+.jl-cit-line--c0 { background: #2563EB; box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25); }
+.jl-cit-line--c1 { background: #7C3AED; box-shadow: 0 1px 4px rgba(124, 58, 237, 0.25); }
+.jl-cit-line--c2 { background: #0D9488; box-shadow: 0 1px 4px rgba(13, 148, 136, 0.25); }
+.jl-cit-line--c3 { background: #DB2777; box-shadow: 0 1px 4px rgba(219, 39, 119, 0.25); }
+.jl-cit-line--c4 { background: #EA580C; box-shadow: 0 1px 4px rgba(234, 88, 12, 0.25); }
+.jl-cit-line--c5 { background: #0891B2; box-shadow: 0 1px 4px rgba(8, 145, 178, 0.25); }
 
 .jl-thead {
   background: var(--surface-2);
@@ -23619,8 +23609,9 @@ kbd.cmd__kbd {
 
 .jd-date-card {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
   padding: 24px;
   min-height: 104px;
   border: 1px solid #E5E7EB;
@@ -23635,6 +23626,21 @@ kbd.cmd__kbd {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
+.jd-date-card-icon-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.jd-date-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
 .jd-date-card-icon {
   width: 40px;
   height: 40px;
@@ -23642,7 +23648,6 @@ kbd.cmd__kbd {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  margin-bottom: 4px;
 }
 
 .jd-date-card--blue .jd-date-card-icon {
@@ -23935,11 +23940,19 @@ kbd.cmd__kbd {
 .jd-cit-pill {
   font-size: 12px;
   font-weight: 600;
-  color: var(--navy-700);
-  background: var(--brand-soft);
+  color: #FFFFFF;
+  background: #2563EB;
   padding: 4px 12px;
   border-radius: 20px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
 }
+
+.jd-cit-pill--c0 { background: #2563EB; box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25); }
+.jd-cit-pill--c1 { background: #7C3AED; box-shadow: 0 1px 4px rgba(124, 58, 237, 0.25); }
+.jd-cit-pill--c2 { background: #0D9488; box-shadow: 0 1px 4px rgba(13, 148, 136, 0.25); }
+.jd-cit-pill--c3 { background: #DB2777; box-shadow: 0 1px 4px rgba(219, 39, 119, 0.25); }
+.jd-cit-pill--c4 { background: #EA580C; box-shadow: 0 1px 4px rgba(234, 88, 12, 0.25); }
+.jd-cit-pill--c5 { background: #0891B2; box-shadow: 0 1px 4px rgba(8, 145, 178, 0.25); }
 
 /* Related card slider */
 .jd-related-slider-card {

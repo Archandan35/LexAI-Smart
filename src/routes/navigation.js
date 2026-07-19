@@ -51,7 +51,7 @@ export const NAV_GROUPS = [
   {
     label: '',
     items: [
-      { to: '/research/judgment-library', label: 'Judgment Library', icon: 'book', module: 'research' },
+      { to: '/judgment-library', label: 'Judgment Library', icon: 'book', module: 'research' },
       { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
     ],
   },

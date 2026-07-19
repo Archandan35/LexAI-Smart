@@ -116,6 +116,29 @@ export default function JudgmentDetail() {
   const [copied, setCopied] = useState(false);
   const [actDetailsMap, setActDetailsMap] = useState({});
 
+  const relatedSliderRef = useRef(null);
+  const [sliderAtStart, setSliderAtStart] = useState(true);
+  const [sliderAtEnd, setSliderAtEnd] = useState(false);
+
+  const updateSliderButtons = () => {
+    const el = relatedSliderRef.current;
+    if (!el) return;
+    setSliderAtStart(el.scrollLeft <= 1);
+    setSliderAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 1);
+  };
+
+  const scrollRelated = (dir) => {
+    const el = relatedSliderRef.current;
+    if (!el) return;
+    const card = el.querySelector('.jd-rel-card');
+    const amount = card ? card.offsetWidth + 20 : 320;
+    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
+  };
+
+  useLayoutEffect(() => {
+    updateSliderButtons();
+  });
+
   useEffect(() => {
     let cancelled = false;
     judgmentsRepository.getById(id)
@@ -214,6 +237,11 @@ export default function JudgmentDetail() {
   const areaOfLawLabel = (val) => resolve(nameMap.areaOfLaw, val);
   const typeOfProceedingLabel = (val) => resolve(nameMap.typeOfProceeding, val);
   const natureOfDisputeLabel = (val) => resolve(nameMap.natureOfDispute, val);
+  const actLabel = (val) => {
+    if (!val) return '';
+    const id = typeof val === 'string' ? val : (val?.id || '');
+    return actNameMap[id] || actDetailsMap[id]?.title || actDetailsMap[id]?.name || actDetailsMap[id]?.short_code || (typeof val === 'string' ? val : (val?.name || val?.title || val?.short_code || ''));
+  };
   const judgeLabel = (val) => {
     return toArr(val).map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).join(', ');
   };
@@ -233,7 +261,7 @@ export default function JudgmentDetail() {
       citation: rest.citation ? `${rest.citation} (Copy)` : rest.citation,
       status: 'Draft',
     })
-      .then(() => navigate('/research/judgment-library'))
+      .then(() => navigate('/judgment-library'))
       .catch(() => {});
   };
 
@@ -287,7 +315,7 @@ export default function JudgmentDetail() {
     const delId = judgment.id;
     setConfirmDelete(false);
     judgmentsRepository.delete(delId)
-      .then(() => navigate('/research/judgment-library'))
+      .then(() => navigate('/judgment-library'))
       .catch(() => {});
   };
 
@@ -359,7 +387,7 @@ export default function JudgmentDetail() {
           <Icon name="file" size={48} />
           <div className="jd-empty__title">Judgment not found</div>
           <div className="jd-empty__desc">The judgment you are looking for could not be found.</div>
-          <Button variant="ghost" icon="chevronLeft" className="mt-4" onClick={() => navigate('/research/judgment-library')}>
+          <Button variant="ghost" icon="chevronLeft" className="mt-4" onClick={() => navigate('/judgment-library')}>
             Back to Judgment Library
           </Button>
         </div>
@@ -386,7 +414,7 @@ export default function JudgmentDetail() {
 
   return (
     <div className="jd-page">
-      <button className="jd-back-link" onClick={() => navigate('/research/judgment-library')}>
+      <button className="jd-back-link" onClick={() => navigate('/judgment-library')}>
         <Icon name="chevronLeft" size={16} />
         Back to Judgments
       </button>
@@ -490,19 +518,31 @@ export default function JudgmentDetail() {
                 <h3 className="jd-panel-title"><Icon name="calendar" size={20} className="jd-panel-title-icon" /> Judgment Dates</h3>
                 <div className="jd-dates-row">
                   <div className="jd-date-card jd-date-card--blue">
-                    <div className="jd-date-card-icon"><Icon name="calendar" size={20} /></div>
-                    <span className="jd-date-label">Judgment Date <span className="jd-req">*</span></span>
-                    <span className="jd-date-value">{judgment.judgmentDate ? formatDate(judgment.judgmentDate) : '—'}</span>
+                    <div className="jd-date-card-icon-col">
+                      <div className="jd-date-card-icon"><Icon name="calendar" size={20} /></div>
+                    </div>
+                    <div className="jd-date-card-body">
+                      <span className="jd-date-label">Judgment Date <span className="jd-req">*</span></span>
+                      <span className="jd-date-value">{judgment.judgmentDate ? formatDate(judgment.judgmentDate) : '—'}</span>
+                    </div>
                   </div>
                   <div className="jd-date-card jd-date-card--green">
-                    <div className="jd-date-card-icon"><Icon name="check-circle" size={20} /></div>
-                    <span className="jd-date-label">Pronouncement Date</span>
-                    <span className="jd-date-value">{judgment.pronouncementDate ? formatDate(judgment.pronouncementDate) : '—'}</span>
+                    <div className="jd-date-card-icon-col">
+                      <div className="jd-date-card-icon"><Icon name="check-circle" size={20} /></div>
+                    </div>
+                    <div className="jd-date-card-body">
+                      <span className="jd-date-label">Pronouncement Date</span>
+                      <span className="jd-date-value">{judgment.pronouncementDate ? formatDate(judgment.pronouncementDate) : '—'}</span>
+                    </div>
                   </div>
                   <div className="jd-date-card jd-date-card--purple">
-                    <div className="jd-date-card-icon"><Icon name="upload" size={20} /></div>
-                    <span className="jd-date-label">Upload Date</span>
-                    <span className="jd-date-value">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span>
+                    <div className="jd-date-card-icon-col">
+                      <div className="jd-date-card-icon"><Icon name="upload" size={20} /></div>
+                    </div>
+                    <div className="jd-date-card-body">
+                      <span className="jd-date-label">Upload Date</span>
+                      <span className="jd-date-value">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -618,12 +658,10 @@ export default function JudgmentDetail() {
                     <span className="jd-ref-label">Act</span>
                     <div className="jd-tags jd-tags--readonly">
                       {acts?.length ? acts.map((act, i) => {
-                        const name = typeof act === 'string'
-                          ? (actNameMap[act] || act)
-                          : (act?.name || act?.title || (act?.id ? actNameMap[act.id] : '') || '');
+                        const name = actLabel(act);
                         return <span key={i} className="jd-tag">{name || '—'}</span>;
                       }) : (
-                        judgment.act ? <span className="jd-tag">{actNameMap[judgment.act] || judgment.act}</span> : <span className="jd-ref-empty">—</span>
+                        judgment.act ? <span className="jd-tag">{actLabel(judgment.act) || '—'}</span> : <span className="jd-ref-empty">—</span>
                       )}
                     </div>
                   </div>
@@ -850,11 +888,9 @@ export default function JudgmentDetail() {
               {(acts?.length || judgment.provisions?.length) ? (
                 <>
                   {acts?.length ? acts.map((act, i) => {
-                    const resolvedName = typeof act === 'string'
-                      ? (actNameMap[act] || act)
-                      : (act?.name || act?.title || (act?.id ? actNameMap[act.id] : '') || '');
+                    const resolvedName = actLabel(act);
                     return <ActRow key={i} act={resolvedName} />;
-                  }) : judgment.act ? <ActRow key="single" act={actNameMap[judgment.act] || judgment.act} /> : null}
+                  }) : judgment.act ? <ActRow key="single" act={actLabel(judgment.act)} /> : null}
                   {toArr(judgment.provisions).length ? (
                     <div className="jd-acts-sections-list" style={{ marginTop: acts?.length ? 8 : 0 }}>
                       {toArr(judgment.provisions).map((p, i) => (
@@ -892,46 +928,139 @@ export default function JudgmentDetail() {
             <div className="jd-rc-card jd-citation-card">
               <div className="jd-rc-title"><Icon name="bookmark" size={14} /> Citation</div>
               <div className="jd-rc-body jd-citation-body">
-                {citationList.map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
+                {citationList.map((c, i) => <span key={i} className={`jd-cit-pill jd-cit-pill--c${i % 6}`}>{c}</span>)}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {related.length > 0 && (
-        <div className="jd-related-full">
-          <div className="jd-rc-card jd-related-slider-card">
-            <div className="jd-rc-title">
-              <span><Icon name="layers" size={14} /> Related Judgments</span>
-              <button className="jd-view-all-btn" onClick={() => navigate('/research/judgment-library')}>View All</button>
+      <div className="jd-related-full">
+        <div className="jd-related-section">
+          <div className="jd-related-head">
+            <div>
+              <h2 className="jd-related-title"><Icon name="balance" size={20} className="jd-related-title-icon" /> Related Judgments</h2>
+              <p className="jd-related-subtitle">Discover similar precedents related to this judgment.</p>
             </div>
+            <button className="jd-related-viewall" onClick={() => navigate('/judgment-library')}>
+              View All <Icon name="arrow" size={15} />
+            </button>
+          </div>
+
+          {loading ? (
             <div className="jd-related-slider-wrap">
-              <button className="jd-slide-btn jd-slide-left" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: -280, behavior: 'smooth' }); }}><Icon name="chevronLeft" size={18} /></button>
-              <div className="jd-related-slider">
-                {related.map((r) => (
-                  <div key={r.id} className="jd-related-slide-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
-                    <div className="jd-related-slide-title">{r.title || r.citation}</div>
-                    <div className="jd-related-slide-court">{courtLabel(r.court)}</div>
-                    <div className="jd-related-slide-footer">
-                      <span>{r.date ? formatDate(r.date) : ''}</span>
-                      <span>{r.status || r.citation}</span>
+              <div className="jd-rel-slider">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="jd-rel-card jd-rel-card--skeleton">
+                    <div className="jd-rel-skel-head">
+                      <div className="jd-rel-skel-icon" />
+                      <div className="jd-rel-skel-badge" />
+                    </div>
+                    <div className="jd-rel-skel-line jd-rel-skel-line--lg" />
+                    <div className="jd-rel-skel-line jd-rel-skel-line--lg" />
+                    <div className="jd-rel-skel-line" />
+                    <div className="jd-rel-skel-tags">
+                      <div className="jd-rel-skel-tag" />
+                      <div className="jd-rel-skel-tag" />
+                      <div className="jd-rel-skel-tag" />
                     </div>
                   </div>
                 ))}
               </div>
-              <button className="jd-slide-btn jd-slide-right" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: 280, behavior: 'smooth' }); }}><Icon name="chevronRight" size={18} /></button>
             </div>
-          </div>
+          ) : related.length > 0 ? (
+            <div className="jd-related-slider-wrap">
+              <button
+                className="jd-rel-arrow jd-rel-arrow--left"
+                onClick={() => scrollRelated(-1)}
+                disabled={sliderAtStart}
+                aria-label="Previous related judgments"
+              >
+                <Icon name="chevronLeft" size={18} />
+              </button>
+              <div
+                className="jd-rel-slider"
+                ref={relatedSliderRef}
+                onScroll={updateSliderButtons}
+              >
+                {related.map((r) => {
+                  const cites = r.citation ? String(r.citation).split(/[,;]/).map((c) => c.trim()).filter(Boolean) : [];
+                  const status = r.overruledBy ? 'overruled' : (r.archived ? 'archived' : 'active');
+                  const statusLabel = status === 'overruled' ? 'Overruled' : status === 'archived' ? 'Archived' : 'Active';
+                  const tags = toArr(r.tags).length ? toArr(r.tags) : toArr(r.keywords);
+                  const visibleTags = tags.slice(0, 4);
+                  const extra = tags.length - visibleTags.length;
+                  return (
+                    <div key={r.id} className={`jd-rel-card jd-rel-card--${status}`} onClick={() => navigate(`/judgment-library/${r.id}`)}>
+                      <div className="jd-rel-card-head">
+                        <div className="jd-rel-card-icon"><Icon name="balance" size={18} /></div>
+                        <span className={`jd-rel-status jd-rel-status--${status}`}>{statusLabel}</span>
+                      </div>
+                      <div className="jd-rel-title">{r.title || r.citation || 'Untitled'}</div>
+                      {cites.length > 0 && (
+                        <div className="jd-rel-cites">
+                          {cites.slice(0, 2).map((c, ci) => (
+                            <div key={ci} className="jd-rel-cite">{c}</div>
+                          ))}
+                          {cites.length > 2 && (
+                            <div className="jd-rel-cite jd-rel-cite--muted">{cites[2]}</div>
+                          )}
+                        </div>
+                      )}
+                      <div className="jd-rel-meta">
+                        <span><Icon name="building2" size={13} /> {courtLabel(r.court) || '—'}</span>
+                        {r.date && <span className="jd-rel-dot">·</span>}
+                        {r.date && <span><Icon name="calendar" size={13} /> {formatDate(r.date)}</span>}
+                      </div>
+                      {visibleTags.length > 0 && (
+                        <div className="jd-rel-tags">
+                          {visibleTags.map((t, ti) => (
+                            <span key={ti} className="jd-rel-tag">{t}</span>
+                          ))}
+                          {extra > 0 && <span className="jd-rel-tag jd-rel-tag--more">+{extra} more</span>}
+                        </div>
+                      )}
+                      <div className="jd-rel-footer">
+                        <div className="jd-rel-actions">
+                          <button className="jd-rel-ghost" title="Bookmark" onClick={(e) => e.stopPropagation()}><Icon name="bookmark" size={15} /></button>
+                          <button className="jd-rel-ghost" title="Share" onClick={(e) => e.stopPropagation()}><Icon name="share" size={15} /></button>
+                        </div>
+                        <button className="jd-rel-view" onClick={(e) => { e.stopPropagation(); navigate(`/judgment-library/${r.id}`); }}>
+                          View Judgment <Icon name="arrow" size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                className="jd-rel-arrow jd-rel-arrow--right"
+                onClick={() => scrollRelated(1)}
+                disabled={sliderAtEnd}
+                aria-label="Next related judgments"
+              >
+                <Icon name="chevronRight" size={18} />
+              </button>
+            </div>
+          ) : (
+            <div className="jd-rel-empty">
+              <div className="jd-rel-empty-ill"><Icon name="balance" size={48} /></div>
+              <div className="jd-rel-empty-title">No Related Judgments Found</div>
+              <div className="jd-rel-empty-sub">No similar precedents are currently linked to this judgment.</div>
+              <button className="jd-rel-empty-btn" onClick={() => navigate('/judgment-library')}>
+                <Icon name="book" size={15} /> Browse Judgment Library
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {judgment.casesCited?.length > 0 && (
         <div className="jd-cases-cited-full">
           <div className="jd-rc-card jd-citation-card">
             <div className="jd-rc-title"><Icon name="link" size={14} /> Cases Cited in this case</div>
             <div className="jd-rc-body jd-citation-body">
-              {toArr(judgment.casesCited).map((c, i) => <span key={i} className="jd-cit-pill">{c}</span>)}
+              {toArr(judgment.casesCited).map((c, i) => <span key={i} className={`jd-cit-pill jd-cit-pill--c${i % 6}`}>{c}</span>)}
             </div>
           </div>
         </div>

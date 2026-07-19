@@ -563,7 +563,7 @@ export default function JudgmentLibrary() {
                             return (
                               <div className="jl-cit-stack">
                                 {cites.map((c, i) => (
-                                  <div key={i} className={`jl-cit-line${i === 0 ? '' : ' jl-cit-line--muted'}`}>{c}</div>
+                                  <div key={i} className={`jl-cit-line jl-cit-line--c${i % 6}`}>{c}</div>
                                 ))}
                               </div>
                             );
@@ -573,20 +573,7 @@ export default function JudgmentLibrary() {
                           {resolveName(nameMap.court, j.court)}
                           {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
                         </td>
-                        <td data-label="Judge(s)" className="jl-cell-strong">
-                          {(() => {
-                            const judgeVal = j.judges || j.judge;
-                            if (!judgeVal) return '—';
-                            const list = Array.isArray(judgeVal) ? judgeVal : [judgeVal];
-                            return (
-                              <div className="jl-judge-stack">
-                                {list.map((jId, i) => (
-                                  <span key={i} className="jl-judge-line">{nameMap.judge[jId] || jId}</span>
-                                ))}
-                              </div>
-                            );
-                          })()}
-                        </td>
+                        <td data-label="Judge(s)" className="jl-cell-strong">{resolveName(nameMap.judge, j.judges || j.judge) || '—'}</td>
                         <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
                         <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
                         <td data-label="Status">
