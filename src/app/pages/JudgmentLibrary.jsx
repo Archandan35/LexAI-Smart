@@ -187,7 +187,6 @@ export default function JudgmentLibrary() {
     const typeOfProceedings = new Set();
     const natureOfDisputes = new Set();
     const actIds = new Set();
-    const provisionIds = new Set();
     const applicableStages = new Set();
     judgments.forEach((j) => {
       if (j.court) courts.add(j.court);
@@ -199,7 +198,6 @@ export default function JudgmentLibrary() {
       if (j.bench) benches.add(j.bench);
       if (j.typeOfProceeding) typeOfProceedings.add(j.typeOfProceeding);
       if (j.natureOfDispute) natureOfDisputes.add(j.natureOfDispute);
-      if (j.provisions?.length) toArr(j.provisions).forEach((p) => p && provisionIds.add(p));
       if (j.applicableStages?.length) toArr(j.applicableStages).forEach((s) => s && applicableStages.add(s));
       if (j.date) {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
@@ -227,8 +225,8 @@ export default function JudgmentLibrary() {
       provisions: activeProvisions.length
         ? activeProvisions
             .sort((a, b) => (a.name || a.short_code || '').localeCompare(b.name || b.short_code || ''))
-            .map((p) => ({ value: p.id, label: p.name || p.short_code || p.id }))
-        : Array.from(provisionIds).sort().filter((id) => nameMap.provision[id]).map((id) => ({ value: id, label: nameMap.provision[id] })),
+            .map((p) => ({ value: p.name || p.short_code || p.id, label: p.name || p.short_code || p.id }))
+        : [],
       applicableStages: Array.from(applicableStages).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.stage, id) })),
       caseTypes: activeCaseTypes.length
         ? activeCaseTypes
