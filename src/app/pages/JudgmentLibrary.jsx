@@ -186,43 +186,55 @@ export default function JudgmentLibrary() {
     const benches = new Set();
     const typeOfProceedings = new Set();
     const natureOfDisputes = new Set();
+    const actIds = new Set();
+    const provisionIds = new Set();
     const applicableStages = new Set();
     judgments.forEach((j) => {
       if (j.court) courts.add(j.court);
       if (j.judges || j.judge || j.bench) judges.add(j.judges || j.judge || j.bench);
       if (j.caseType) types.add(j.caseType);
       if (j.subjectMatter) matterTypes.add(j.subjectMatter);
+      if (j.act) actIds.add(j.act);
+      if (j.acts?.length) j.acts.forEach((id) => actIds.add(id));
       if (j.bench) benches.add(j.bench);
       if (j.typeOfProceeding) typeOfProceedings.add(j.typeOfProceeding);
       if (j.natureOfDispute) natureOfDisputes.add(j.natureOfDispute);
+      if (j.provisions?.length) toArr(j.provisions).forEach((p) => p && provisionIds.add(p));
       if (j.applicableStages?.length) toArr(j.applicableStages).forEach((s) => s && applicableStages.add(s));
       if (j.date) {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
       }
     });
     const labelOrUnknown = (map, id) => (id && map[id] ? map[id] : (id ? 'Unknown' : '—'));
-    const activeActs = (acts || []).filter((a) => !a.status || a.status === 'Active');
-    const activeProvisions = (provisions || []).filter((p) => !p.status || p.status === 'Active');
-    const activeCaseTypes = (caseTypes || []).filter((ct) => !ct.status || ct.status === 'Active');
+    const isActive = (r) => !r.status || (r.status || '').toLowerCase() === 'active';
+    const activeActs = (acts || []).filter(isActive);
+    const activeProvisions = (provisions || []).filter(isActive);
+    const activeCaseTypes = (caseTypes || []).filter(isActive);
     return {
       courts: Array.from(courts).sort().map((id) => ({ value: id, label: nameMap.court[id] || id })),
       judges: Array.from(judges).sort().map((id) => ({ value: id, label: nameMap.judge[id] || id })),
       types: Array.from(types).sort().map((id) => ({ value: id, label: nameMap.caseType[id] || 'Unknown' })),
       matterTypes: Array.from(matterTypes).sort().map((v) => ({ value: v, label: v })),
-      acts: activeActs
-        .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-        .map((a) => ({ value: a.id, label: a.title })),
+      acts: activeActs.length
+        ? activeActs
+            .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+            .map((a) => ({ value: a.id, label: a.title || a.short_code || a.id }))
+        : Array.from(actIds).sort().filter((id) => nameMap.act[id]).map((id) => ({ value: id, label: nameMap.act[id] })),
       years: Array.from(years).sort(),
       benches: Array.from(benches).sort().map((id) => ({ value: id, label: nameMap.bench[id] || id })),
       typeOfProceedings: Array.from(typeOfProceedings).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.typeOfProceeding, id) })),
       natureOfDisputes: Array.from(natureOfDisputes).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.natureOfDispute, id) })),
-      provisions: activeProvisions
-        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-        .map((p) => ({ value: p.id, label: p.name })),
+      provisions: activeProvisions.length
+        ? activeProvisions
+            .sort((a, b) => (a.name || a.short_code || '').localeCompare(b.name || b.short_code || ''))
+            .map((p) => ({ value: p.id, label: p.name || p.short_code || p.id }))
+        : Array.from(provisionIds).sort().filter((id) => nameMap.provision[id]).map((id) => ({ value: id, label: nameMap.provision[id] })),
       applicableStages: Array.from(applicableStages).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.stage, id) })),
-      caseTypes: activeCaseTypes
-        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-        .map((ct) => ({ value: ct.id, label: ct.name })),
+      caseTypes: activeCaseTypes.length
+        ? activeCaseTypes
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map((ct) => ({ value: ct.id, label: ct.name || ct.short_code || ct.id }))
+        : [],
     };
   }, [judgments, nameMap, acts, provisions, caseTypes]);
 
