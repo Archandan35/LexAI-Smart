@@ -20,6 +20,7 @@ import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
 import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
+import RelatedJudgmentCard from '@/components/RelatedJudgmentCard.jsx';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -1027,17 +1028,31 @@ export default function JudgmentDetail() {
             <div className="jd-related-slider-wrap">
               <div className="jd-rel-slider">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="jd-rel-card jd-rel-card--skeleton">
-                    <div className="jd-rel-skel-head">
-                      <div className="jd-rel-skel-icon" />
-                      <div className="jd-rel-skel-badge" />
+                  <div key={i} className="rjc-skeleton">
+                    <div className="rjc-skel-badge" />
+                    <div className="rjc-skel-title" />
+                    <div className="rjc-skel-citation" />
+                    <div className="rjc-skel-meta">
+                      <div className="rjc-skel-meta-col">
+                        <div className="rjc-skel-meta-label" />
+                        <div className="rjc-skel-meta-value" />
+                      </div>
+                      <div className="rjc-skel-meta-col">
+                        <div className="rjc-skel-meta-label" />
+                        <div className="rjc-skel-meta-value" />
+                      </div>
                     </div>
-                    <div className="jd-rel-skel-line jd-rel-skel-line--lg" />
-                    <div className="jd-rel-skel-line jd-rel-skel-line--md" />
-                    <div className="jd-rel-skel-line jd-rel-skel-line--sm" />
-                    <div className="jd-rel-skel-tags">
-                      <div className="jd-rel-skel-tag" />
-                      <div className="jd-rel-skel-tag" />
+                    <div className="rjc-skel-divider" />
+                    <div className="rjc-skel-summary" />
+                    <div className="rjc-skel-tags">
+                      <div className="rjc-skel-tag" />
+                      <div className="rjc-skel-tag" />
+                      <div className="rjc-skel-tag" />
+                    </div>
+                    <div className="rjc-skel-divider" />
+                    <div className="rjc-skel-footer">
+                      <div className="rjc-skel-relevance" />
+                      <div className="rjc-skel-cta" />
                     </div>
                   </div>
                 ))}
@@ -1058,47 +1073,13 @@ export default function JudgmentDetail() {
                 ref={relatedSliderRef}
                 onScroll={updateSliderButtons}
               >
-                {related.map((r) => {
-                  const cites = r.citation ? String(r.citation).split(/[,;]/).map((c) => c.trim()).filter(Boolean) : [];
-                  const status = r.overruledBy ? 'Overruled' : (r.archived ? 'Archived' : 'Active');
-                  const statusKey = status.toLowerCase();
-                  const tags = toArr(r.tags).length ? toArr(r.tags) : toArr(r.keywords);
-                  const visibleTags = tags.slice(0, 2);
-                  const extra = tags.length - visibleTags.length;
-                  const year = r.date ? new Date(r.date).getFullYear() : '';
-                  return (
-                    <div key={r.id} className={`jd-rel-card jd-rel-card--${statusKey}`} onClick={() => navigate(`/judgment-library/${r.id}`)}>
-                      <div className="jd-rel-card-head">
-                        <div className="jd-rel-card-icon"><Icon name="balance" size={18} /></div>
-                        <span className={`jd-rel-status jd-rel-status--${statusKey}`}>{status}</span>
-                      </div>
-                      <div className="jd-rel-title">{r.title || r.citation || 'Untitled'}</div>
-                      <div className="jd-rel-cite">{cites[0] || '—'}</div>
-                      <div className="jd-rel-meta">
-                        <Icon name="building2" size={14} />
-                        <span>{courtLabel(r.court) || '—'}</span>
-                        <span className="jd-rel-meta-dot">•</span>
-                        <Icon name="calendar" size={14} />
-                        <span>{year || '—'}</span>
-                      </div>
-                      <div className="jd-rel-tags">
-                        {visibleTags.map((t, ti) => (
-                          <span key={ti} className="jd-rel-tag">{t}</span>
-                        ))}
-                        {extra > 0 && <span className="jd-rel-tag jd-rel-tag--more">+{extra}</span>}
-                      </div>
-                      <div className="jd-rel-footer">
-                        <div className="jd-rel-actions">
-                          <button className="jd-rel-ghost" title="Bookmark" onClick={(e) => e.stopPropagation()}><Icon name="bookmark" size={15} /></button>
-                          <button className="jd-rel-ghost" title="Share" onClick={(e) => e.stopPropagation()}><Icon name="share" size={15} /></button>
-                        </div>
-                        <button className="jd-rel-view" onClick={(e) => { e.stopPropagation(); navigate(`/judgment-library/${r.id}`); }}>
-                          View Judgment <Icon name="arrow" size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                {related.map((r) => (
+                  <RelatedJudgmentCard
+                    key={r.id}
+                    judgment={r}
+                    onView={(j) => navigate(`/judgment-library/${j.id}`)}
+                  />
+                ))}
               </div>
               <button
                 className="jd-rel-arrow jd-rel-arrow--right"
@@ -1110,11 +1091,11 @@ export default function JudgmentDetail() {
               </button>
             </div>
           ) : (
-            <div className="jd-rel-empty">
-              <div className="jd-rel-empty-ill"><Icon name="courthouse" /></div>
-              <div className="jd-rel-empty-title">No Related Judgments Found</div>
-              <div className="jd-rel-empty-sub">No similar precedents are currently linked to this judgment.</div>
-              <button className="jd-rel-empty-btn" onClick={() => navigate('/judgment-library')}>
+            <div className="rjc-empty">
+              <div className="rjc-empty-icon"><Icon name="courthouse" /></div>
+              <div className="rjc-empty-title">No Related Judgments</div>
+              <div className="rjc-empty-sub">No similar precedents are linked to this judgment.</div>
+              <button className="rjc-empty-btn" onClick={() => navigate('/judgment-library')}>
                 <Icon name="book" size={16} /> Browse Judgment Library
               </button>
             </div>
