@@ -24516,16 +24516,23 @@ kbd.cmd__kbd {
   .jd-rel-slider .jd-rel-card { flex-basis: 320px; width: 320px; }
 }
 
+@media (max-width: 1100px) {
+  .rjc-card,
+  .rjc-skeleton { min-width: 320px; }
+}
+
 @media (max-width: 760px) {
   .jd-related-section { padding: 18px 0; }
   .jd-rel-slider .jd-rel-card { flex-basis: 290px; width: 290px; }
+  .rjc-card,
+  .rjc-skeleton { min-width: 280px; }
 }
 
 /* ========= Related Judgment Card (redesigned) ========= */
 
 .rjc-card {
   flex: 1 1 0;
-  min-width: 280px;
+  min-width: 400px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 16px;
@@ -24809,7 +24816,7 @@ kbd.cmd__kbd {
 
 .rjc-skeleton {
   flex: 1 1 0;
-  min-width: 280px;
+  min-width: 400px;
   min-height: 280px;
   border: 1px solid #E5E7EB;
   border-radius: 16px;
