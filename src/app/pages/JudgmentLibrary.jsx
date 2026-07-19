@@ -703,7 +703,7 @@ export default function JudgmentLibrary() {
                         <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : 'â€”'}</td>
                         <td data-label="Actions">
                           <div className="jl-actions">
-                            <button title="View" onClick={() => navigate(`/research/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
+                            <button title="View" onClick={() => navigate(`/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
                             <button title="Edit" onClick={() => { setEditing(j); setShowAddModal(true); }}><Icon name="pen" size={15} /></button>
                             <button title="Duplicate" onClick={() => handleDuplicate(j)}><Icon name="copy" size={15} /></button>
                             <button title="Delete" onClick={() => handleDelete(j)}><Icon name="trash" size={15} /></button>

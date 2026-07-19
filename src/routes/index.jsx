@@ -142,8 +142,8 @@ export default function AppRoutes() {
 
         {/* ── Knowledge Library ── */}
         <Route path="/research/act-library" element={G('research', <ActLibrary />)} />
-        <Route path="/research/judgment-library" element={G('research', <JudgmentLibrary />)} />
-        <Route path="/research/judgment-library/:id" element={G('research', <JudgmentDetail />)} />
+        <Route path="/judgment-library" element={G('research', <JudgmentLibrary />)} />
+        <Route path="/judgment-library/:id" element={G('research', <JudgmentDetail />)} />
         <Route path="/research" element={G('research', <LegalResearch />)} />
 
         {/* ── Court Management ── */}
