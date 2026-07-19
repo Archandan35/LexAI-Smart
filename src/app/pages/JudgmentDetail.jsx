@@ -1055,7 +1055,7 @@ export default function JudgmentDetail() {
                   const status = r.overruledBy ? 'overruled' : (r.archived ? 'archived' : 'active');
                   const statusLabel = status === 'overruled' ? 'Overruled' : status === 'archived' ? 'Archived' : 'Active';
                   const tags = toArr(r.tags).length ? toArr(r.tags) : toArr(r.keywords);
-                  const visibleTags = tags.slice(0, 4);
+                  const visibleTags = tags.slice(0, 2);
                   const extra = tags.length - visibleTags.length;
                   return (
                     <div key={r.id} className={`jd-rel-card jd-rel-card--${status}`} onClick={() => navigate(`/judgment-library/${r.id}`)}>
@@ -1064,16 +1064,7 @@ export default function JudgmentDetail() {
                         <span className={`jd-rel-status jd-rel-status--${status}`}>{statusLabel}</span>
                       </div>
                       <div className="jd-rel-title">{r.title || r.citation || 'Untitled'}</div>
-                      {cites.length > 0 && (
-                        <div className="jd-rel-cites">
-                          {cites.slice(0, 2).map((c, ci) => (
-                            <div key={ci} className="jd-rel-cite">{c}</div>
-                          ))}
-                          {cites.length > 2 && (
-                            <div className="jd-rel-cite jd-rel-cite--muted">{cites[2]}</div>
-                          )}
-                        </div>
-                      )}
+                      <div className="jd-rel-cite">{cites[0] || '—'}</div>
                       <div className="jd-rel-meta">
                         <span><Icon name="building2" size={13} /> {courtLabel(r.court) || '—'}</span>
                         {r.date && <span className="jd-rel-dot">·</span>}
@@ -1084,7 +1075,7 @@ export default function JudgmentDetail() {
                           {visibleTags.map((t, ti) => (
                             <span key={ti} className="jd-rel-tag">{t}</span>
                           ))}
-                          {extra > 0 && <span className="jd-rel-tag jd-rel-tag--more">+{extra} more</span>}
+                          {extra > 0 && <span className="jd-rel-tag jd-rel-tag--more">+{extra}</span>}
                         </div>
                       )}
                       <div className="jd-rel-footer">

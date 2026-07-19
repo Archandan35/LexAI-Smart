@@ -9,6 +9,7 @@ import { benchTypesRepository } from '@/data-layer/repositories/benchTypesReposi
 import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
 import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
+import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
 import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
@@ -57,6 +58,7 @@ export default function JudgmentLibrary() {
   const [judges, setJudges] = useState([]);
   const [acts, setActs] = useState([]);
   const [caseTypes, setCaseTypes] = useState([]);
+  const [caseStages, setCaseStages] = useState([]);
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
@@ -81,6 +83,7 @@ export default function JudgmentLibrary() {
     judgesRepository.getAll().then(setJudges).catch(() => {});
     actsRepository.getAll().then(setActs).catch(() => {});
     caseTypesRepository.getAll().then(setCaseTypes).catch(() => {});
+    caseStagesRepository.getAll().then(setCaseStages).catch(() => {});
   }, [loadJudgments]);
 
   const [editing, setEditing] = useState(null);
@@ -138,8 +141,9 @@ export default function JudgmentLibrary() {
       judge: build(judges),
       act: build(acts, 'title'),
       caseType: build(caseTypes),
+      stage: build(caseStages),
     };
-  }, [courts, benchTypes, judges, acts, caseTypes]);
+  }, [courts, benchTypes, judges, acts, caseTypes, caseStages]);
 
   const resolveName = (map, val) => (val ? (map[val] || val) : 'â€”');
 
@@ -595,7 +599,7 @@ export default function JudgmentLibrary() {
                             const stages = Array.isArray(j.applicableStages)
                               ? j.applicableStages
                               : (j.applicableStages ? String(j.applicableStages).split(/[,;]/) : []);
-                            const labels = stages.map((s) => nameMap.stage[s?.trim()] || s?.trim() || s).filter(Boolean);
+                            const labels = stages.map((s) => nameMap.stage?.[s?.trim()] || s?.trim() || s).filter(Boolean);
                             if (!labels.length) return 'â€”';
                             return (
                               <div className="jl-tag-stack">

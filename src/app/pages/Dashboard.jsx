@@ -75,7 +75,11 @@ export default function Dashboard() {
     return 'Good evening';
   }, []);
 
-  if (loading) return <Spinner label="Loading dashboard…" />;
+  if (loading) return (
+    <div className="dash-loading-screen">
+      <Spinner label="Loading dashboard…" />
+    </div>
+  );
   if (!data) return <EmptyState title="Could not load dashboard." />;
 
   const { stats, activeCases, recentDrafts, recentDocuments, upcomingHearings, upcomingReminders, upcomingTasks, caseTypeDistribution } = data;
