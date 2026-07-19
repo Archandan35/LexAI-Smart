@@ -24641,14 +24641,6 @@ kbd.cmd__kbd {
   padding-left: 18px;
 }
 
-/* ========= Divider ========= */
-
-.rjc-divider {
-  height: 1px;
-  background: #E5E7EB;
-  margin: 10px 0;
-}
-
 /* ========= Summary ========= */
 
 .rjc-summary {
@@ -24668,7 +24660,7 @@ kbd.cmd__kbd {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .rjc-tag {
@@ -24676,33 +24668,30 @@ kbd.cmd__kbd {
   display: inline-flex;
   align-items: center;
   padding: 0 10px;
-  border-radius: 4px;
-  border: 1px solid #CBD5E1;
-  background: transparent;
-  color: #475569;
+  border-radius: 999px;
+  background: #EEF4FF;
+  color: #2563EB;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
   line-height: 1;
-  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease);
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
 
 .rjc-tag:hover {
-  border-color: #2563EB;
-  background: #EFF4FF;
-  color: #2563EB;
+  background: #DBEAFE;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.2);
 }
 
 .rjc-tag--more {
-  border-color: #E5E7EB;
   background: #F1F5F9;
   color: #64748B;
 }
 
 .rjc-tag--more:hover {
-  border-color: #94A3B8;
-  background: #F1F5F9;
+  background: #E2E8F0;
   color: #475569;
+  box-shadow: none;
 }
 
 /* ========= Footer ========= */
@@ -24710,7 +24699,7 @@ kbd.cmd__kbd {
 .rjc-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
   margin-top: auto;
   padding-top: 2px;
@@ -24719,6 +24708,7 @@ kbd.cmd__kbd {
 .rjc-relevance {
   display: flex;
   align-items: baseline;
+  margin-right: auto;
   gap: 2px;
 }
 

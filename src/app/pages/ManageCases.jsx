@@ -22,6 +22,7 @@ import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { useFormat } from '@/utils/format.js';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 function getStageVariant(stage) {
   if (!stage) return '';
@@ -75,7 +76,9 @@ export default function ManageCases() {
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState([]);
-  const [filters, setFilters] = useState({ court: '', courtLocation: '', stage: '', status: '', view: 'active' });
+  const [filters, setFilters] = useState({ court: [], courtLocation: [], stage: [], status: [], view: 'active' });
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempFilters, setTempFilters] = useState({ court: [], courtLocation: [], stage: [], status: [] });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {
@@ -110,12 +113,49 @@ export default function ManageCases() {
   const uniqueCourtNames = useMemo(() => Array.from(new Set(cases.map(c => c.court || c.court || '').filter(Boolean))), [cases]);
   const uniqueCourtLocations = useMemo(() => Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean))), [cases]);
 
+  const caseFilterCategories = [
+    { key: 'court', label: 'Court' },
+    { key: 'courtLocation', label: 'Jurisdiction' },
+    { key: 'stage', label: 'Stage' },
+    { key: 'status', label: 'Status' },
+  ];
+
+  const caseFilterOptions = useMemo(() => ({
+    court: uniqueCourtNames.map((c) => ({ value: c, label: c })),
+    courtLocation: uniqueCourtLocations.map((l) => ({ value: l, label: l })),
+    stage: stageNames.map((s) => ({ value: s, label: s })),
+    status: statuses.map((s) => ({ value: s, label: s })),
+  }), [uniqueCourtNames, uniqueCourtLocations, stageNames, statuses]);
+
+  const handleOpenCaseFilter = () => {
+    setTempFilters({
+      court: filters.court.length ? [...filters.court] : [],
+      courtLocation: filters.courtLocation.length ? [...filters.courtLocation] : [],
+      stage: filters.stage.length ? [...filters.stage] : [],
+      status: filters.status.length ? [...filters.status] : [],
+    });
+    setShowFilterPopup(true);
+  };
+
+  const handleTempCaseFilterChange = (key, values) => {
+    setTempFilters((prev) => ({ ...prev, [key]: values }));
+  };
+
+  const handleApplyCaseFilters = () => {
+    setFilters((prev) => ({ ...prev, ...tempFilters }));
+    setShowFilterPopup(false);
+  };
+
+  const handleClearCaseFilters = () => {
+    setTempFilters({ court: [], courtLocation: [], stage: [], status: [] });
+  };
+
   const filtered = useMemo(() => {
     let rows = cases.filter((c) => (filters.view === 'archived' ? c.archived : !c.archived));
-    if (filters.court) rows = rows.filter((c) => (c.court || c.court) === filters.court);
-    if (filters.courtLocation) rows = rows.filter((c) => extractJurisdiction(c) === filters.courtLocation);
-    if (filters.stage) rows = rows.filter((c) => c.stage === filters.stage);
-    if (filters.status) rows = rows.filter((c) => c.status === filters.status);
+    if (filters.court.length) rows = rows.filter((c) => filters.court.includes(c.court || c.court));
+    if (filters.courtLocation.length) rows = rows.filter((c) => filters.courtLocation.includes(extractJurisdiction(c)));
+    if (filters.stage.length) rows = rows.filter((c) => filters.stage.includes(c.stage));
+    if (filters.status.length) rows = rows.filter((c) => filters.status.includes(c.status));
     if (query.trim()) {
       const q = query.toLowerCase();
       rows = rows.filter((c) => `${c.caseNumber} ${c.title} ${combinedCourt(c)} ${c.judge || ''} ${c.advocate || ''} ${c.client || ''} ${(c.tags || []).join(' ')}`.toLowerCase().includes(q));
@@ -200,18 +240,9 @@ export default function ManageCases() {
               <Icon name="search" size={15} />
               <input placeholder="Search cases, judge, client, tags…" value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
-            <select className="select manage-cases__filter-court" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
-              <option value="">All courts</option>{uniqueCourtNames.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select className="select manage-cases__filter-court" value={filters.courtLocation} onChange={(e) => setFilters({ ...filters, courtLocation: e.target.value })}>
-              <option value="">All jurisdictions</option>{uniqueCourtLocations.map((l) => <option key={l} value={l}>{l}</option>)}
-            </select>
-            <select className="select manage-cases__filter-stage" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
-              <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
-            </select>
-            <select className="select manage-cases__filter-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
-              <option value="">All status</option>{statuses.map((s) => <option key={s}>{s}</option>)}
-            </select>
+            <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenCaseFilter}>
+              {[filters.court, filters.courtLocation, filters.stage, filters.status].some((v) => v.length) ? `Filter (${[filters.court, filters.courtLocation, filters.stage, filters.status].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
+            </Button>
             <div className="spacer" />
             <div className="seg">
               <button className={`seg__btn ${filters.view === 'active' ? 'active' : ''}`} onClick={() => setFilters({ ...filters, view: 'active' })}>Active</button>
@@ -281,6 +312,17 @@ export default function ManageCases() {
         </div>
       )}
 
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={caseFilterCategories}
+        options={caseFilterOptions}
+        tempFilters={tempFilters}
+        onTempFilterChange={handleTempCaseFilterChange}
+        onApply={handleApplyCaseFilters}
+        onClearAll={handleClearCaseFilters}
+      />
+
       {isMobile && (
         <div className="cl-mobile-view fade-in">
 
@@ -334,18 +376,9 @@ export default function ManageCases() {
           </div>
 
           <div className="cv-filter-grid" style={{ marginBottom: '12px' }}>
-            <select className="cv-select" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
-              <option value="">All courts</option>{uniqueCourtNames.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select className="cv-select" value={filters.courtLocation} onChange={(e) => setFilters({ ...filters, courtLocation: e.target.value })}>
-              <option value="">All jurisdictions</option>{uniqueCourtLocations.map((l) => <option key={l} value={l}>{l}</option>)}
-            </select>
-            <select className="cv-select" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
-              <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
-            </select>
-            <select className="cv-select" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
-              <option value="">All status</option>{statuses.map((s) => <option key={s}>{s}</option>)}
-            </select>
+            <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenCaseFilter} style={{ width: '100%', justifyContent: 'center' }}>
+              {[filters.court, filters.courtLocation, filters.stage, filters.status].some((v) => v.length) ? `Filter (${[filters.court, filters.courtLocation, filters.stage, filters.status].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
+            </Button>
           </div>
 
           <div className="cv-seg" style={{ marginBottom: '12px' }}>

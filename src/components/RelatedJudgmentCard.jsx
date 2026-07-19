@@ -1,8 +1,16 @@
 import Icon from './Icon.jsx';
 
-function formatCitation(citation) {
-  if (!citation) return '';
-  return String(citation).split(/[,;]/).map((c) => c.trim()).filter(Boolean);
+function stripHtml(str) {
+  if (!str) return '';
+  return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function collectCitations(judgment) {
+  const set = new Set();
+  [judgment.citation, judgment.neutralCitation, judgment.reporterCitation]
+    .filter(Boolean)
+    .forEach((c) => String(c).split(/[,;]/).map((s) => s.trim()).filter(Boolean).forEach((s) => set.add(s)));
+  return [...set];
 }
 
 function formatDate(dateStr) {
@@ -34,16 +42,17 @@ function getStatus(judgment) {
   return 'Active';
 }
 
-export default function RelatedJudgmentCard({ judgment, onView }) {
+export default function RelatedJudgmentCard({ judgment, onView, getCourtLabel }) {
   if (!judgment) return null;
 
   const status = getStatus(judgment);
   const statusKey = status.toLowerCase();
-  const citations = formatCitation(judgment.citation);
-  const courtName = judgment.court || '';
+  const citations = collectCitations(judgment);
+  const courtName = getCourtLabel ? getCourtLabel(judgment.court) : (judgment.court || '');
   const dateLabel = judgment.judgmentDate || judgment.date || '';
   const formattedDate = formatDate(dateLabel);
-  const summary = judgment.summary || judgment.headnotes || judgment.ratioDecidendi || '';
+  const rawSummary = judgment.summary || judgment.headnotes || judgment.ratioDecidendi || '';
+  const summary = stripHtml(rawSummary);
   const tags = toArr(judgment.tags).length ? toArr(judgment.tags) : toArr(judgment.keywords);
   const visibleTags = tags.slice(0, 3);
   const extraCount = tags.length - visibleTags.length;
@@ -87,8 +96,6 @@ export default function RelatedJudgmentCard({ judgment, onView }) {
         </div>
       </div>
 
-      <div className="rjc-divider" />
-
       {summary && (
         <div className="rjc-summary">{summary}</div>
       )}
@@ -101,8 +108,6 @@ export default function RelatedJudgmentCard({ judgment, onView }) {
           {extraCount > 0 && <span className="rjc-tag rjc-tag--more">+{extraCount}</span>}
         </div>
       )}
-
-      <div className="rjc-divider" />
 
       <div className="rjc-footer">
         {relevance !== null && (

@@ -20,6 +20,32 @@ import AddJudgmentModal from './AddJudgmentModal.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
 
+const FILTER_CATEGORIES = [
+  { key: 'court', label: 'All Courts' },
+  { key: 'bench', label: 'Bench' },
+  { key: 'caseType', label: 'Case Type' },
+  { key: 'type', label: 'Area of Law' },
+  { key: 'typeOfProceeding', label: 'Type of Proceeding' },
+  { key: 'natureOfDispute', label: 'Nature of Dispute' },
+  { key: 'act', label: 'Acts' },
+  { key: 'provision', label: 'Provision(s)' },
+  { key: 'applicableStage', label: 'Applicability' },
+  { key: 'year', label: 'Year of Judgment' },
+];
+
+const FILTER_VALUE_MAP = {
+  court: 'courts',
+  bench: 'benches',
+  caseType: 'caseTypes',
+  type: 'types',
+  typeOfProceeding: 'typeOfProceedings',
+  natureOfDispute: 'natureOfDisputes',
+  act: 'acts',
+  provision: 'provisions',
+  applicableStage: 'applicableStages',
+  year: 'years',
+};
+
 const TABLE_HEADERS = [
   { key: 'caseNumber', label: 'Case Number' },
   { key: 'title', label: 'Case Title' },
@@ -740,7 +766,19 @@ export default function JudgmentLibrary() {
       <FilterPopup
         open={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        uniqueValues={uniqueValues}
+        categories={FILTER_CATEGORIES}
+        options={(() => {
+          const opts = {};
+          Object.entries(FILTER_VALUE_MAP).forEach(([key, mapKey]) => {
+            const vals = uniqueValues[mapKey];
+            if (key === 'year') {
+              opts[key] = (vals || []).map((y) => ({ value: String(y), label: String(y) }));
+            } else {
+              opts[key] = vals || [];
+            }
+          });
+          return opts;
+        })()}
         tempFilters={tempFilters}
         onTempFilterChange={handleTempFilterChange}
         onApply={handleApplyFilters}

@@ -25,6 +25,7 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
+import FilterPopup from '@/components/FilterPopup.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useFormat } from '@/utils/format.js';
@@ -460,8 +461,10 @@ function EventViewModal({ event, onClose, cases }) {
 /* ================================================================== */
 function TasksView({ tasks, loading, onChanged, priorities, categories, statuses, cases, onReloadMaster, toast, user, formatDate, formatDateTime, taskAddOpen, setTaskAddOpen }) {
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ category: '', priority: '', status: '', active: '', caseId: '', date: '' });
+  const [filters, setFilters] = useState({ category: [], priority: [], status: [], active: [], caseId: [], date: '' });
   const [showFilter, setShowFilter] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempFilters, setTempFilters] = useState({ category: [], priority: [], status: [], active: [], caseId: [] });
   const [sort, setSort] = useState('due_asc');
   const [showArchived, setShowArchived] = useState(false);
   const [selected, setSelected] = useState([]);
@@ -496,6 +499,46 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
     return map;
   }, [cases]);
 
+  const taskFilterCategories = [
+    { key: 'category', label: 'Category' },
+    { key: 'priority', label: 'Priority' },
+    { key: 'status', label: 'Status' },
+    { key: 'active', label: 'State' },
+    { key: 'caseId', label: 'Case' },
+  ];
+
+  const taskFilterOptions = useMemo(() => ({
+    category: categoryOptions,
+    priority: priorityOptions,
+    status: statusOptions,
+    active: [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }],
+    caseId: caseOptions,
+  }), [categoryOptions, priorityOptions, statusOptions, caseOptions]);
+
+  const handleOpenTaskFilter = () => {
+    setTempFilters({
+      category: filters.category.length ? [...filters.category] : [],
+      priority: filters.priority.length ? [...filters.priority] : [],
+      status: filters.status.length ? [...filters.status] : [],
+      active: filters.active.length ? [...filters.active] : [],
+      caseId: filters.caseId.length ? [...filters.caseId] : [],
+    });
+    setShowFilterPopup(true);
+  };
+
+  const handleTempTaskFilterChange = (key, values) => {
+    setTempFilters((prev) => ({ ...prev, [key]: values }));
+  };
+
+  const handleApplyTaskFilters = () => {
+    setFilters((prev) => ({ ...prev, ...tempFilters }));
+    setShowFilterPopup(false);
+  };
+
+  const handleClearTaskFilters = () => {
+    setTempFilters({ category: [], priority: [], status: [], active: [], caseId: [] });
+  };
+
   const openCrudFor = (type) => {
     if (type === 'category') setCrud('category');
     else if (type === 'status') setCrud('status');
@@ -509,11 +552,11 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       (t.title || '').toLowerCase().includes(q) ||
       (t.description || '').toLowerCase().includes(q) ||
       (t.tags || '').toLowerCase().includes(q));
-    if (filters.category) list = list.filter((t) => t.category === filters.category);
-    if (filters.priority) list = list.filter((t) => t.priority === filters.priority);
-    if (filters.status) list = list.filter((t) => t.status === filters.status);
-    if (filters.active) list = list.filter((t) => (t.active ? 'active' : 'inactive') === filters.active);
-    if (filters.caseId) list = list.filter((t) => t.case_id === filters.caseId);
+    if (filters.category.length) list = list.filter((t) => filters.category.includes(t.category));
+    if (filters.priority.length) list = list.filter((t) => filters.priority.includes(t.priority));
+    if (filters.status.length) list = list.filter((t) => filters.status.includes(t.status));
+    if (filters.active.length) list = list.filter((t) => filters.active.includes(t.active ? 'active' : 'inactive'));
+    if (filters.caseId.length) list = list.filter((t) => filters.caseId.includes(t.case_id));
     if (filters.date) {
       const fk = dayKey(new Date(filters.date));
       list = list.filter((t) => { const d = t.due_date || t.start_date; return d && dayKey(new Date(d)) === fk; });
@@ -622,27 +665,9 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
         {showFilter && (
           <div className="tasks-filter-row">
-            <Select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })}>
-              <option value="">All Categories</option>
-              {categoryOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </Select>
-            <Select value={filters.priority} onChange={(e) => setFilters({ ...filters, priority: e.target.value })}>
-              <option value="">All Priorities</option>
-              {priorityOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </Select>
-            <Select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
-              <option value="">All Statuses</option>
-              {statusOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </Select>
-            <Select value={filters.active} onChange={(e) => setFilters({ ...filters, active: e.target.value })}>
-              <option value="">Active / Inactive</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </Select>
-            <Select value={filters.caseId} onChange={(e) => setFilters({ ...filters, caseId: e.target.value })}>
-              <option value="">All Cases</option>
-              {caseOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </Select>
+            <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
+              {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
+            </Button>
             <input type="date" className="input" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
             <Select value={sort} onChange={(e) => setSort(e.target.value)}>
               <option value="due_asc">Sort: Due (earliest)</option>
@@ -651,7 +676,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
               <option value="created_desc">Sort: Created (newest)</option>
               <option value="priority_asc">Sort: Priority</option>
             </Select>
-            <button className="btn btn--ghost" onClick={() => { setFilters({ category: '', priority: '', status: '', active: '', caseId: '', date: '' }); setSearch(''); }}>Clear</button>
+            <button className="btn btn--ghost" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); setSearch(''); }}>Clear</button>
           </div>
         )}
 
@@ -858,6 +883,17 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           </>
         )}
       </Card>
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={taskFilterCategories}
+        options={taskFilterOptions}
+        tempFilters={tempFilters}
+        onTempFilterChange={handleTempTaskFilterChange}
+        onApply={handleApplyTaskFilters}
+        onClearAll={handleClearTaskFilters}
+      />
 
       {modal && (
         <TaskFormModal

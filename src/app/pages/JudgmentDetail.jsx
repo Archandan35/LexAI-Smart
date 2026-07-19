@@ -1077,6 +1077,7 @@ export default function JudgmentDetail() {
                   <RelatedJudgmentCard
                     key={r.id}
                     judgment={r}
+                    getCourtLabel={courtLabel}
                     onView={(j) => navigate(`/judgment-library/${j.id}`)}
                   />
                 ))}

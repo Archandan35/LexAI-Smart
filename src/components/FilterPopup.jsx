@@ -2,40 +2,14 @@ import { useState, useEffect } from 'react';
 import Icon from './Icon.jsx';
 import Button from './Button.jsx';
 
-const CATEGORIES = [
-  { key: 'court', label: 'All Courts' },
-  { key: 'bench', label: 'Bench' },
-  { key: 'caseType', label: 'Case Type' },
-  { key: 'type', label: 'Area of Law' },
-  { key: 'typeOfProceeding', label: 'Type of Proceeding' },
-  { key: 'natureOfDispute', label: 'Nature of Dispute' },
-  { key: 'act', label: 'Acts' },
-  { key: 'provision', label: 'Provision(s)' },
-  { key: 'applicableStage', label: 'Applicability' },
-  { key: 'year', label: 'Year of Judgment' },
-];
-
-const VALUE_MAP = {
-  court: 'courts',
-  bench: 'benches',
-  caseType: 'caseTypes',
-  type: 'types',
-  typeOfProceeding: 'typeOfProceedings',
-  natureOfDispute: 'natureOfDisputes',
-  act: 'acts',
-  provision: 'provisions',
-  applicableStage: 'applicableStages',
-  year: 'years',
-};
-
-export default function FilterPopup({ open, onClose, uniqueValues, tempFilters, onTempFilterChange, onApply, onClearAll }) {
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]?.key || '');
+export default function FilterPopup({ open, onClose, categories, options, tempFilters, onTempFilterChange, onApply, onClearAll }) {
+  const [activeCategory, setActiveCategory] = useState(categories?.[0]?.key || '');
 
   useEffect(() => {
-    if (open) {
-      setActiveCategory(CATEGORIES[0]?.key || '');
+    if (open && categories?.length) {
+      setActiveCategory(categories[0].key);
     }
-  }, [open]);
+  }, [open, categories]);
 
   if (!open) return null;
 
@@ -48,16 +22,7 @@ export default function FilterPopup({ open, onClose, uniqueValues, tempFilters, 
 
   const getSelectedCount = (key) => (tempFilters[key] || []).length;
 
-  const getOptions = (key) => {
-    const listKey = VALUE_MAP[key];
-    const arr = uniqueValues[listKey];
-    if (key === 'year') {
-      return (arr || []).map((y) => ({ value: String(y), label: String(y) }));
-    }
-    return arr || [];
-  };
-
-  const activeOptions = getOptions(activeCategory);
+  const activeOptions = options?.[activeCategory] || [];
 
   return (
     <div className="fp-overlay" onClick={onClose}>
@@ -69,7 +34,7 @@ export default function FilterPopup({ open, onClose, uniqueValues, tempFilters, 
 
         <div className="fp-body">
           <div className="fp-left">
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const count = getSelectedCount(cat.key);
               return (
                 <button
@@ -85,7 +50,7 @@ export default function FilterPopup({ open, onClose, uniqueValues, tempFilters, 
           </div>
 
           <div className="fp-right">
-            <h3 className="fp-right-title">{CATEGORIES.find((c) => c.key === activeCategory)?.label}</h3>
+            <h3 className="fp-right-title">{categories.find((c) => c.key === activeCategory)?.label}</h3>
             <div className="fp-options">
               {activeOptions.length === 0 ? (
                 <p className="fp-no-options">No options available.</p>

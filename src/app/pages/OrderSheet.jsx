@@ -25,6 +25,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { stripHtml, useFormat } from '@/utils/format.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -51,6 +52,8 @@ export default function OrderSheet() {
   const [tempDateFrom, setTempDateFrom] = useState('');
   const [tempDateTo, setTempDateTo] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempOSFilters, setTempOSFilters] = useState({ court: [], courtLocation: [], status: [] });
   const [showStatusCrud, setShowStatusCrud] = useState(false);
   const [smartMode, setSmartMode] = useState(false);
   const { partyTypes, refresh: refreshPartyTypes } = usePartyTypes();
@@ -407,6 +410,42 @@ export default function OrderSheet() {
   // ----- Filtering & Sorting calculations -----
   const uniqueCourtNames = Array.from(new Set(cases.map(c => c.court || c.court || '').filter(Boolean)));
   const uniqueCourtLocations = Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean)));
+
+  const osFilterCategories = [
+    { key: 'court', label: 'Court' },
+    { key: 'courtLocation', label: 'Jurisdiction' },
+    { key: 'status', label: 'Status' },
+  ];
+
+  const osFilterOptions = useMemo(() => ({
+    court: uniqueCourtNames.map((c) => ({ value: c, label: c })),
+    courtLocation: uniqueCourtLocations.map((l) => ({ value: l, label: l })),
+    status: caseStatuses.map((s) => ({ value: s, label: s })),
+  }), [uniqueCourtNames, uniqueCourtLocations, caseStatuses]);
+
+  const handleOpenOSFilter = () => {
+    setTempOSFilters({
+      court: filterCourt ? [filterCourt] : [],
+      courtLocation: filterCourtLocation ? [filterCourtLocation] : [],
+      status: filterStatus ? [filterStatus] : [],
+    });
+    setShowFilterPopup(true);
+  };
+
+  const handleTempOSFilterChange = (key, values) => {
+    setTempOSFilters((prev) => ({ ...prev, [key]: values }));
+  };
+
+  const handleApplyOSFilters = () => {
+    setFilterCourt(tempOSFilters.court[0] || '');
+    setFilterCourtLocation(tempOSFilters.courtLocation[0] || '');
+    setFilterStatus(tempOSFilters.status[0] || '');
+    setShowFilterPopup(false);
+  };
+
+  const handleClearOSFilters = () => {
+    setTempOSFilters({ court: [], courtLocation: [], status: [] });
+  };
 
   const handleSortToggle = () => {
     setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -1069,35 +1108,15 @@ export default function OrderSheet() {
                   )}
                 </div>
 
-                {/* Court dropdown */}
-                <select className="order-sheet__select-input" value={filterCourt} onChange={(e) => setFilterCourt(e.target.value)}>
-                  <option value="">All Courts</option>
-                  {uniqueCourtNames.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-
-                {/* Jurisdiction dropdown */}
-                <select className="order-sheet__select-input" value={filterCourtLocation} onChange={(e) => setFilterCourtLocation(e.target.value)}>
-                  <option value="">All Jurisdictions</option>
-                  {uniqueCourtLocations.map(l => (
-                    <option key={l} value={l}>{l}</option>
-                  ))}
-                </select>
-
                 {/* Search Input */}
                 <div className="order-sheet__search-wrapper">
                   <Icon name="search" size={14} className="search-icon" />
                   <input type="text" placeholder="Search case number, parties..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 </div>
 
-                {/* Status dropdown */}
-                <select className="order-sheet__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                  <option value="">All Status</option>
-                  {caseStatuses.map(st => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
+                <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenOSFilter}>
+                  {[filterCourt, filterCourtLocation, filterStatus].some(Boolean) ? `Filter (${[filterCourt, filterCourtLocation, filterStatus].filter(Boolean).length})` : 'Filter'}
+                </Button>
 
                 {/* Filter buttons */}
                 <div className="order-sheet__filter-actions">
