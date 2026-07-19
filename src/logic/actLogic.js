@@ -3,7 +3,7 @@ import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
 import { orderComparator, normalizeDisplayOrder, nextDisplayOrder } from '@/utils/displayOrder.js';
 
-const SHORT_CODE_PREFIX = 'ACTS';
+const SHORT_CODE_PREFIX = 'ACTY';
 
 function autoShortCode(title = '') {
   const slug = String(title).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
