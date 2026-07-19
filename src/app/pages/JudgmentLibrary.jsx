@@ -10,6 +10,10 @@ import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js'
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
 import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
 import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
+import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
+import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
+import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
+import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
 import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
@@ -62,6 +66,10 @@ export default function JudgmentLibrary() {
   const [acts, setActs] = useState([]);
   const [caseTypes, setCaseTypes] = useState([]);
   const [caseStages, setCaseStages] = useState([]);
+  const [areaOfLaws, setAreaOfLaws] = useState([]);
+  const [typeOfProceedings, setTypeOfProceedings] = useState([]);
+  const [natureOfDisputes, setNatureOfDisputes] = useState([]);
+  const [provisions, setProvisions] = useState([]);
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
@@ -87,6 +95,10 @@ export default function JudgmentLibrary() {
     actsRepository.getAll().then(setActs).catch(() => {});
     caseTypesRepository.getAll().then(setCaseTypes).catch(() => {});
     caseStagesRepository.getAll().then(setCaseStages).catch(() => {});
+    areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {});
+    typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
+    natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
+    provisionsRepository.getAll().then(setProvisions).catch(() => {});
   }, [loadJudgments]);
 
   const [editing, setEditing] = useState(null);
@@ -145,8 +157,12 @@ export default function JudgmentLibrary() {
       act: build(acts, 'title'),
       caseType: build(caseTypes),
       stage: build(caseStages),
+      areaOfLaw: build(areaOfLaws),
+      typeOfProceeding: build(typeOfProceedings),
+      natureOfDispute: build(natureOfDisputes),
+      provision: build(provisions),
     };
-  }, [courts, benchTypes, judges, acts, caseTypes, caseStages]);
+  }, [courts, benchTypes, judges, acts, caseTypes, caseStages, areaOfLaws, typeOfProceedings, natureOfDisputes, provisions]);
 
   const resolveName = (map, val) => (val ? (map[val] || val) : 'â€”');
 
@@ -160,7 +176,7 @@ export default function JudgmentLibrary() {
     return [];
   };
 
-  const uniqueValues = useMemo(() => {
+    const uniqueValues = useMemo(() => {
     const courts = new Set();
     const judges = new Set();
     const types = new Set();
@@ -175,7 +191,7 @@ export default function JudgmentLibrary() {
     judgments.forEach((j) => {
       if (j.court) courts.add(j.court);
       if (j.judges || j.judge || j.bench) judges.add(j.judges || j.judge || j.bench);
-      if (j.type) types.add(j.type);
+      if (j.caseType) types.add(j.caseType);
       if (j.subjectMatter) matterTypes.add(j.subjectMatter);
       if (j.act) actIds.add(j.act);
       if (j.acts?.length) j.acts.forEach((id) => actIds.add(id));
@@ -188,18 +204,19 @@ export default function JudgmentLibrary() {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
       }
     });
+    const labelOrUnknown = (map, id) => (id && map[id] ? map[id] : (id ? 'Unknown' : '—'));
     return {
       courts: Array.from(courts).sort().map((id) => ({ value: id, label: nameMap.court[id] || id })),
       judges: Array.from(judges).sort().map((id) => ({ value: id, label: nameMap.judge[id] || id })),
-      types: Array.from(types).sort(),
+      types: Array.from(types).sort().map((id) => ({ value: id, label: nameMap.caseType[id] || 'Unknown' })),
       matterTypes: Array.from(matterTypes).sort().map((v) => ({ value: v, label: v })),
-      acts: Array.from(actIds).sort().map((id) => ({ value: id, label: nameMap.act[id] || id })),
+      acts: Array.from(actIds).sort().map((id) => ({ value: id, label: nameMap.act[id] || 'Unknown' })),
       years: Array.from(years).sort(),
       benches: Array.from(benches).sort().map((id) => ({ value: id, label: nameMap.bench[id] || id })),
-      typeOfProceedings: Array.from(typeOfProceedings).sort().map((v) => ({ value: v, label: v })),
-      natureOfDisputes: Array.from(natureOfDisputes).sort().map((v) => ({ value: v, label: v })),
-      provisions: Array.from(provisions).sort().map((v) => ({ value: v, label: v })),
-      applicableStages: Array.from(applicableStages).sort().map((v) => ({ value: v, label: v })),
+      typeOfProceedings: Array.from(typeOfProceedings).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.typeOfProceeding, id) })),
+      natureOfDisputes: Array.from(natureOfDisputes).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.natureOfDispute, id) })),
+      provisions: Array.from(provisions).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.provision, id) })),
+      applicableStages: Array.from(applicableStages).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.stage, id) })),
     };
   }, [judgments, nameMap]);
 
@@ -235,7 +252,7 @@ export default function JudgmentLibrary() {
     if (filters.court) rows = rows.filter((j) => (j.court || '') === filters.court);
     if (filters.bench) rows = rows.filter((j) => (j.bench || '') === filters.bench);
     if (filters.judge) rows = rows.filter((j) => (j.judge || j.bench || '') === filters.judge);
-    if (filters.type) rows = rows.filter((j) => (j.type || '') === filters.type);
+    if (filters.type) rows = rows.filter((j) => (j.caseType || '') === filters.type);
     if (filters.typeOfProceeding) rows = rows.filter((j) => (j.typeOfProceeding || '') === filters.typeOfProceeding);
     if (filters.natureOfDispute) rows = rows.filter((j) => (j.natureOfDispute || '') === filters.natureOfDispute);
     if (filters.matterType) rows = rows.filter((j) => (j.subjectMatter || '') === filters.matterType);
@@ -539,8 +556,8 @@ export default function JudgmentLibrary() {
             {uniqueValues.benches.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
           </select>
           <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
-            <option value="">Case Type</option>
-            {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
+            <option value="">Area of Law</option>
+            {uniqueValues.types.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <select className="jl-filter-select jl-filter-select--native" value={filters.typeOfProceeding} onChange={(e) => setFilter('typeOfProceeding', e.target.value)}>
             <option value="">Type of Proceeding</option>
@@ -645,8 +662,9 @@ export default function JudgmentLibrary() {
                               ? j.applicableStages
                               : (j.applicableStages ? String(j.applicableStages).split(/[,;]/) : []);
                             const labels = stages
-                              .map((s) => resolveName(nameMap.stage, s))
-                              .map((s) => (s && s !== '—' ? s : (typeof s === 'string' ? s.trim() : s)))
+                              .map((s) => (nameMap.stage[s] ? nameMap.stage[s] : null))
+                              .filter(Boolean)
+                              .map((s) => s.trim())
                               .filter(Boolean);
                             if (!labels.length) return '—';
                             return (
