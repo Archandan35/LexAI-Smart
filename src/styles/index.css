@@ -21817,6 +21817,9 @@ kbd.cmd__kbd {
 }
 .tasks-search-row .tasks-search-inner input::placeholder { color: var(--text-faint); }
 .tasks-search-row .tasks-search-inner svg { flex-shrink: 0; color: var(--text-faint); }
+.tasks-search-filter-inner-btn { display: none; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; padding: 0; color: var(--text-faint); position: relative; flex-shrink: 0; }
+.tasks-search-filter-inner-btn:hover { color: var(--text); }
+.tasks-search-filter-inner-badge { position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--brand, #3b82f6); color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; line-height: 1; pointer-events: none; }
 .tasks-search-row .jl-filter-btn { flex: 0 0 auto; }
 .tasks-search-row .tasks-filter-date { min-width: 0; width: 140px; flex: 0 0 auto; }
 .tasks-search-row .tasks-filter-sort { min-width: 130px; flex: 0 1 auto; width: auto; }
@@ -21866,7 +21869,7 @@ kbd.cmd__kbd {
 .task-card--archived { opacity: .7; border-color: var(--border-strong); }
 .task-card__header { margin-bottom: 12px; }
 .task-card__case-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.task-card__case-num { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 13px; color: var(--navy-900); line-height: 1.3; }
+.task-card__case-num { flex: 1 1 auto; min-width: 0; font-weight: 700; font-size: 13px; color: var(--navy-900); line-height: 1.3; word-break: break-word; }
 .task-card__status-badge { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--green-soft); color: var(--green); border: 1px solid #b8e6d1; white-space: nowrap; }
 .task-card__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: cv-blink 1.2s ease-in-out infinite; }
 .task-card--archived .task-card__status-badge { background: var(--amber-soft); color: var(--amber); border-color: #f0dba8; }
@@ -21923,7 +21926,8 @@ kbd.cmd__kbd {
   .tasks-toolbar-right .btn { flex: 1 1 0; width: auto; justify-content: center; }
   .tasks-search-row { flex-direction: row; flex-wrap: wrap; align-items: stretch; padding: 0 12px 12px; padding-top: 12px; gap: 8px; }
   .tasks-search-row .tasks-search-inner { flex: 1 1 auto; min-width: 0; }
-  .tasks-search-row .jl-filter-btn { flex: 0 0 auto; width: auto; justify-content: center; }
+  .jl-filter-btn { display: none; }
+  .tasks-search-filter-inner-btn { display: flex; }
   .tasks-search-row .tasks-filter-date,
   .tasks-search-row .tasks-filter-sort { flex: 1 1 calc(50% - 4px); min-width: 0; width: auto; }
   .tasks-search-row .tasks-arch-toggle,
@@ -21953,13 +21957,11 @@ kbd.cmd__kbd {
 .task-card__case-num {
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-weight: 700;
   font-size: 13px;
   color: var(--navy-900);
   line-height: 1.3;
+  word-break: break-word;
 }
 .task-card__status-badge {
   flex-shrink: 0;

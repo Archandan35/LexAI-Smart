@@ -671,6 +671,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           <div className="tasks-search-inner">
             <Icon name="search" size={18} />
             <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+            <button className="tasks-search-filter-inner-btn" onClick={handleOpenTaskFilter} title="Filter">
+              <Icon name="filter" size={18} />
+              {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) && (
+                <span className="tasks-search-filter-inner-badge">{filters.category.length + filters.priority.length + filters.status.length + filters.active.length + filters.caseId.length}</span>
+              )}
+            </button>
           </div>
           <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
             {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
