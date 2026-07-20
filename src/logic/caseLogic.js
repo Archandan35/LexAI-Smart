@@ -278,6 +278,8 @@ export const caseLogic = {
 
       const onHoldCnt = live.filter((c) => c.status === 'On Hold').length;
 
+      const allTasks = tasks || [];
+      const activeTasks = allTasks.filter((t) => !t.archived);
       return ok({
         stats: {
           activeCases: live.filter((c) => c.status === 'Active').length,
@@ -286,6 +288,12 @@ export const caseLogic = {
           drafts: draftCount ?? drafts.length,
           documents: docCount ?? documents.length,
           hearings: upcoming.length,
+          activeTasks: activeTasks.filter((t) => t.status !== 'Completed').length,
+          taskPending: activeTasks.filter((t) => t.status === 'Pending' || !t.status).length,
+          taskInProgress: activeTasks.filter((t) => t.status === 'In Progress').length,
+          taskCompleted: activeTasks.filter((t) => t.status === 'Completed').length,
+          taskCancelled: activeTasks.filter((t) => t.status === 'Cancelled').length,
+          taskOnHold: activeTasks.filter((t) => t.status === 'On Hold').length,
         },
         activeCases: live.slice(0, 6),
         recentDrafts: [...drafts].sort(byUpdated).slice(0, 5),

@@ -91,6 +91,21 @@ export default function Dashboard() {
   const closedCnt = Math.max(0, totalCases - activeCnt - onHoldCnt);
   const docsCnt = stats.documents ?? 0;
   const hearingsCnt = stats.hearings ?? 0;
+  const activeTasksCnt = stats.activeTasks ?? 0;
+  const taskPending = stats.taskPending ?? 0;
+  const taskInProgress = stats.taskInProgress ?? 0;
+  const taskCompleted = stats.taskCompleted ?? 0;
+  const taskCancelled = stats.taskCancelled ?? 0;
+  const taskOnHold = stats.taskOnHold ?? 0;
+  const totalTasks = taskPending + taskInProgress + taskCompleted + taskCancelled + taskOnHold;
+
+  const taskDonutSegments = [
+    { label: 'Pending', value: taskPending, color: '#e07b00', pct: totalTasks ? ((taskPending / totalTasks) * 100).toFixed(1) : 0 },
+    { label: 'In Progress', value: taskInProgress, color: '#2547a3', pct: totalTasks ? ((taskInProgress / totalTasks) * 100).toFixed(1) : 0 },
+    { label: 'Completed', value: taskCompleted, color: '#1f9d6b', pct: totalTasks ? ((taskCompleted / totalTasks) * 100).toFixed(1) : 0 },
+    { label: 'On Hold', value: taskOnHold, color: '#888', pct: totalTasks ? ((taskOnHold / totalTasks) * 100).toFixed(1) : 0 },
+    { label: 'Cancelled', value: taskCancelled, color: '#d4d9e8', pct: totalTasks ? ((taskCancelled / totalTasks) * 100).toFixed(1) : 0 },
+  ];
   const draftCnt = stats.drafts ?? 0;
 
   /* Mobile donut chart computation */
@@ -164,10 +179,10 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="dash-stat">
-          <div className="dash-stat__icon-wrap dash-stat__icon-wrap--purple"><Icon name="file" size={22} /></div>
+          <div className="dash-stat__icon-wrap dash-stat__icon-wrap--purple"><Icon name="check" size={22} /></div>
           <div className="dash-stat__body">
-            <div className="dash-stat__value">{docsCnt}</div>
-            <div className="dash-stat__label">Documents</div>
+            <div className="dash-stat__value">{activeTasksCnt}</div>
+            <div className="dash-stat__label">Active Tasks</div>
           </div>
         </div>
       </div>
@@ -175,28 +190,51 @@ export default function Dashboard() {
       {/* ---- Row 1: Case Status | Upcoming Hearings ---- */}
       <div className="dash-grid-2">
 
-        {/* Case Status Overview */}
+        {/* Case & Task Status Overview */}
         <div className="card">
           <div className="dash-card-head">
-            <span className="dash-card-head__title">Case Status Overview</span>
+            <span className="dash-card-head__title">Case &amp; Task Status Overview</span>
             <Icon name="list" size={15} className="dash-card-head__icon" />
           </div>
-          <div className="dash-donut-wrap">
-            <div className="dash-donut-row">
-              <DonutChart segments={donutSegments} size={130} stroke={20} />
-              <div className="dash-donut-legend">
-                {donutSegments.map((s) => (
-                  <div className="dash-donut-legend__item" key={s.label}>
-                    <div className="dash-donut-legend__left">
-                      <span className="dash-donut-legend__dot" style={{ '--dot-bg': s.color }} />
-                      {s.label}
+          <div className="dash-status-grid">
+            <div className="dash-donut-wrap">
+              <div className="dash-donut-title">Cases</div>
+              <div className="dash-donut-row">
+                <DonutChart segments={donutSegments} size={130} stroke={20} />
+                <div className="dash-donut-legend">
+                  {donutSegments.map((s) => (
+                    <div className="dash-donut-legend__item" key={s.label}>
+                      <div className="dash-donut-legend__left">
+                        <span className="dash-donut-legend__dot" style={{ '--dot-bg': s.color }} />
+                        {s.label}
+                      </div>
+                      <div className="flex-row gap-8 items-center">
+                        <span className="dash-donut-legend__value">{s.value}</span>
+                        <span className="dash-donut-legend__pct">({s.pct}%)</span>
+                      </div>
                     </div>
-                    <div className="flex-row gap-8 items-center">
-                      <span className="dash-donut-legend__value">{s.value}</span>
-                      <span className="dash-donut-legend__pct">({s.pct}%)</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="dash-donut-wrap">
+              <div className="dash-donut-title">Tasks</div>
+              <div className="dash-donut-row">
+                <DonutChart segments={taskDonutSegments} size={130} stroke={20} />
+                <div className="dash-donut-legend">
+                  {taskDonutSegments.map((s) => (
+                    <div className="dash-donut-legend__item" key={s.label}>
+                      <div className="dash-donut-legend__left">
+                        <span className="dash-donut-legend__dot" style={{ '--dot-bg': s.color }} />
+                        {s.label}
+                      </div>
+                      <div className="flex-row gap-8 items-center">
+                        <span className="dash-donut-legend__value">{s.value}</span>
+                        <span className="dash-donut-legend__pct">({s.pct}%)</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -246,8 +284,8 @@ export default function Dashboard() {
             <table className="dash-cases-table">
               <thead>
                 <tr>
-                  <th>Case Title</th>
                   <th>Case Number</th>
+                  <th>Case Title</th>
                   <th>Client</th>
                   <th>Status</th>
                   <th>Last Updated</th>
@@ -258,8 +296,8 @@ export default function Dashboard() {
                   const cn = c.case_display_number || c.caseNumber || '';
                   return (
                     <tr key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
-                      <td><span className="dash-case-title">{c.title || cn}</span></td>
                       <td><span className="dash-case-num">{cn}</span></td>
+                      <td><span className="dash-case-title">{c.title || cn}</span></td>
                       <td className="dash-cases__client">{c.client || '—'}</td>
                       <td><Badge tone={c.status === 'Active' ? 'green' : c.status === 'On Hold' ? 'amber' : 'grey'} dot>{c.status || 'Active'}</Badge></td>
                       <td className="dash-cases__date">{c.updatedAt || c.createdAt ? formatDate(c.updatedAt || c.createdAt) : '—'}</td>
@@ -463,7 +501,7 @@ export default function Dashboard() {
             { label: 'Active Cases', value: activeCnt, icon: 'folder', tone: 'green' },
             { label: 'Closed Cases', value: closedCnt, icon: 'check-circle', tone: 'amber' },
             { label: 'Hearings This Month', value: hearingsCnt, icon: 'calendar', tone: 'red' },
-            { label: 'Documents', value: docsCnt, icon: 'doc', tone: 'purple' },
+            { label: 'Active Tasks', value: activeTasksCnt, icon: 'check', tone: 'purple' },
           ].map((s) => (
             <div className="lexm-stat-card" key={s.label}>
               <div className="lexm-stat-top">
