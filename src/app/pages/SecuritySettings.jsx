@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { userService } from '@/services/userService.js';
+import { roleService } from '@/services/roleService.js';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -24,11 +25,16 @@ export default function SecuritySettings() {
   useEffect(() => {
     const init = async () => {
       try {
-        const users = await userService.list();
-        const admin = (Array.isArray(users) ? users : []).find((u) => u.roleCode === 'Admin');
-        if (admin) {
+        const rawUsers = await userService.list();
+        const users = Array.isArray(rawUsers) ? rawUsers : (rawUsers?.data || []);
+        const roles = await roleService.list();
+        const byCode = Object.fromEntries((roles || []).map((r) => [r.code, r]));
+        const superAdmin = users.find(
+          (u) => u.id === 'user_admin' || byCode[u.roleCode]?.all === true
+        );
+        if (superAdmin) {
           setHasSuperAdmin(true);
-          setSuperAdminUser(admin);
+          setSuperAdminUser(superAdmin);
         } else {
           setHasSuperAdmin(false);
           setSuperAdminUser(null);

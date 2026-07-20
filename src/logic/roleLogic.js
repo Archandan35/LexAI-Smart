@@ -39,7 +39,7 @@ export const roleLogic = {
         description: data.description || '',
         permissions: data.permissions || [],
         all: !!data.all,
-        inheritsHierarchy: data.inheritsHierarchy !== false,
+        inherits: data.inherits || [],
         system: false,
         status: data.status || 'Active',
         createdAt: nowISO(),
@@ -88,7 +88,7 @@ export const roleLogic = {
         code: slugCode(base),
         description: role.description,
         permissions: [...(role.permissions || [])],
-        inheritsHierarchy: role.inheritsHierarchy,
+        inherits: role.inherits || [],
       }, actor);
     } catch (e) {
       return fail(e);

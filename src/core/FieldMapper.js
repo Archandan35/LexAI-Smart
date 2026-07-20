@@ -23,7 +23,7 @@ const COMMON = {
 
 const DEFAULT_MAPPINGS = {
   users: { ...COMMON, roleCode: 'role_code', extraRoles: 'extra_roles', passwordHash: 'password_hash', lastLoginAt: 'last_login_at' },
-  roles: { ...COMMON, inheritsHierarchy: 'inherits_hierarchy' },
+  roles: { ...COMMON, inherits: 'inherits', inheritsHierarchy: 'inherits_hierarchy' },
   cases: { ...COMMON, caseNumber: 'case_number_str', courtName: 'court_name', nextHearing: 'next_hearing', filingDate: 'filing_date', wsFilingDate: 'ws_filing_date', stageHistory: 'stage_history' },
   clients: { ...COMMON },
   caseTypes: { ...COMMON },

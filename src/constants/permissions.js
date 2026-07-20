@@ -65,22 +65,22 @@ export const MODULES = [
   { key: 'reports', label: 'Reports & Analytics', icon: 'grid', route: '/tools/reports' },
   { key: 'testDesign', label: 'Test Design Page', icon: 'grid', route: '/test-design' },
   // Case management sub-types
-  { key: 'caseTypes', label: 'Case Types', icon: 'folder', route: '/court-management/case-types', admin: true },
-  { key: 'courtTypes', label: 'Court Types', icon: 'folder', route: '/court-management/courts', admin: true },
+  { key: 'caseTypes', label: 'Case Types', icon: 'folder', route: '/court-management/case-types' },
+  { key: 'courtTypes', label: 'Court Types', icon: 'folder', route: '/court-management/courts' },
   // Administration modules
-  { key: 'users', label: 'User Management', icon: 'users', route: '/admin/users', admin: true },
-  { key: 'roles', label: 'Role Management', icon: 'badge', route: '/admin/roles', admin: true },
-  { key: 'permissions', label: 'Permission Center', icon: 'lock', route: '/admin/permissions', admin: true },
-  { key: 'backup', label: 'Backup & Recovery', icon: 'database', route: '/admin/database-center/backup-recovery', admin: true },
-  { key: 'storage', label: 'Storage & Sync', icon: 'database', route: '/admin/storage', admin: true },
-  { key: 'env', label: 'Environment Variables', icon: 'gear', route: '/admin/env-api', admin: true },
-  { key: 'api', label: 'API Manager', icon: 'bolt', route: '/admin/env-api', admin: true },
-  { key: 'audit', label: 'Audit Logs', icon: 'history', route: '/admin/database-center/audit-activity', admin: true },
-  { key: 'settings', label: 'System Settings', icon: 'gear', route: '/admin/settings', admin: true },
-  { key: 'schema', label: 'Schema Manager', icon: 'database', route: '/admin/database-center/data-explorer', admin: true },
-  { key: 'databaseCenter', label: 'Database Center', icon: 'database', route: '/admin/database-center', admin: true },
-  { key: 'setupWizard', label: 'Setup Wizard', icon: 'wrench', route: '/admin/setup-wizard', admin: true },
-  { key: 'security', label: 'Security Settings', icon: 'shield', route: '/admin/security', admin: true },
+  { key: 'users', label: 'User Management', icon: 'users', route: '/admin/users' },
+  { key: 'roles', label: 'Role Management', icon: 'badge', route: '/admin/roles' },
+  { key: 'permissions', label: 'Permission Center', icon: 'lock', route: '/admin/permissions' },
+  { key: 'backup', label: 'Backup & Recovery', icon: 'database', route: '/admin/database-center/backup-recovery' },
+  { key: 'storage', label: 'Storage & Sync', icon: 'database', route: '/admin/storage' },
+  { key: 'env', label: 'Environment Variables', icon: 'gear', route: '/admin/env-api' },
+  { key: 'api', label: 'API Manager', icon: 'bolt', route: '/admin/env-api' },
+  { key: 'audit', label: 'Audit Logs', icon: 'history', route: '/admin/database-center/audit-activity' },
+  { key: 'settings', label: 'System Settings', icon: 'gear', route: '/admin/settings' },
+  { key: 'schema', label: 'Schema Manager', icon: 'database', route: '/admin/database-center/data-explorer' },
+  { key: 'databaseCenter', label: 'Database Center', icon: 'database', route: '/admin/database-center' },
+  { key: 'setupWizard', label: 'Setup Wizard', icon: 'wrench', route: '/admin/setup-wizard' },
+  { key: 'security', label: 'Security Settings', icon: 'shield', route: '/admin/security' },
 ];
 
 export const MODULE_KEYS = MODULES.map((m) => m.key);
@@ -90,14 +90,6 @@ export function permKey(module, action) {
   return `${module}.${action}`;
 }
 
-export const ROLE_HIERARCHY = [
-  'Admin',
-  'senior_advocate',
-  'advocate',
-  'junior_advocate',
-  'clerk',
-];
-
 export const PERM_SOURCE = {
   INHERITED: 'inherited',
   CUSTOM: 'custom',
@@ -105,4 +97,4 @@ export const PERM_SOURCE = {
   NONE: 'none',
 };
 
-export default { ACTIONS, MODULES, ROLE_HIERARCHY, PERM_SOURCE };
+export default { ACTIONS, MODULES, PERM_SOURCE };

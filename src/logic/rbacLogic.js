@@ -1,11 +1,11 @@
-import { ROLE_HIERARCHY, PERM_SOURCE, MODULE_MAP, permKey } from '@/constants/permissions.js';
+import { PERM_SOURCE, MODULE_MAP, permKey } from '@/constants/permissions.js';
 
 // rbacLogic — pure permission resolution. No I/O. Given the full role list, a
 // user, and the user's primary/extra roles + overrides, it computes the
 // effective permission set and the provenance (inherited / custom / denied) of
 // each permission. This is the single source of truth for "can this user X".
 
-// A role record: { code, permissions: string[], inheritsHierarchy?: boolean, all?: boolean }
+// A role record: { code, permissions: string[], inherits?: string[], all?: boolean }
 // A user record: {
 //   roleCode, extraRoles?: string[],
 //   grants?: string[]  (custom-added perms),
@@ -16,27 +16,18 @@ function rolesByCode(roles) {
   return Object.fromEntries((roles || []).map((r) => [r.code, r]));
 }
 
-// Roles at or below `code` in the linear hierarchy (for auto-inheritance).
-function hierarchyChainFrom(code) {
-  const idx = ROLE_HIERARCHY.indexOf(code);
-  if (idx === -1) return [code]; // standalone role: only itself
-  return ROLE_HIERARCHY.slice(idx); // self + everything lower
-}
-
-// Collect permissions a single role contributes, honouring hierarchy inheritance.
+// Collect permissions a single role contributes. Inheritance is fully data-driven:
+// a role may list other roles (by code) in `inherits`, assigned through the UI. No
+// role ranking or permissions are hardcoded in code.
 function permsForRole(role, byCode) {
   if (!role) return [];
-  if (role.all) return ['*']; // super admin wildcard
+  if (role.all) return ['*']; // super admin wildcard (set on the role in the UI)
   const set = new Set(role.permissions || []);
-  // Higher roles inherit lower-role permissions unless inheritance disabled.
-  if (role.inheritsHierarchy !== false) {
-    hierarchyChainFrom(role.code).forEach((lowerCode) => {
-      if (lowerCode === role.code) return;
-      const lower = byCode[lowerCode];
-      if (lower?.all) set.add('*');
-      (lower?.permissions || []).forEach((p) => set.add(p));
-    });
-  }
+  (role.inherits || []).forEach((code) => {
+    const inherited = byCode[code];
+    if (inherited?.all) set.add('*');
+    (inherited?.permissions || []).forEach((p) => set.add(p));
+  });
   return [...set];
 }
 
@@ -90,7 +81,6 @@ export const rbacLogic = {
     return Object.values(MODULE_MAP).filter((m) => resolved.canViewModule(m.key));
   },
 
-  hierarchyChainFrom,
   permsForRole: (role, roles) => permsForRole(role, rolesByCode(roles)),
 };
 

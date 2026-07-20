@@ -6,6 +6,7 @@ import { Field, Input, Textarea } from '@/components/Field.jsx';
 import { userLogic } from '@/logic/userLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const EMPTY_FORM = { name: '', email: '', phone: '', address: '', status: 'Active' };
 
@@ -134,7 +135,9 @@ export default function Advocates() {
               <p>Manage advocates in your practice.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={openAdd} className="ml-auto">Add Advocate</Button>
+            <PermissionGate module="advocates" action="create">
+              <Button icon="plus" onClick={openAdd} className="ml-auto">Add Advocate</Button>
+            </PermissionGate>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -197,7 +200,9 @@ export default function Advocates() {
               <h2>Advocates</h2>
               <p>Manage advocates in your practice.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openAdd}>Add Advocate</Button>
+              <PermissionGate module="advocates" action="create">
+                <Button icon="plus" onClick={openAdd}>Add Advocate</Button>
+              </PermissionGate>
             </div>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -233,7 +238,9 @@ export default function Advocates() {
         <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenAdFilter}>
           {filterStatus ? `Filter (1)` : 'Filter'}
         </Button>
-        <Button onClick={openAdd}><Icon name="plus" size={15} /> Add Advocate</Button>
+        <PermissionGate module="advocates" action="create">
+          <Button onClick={openAdd}><Icon name="plus" size={15} /> Add Advocate</Button>
+        </PermissionGate>
       </div>
 
       {loading ? (
@@ -257,8 +264,12 @@ export default function Advocates() {
               </div>
               <div className="client-card__actions" onClick={(e) => e.stopPropagation()}>
                 <button className="iconbtn" title="View" onClick={() => setViewing(u)}><Icon name="eye" size={15} /></button>
-                <button className="iconbtn" title="Edit" onClick={() => openEdit(u)}><Icon name="edit" size={15} /></button>
-                <button className="iconbtn iconbtn--danger" title="Remove" onClick={() => remove(u)}><Icon name="trash" size={15} /></button>
+                <PermissionGate module="advocates" action="edit">
+                  <button className="iconbtn" title="Edit" onClick={() => openEdit(u)}><Icon name="edit" size={15} /></button>
+                </PermissionGate>
+                <PermissionGate module="advocates" action="delete">
+                  <button className="iconbtn iconbtn--danger" title="Remove" onClick={() => remove(u)}><Icon name="trash" size={15} /></button>
+                </PermissionGate>
               </div>
             </div>
           ))}
@@ -314,7 +325,9 @@ export default function Advocates() {
         )}
         <div className="modal__foot">
           <Button variant="ghost" onClick={() => setViewing(null)}>Close</Button>
-          <Button variant="primary" icon="edit" onClick={() => { const u = viewing; setViewing(null); openEdit(u); }}>Edit Advocate</Button>
+          <PermissionGate module="advocates" action="edit">
+            <Button variant="primary" icon="edit" onClick={() => { const u = viewing; setViewing(null); openEdit(u); }}>Edit Advocate</Button>
+          </PermissionGate>
         </div>
       </Modal>
 

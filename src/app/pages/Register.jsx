@@ -65,7 +65,12 @@ export default function Register() {
   // existing admin inside the app, never self-served. The first account on a
   // fresh install is auto-provisioned as admin server-side (userLogic.create),
   // so it does not need to be selectable here.
-  const isAdminRole = (r) => (r.code || r.name || '').toLowerCase() === 'admin' || r.system === true || r.all === true;
+  // offered on public self-registration — assigning admin must be done by an
+  // existing admin inside the app, never self-served. The first account on a
+  // fresh install is auto-provisioned as admin server-side (userLogic.create),
+  // so it does not need to be selectable here. We exclude roles flagged
+  // `system` or `all` (Super Admin) — no role name is hardcoded.
+  const isAdminRole = (r) => r.system === true || r.all === true;
 
   useEffect(() => {
     (async () => {

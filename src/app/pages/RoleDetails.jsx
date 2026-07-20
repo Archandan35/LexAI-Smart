@@ -17,7 +17,6 @@ import Toggle from '@/components/Toggle.jsx';
 import RoleForm from '@/components/RoleForm.jsx';
 import PermissionMatrix from '@/components/PermissionMatrix.jsx';
 import { Field, Select } from '@/components/Field.jsx';
-import { ROLE_HIERARCHY } from '@/constants/permissions.js';
 import { exportJson } from '@/utils/exportData.js';
 import { useFormat } from '@/utils/format.js';
 
@@ -88,12 +87,15 @@ export default function RoleDetails() {
     toast.push(attach ? `Assigned ${u.name}.` : `Unassigned ${u.name}.`, 'success');
   };
 
-  const inheritedFrom = useMemo(() => {
-    if (!role) return [];
-    const idx = ROLE_HIERARCHY.indexOf(role.code);
-    if (idx === -1 || role.inheritsHierarchy === false) return [];
-    return ROLE_HIERARCHY.slice(idx + 1);
-  }, [role]);
+  const toggleInherit = async (code, next) => {
+    const current = role.inherits || [];
+    const nextList = next
+      ? [...new Set([...current, code])]
+      : current.filter((c) => c !== code);
+    await roleLogic.update(role.id, { inherits: nextList }, user);
+    await load();
+    await loadRoles();
+  };
 
   if (loading) return <Spinner label="Loading role…" />;
   if (!role) return <Card><div className="empty">Role not found.</div></Card>;
@@ -121,19 +123,28 @@ export default function RoleDetails() {
           <div className="kv"><span>Type</span><span>{role.system ? 'System' : 'Custom'}</span></div>
           <div className="kv"><span>Updated</span><span>{formatDateTime(role.updatedAt || role.createdAt)}</span></div>
         </Card>
-        <Card title="Hierarchy inheritance" sub="Higher roles inherit lower ones">
-          {role.all ? <div className="alert alert--success"><Icon name="shield" size={15} />Super Admin — all permissions.</div> : (
-            <>
-              <Toggle
-                checked={role.inheritsHierarchy !== false}
-                disabled={readOnly || ROLE_HIERARCHY.indexOf(role.code) === -1}
-                label="Inherit lower-role permissions"
-                onChange={async (v) => { await roleLogic.update(role.id, { inheritsHierarchy: v }, user); await load(); await loadRoles(); }}
-              />
-              <div className="role-details__hint">
-                {inheritedFrom.length ? <>Inherits from: {inheritedFrom.map((c) => <Badge key={c} tone="grey">{allRoles.find((r) => r.code === c)?.name || c}</Badge>)}</> : 'No lower roles in chain.'}
-              </div>
-            </>
+        <Card title="Role inheritance" sub="This role inherits permissions from the selected roles">
+          {role.all ? (
+            <div className="alert alert--success"><Icon name="shield" size={15} />Super Admin — all permissions.</div>
+          ) : (
+            <div className="role-inherit-list">
+              {allRoles.filter((r) => r.id !== role.id).length === 0 && (
+                <div className="role-details__hint">No other roles available to inherit from.</div>
+              )}
+              {allRoles.filter((r) => r.id !== role.id).map((r) => (
+                <div key={r.id} className="assign-row">
+                  <div>
+                    <div className="fw-600">{r.name}</div>
+                    <div className="role-details__sub">{r.code}{r.all ? ' · Super Admin' : ''}</div>
+                  </div>
+                  <Toggle
+                    checked={(role.inherits || []).includes(r.code)}
+                    disabled={readOnly}
+                    onChange={(v) => toggleInherit(r.code, v)}
+                  />
+                </div>
+              ))}
+            </div>
           )}
         </Card>
         <Card title="Tools">

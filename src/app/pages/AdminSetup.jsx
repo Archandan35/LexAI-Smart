@@ -76,7 +76,7 @@ export default function AdminSetup() {
       }
 
       console.log('[AdminSetup] checking Admin role');
-      const hasSuperAdmin = roles.some((r) => r.code === 'Admin');
+      const hasSuperAdmin = roles.some((r) => r.all === true);
       console.log('[AdminSetup] Admin role found:', hasSuperAdmin);
 
       if (!hasSuperAdmin) {

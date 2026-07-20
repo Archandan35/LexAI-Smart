@@ -9,6 +9,7 @@ import { caseActivityService } from '@/services/caseActivityService.js';
 import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const COLLECTIONS = ['documents', 'drafts', 'cases', 'case_folders', 'hearings', 'notes', 'audit_logs', 'reminders', 'case_history', 'case_activity'];
 
@@ -183,7 +184,9 @@ export default function DmcDeleteManager() {
           )}
           <div className="dmc-db-section__body">
             <div className="flex-row gap-8">
-              {!dryRun && <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting\u2026' : 'Confirm Delete'}</Button>}
+              {!dryRun && <PermissionGate module="databaseCenter" action="delete">
+                <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting\u2026' : 'Confirm Delete'}</Button>
+              </PermissionGate>}
               <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
             </div>
           </div>

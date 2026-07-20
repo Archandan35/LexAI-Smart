@@ -38,7 +38,7 @@ export default function UserManagement() {
   const [superWarn, setSuperWarn] = useState(false);
 
   // Protected (Super Admin) accounts — used for selection guards and warnings.
-  const protectedIds = useMemo(() => users.filter(isProtectedUser).map((u) => u.id), [users]);
+  const protectedIds = useMemo(() => users.filter((u) => isProtectedUser(u, roles)).map((u) => u.id), [users, roles]);
   const selectionHasProtected = selected.some((id) => protectedIds.includes(id));
 
   const openCreate = () => setForm({ ...BLANK, roleCode: settings.defaultRole || '' });
@@ -74,7 +74,7 @@ export default function UserManagement() {
 
   // Single delete — opens a confirmation modal (protected/self are blocked).
   const askRemove = (u) => {
-    if (isProtectedUser(u)) { setSuperWarn(true); return; }
+    if (isProtectedUser(u, roles)) { setSuperWarn(true); return; }
     if (u.id === actor?.id) { toast.push('You cannot delete your own account.', 'error'); return; }
     setConfirm({ mode: 'single', users: [u] });
   };
@@ -120,13 +120,13 @@ export default function UserManagement() {
       <div className="user-cell">
         <span className="avatar-sm">{(u.name || '?').slice(0, 2).toUpperCase()}</span>
         <div>
-          <div className="user-cell__name">{u.name}{isProtectedUser(u) && <Badge tone="amber">Super Admin</Badge>}</div>
+          <div className="user-cell__name">{u.name}{isProtectedUser(u, roles) && <Badge tone="amber">Super Admin</Badge>}</div>
           <div className="user-cell__sub">{u.email || u.username}</div>
         </div>
       </div>
     ) },
     { key: 'roleName', label: 'Role', sortable: true, render: (u) => (
-      can('users.assign') && !isProtectedUser(u)
+      can('users.assign') && !isProtectedUser(u, roles)
         ? <RoleSelector roles={roles} value={u.roleCode} onChange={(v) => changeRole(u, v)} />
         : <Badge tone="navy">{u.roleName}</Badge>
     ) },
@@ -149,7 +149,7 @@ export default function UserManagement() {
           </button>
         </PermissionGate>
         <PermissionGate module="users" action="delete">
-          {isProtectedUser(u) ? (
+          {isProtectedUser(u, roles) ? (
             <button className="iconbtn" title="Super Admin is protected and cannot be deleted" onClick={() => setSuperWarn(true)} disabled><Icon name="lock" size={15} /></button>
           ) : (
             <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => askRemove(u)}><Icon name="trash" size={15} /></button>

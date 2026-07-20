@@ -12,6 +12,7 @@ export const RolesSchema = {
     description: 'string',
     permissions: 'array',
     all: 'boolean',
+    inherits: 'array',
     inherits_hierarchy: 'boolean',
     system: 'boolean',
     status: 'string',
@@ -22,6 +23,7 @@ export const RolesSchema = {
   defaults: {
     permissions: [],
     all: false,
+    inherits: [],
     inheritsHierarchy: false,
     system: false,
     status: 'Active', // matches the app's existing convention (capitalised)

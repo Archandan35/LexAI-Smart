@@ -14,6 +14,7 @@ import { courtsLogic } from '@/logic/courtsLogic.js';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
 import DateInput from '@/components/DateInput.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
@@ -1223,8 +1224,10 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           {saveError && <div className="ajm-save-error">{saveError}</div>}
           <Button variant="ghost" onClick={onClose} icon="close">Cancel</Button>
           <div className="ajm-actions-right">
-            <Button variant="ghost" icon="save" onClick={() => handleSave(true)} disabled={saving} loading={saving}>Save as Draft</Button>
-            <Button variant="ghost" icon="check" onClick={() => handleSave(false)} disabled={saving} loading={saving}>Save</Button>
+            <PermissionGate module="judgmentLibrary" action={editing ? 'edit' : 'create'}>
+              <Button variant="ghost" icon="save" onClick={() => handleSave(true)} disabled={saving} loading={saving}>Save as Draft</Button>
+              <Button variant="ghost" icon="check" onClick={() => handleSave(false)} disabled={saving} loading={saving}>Save</Button>
+            </PermissionGate>
             <Button variant="primary" icon="arrow" disabled>Next</Button>
           </div>
         </div>
@@ -1252,7 +1255,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           <div className="ajm-side-card">
             <h3><Icon name="bookmark" size={15} /> Quick Save</h3>
             <p>Save the judgment as draft to continue later.</p>
-            <Button variant="outline" icon="save" onClick={() => handleSave(true)} disabled={saving}>Save as Draft</Button>
+            <PermissionGate module="judgmentLibrary" action={editing ? 'edit' : 'create'}>
+              <Button variant="outline" icon="save" onClick={() => handleSave(true)} disabled={saving}>Save as Draft</Button>
+            </PermissionGate>
           </div>
 
           <div className="ajm-side-card">

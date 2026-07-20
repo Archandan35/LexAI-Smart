@@ -48,7 +48,7 @@ export const authLogic = {
           description: 'Full system administration role',
           permissions: [],
           all: true,
-          inheritsHierarchy: false,
+          inherits: [],
           system: true,
           status: 'Active',
           createdAt: DateEngine.now(),

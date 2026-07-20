@@ -13,11 +13,16 @@ function stripSecrets(u) {
   return safe;
 }
 
-// The Super Admin account is protected from deletion everywhere. Identify it by
-// role (and the seeded id) so the guard holds even if the id scheme changes.
-export const PROTECTED_ROLE = 'Admin';
-export function isProtectedUser(u) {
-  return !!u && (u.roleCode === PROTECTED_ROLE || u.id === 'user_admin');
+// The Super Admin account is protected from deletion everywhere. A user is
+// "protected" when their role (or any extra role) is a Super Admin role — i.e. a
+// role whose `all` flag is set in the UI — or the seeded bootstrap account id.
+// No role name is hardcoded; protection follows the role's data.
+export function isProtectedUser(u, roles = []) {
+  if (!u) return false;
+  if (u.id === 'user_admin') return true;
+  const byCode = Object.fromEntries((roles || []).map((r) => [r.code, r]));
+  const codes = [u.roleCode, ...(u.extraRoles || [])].filter(Boolean);
+  return codes.some((c) => byCode[c]?.all === true);
 }
 
 export const userLogic = {
@@ -52,14 +57,17 @@ export const userLogic = {
       const userCount = usersOk ? (existingUsers || []).length : 0;
       const isFirstAccount = userCount === 0;
 
-      // SECURITY: never let a caller self-assign the Admin role once any user
-      // already exists. Admin must be granted by an existing admin in-app.
-      if (!isFirstAccount && roleCode.toLowerCase() === 'admin') {
-        return fail('Administrator role cannot be self-assigned. Contact an existing administrator.');
-      }
-
       const allRoles = await roleService.list();
       const roleExists = allRoles.some((r) => r.code === roleCode);
+      // SECURITY: never let a caller self-assign a Super Admin role (any role
+      // whose `all` flag is set in the UI) once any user already exists. Super
+      // Admin must be granted by an existing administrator in-app.
+      if (!isFirstAccount) {
+        const targetRole = allRoles.find((r) => r.code === roleCode);
+        if (targetRole?.all) {
+          return fail('Administrator role cannot be self-assigned. Contact an existing administrator.');
+        }
+      }
       // First-account bootstrap: if the requested role is missing and this is
       // the very first account, auto-provision it with FULL access so the
       // initial administrator always succeeds. Subsequent accounts must use a
@@ -73,7 +81,7 @@ export const userLogic = {
             description: 'Administrator with full system access (auto-provisioned on first install)',
             permissions: [],
             all: true,
-            inheritsHierarchy: true,
+            inherits: [],
             system: true,
             status: 'Active',
             createdAt: nowISO(),
