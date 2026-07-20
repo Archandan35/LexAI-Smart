@@ -14,7 +14,7 @@ export const settingsLogic = {
 
   async saveSettings(settings) {
     try {
-      await settingsService.setByKey(SETTINGS_KEY, settings, 'admin');
+      await settingsService.setByKey(SETTINGS_KEY, settings, 'system');
       return ok(true);
     } catch (err) { return fail(err); }
   },
@@ -41,7 +41,7 @@ export const settingsLogic = {
       if (row) history = row.value;
       history.unshift({ ...entry, ts: Date.now() });
       if (history.length > 50) history.length = 50;
-      await settingsService.setByKey(HISTORY_KEY, history, 'admin');
+      await settingsService.setByKey(HISTORY_KEY, history, 'system');
       return ok(history);
     } catch (err) { return fail(err); }
   },

@@ -135,7 +135,7 @@ export default function Dashboard() {
       {/* ---- Greeting row ---- */}
       <div className="dash-greeting-row">
         <div>
-          <h1 className="dash-greeting__title">{greeting}, {user?.name || 'Admin'} 👋</h1>
+          <h1 className="dash-greeting__title">{greeting}, {user?.name || 'there'} 👋</h1>
           <p className="dash-greeting__sub">Here's what's happening with your legal practice today.</p>
         </div>
         <div className="dash-greeting__actions">
@@ -481,7 +481,7 @@ export default function Dashboard() {
       <div className="dash-mobile-view">
 
         <div className="lexm-greeting">
-          <h1>{greeting}, {user?.name || 'Admin'} 👋</h1>
+          <h1>{greeting}, {user?.name || 'there'} 👋</h1>
           <p>Here&apos;s what&apos;s happening with your legal practice today.</p>
         </div>
 

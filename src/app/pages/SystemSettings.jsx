@@ -5,6 +5,7 @@ import { useDebug } from '@/data-layer/DebugContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 import { roleService } from '@/services/roleService.js';
+import { roleLogic } from '@/logic/roleLogic.js';
 import { DateEngine } from '@/core/DateEngine.js';
 
 const labelToId = (label) => 'setting-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -76,7 +77,7 @@ const CATEGORIES = [
           { type: 'icon-url', label: 'Site Address (URL)', key: 'portalUrl', placeholder: 'https://lexai.app', icon: 'link', description: 'The URL of your website (if different from above)' },
           { type: 'icon-email', label: 'E-mail Address', key: 'adminEmail', placeholder: 'admin@lexai.app', icon: 'bell', description: 'This address is used for admin notifications' },
           { type: 'checkbox', label: 'Membership', key: 'allowRegistration', checkboxLabel: 'Anyone can register', description: 'Anyone can register or only invited users', default: true },
-          { type: 'select', label: 'New User Default Role', key: 'defaultRole', options: [], default: 'Admin', description: 'Role assigned to newly registered users. Options are loaded from Role Management; the Admin role is seeded on first install.' },
+          { type: 'select', label: 'New User Default Role', key: 'defaultRole', options: [], default: '', description: 'Role assigned to newly registered users. Options are loaded from Role Management; the super-admin role is resolved by authority, not by a hardcoded name.' },
           { type: 'select', label: 'Site Language', key: 'language', options: ['English (United States)', 'English (UK)', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi', 'Gujarati'], default: 'English (United States)', description: 'Select the default language for your site' },
           {
             type: 'timezone', label: 'Timezone', key: 'timezone',
@@ -625,16 +626,17 @@ export default function SystemSettings() {
   }, []);
 
   // Load roles from Role Management so the default-role selector is never
-  // hardcoded. Falls back to ['Admin'] (the seeded first-install role).
+  // hardcoded. The fallback resolves the super-admin role by authority.
   useEffect(() => {
     (async () => {
       try {
         const res = await roleService.list();
         const list = (res && res.ok && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : []);
         const codes = list.map((r) => r.code || r.name).filter(Boolean);
-        setRoles(codes.length ? codes : ['Admin']);
+        const seedCode = await roleLogic.getSuperAdminRoleCode();
+        setRoles(codes.length ? codes : (seedCode ? [seedCode] : []));
       } catch (_) {
-        setRoles(['Admin']);
+        setRoles([]);
       }
     })();
   }, []);

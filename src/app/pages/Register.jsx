@@ -4,6 +4,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { userLogic } from '@/logic/userLogic.js';
 import { roleService } from '@/services/roleService.js';
+import { roleLogic } from '@/logic/roleLogic.js';
 import { settingsCache } from '@/core/settingsCache.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
@@ -81,7 +82,7 @@ export default function Register() {
         const publicRoles = list.filter((r) => !isAdminRole(r));
         if (publicRoles.length) {
           setRoles(publicRoles);
-          const configured = settingsCache.get('defaultRole') || 'Admin';
+          const configured = settingsCache.get('defaultRole') || (await roleLogic.getSuperAdminRoleCode());
           const initial = publicRoles.some((r) => r.code === configured)
             ? configured
             : publicRoles[0].code;

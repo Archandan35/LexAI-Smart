@@ -1,6 +1,7 @@
 import { authService } from '@/services/authService.js';
 import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
+import { SEED_SUPER_ROLE, roleLogic } from '@/logic/roleLogic.js';
 import { auditService } from '@/services/auditService.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { hashPassword } from '@/utils/crypto.js';
@@ -37,22 +38,16 @@ export const authLogic = {
         return fail(`Failed to create auth account: ${authErr.message}. Ensure Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
       }
 
-      // 2.5. Create Admin role if none exist (required for bootstrap)
+      // 2.5. Create the super-admin role if none exist (required for bootstrap).
+      // Authority is resolved by the role's `all` flag, never by its name.
       const existingRoles = await roleService.list();
+      let seedRoleCode = null;
       if (existingRoles.length === 0) {
         console.log('[Bootstrap] no roles found — creating initial role');
-        await roleService.create({
-          id: 'role_admin',
-          code: 'Admin',
-          name: 'Administrator',
-          description: 'Full system administration role',
-          permissions: [],
-          all: true,
-          inherits: [],
-          system: true,
-          status: 'Active',
-          createdAt: DateEngine.now(),
-        });
+        const seedRole = await roleService.create({ ...SEED_SUPER_ROLE, createdAt: DateEngine.now() });
+        seedRoleCode = seedRole.code;
+      } else {
+        seedRoleCode = await roleLogic.getSuperAdminRoleCode();
       }
 
       // 3. Create application user record (Admin). Done BEFORE the email-
@@ -65,7 +60,7 @@ export const authLogic = {
         name,
         email: email.toLowerCase(),
         username: email.split('@')[0].toLowerCase(),
-        roleCode: 'Admin',
+        roleCode: seedRoleCode,
         status: 'Active',
         extraRoles: [],
         grants: [],

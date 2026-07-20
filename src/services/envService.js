@@ -112,7 +112,7 @@ export const envService = {
     const existing = (await getOverrides()).find((o) => o.name === name);
     const patch = {
       name, value: value ?? existing?.value ?? '', status: status || existing?.status || 'enabled',
-      category: meta.category, secret: meta.secret, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin',
+      category: meta.category, secret: meta.secret, updatedAt: DateEngine.now(), updatedBy: user?.name || 'system',
     };
     let row;
     if (existing) row = await envVarsRepository.update(existing.id, patch);
@@ -133,7 +133,7 @@ export const envService = {
 
   async setStatus(name, status, user) {
     const existing = (await getOverrides()).find((o) => o.name === name);
-    if (existing) { await envVarsRepository.update(existing.id, { status, updatedAt: DateEngine.now(), updatedBy: user?.name || 'admin' }); invalidateCache(); }
+    if (existing) { await envVarsRepository.update(existing.id, { status, updatedAt: DateEngine.now(), updatedBy: user?.name || 'system' }); invalidateCache(); }
     else await this.upsert({ name, status }, user);
     await auditService.record({ action: status === 'enabled' ? 'env.enable' : 'env.disable', module: 'env', user, details: name });
   },
@@ -151,7 +151,7 @@ export const envService = {
       await configHistoryRepository.create({
         id: uid('cfg'), name,
         oldValue: maskValue(oldValue, secret), newValue: maskValue(newValue, secret),
-        changedBy: user?.name || 'admin', at: DateEngine.now(),
+        changedBy: user?.name || 'system', at: DateEngine.now(),
       });
     } catch { /* never break the action */ }
   },

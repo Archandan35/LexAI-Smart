@@ -8,6 +8,21 @@ function slugCode(name) {
   return String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `role_${Date.now()}`;
 }
 
+// The initial super-admin role auto-provisioned on first install. Its authority
+// derives from the `all` flag (data), never from this code/name — every other
+// lookup resolves the role by `all === true` / `system === true`, not by string.
+export const SEED_SUPER_ROLE = {
+  id: 'role_owner',
+  code: 'owner',
+  name: 'System Owner',
+  description: 'Full system access role',
+  permissions: [],
+  all: true,
+  inherits: [],
+  system: true,
+  status: 'Active',
+};
+
 export const roleLogic = {
   async list() {
     const [roles, users] = await Promise.all([roleService.list(), userService.list()]);
@@ -23,6 +38,14 @@ export const roleLogic = {
   byCode: async (code) => {
     const roles = await roleService.list();
     return roles.find((r) => r.code === code) || null;
+  },
+
+  // Resolve the super-admin role by AUTHORITY (the `all` flag / system flag),
+  // never by its name. Returns the role code, or null if none exists yet.
+  async getSuperAdminRoleCode() {
+    const roles = await roleService.list();
+    const sa = roles.find((r) => r.all === true) || roles.find((r) => r.system === true);
+    return sa?.code || null;
   },
 
   async create(data, actor) {

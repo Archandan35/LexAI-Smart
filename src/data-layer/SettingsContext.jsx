@@ -11,7 +11,7 @@ const DEFAULTS = {
   portalUrl: '',
   adminEmail: '',
   allowRegistration: true,
-  defaultRole: 'Admin',
+  defaultRole: '',
   language: 'English (United States)',
   timezone: 'Asia/Kolkata',
   dateFormat: 'june23',

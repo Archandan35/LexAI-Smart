@@ -1,5 +1,6 @@
 import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
+import { roleLogic, SEED_SUPER_ROLE } from '@/logic/roleLogic.js';
 import { auditService } from '@/services/auditService.js';
 import { authService } from '@/services/authService.js';
 import { rbacLogic } from './rbacLogic.js';
@@ -47,8 +48,9 @@ export const userLogic = {
       if (!data.password) return fail('Password is required.');
       const password = data.password;
       // roleCode may be omitted on the public signup form (no selectable roles
-      // yet) — the first account is then auto-provisioned as Admin.
-      const roleCode = data.roleCode || 'Admin';
+      // yet). When omitted, resolve the super-admin role by AUTHORITY (the `all`
+      // flag), never by a hardcoded name.
+      let roleCode = data.roleCode || (await roleLogic.getSuperAdminRoleCode());
 
       // Existing user count — used to decide first-account bootstrap and to
       // block self-service admin assignment after install.
@@ -74,19 +76,9 @@ export const userLogic = {
       // role that already exists in Role Management.
       if (!roleExists) {
         if (isFirstAccount) {
-          const created = await roleService.create({
-            id: 'role_admin',
-            code: 'Admin',
-            name: 'Administrator',
-            description: 'Administrator with full system access (auto-provisioned on first install)',
-            permissions: [],
-            all: true,
-            inherits: [],
-            system: true,
-            status: 'Active',
-            createdAt: nowISO(),
-          });
+          const created = await roleService.create({ ...SEED_SUPER_ROLE, createdAt: nowISO() });
           if (!created) return fail('Failed to provision the initial administrator role.');
+          roleCode = created.code;
         } else {
           return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
         }
