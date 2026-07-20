@@ -86,17 +86,18 @@ export default function Calendar() {
     casesRepository.getAll().then((c) => setCases(Array.isArray(c) ? c : [])).catch(() => {});
   }, []);
 
-  const loadAll = useCallback(() => {
+  const loadAll = useCallback((bypassCache = false) => {
     setLoading(true);
+    const orCached = (name, fn) => bypassCache ? fn() : cachedRef(name, fn);
     Promise.all([
       hearingsRepository.getAll().catch(() => []),
       remindersRepository.getAll().catch(() => []),
       taskLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-      casesRepository.getAll({ select: 'id,title,caseNumber,nextHearing,status' }).catch(() => []),
-      cachedRef('priorities', () => priorityLogic.list().catch(() => [])),
-      cachedRef('categories', () => taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
-      cachedRef('statuses', () => taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
-      cachedRef('caseStatuses', () => caseStatusLogic.list().catch(() => [])),
+      casesRepository.getAll({ select: 'id,title,case_number_str,next_hearing,status' }).catch(() => []),
+      orCached('priorities', () => priorityLogic.list().catch(() => [])),
+      orCached('categories', () => taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
+      orCached('statuses', () => taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
+      orCached('caseStatuses', () => caseStatusLogic.list().catch(() => [])),
     ]).then(([h, rm, t, c, p, cat, st, cst]) => {
       setHearings(Array.isArray(h) ? h : []);
       setReminders(Array.isArray(rm) ? rm : []);
@@ -235,7 +236,7 @@ export default function Calendar() {
         <TasksView
           tasks={tasks} loading={loading} onChanged={refreshTasks}
           priorities={priorities} categories={categories} statuses={statuses}
-          cases={cases} onReloadMaster={loadAll}
+          cases={cases} onReloadMaster={() => loadAll(true)}
           toast={toast} user={user} formatDate={formatDate} formatDateTime={formatDateTime}
           taskAddOpen={taskAddOpen} setTaskAddOpen={setTaskAddOpen}
         />
