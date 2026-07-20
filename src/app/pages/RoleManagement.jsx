@@ -67,18 +67,18 @@ export default function RoleManagement() {
     { key: 'actions', label: '', width: 180, render: (r) => (
       <div className="row-actions">
         <button className="iconbtn" title="View / edit permissions" onClick={() => nav(`/admin/roles/${r.id}`)}><Icon name="eye" size={15} /></button>
-        <PermissionGate perm="roles.create">
+        <PermissionGate module="roles" action="create">
           <button className="iconbtn" title="Duplicate" onClick={() => act(() => roleLogic.duplicate(r.id, user), 'Role duplicated.')}><Icon name="layers" size={15} /></button>
         </PermissionGate>
-        <PermissionGate perm="roles.export">
+        <PermissionGate module="roles" action="export">
           <button className="iconbtn" title="Export" onClick={() => exportJson(`role_${r.code}`, r)}><Icon name="download" size={15} /></button>
         </PermissionGate>
-        <PermissionGate perm="roles.edit">
+        <PermissionGate module="roles" action="edit">
           <button className="iconbtn" title={(r.status || 'Active') === 'Active' ? 'Disable' : 'Enable'} onClick={() => act(() => roleLogic.setEnabled(r.id, (r.status || 'Active') !== 'Active', user), 'Status updated.')}>
             <Icon name={(r.status || 'Active') === 'Active' ? 'close' : 'check'} size={15} />
           </button>
         </PermissionGate>
-          <PermissionGate perm="roles.delete">
+          <PermissionGate module="roles" action="delete">
             <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => { if (confirm(`Delete role "${r.name}"?`)) act(() => roleLogic.remove(r.id, user), 'Role deleted.'); }}><Icon name="trash" size={15} /></button>
           </PermissionGate>
       </div>
@@ -92,7 +92,7 @@ export default function RoleManagement() {
         title="Role Management"
         subtitle="Define roles and the permissions each role grants. Higher roles inherit lower-level permissions."
         actions={(
-          <PermissionGate perm="roles.create">
+          <PermissionGate module="roles" action="create">
             <Button variant="primary" icon="plus" onClick={() => setCreating(true)}>Create Role</Button>
           </PermissionGate>
         )}
@@ -112,10 +112,10 @@ export default function RoleManagement() {
         <div className="bulk-bar">
           <span><b>{selected.length}</b> selected</span>
           <div className="bulk-bar__spacer" />
-          <PermissionGate perm="roles.edit"><Button variant="ghost" size="sm" icon="check" onClick={() => act(() => roleLogic.bulkSetStatus(selected, 'Active', user), 'Enabled.')}>Enable</Button></PermissionGate>
-          <PermissionGate perm="roles.edit"><Button variant="ghost" size="sm" icon="close" onClick={() => act(() => roleLogic.bulkSetStatus(selected, 'Disabled', user), 'Disabled.')}>Disable</Button></PermissionGate>
-          <PermissionGate perm="roles.export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('roles_export', roles.filter((r) => selected.includes(r.id)))}>Export</Button></PermissionGate>
-          <PermissionGate perm="roles.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={() => { if (confirm(`Delete ${selected.length} role(s)? Roles with users assigned will be skipped.`)) { act(() => roleLogic.bulkRemove(selected, user), 'Deleted.'); setSelected([]); } }}>Delete</Button></PermissionGate>
+          <PermissionGate module="roles" action="edit"><Button variant="ghost" size="sm" icon="check" onClick={() => act(() => roleLogic.bulkSetStatus(selected, 'Active', user), 'Enabled.')}>Enable</Button></PermissionGate>
+          <PermissionGate module="roles" action="edit"><Button variant="ghost" size="sm" icon="close" onClick={() => act(() => roleLogic.bulkSetStatus(selected, 'Disabled', user), 'Disabled.')}>Disable</Button></PermissionGate>
+          <PermissionGate module="roles" action="export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('roles_export', roles.filter((r) => selected.includes(r.id)))}>Export</Button></PermissionGate>
+          <PermissionGate module="roles" action="bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={() => { if (confirm(`Delete ${selected.length} role(s)? Roles with users assigned will be skipped.`)) { act(() => roleLogic.bulkRemove(selected, user), 'Deleted.'); setSelected([]); } }}>Delete</Button></PermissionGate>
         </div>
       )}
 

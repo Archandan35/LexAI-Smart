@@ -1006,8 +1006,6 @@ export default function OrderSheet() {
           )}
         </div>
       )}
-        </div>
-      )}
 
       {/* Desktop View */}
       {!isMobile && (

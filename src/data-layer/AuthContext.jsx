@@ -2,6 +2,7 @@ import { createContext, useState, useContext, useCallback, useEffect, useMemo } 
 import { authLogic } from '@/logic/authLogic.js';
 import { roleService } from '@/services/roleService.js';
 import { rbacLogic } from '@/logic/rbacLogic.js';
+import { syncPermissionGuard } from '@/logic/permissionGuard.js';
 
 // AuthContext — holds the current user, the role list, and the RESOLVED
 // permission object (rbacLogic). Every guard/menu/button reads from here.
@@ -46,6 +47,12 @@ export function AuthProviderCtx({ children }) {
   }, [loadRoles]);
 
   const perms = useMemo(() => rbacLogic.resolve(user || {}, roles), [user, roles]);
+
+  // Keep the service-layer permission guard in sync so service functions can
+  // re-validate capabilities even when called outside a React render.
+  useEffect(() => {
+    syncPermissionGuard({ can: perms.can, isSuperuser: perms.isSuperuser, user });
+  }, [perms, user]);
 
   const value = useMemo(() => ({
     user, roles, booting, login, logout, refreshUser, loadRoles,
