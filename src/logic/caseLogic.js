@@ -141,7 +141,7 @@ export const caseLogic = {
       const [
         cases, draftCount, drafts, docCount, documents, hearings, tasks,
       ] = await Promise.all([
-        caseService.listCases({ select: 'id,status,case_type,title,case_number,next_hearing,archived' }).catch(() => []),
+        caseService.listCases({ select: 'id,status,case_type,title,case_number,case_year,next_hearing,archived' }).catch(() => []),
         draftsRepository.count().catch(() => 0),
         draftsRepository.getAll({ limit: 5, order: 'updated_at.desc' }).catch(() => []),
         documentsRepository.count().catch(() => 0),
@@ -173,6 +173,14 @@ export const caseLogic = {
         return x >= now;
       };
       const caseMap = Object.fromEntries(cases.map((c) => [c.id, c]));
+      const fmtNumber = (c) => {
+        if (!c) return '—';
+        const ct = c.case_type || '';
+        const cn = c.case_number || '';
+        const cy = c.case_year || '';
+        if (ct && cn && cy) return `${ct} No. ${cn} of ${cy}`;
+        return c.case_display_number || c.caseNumber || '—';
+      };
       // Future hearing records (order-sheet entries dated in the future).
       const futureHearings = hearings
         .filter((h) => isFuture(h.date))
@@ -182,7 +190,7 @@ export const caseLogic = {
           return {
             id: `hearing-${h.id}`, caseId: cid,
             caseTitle: c?.title || h.caseTitle || h.parties || '—',
-            caseNumber: c?.case_display_number || c?.caseNumber || h.caseNumber || '—',
+            caseNumber: fmtNumber(c) || h.caseNumber || '—',
             date: h.date, time: h.time, purpose: h.purpose || 'Hearing',
             status: h.status || 'Scheduled',
           };
@@ -192,7 +200,7 @@ export const caseLogic = {
       const caseNext = live
         .filter((c) => isFuture(c.nextHearing))
         .filter((c) => !seen.has(`${c.id}|${(c.nextHearing || '').slice(0, 10)}`))
-        .map((c) => ({ id: `next-${c.id}`, caseId: c.id, caseTitle: c.title, caseNumber: c.case_display_number || c.caseNumber || '—', date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
+        .map((c) => ({ id: `next-${c.id}`, caseId: c.id, caseTitle: c.title, caseNumber: fmtNumber(c), date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
       const upcoming = [...futureHearings, ...caseNext]
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
         .slice(0, 6);

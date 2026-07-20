@@ -672,11 +672,8 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
             {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
           </Button>
-        </div>
-
-        <div className="tasks-filter-row">
-          <Input type="date" className="input" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
-          <Select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <Input type="date" className="input tasks-filter-date" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
+          <Select className="tasks-filter-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="due_asc">Sort: Due (earliest)</option>
             <option value="due_desc">Sort: Due (latest)</option>
             <option value="title_asc">Sort: Title (A-Z)</option>
@@ -686,7 +683,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           <button className={`tasks-arch-toggle${showArchived ? ' active' : ''}`} onClick={() => setShowArchived((s) => !s)}>
             <Icon name="history" size={15} /> {showArchived ? 'Hide Archived' : 'Show Archived'}
           </button>
-          <button className="btn btn--ghost" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); setSearch(''); }}>Clear</button>
+          <button className="btn btn--ghost tasks-clear-btn" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); setSearch(''); }}>Clear</button>
         </div>
       </Card>
 
