@@ -17387,8 +17387,7 @@ kbd.cmd__kbd {
 }
 
 .manage-cases__hero {
-  background: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.78) 100%),
-              url('/images/Pages-hero-banner/mc-hero-1.png') center/contain no-repeat;
+  background: url('/images/Pages-hero-banner/mc-hero-12.png') center/contain no-repeat;
 }
 
 .bench-types__hero-icon {
@@ -18049,8 +18048,7 @@ kbd.cmd__kbd {
   }
 
   .manage-cases__hero {
-    background: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.78) 100%),
-                url('/images/Pages-hero-banner/mc-hero-1.png') center/contain no-repeat;
+    background: url('/images/Pages-hero-banner/mc-hero-21.png') center/contain no-repeat;
   }
 
   .bench-types__hero::after {
