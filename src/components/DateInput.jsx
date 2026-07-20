@@ -21,12 +21,13 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
   const [text, setText] = useState('');
   const [focused, setFocused] = useState(false);
   const hiddenRef = useRef(null);
+  const typingRef = useRef(false);
 
   const iso = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : '';
   const fmt = (v) => v ? DateEngine.formatDate(v) : '';
 
   useEffect(() => {
-    if (!focused) setText(fmt(iso));
+    if (!typingRef.current && !focused) setText(fmt(iso));
   }, [value, focused]);
 
   const openPicker = () => {
@@ -37,6 +38,7 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
 
   const handleChange = (e) => {
     const raw = e.target.value;
+    typingRef.current = true;
     setText(raw);
     if (!raw) {
       onChange && onChange({ target: { value: '', name } });
@@ -51,12 +53,14 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
   const handleNativeChange = (e) => {
     const v = e.target.value;
     onChange && onChange({ target: { value: v, name } });
+    typingRef.current = false;
     setText(fmt(v));
   };
 
   const handleFocus = () => setFocused(true);
 
   const handleBlur = () => {
+    typingRef.current = false;
     setFocused(false);
     setText(fmt(iso));
   };
