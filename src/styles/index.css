@@ -36,6 +36,13 @@
   --sidebar-w: 264px;
   --topbar-h: 64px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Scrollbar design tokens (shared across the whole app) */
+  --scrollbar-size: 10px;
+  --scrollbar-size-thin: 6px;
+  --scrollbar-thumb: #cdd3e3;
+  --scrollbar-thumb-hover: var(--navy-600);
+  --scrollbar-track: transparent;
 }
 
 * {
@@ -73,19 +80,82 @@ select {
   font-family: inherit;
 }
 
+/* ============================================================
+   SHARED SCROLLBAR
+   One consistent scrollbar everywhere. Colors come from the
+   tokens above so it themes with the rest of the design system.
+   Works on WebKit/Blink (::-webkit-scrollbar) and Firefox
+   (scrollbar-width / scrollbar-color).
+   ============================================================ */
+
+/* Firefox: thin scrollbar with token-based thumb + transparent track */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* WebKit / Blink (Chrome, Edge, Safari, Opera) */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d6dbe8;
-  border-radius: 8px;
-  border: 2px solid var(--bg);
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  /* transparent inset makes the thumb "float" cleanly on any surface */
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #c3c9da;
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Reusable scroll container. Drop `className="scroll-area"` (optionally
+   `scroll-area--thin` / `scroll-area--brand`) on any element that scrolls. */
+.scroll-area {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.scroll-area--thin {
+  scrollbar-width: thin;
+}
+
+.scroll-area--thin::-webkit-scrollbar {
+  width: var(--scrollbar-size-thin);
+  height: var(--scrollbar-size-thin);
+}
+
+/* Brand accent on hover (e.g. primary panels) */
+.scroll-area--brand::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
 }
 
 /* ---------- Layout shell ---------- */
@@ -7541,21 +7611,29 @@ kbd.cmd__kbd {
   overflow-x: hidden;
 }
 
+.dash-reminders-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
 .dash-reminders-scroll::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-size-thin);
+  height: var(--scrollbar-size-thin);
 }
 
 .dash-reminders-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
 }
 
 .dash-reminders-scroll::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 8px;
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 .dash-reminders-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--text-faint);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ---- Task summary donut ---- */
@@ -10458,19 +10536,29 @@ kbd.cmd__kbd {
   min-width: 0;
 }
 
+.cdoc__content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
 .cdoc__content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-size-thin);
+  height: var(--scrollbar-size-thin);
 }
 
 .cdoc__content::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
 }
 
 .cdoc__content::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 99px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.cdoc__content::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ── Toolbar ── */
@@ -24292,6 +24380,10 @@ kbd.cmd__kbd {
   -ms-overflow-style: none;
 }
 
+.jd-rel-slider {
+  scrollbar-width: none;
+}
+
 .jd-rel-slider::-webkit-scrollbar { display: none; }
 
 /* ========= Navigation Buttons ========= */
@@ -25147,6 +25239,10 @@ kbd.cmd__kbd {
     gap: 0;
     padding: 0;
   }
+  .jd-tabs {
+    scrollbar-width: none;
+  }
+
   .jd-tabs::-webkit-scrollbar {
     display: none;
   }
@@ -25922,15 +26018,29 @@ kbd.cmd__kbd {
 }
 
 /* Scrollbar for form area */
+.ajm-form-wrap,
+.ajm-side {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
 .ajm-form-wrap::-webkit-scrollbar,
 .ajm-side::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-size-thin);
+  height: var(--scrollbar-size-thin);
 }
 
 .ajm-form-wrap::-webkit-scrollbar-thumb,
 .ajm-side::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 3px;
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.ajm-form-wrap::-webkit-scrollbar-thumb:hover,
+.ajm-side::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Responsive */
