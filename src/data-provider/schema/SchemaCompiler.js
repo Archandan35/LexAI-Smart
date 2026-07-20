@@ -497,8 +497,8 @@ function systemSqlUserRoleRegistry() {
     ');',
     'alter table user_role_registry enable row level security;',
     '',
-    '-- Admin-only policy on user_role_registry (lookup is via security-definer function)',
-    "create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');",
+    '-- Super-admin-only policy on user_role_registry (lookup is via security-definer function)',
+    'create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (lx_is_superadmin()) with check (lx_is_superadmin());',
   ].join('\n');
 }
 
@@ -855,11 +855,16 @@ function systemSqlPolicies({ onlyCollections } = {}) {
     return APP_POLICY_TABLES.includes(table);
   };
 
-  const adminAll = (t) => `create policy ${t}_admin_all on ${t} for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');`;
-  const adminSelect = (t) => `create policy ${t}_admin_select on ${t} for select to authenticated using (current_user_role() = 'admin');`;
-  const managerAll = (t) => `create policy ${t}_manager_all on ${t} for all to authenticated using (current_user_role() = ANY(ARRAY['admin','manager'])) with check (current_user_role() = ANY(ARRAY['admin','manager']));`;
-  const managerSelect = (t) => `create policy ${t}_manager_select on ${t} for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager']));`;
-  const userSelect = (t) => `create policy ${t}_user_select on ${t} for select to authenticated using (current_user_role() = ANY(ARRAY['admin','manager','user']));`;
+  // Authority-based predicates — never key off the role's NAME.
+  //   lx_is_superadmin() -> the role has all = true (Super Admin, set in the UI)
+  //   lx_is_manager()   -> superadmin OR holds an administrative permission
+  // Both read the roles table via a security-definer function, so they bypass
+  // RLS and cannot recurse. See systemSqlAuthority() for their definitions.
+  const adminAll = (t) => `create policy ${t}_admin_all on ${t} for all to authenticated using (lx_is_superadmin()) with check (lx_is_superadmin());`;
+  const adminSelect = (t) => `create policy ${t}_admin_select on ${t} for select to authenticated using (lx_is_superadmin());`;
+  const managerAll = (t) => `create policy ${t}_manager_all on ${t} for all to authenticated using (lx_is_manager()) with check (lx_is_manager());`;
+  const managerSelect = (t) => `create policy ${t}_manager_select on ${t} for select to authenticated using (lx_is_manager());`;
+  const userSelect = (t) => `create policy ${t}_user_select on ${t} for select to authenticated using (current_user_role() <> 'anon');`;
   const anonSelect = (t) => `do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then execute 'drop policy if exists ${t}_anon_select on ${t}'; execute 'create policy ${t}_anon_select on ${t} for select to anon using (true)'; end if; end $$;`;
 
   const allTables = [
@@ -926,6 +931,79 @@ function systemSqlPolicies({ onlyCollections } = {}) {
   }
 
   return lines.join('\n');
+}
+
+// Authority functions — replace the old hardcoded role-NAME checks in RLS.
+// Access is now granted by AUTHORITY (the role's `all` flag / the permissions
+// assigned to it in the UI), exactly like the app's own rbacLogic. The two
+// functions read the `roles` table through a security-definer wrapper so they
+// bypass row-level-security and can never recurse.
+function systemSqlAuthority() {
+  return [
+    '-- ============================================================',
+    '-- 12. AUTHORITY FUNCTIONS (RLS keys off authority, not role name)',
+    '-- ============================================================',
+    '-- lx_is_superadmin(): true when the caller\'s role has all = true',
+    '--   (Super Admin — toggled in the Permission Center UI). service_role',
+    '--   (the app\'s own DB admin) is always treated as superadmin.',
+    '-- lx_is_manager(): superadmin OR the role holds any administrative',
+    '--   permission (e.g. databaseCenter / setupWizard / schema / roles /',
+    '--   permissions / users / env / storage / security / backup / audit /',
+    '--   api / settings). Mirrors the app modules that manage these tables.',
+    '',
+    'drop function if exists lx_is_superadmin() cascade;',
+    "create or replace function lx_is_superadmin()",
+    'returns boolean',
+    'language plpgsql',
+    'security definer',
+    'stable',
+    "set search_path = 'public'",
+    'as $$',
+    'declare',
+    '  v_code text;',
+    '  v_all boolean;',
+    'begin',
+    "  if current_user = 'service_role' then return true; end if;",
+    '  if auth.uid() is null then return false; end if;',
+    '  v_code := current_user_role();',
+    '  if v_code is null then return false; end if;',
+    "  select (r.all is true) into v_all from roles r where r.code = v_code;",
+    '  return coalesce(v_all, false);',
+    'end;',
+    '$$;',
+    '',
+    'drop function if exists lx_is_manager() cascade;',
+    "create or replace function lx_is_manager()",
+    'returns boolean',
+    'language plpgsql',
+    'security definer',
+    'stable',
+    "set search_path = 'public'",
+    'as $$',
+    'declare',
+    '  v_code text;',
+    '  v_all boolean;',
+    '  v_perms jsonb;',
+    'begin',
+    "  if current_user = 'service_role' then return true; end if;",
+    '  if auth.uid() is null then return false; end if;',
+    '  v_code := current_user_role();',
+    '  if v_code is null then return false; end if;',
+    '  select r.all, r.permissions into v_all, v_perms from roles r where r.code = v_code;',
+    '  if v_all is true then return true; end if;',
+    "  return coalesce(v_perms ?| array[",
+    "    'databaseCenter.view','databaseCenter.manage','databaseCenter.configure',",
+    "    'setupWizard.view','setupWizard.manage',",
+    "    'schema.view','schema.manage',",
+    "    'roles.view','roles.edit','permissions.view','permissions.edit',",
+    "    'users.view','users.edit',",
+    "    'env.view','env.manage','storage.view','storage.manage',",
+    "    'security.view','security.manage','backup.view','backup.manage',",
+    "    'audit.view','api.view','api.manage','settings.view','settings.manage'",
+    '  ], false);',
+    'end;',
+    '$$;',
+  ].join('\n');
 }
 
 function systemSqlGrants() {
@@ -1079,6 +1157,7 @@ export const SchemaCompiler = {
       systemSqlProviderTables(),
       systemSqlIdEngine(),
       systemSqlSupabaseAuth(),
+      systemSqlAuthority(),
       systemSqlUserRoleRegistry(),
       systemSqlVerifyInstallation(),
     ];

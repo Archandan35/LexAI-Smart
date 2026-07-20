@@ -15,14 +15,14 @@ begin
   begin
     if auth.uid() is null then
       if current_user = 'anon' then return 'anon'; end if;
-      if current_user = 'service_role' then return 'admin'; end if;
+      if current_user = 'service_role' then return 'service_role'; end if;
       return 'anon';
     end if;
     select role_code into strict v_role from users where id = auth.uid()::text;
     return v_role;
   exception
     when others then
-      if current_user = 'authenticated' then return 'user'; end if;
+      if current_user = 'authenticated' then return 'anon'; end if;
       return 'anon';
   end;
 end;

@@ -8,9 +8,9 @@ language plpgsql
 security definer
 as $$
 begin
-  if exists (select 1 from pg_proc where proname = 'current_user_role') then
-    if current_user_role() != 'admin' then
-      raise exception 'exec_sql: only admin can execute arbitrary SQL';
+  if exists (select 1 from pg_proc where proname = 'lx_is_superadmin') then
+    if not lx_is_superadmin() then
+      raise exception 'exec_sql: only super admin can execute arbitrary SQL';
     end if;
   end if;
   if exists (select 1 from pg_tables where tablename = 'migration_registry') then
@@ -29,8 +29,8 @@ as $$
 declare
   v_upper text;
 begin
-  if exists (select 1 from pg_proc where proname = 'current_user_role') then
-    if current_user_role() NOT IN ('admin', 'manager') then
+  if exists (select 1 from pg_proc where proname = 'lx_is_manager') then
+    if not lx_is_manager() then
       raise exception 'safe_ddl: only admin or manager can execute DDL';
     end if;
   end if;
