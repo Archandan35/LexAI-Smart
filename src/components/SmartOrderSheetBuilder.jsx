@@ -440,6 +440,7 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
           fields: [
             { key: 'name', label: 'Status Name', placeholder: 'e.g. Active, Disposed' },
             { key: 'short_code', label: 'Short Code', placeholder: 'CASS-<CASE-STATUS>', hint: 'Example: CASS-PENDING' },
+            { key: 'status', label: 'Status', default: 'Active' },
             { key: 'color', label: 'Color', type: 'color', default: '#6b7280' },
             { key: 'display_order', label: 'Display Order', type: 'number' },
           ],

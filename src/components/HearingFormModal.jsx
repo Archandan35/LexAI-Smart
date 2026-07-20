@@ -506,7 +506,7 @@ export default function HearingFormModal({ open, onClose, onSaved, initialCaseId
         open={showStatusCrud}
         onClose={() => { setShowStatusCrud(false); refreshStatuses(); }}
         entity="Case Status"
-        config={{ logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }, { key: 'short_code', label: 'Short Code', placeholder: 'CASS-<CASE-STATUS>', hint: 'Example: CASS-PENDING' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {}, refresh: refreshStatuses }}
+        config={{ logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }, { key: 'short_code', label: 'Short Code', placeholder: 'CASS-<CASE-STATUS>', hint: 'Example: CASS-PENDING' }, { key: 'status', label: 'Status', default: 'Active' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: { status: 'Active' }, refresh: refreshStatuses }}
       />
     </>
   );

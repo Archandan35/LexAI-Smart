@@ -1142,8 +1142,8 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Status Name', required: true, placeholder: 'e.g. Pending' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PND' },
+      { key: 'status', label: 'Status', default: 'Active' },
       { key: 'color', label: 'Badge Color', type: 'color' },
-      { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active', color: '#6b7280' },
   };
