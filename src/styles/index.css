@@ -25818,9 +25818,8 @@ kbd.cmd__kbd {
   .modal.ajm-overlay {
     width: 100%;
     max-width: 100%;
-    max-height: 100vh;
-    min-height: 100vh;
-    border-radius: 0;
+    max-height: 80vh;
+    border-radius: 12px;
   }
   .ajm-tab {
     font-size: 11px;
@@ -26309,6 +26308,8 @@ kbd.cmd__kbd {
   }
 
   .fp-popup {
+    height: auto;
+    max-height: 80vh;
     border-radius: 12px;
   }
 
