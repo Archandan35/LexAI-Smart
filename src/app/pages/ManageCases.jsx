@@ -181,7 +181,7 @@ export default function ManageCases() {
               <div className="bench-types__hero-accent" />
             </div>
             <PermissionGate perm="manageCase.create">
-              <Button icon="plus" onClick={() => setOpen(true)} style={{ marginLeft: 'auto' }}>New Case</Button>
+              <Button icon="plus" onClick={() => setOpen(true)} className="manage-cases__hero-action">New Case</Button>
             </PermissionGate>
             <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -328,7 +328,7 @@ export default function ManageCases() {
       {isMobile && (
         <div className="cl-mobile-view fade-in">
 
-          <div className="bench-types__hero manage-cases__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero manage-cases__hero">
             <div className="bench-types__hero-icon"><Icon name="vault" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Manage Cases</h2>
@@ -341,7 +341,7 @@ export default function ManageCases() {
             <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
-          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+          <div className="bench-types__stat-cards bench-types__mobile-only manage-cases__stat-cards">
             <div className="bench-types__stat-card bench-types__stat-card--total">
               <div className="bench-types__stat-card-row1">
                 <div className="bench-types__stat-card-icon"><Icon name="layers" size={18} /></div>
@@ -365,7 +365,7 @@ export default function ManageCases() {
             </div>
           </div>
 
-          <div className="cv-search-wrap" style={{ marginBottom: '12px' }}>
+          <div className="cv-search-wrap">
             <span className="cv-search-icon"><Icon name="search" size={16} /></span>
             <input
               type="text"
@@ -377,7 +377,7 @@ export default function ManageCases() {
             <span className="cv-filter-icon" role="button" aria-label="Filter" onClick={handleOpenCaseFilter}><Icon name="filter" size={16} /></span>
           </div>
 
-          <div className="cv-seg" style={{ marginBottom: '12px' }}>
+          <div className="cv-seg">
             {['Active', 'Archived'].map((t) => (
               <button
                 key={t}

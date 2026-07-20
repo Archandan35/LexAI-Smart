@@ -70,11 +70,11 @@ export default function CaseTimeline() {
             <p>Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline.</p>
             <div className="bench-types__hero-accent" />
           </div>
-          {events?.length > 0 && <Button variant="ghost" icon="download" style={{ marginLeft: 'auto' }} onClick={exportTimeline}>Export</Button>}
+          {events?.length > 0 && <Button variant="ghost" icon="download" className="ml-auto" onClick={exportTimeline}>Export</Button>}
           <Icon name="clock" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       ) : (
-        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+        <div className="bench-types__hero mb-20">
           <div className="bench-types__hero-icon"><Icon name="clock" size={34} /></div>
           <div className="bench-types__hero-text">
             <h2>Case Timeline</h2>

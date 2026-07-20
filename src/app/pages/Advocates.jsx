@@ -134,7 +134,7 @@ export default function Advocates() {
               <p>Manage advocates in your practice.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={openAdd} style={{ marginLeft: 'auto' }}>Add Advocate</Button>
+            <Button icon="plus" onClick={openAdd} className="ml-auto">Add Advocate</Button>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -191,7 +191,7 @@ export default function Advocates() {
         </>
       ) : (
         <>
-          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero mb-20">
             <div className="bench-types__hero-icon"><Icon name="users" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Advocates</h2>
@@ -202,7 +202,7 @@ export default function Advocates() {
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
-          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+          <div className="bench-types__stat-cards bench-types__mobile-only mb-18">
             <div className="bench-types__stat-card bench-types__stat-card--total">
               <div className="bench-types__stat-card-row1">
                 <div className="bench-types__stat-card-icon"><Icon name="users" size={18} /></div>

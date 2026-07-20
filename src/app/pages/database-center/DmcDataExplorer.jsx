@@ -117,7 +117,7 @@ export default function DmcDataExplorer() {
       return <a href="#" onClick={(e) => { e.preventDefault(); setPreviewDoc(r); }} className="dmc-explorer-link">{v || r.title}</a>;
     }
     if (f === 'caseNumber') {
-      return <span style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{v || '\u2014'}</span>;
+      return <span className="font-mono fs-12">{v || '\u2014'}</span>;
     }
     if (f === 'status') {
       const status = (v || '').toLowerCase();
@@ -152,11 +152,11 @@ export default function DmcDataExplorer() {
         <div className="dmc-db-pagination__info">Showing {start}\u2013{end} of {filtered.length} records</div>
         <div className="dmc-db-pagination__controls">
           <button className="dmc-db-pagination__btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
-          {startPage > 1 && <span style={{ color: 'var(--text-faint)', padding: '0 4px', fontSize: 12 }}>\u2026</span>}
+          {startPage > 1 && <span className="text-faint px-4 fs-12">\u2026</span>}
           {pages.map((p) => (
             <button key={p} className={`dmc-db-pagination__btn${safePage === p ? ' dmc-db-pagination__btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
           ))}
-          {endPage < totalPages && <span style={{ color: 'var(--text-faint)', padding: '0 4px', fontSize: 12 }}>\u2026</span>}
+          {endPage < totalPages && <span className="text-faint px-4 fs-12">\u2026</span>}
           <button className="dmc-db-pagination__btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
         </div>
         <div className="dmc-db-perpage">
@@ -203,7 +203,7 @@ export default function DmcDataExplorer() {
           ))}
         </div>
         {isDoc && detailItem.ref && (
-          <div style={{ marginTop: 16 }}>
+          <div className="mt-16">
             <Button variant="outline" size="sm" onClick={() => Promise.resolve(fileLogic.getUrl(detailItem.ref)).then((url) => url && window.open(url, '_blank'))}>
               <Icon name="eye" size={14} /> View File
             </Button>
@@ -253,19 +253,20 @@ export default function DmcDataExplorer() {
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
           <div className="dmc-db-section__title"><Icon name="layers" size={18} /> Collection Browser</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="flex-row items-center gap-10">
             <span className="dmc-db-section__badge">{filtered.length} / {totalCount} records</span>
             <button
               onClick={() => setShowCollectionGrid(!showCollectionGrid)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: showCollectionGrid ? 'var(--brand)' : 'var(--text-soft)', padding: 4, display: 'flex' }}
+              className="bg-none border-0 cursor-pointer p-4 flex-row"
+              style={{ color: showCollectionGrid ? 'var(--brand)' : 'var(--text-soft)' }}
               title="Toggle collection overview"
             ><Icon name="grid" size={16} /></button>
           </div>
         </div>
 
         {showCollectionGrid && (
-          <div className="dmc-db-section__body" style={{ borderBottom: '1px solid var(--border)' }}>
-            <div className="dmc-db-stats-row" style={{ marginBottom: 0 }}>
+          <div className="dmc-db-section__body border-b">
+            <div className="dmc-db-stats-row mb-0">
               {COLLECTIONS.map((c, i) => (
                 <div
                   key={c}
@@ -278,7 +279,7 @@ export default function DmcDataExplorer() {
                   </div>
                   <div className="dmc-db-statcard__body">
                     <div className="dmc-db-statcard__label" style={{ fontSize: 8.5 }}>{c}</div>
-                    <div className="dmc-db-statcard__value" style={{ fontSize: 16 }}>{counts[c] ?? '\u2014'}</div>
+                    <div className="dmc-db-statcard__value fs-16">{counts[c] ?? '\u2014'}</div>
                     <div className="dmc-db-statcard__sub">records</div>
                   </div>
                 </div>
@@ -290,7 +291,7 @@ export default function DmcDataExplorer() {
         <div className="dmc-db-section__body">
           <div className="dmc-db-toolbar">
             <div className="dmc-db-toolbar__left">
-              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              <div className="flex-row gap-4 flex-wrap">
                 {COLLECTIONS.slice(0, 6).map((c) => (
                   <button
                     key={c}
@@ -311,7 +312,7 @@ export default function DmcDataExplorer() {
             </div>
             <div className="dmc-db-toolbar__right">
               {selectedIds.size > 0 && (
-                <span style={{ fontSize: 12, color: 'var(--brand)', fontWeight: 600 }}>{selectedIds.size} selected</span>
+                <span className="fs-12 text-brand fw-600">{selectedIds.size} selected</span>
               )}
               <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
                 <Icon name="refresh" size={14} /> {loading ? 'Loading\u2026' : 'Refresh'}
@@ -330,7 +331,7 @@ export default function DmcDataExplorer() {
               <button className="dmc-preview-panel__close" onClick={() => setPreviewDoc(null)} title="Close preview"><Icon name="close" size={16} /></button>
             </div>
             <div className="dmc-preview-panel__body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px', fontSize: 13 }}>
+              <div className="dmc-preview-grid">
                 {[
                   ['ID', previewDoc.id],
                   ['Folder', previewDoc.folder],
@@ -339,8 +340,8 @@ export default function DmcDataExplorer() {
                   ['Uploaded', formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)],
                   ['Sync', previewDoc.syncStatus],
                 ].map(([label, value]) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                    <span style={{ color: 'var(--text-faint)' }}>{label}</span>
+                  <div key={label} className="flex-row justify-between py-6 border-b">
+                    <span className="text-faint">{label}</span>
                     <span>{value ?? '\u2014'}</span>
                   </div>
                 ))}
@@ -357,7 +358,7 @@ export default function DmcDataExplorer() {
         )}
 
         {loading ? (
-          <div className="dmc-empty"><div className="dmc-empty__title" style={{ padding: '24px 0' }}>Loading records\u2026</div></div>
+          <div className="dmc-empty"><div className="dmc-empty__title py-24">Loading records\u2026</div></div>
         ) : filtered.length === 0 ? (
           <div className="dmc-empty">
             <div className="dmc-empty__icon"><Icon name="layers" size={32} /></div>

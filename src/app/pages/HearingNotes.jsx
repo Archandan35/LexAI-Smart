@@ -59,11 +59,11 @@ export default function HearingNotes() {
             <p>Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points — ready for the next date.</p>
             <div className="bench-types__hero-accent" />
           </div>
-          {notes && <Button variant="ghost" icon="download" style={{ marginLeft: 'auto' }} onClick={exportNotes}>Export PDF</Button>}
+          {notes && <Button variant="ghost" icon="download" className="ml-auto" onClick={exportNotes}>Export PDF</Button>}
           <Icon name="notes" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       ) : (
-        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+        <div className="bench-types__hero mb-20">
           <div className="bench-types__hero-icon"><Icon name="notes" size={34} /></div>
           <div className="bench-types__hero-text">
             <h2>Hearing Notes</h2>

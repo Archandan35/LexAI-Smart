@@ -111,7 +111,7 @@ export default function DmcDeleteManager() {
                   {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 {selectedUserId && (
-                  <span style={{ fontSize: 13, color: 'var(--text-soft)' }}>
+                  <span className="fs-13 text-soft">
                     Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
                   </span>
                 )}
@@ -140,7 +140,7 @@ export default function DmcDeleteManager() {
 
       {!preview && (
         <div className="dmc-db-section">
-          <div className="dmc-db-section__body" style={{ textAlign: 'center', padding: '48px 20px' }}>
+          <div className="dmc-db-section__body text-center py-48 px-20">
             <div className="dmc-empty__icon"><Icon name="trash" size={36} /></div>
             <div className="dmc-empty__title">No scope selected</div>
             <div className="dmc-empty__hint">Choose a scope above and click Preview to analyze before deleting.</div>
@@ -168,7 +168,7 @@ export default function DmcDeleteManager() {
           </div>
           {preview.type === 'user' && preview.userCases?.length > 0 && (
             <div className="dmc-db-section__body">
-              <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>Affected Cases ({preview.cases})</div>
+              <div className="fw-600 mb-8">Affected Cases ({preview.cases})</div>
               <div className="dmc-db-table-wrap">
                 <table className="dmc-db-table">
                   <thead><tr><th>Case</th><th>Documents</th></tr></thead>
@@ -182,7 +182,7 @@ export default function DmcDeleteManager() {
             </div>
           )}
           <div className="dmc-db-section__body">
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="flex-row gap-8">
               {!dryRun && <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting\u2026' : 'Confirm Delete'}</Button>}
               <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
             </div>

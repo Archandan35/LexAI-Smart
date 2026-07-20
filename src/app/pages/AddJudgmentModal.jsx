@@ -225,7 +225,7 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
               <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
             </span>
           ))}
-          <div className="ajm-tag-input-row" style={{ position: 'relative' }}>
+          <div className="ajm-tag-input-row pos-relative">
             <input
               className="ajm-input ajm-tag-input"
               type="text"
@@ -246,7 +246,7 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
             />
             <button type="button" className="ajm-tag-add-btn" onClick={() => addValue(input)}><Icon name="plus" size={14} /></button>
             {open && filtered.length > 0 && (
-              <div className="searchable-select__dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}>
+              <div className="searchable-select__dropdown pos-absolute-dropdown">
                 {filtered.map((opt, i) => (
                   <div
                     key={opt.value}
@@ -373,7 +373,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
         {required && <span className="ajm-req">*</span>}
       </label>
       <div className="ajm-select-crud-wrap">
-        <div className="ajm-select-wrap ajm-select-wrap--grow" style={{ position: 'relative' }}>
+        <div className="ajm-select-wrap ajm-select-wrap--grow pos-relative">
           <input
             className="ajm-input ajm-select-input"
             type="text"
@@ -386,7 +386,7 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
           />
           <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
           {open && filtered.length > 0 && (
-            <div className="searchable-select__dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}>
+            <div className="searchable-select__dropdown pos-absolute-dropdown">
               {filtered.map((opt, i) => (
                 <div
                   key={opt.value}

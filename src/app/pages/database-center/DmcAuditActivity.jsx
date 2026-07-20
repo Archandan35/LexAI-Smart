@@ -66,21 +66,14 @@ export default function DmcAuditActivity() {
             <input placeholder="Search events\u2026" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
         </div>
-        <div className="dmc-db-section__body" style={{ padding: 0 }}>
-          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', overflowX: 'auto', padding: '0 20px' }}>
+        <div className="dmc-db-section__body p-0">
+          <div className="flex-row gap-0 border-b overflow-x-auto px-20">
             {tabs.map((t) => (
               <button
                 key={t.key}
+                className={`dmc-audit-tab${filter === t.key ? ' dmc-audit-tab--active' : ''}`}
                 onClick={() => setFilter(t.key)}
-                style={{
-                  padding: '10px 14px', fontSize: 13, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer',
-                  background: 'none', color: filter === t.key ? 'var(--brand)' : 'var(--text-soft)',
-                  fontWeight: filter === t.key ? 600 : 400,
-                  borderBottom: '2px solid transparent',
-                  borderBottomColor: filter === t.key ? 'var(--brand)' : 'transparent',
-                  marginBottom: -1,
-                }}
-              >{t.label} <span style={{ color: 'var(--text-faint)', marginLeft: 2 }}>{getCount(t.key)}</span></button>
+              >{t.label} <span className="text-faint ml-2">{getCount(t.key)}</span></button>
             ))}
           </div>
           {filtered.length === 0 ? (
@@ -103,13 +96,13 @@ export default function DmcAuditActivity() {
                         <td>{l.user || l.userName || 'system'}</td>
                         <td>{l.module || '\u2014'}</td>
                         <td>{formatDate(l.createdAt || l.created_at || l.timestamp)}</td>
-                        <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-soft)' }}>{l.details || l.description || '\u2014'}</td>
+                        <td className="maxw-300 overflow-hidden text-ellipsis text-soft">{l.details || l.description || '\u2014'}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div style={{ textAlign: 'right', padding: '10px 20px', fontSize: 13, color: 'var(--text-soft)', borderTop: '1px solid var(--border)' }}>
+              <div className="text-right py-10 px-20 fs-13 text-soft border-t">
                 Showing {Math.min(filtered.length, 100)} of {filtered.length} event(s)
               </div>
             </>

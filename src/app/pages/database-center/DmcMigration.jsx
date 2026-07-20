@@ -92,9 +92,9 @@ export default function DmcMigration() {
         <div className="dmc-db-section__body">
           {step === 0 && (
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>Source Provider</div>
-              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 12 }}>The current database provider containing your data.</p>
-              <select className="dmc-db-select" style={{ minWidth: 300 }} value={sourceProvider} onChange={(e) => setSourceProvider(e.target.value)}>
+              <div className="fw-600 mb-4">Source Provider</div>
+              <p className="text-soft fs-13 mb-12">The current database provider containing your data.</p>
+              <select className="dmc-db-select minw-300" value={sourceProvider} onChange={(e) => setSourceProvider(e.target.value)}>
                 <option value="">Select source provider\u2026</option>
                 {PROVIDERS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
@@ -103,9 +103,9 @@ export default function DmcMigration() {
 
           {step === 1 && (
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>Target Provider</div>
-              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 12 }}>The destination provider. Must differ from the source.</p>
-              <select className="dmc-db-select" style={{ minWidth: 300 }} value={targetProvider} onChange={(e) => setTargetProvider(e.target.value)}>
+              <div className="fw-600 mb-4">Target Provider</div>
+              <p className="text-soft fs-13 mb-12">The destination provider. Must differ from the source.</p>
+              <select className="dmc-db-select minw-300" value={targetProvider} onChange={(e) => setTargetProvider(e.target.value)}>
                 <option value="">Select target provider\u2026</option>
                 {PROVIDERS.filter((p) => p.value !== sourceProvider).map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
@@ -114,9 +114,9 @@ export default function DmcMigration() {
 
           {step === 2 && (
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>Schema Mapping</div>
-              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 12 }}>Review and confirm the field type mapping between {sourceProvider} and {targetProvider}.</p>
-              <div className="dmc-db-table-wrap" style={{ marginBottom: 12 }}>
+              <div className="fw-600 mb-4">Schema Mapping</div>
+              <p className="text-soft fs-13 mb-12">Review and confirm the field type mapping between {sourceProvider} and {targetProvider}.</p>
+              <div className="dmc-db-table-wrap mb-12">
                 <table className="dmc-db-table">
                   <thead><tr><th>Source Type</th><th>Target Type</th><th>Status</th></tr></thead>
                   <tbody>
@@ -134,9 +134,9 @@ export default function DmcMigration() {
 
           {step === 3 && (
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>Validation Report</div>
+              <div className="fw-600 mb-4">Validation Report</div>
               {report ? (
-                <div className="dmc-db-table-wrap" style={{ marginBottom: 12 }}>
+                <div className="dmc-db-table-wrap mb-12">
                   <table className="dmc-db-table">
                     <thead><tr><th>Metric</th><th>Value</th></tr></thead>
                     <tbody>
@@ -149,18 +149,18 @@ export default function DmcMigration() {
                   </table>
                 </div>
               ) : (
-                <p style={{ color: 'var(--text-soft)', fontSize: 13 }}>Run validation from the previous step.</p>
+                <p className="text-soft fs-13">Run validation from the previous step.</p>
               )}
-              <label className="dmc-checkbox-label" style={{ marginTop: 8, display: 'inline-flex' }}>
+              <label className="dmc-checkbox-label mt-8 inline-flex">
                 <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview without applying)
               </label>
             </div>
           )}
 
           {step === 4 && (
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <p style={{ fontWeight: 600, marginBottom: 4 }}>Ready to {dryRun ? 'simulate' : 'execute'} migration</p>
-              <p style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 16 }}>{sourceProvider} \u2192 {targetProvider}</p>
+            <div className="text-center py-16">
+              <p className="fw-600 mb-4">Ready to {dryRun ? 'simulate' : 'execute'} migration</p>
+              <p className="text-soft fs-13 mb-16">{sourceProvider} \u2192 {targetProvider}</p>
               <Button variant="danger" onClick={doMigrate} disabled={migrating}>
                 {migrating ? 'Processing\u2026' : dryRun ? 'Start Dry Run' : 'Execute Migration'}
               </Button>
@@ -168,18 +168,18 @@ export default function DmcMigration() {
           )}
 
           {step === 5 && (
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div className="text-center py-16">
               {result?.ok ? (
                 <>
-                  <div style={{ marginBottom: 12 }}><Icon name="check" size={32} style={{ color: 'var(--green)' }} /></div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{result.dryRun ? 'Dry Run Passed' : 'Migration Complete'}</div>
-                  <div style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 16 }}>{result.message}</div>
+                  <div className="mb-12"><span className="text-green"><Icon name="check" size={32} /></span></div>
+                  <div className="fw-600 mb-4">{result.dryRun ? 'Dry Run Passed' : 'Migration Complete'}</div>
+                  <div className="text-soft fs-13 mb-16">{result.message}</div>
                 </>
               ) : (
                 <>
-                  <div style={{ marginBottom: 12 }}><Icon name="alert" size={32} style={{ color: 'var(--red)' }} /></div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Migration Failed</div>
-                  <div style={{ color: 'var(--text-soft)', fontSize: 13, marginBottom: 16 }}>{result?.message || 'Unknown error'}</div>
+                  <div className="mb-12"><span className="text-red"><Icon name="alert" size={32} /></span></div>
+                  <div className="fw-600 mb-4">Migration Failed</div>
+                  <div className="text-soft fs-13 mb-16">{result?.message || 'Unknown error'}</div>
                 </>
               )}
             </div>

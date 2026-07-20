@@ -40,14 +40,6 @@ export default function DmcBackupRecovery() {
 
   const tabs = ['overview', 'history', 'settings', 'restore'];
 
-  const TAB_BG = { background: 'var(--bg-subtle)', borderRadius: 8, padding: 2, display: 'inline-flex', gap: 4 };
-  const TAB_BTN = (isActive) => ({
-    padding: '6px 14px', borderRadius: 6, fontSize: 13, border: 'none', cursor: 'pointer',
-    background: isActive ? 'var(--bg)' : 'transparent',
-    color: isActive ? 'var(--text)' : 'var(--text-soft)',
-    fontWeight: isActive ? 600 : 400,
-  });
-
   return (
     <>
       <div className="dmc-db-hero dmc-db-hero--sm">
@@ -70,9 +62,9 @@ export default function DmcBackupRecovery() {
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
           <div className="dmc-db-section__title"><Icon name="refresh" size={18} /> Backup & Recovery</div>
-          <div style={TAB_BG}>
+          <div className="dmc-backup-tab-group">
             {tabs.map((t) => (
-              <button key={t} style={TAB_BTN(tab === t)} onClick={() => setTab(t)}>
+              <button key={t} className={`dmc-backup-tab${tab === t ? ' dmc-backup-tab--active' : ''}`} onClick={() => setTab(t)}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
@@ -100,7 +92,7 @@ export default function DmcBackupRecovery() {
             </div>
             <BackupHistoryTable backups={backups.slice(0, 5)} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} />
             {backups.length > 5 && (
-              <div style={{ textAlign: 'center', marginTop: 12 }}>
+              <div className="text-center mt-12">
                 <Button variant="ghost" size="sm" onClick={() => setTab('history')}>View All ({backups.length})</Button>
               </div>
             )}
@@ -115,22 +107,22 @@ export default function DmcBackupRecovery() {
 
         {tab === 'settings' && (
           <div className="dmc-db-section__body">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <div className="flex-row items-center gap-8 mb-8">
               <Icon name="gear" size={18} />
               <strong>Backup Settings</strong>
             </div>
-            <p style={{ color: 'var(--text-soft)', fontSize: 14, marginBottom: 12 }}>Configure backup retention, scheduling, and storage options.</p>
+            <p className="text-soft fs-14 mb-12">Configure backup retention, scheduling, and storage options.</p>
             <Button variant="primary" size="sm" onClick={() => nav('/admin/backup/settings')}>Open Settings</Button>
           </div>
         )}
 
         {tab === 'restore' && (
           <div className="dmc-db-section__body">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <div className="flex-row items-center gap-8 mb-8">
               <Icon name="history" size={18} />
               <strong>Restore Database</strong>
             </div>
-            <p style={{ color: 'var(--text-soft)', fontSize: 14, marginBottom: 12 }}>Select a backup to restore from the history table above, then click Restore.</p>
+            <p className="text-soft fs-14 mb-12">Select a backup to restore from the history table above, then click Restore.</p>
             {backups.length > 0 ? (
               <BackupHistoryTable backups={backups} can={can} onRestore={(b) => setRestoreTarget(b)} actor={user} toast={toast} onChanged={refresh} limit={0} />
             ) : (

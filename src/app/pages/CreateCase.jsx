@@ -309,11 +309,11 @@ export default function CreateCase() {
             <p>Fill in the details below to create a new case</p>
             <div className="bench-types__hero-accent" />
           </div>
-          <Button variant="ghost" icon="download" style={{ marginLeft: 'auto' }}>Load from Template</Button>
+          <Button variant="ghost" icon="download" className="ml-auto">Load from Template</Button>
           <Icon name="pen" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       ) : (
-        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+        <div className="bench-types__hero mb-20">
           <div className="bench-types__hero-icon"><Icon name="pen" size={34} /></div>
           <div className="bench-types__hero-text">
             <h2>Create Cases</h2>

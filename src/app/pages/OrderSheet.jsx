@@ -675,7 +675,7 @@ export default function OrderSheet() {
       {/* Mobile View */}
       {isMobile && (
         <div className="cl-mobile-view">
-          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero mb-20">
             <div className="bench-types__hero-icon"><Icon name="calendar" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Cases</h2>
@@ -732,7 +732,7 @@ export default function OrderSheet() {
                     </div>
 
                     <div className="cl-filters__search">
-                      <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenOSFilter} style={{ width: '100%', justifyContent: 'center' }}>
+                      <Button variant="ghost" icon="filter" className="jl-filter-btn w-full" onClick={handleOpenOSFilter} style={{ justifyContent: 'center' }}>
                         {[filterCourt, filterCourtLocation, filterStatus].some(Boolean) ? `Filter (${[filterCourt, filterCourtLocation, filterStatus].filter(Boolean).length})` : 'Filter'}
                       </Button>
                     </div>

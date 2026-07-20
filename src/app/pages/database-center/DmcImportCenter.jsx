@@ -156,17 +156,17 @@ export default function DmcImportCenter() {
         </div>
         <div className="dmc-db-section__body">
           {step === 0 && (
-            <div style={{ textAlign: 'center', padding: '24px 0' }}>
-              <div style={{ marginBottom: 16, opacity: 0.3 }}><Icon name="upload" size={48} /></div>
-              <p style={{ marginBottom: 16, color: 'var(--text-soft)' }}>Upload a file to import. Supported formats: {FORMATS.join(', ')}</p>
-              <input ref={fileRef} type="file" accept=".udb,.json,.csv,.sql,.xlsx,.xls,.xml,.bson" onChange={handleFile} style={{ display: 'none' }} />
+            <div className="text-center py-24">
+              <div className="mb-16 opacity-30"><Icon name="upload" size={48} /></div>
+              <p className="mb-16 text-soft">Upload a file to import. Supported formats: {FORMATS.join(', ')}</p>
+              <input ref={fileRef} type="file" accept=".udb,.json,.csv,.sql,.xlsx,.xls,.xml,.bson" onChange={handleFile} className="hidden" />
               <Button variant="primary" onClick={() => fileRef.current?.click()}>Choose File</Button>
             </div>
           )}
 
           {step >= 1 && step < 5 && (
             <>
-              <div className="dmc-db-table-wrap" style={{ marginBottom: 16 }}>
+              <div className="dmc-db-table-wrap mb-16">
                 <table className="dmc-db-table">
                   <thead><tr><th>Property</th><th>Value</th></tr></thead>
                   <tbody>
@@ -179,14 +179,14 @@ export default function DmcImportCenter() {
               </div>
 
               {step === 2 && fileCollections.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <div className="mb-16">
+                  <div className="flex-row items-center gap-8 mb-10">
                     <Icon name="layers" size={15} />
                     <strong>Collections detected in file</strong>
                     <span className="dmc-db-section__badge">{selectedImportCount} / {fileCollections.length} selected</span>
                   </div>
                   <div className="dmc-export-collection-list">
-                    <div className="dmc-export-select-actions" style={{ marginBottom: 6 }}>
+                    <div className="dmc-export-select-actions mb-6">
                       <Button variant="ghost" size="sm" onClick={selectAllImport}>Select All</Button>
                       <Button variant="ghost" size="sm" onClick={deselectAllImport}>Deselect All</Button>
                     </div>
@@ -214,18 +214,18 @@ export default function DmcImportCenter() {
           </div>
 
           {step === 5 && (
-            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div className="text-center py-24">
               {result?.success ? (
                 <>
-                  <div style={{ marginBottom: 12 }}><Icon name="check" size={32} style={{ color: 'var(--green)' }} /></div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Import Complete</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-soft)', marginBottom: 16 }}>{result.name} imported successfully.</div>
+                  <div className="mb-12"><span className="text-green"><Icon name="check" size={32} /></span></div>
+                  <div className="fw-600 mb-4">Import Complete</div>
+                  <div className="fs-13 text-soft mb-16">{result.name} imported successfully.</div>
                 </>
               ) : (
                 <>
-                  <div style={{ marginBottom: 12 }}><Icon name="alert" size={32} style={{ color: 'var(--red)' }} /></div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Import Failed</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-soft)', marginBottom: 16 }}>{result?.error || 'Unknown error'}</div>
+                  <div className="mb-12"><span className="text-red"><Icon name="alert" size={32} /></span></div>
+                  <div className="fw-600 mb-4">Import Failed</div>
+                  <div className="fs-13 text-soft mb-16">{result?.error || 'Unknown error'}</div>
                 </>
               )}
               <Button variant="primary" onClick={reset}>Import Another File</Button>

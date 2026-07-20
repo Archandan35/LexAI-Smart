@@ -27,16 +27,16 @@ export const NAV_GROUPS = [
     label: '',
     items: [
       { to: '/reminders', label: 'Reminders', icon: 'bell', module: 'manageCase' },
-      { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
+      { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar', module: 'calendar' },
     ],
   },
   { type: 'heading', label: 'Contact Center' },
   {
     label: '',
     items: [
-      { to: '/clients', label: 'Clients', icon: 'users' },
-      { to: '/advocates', label: 'Advocates', icon: 'users' },
-      { to: '/contacts', label: 'Contacts', icon: 'book' },
+      { to: '/clients', label: 'Clients', icon: 'users', module: 'clients' },
+      { to: '/advocates', label: 'Advocates', icon: 'users', module: 'advocates' },
+      { to: '/contacts', label: 'Contacts', icon: 'book', module: 'contacts' },
     ],
   },
   { type: 'heading', label: 'Document Center' },

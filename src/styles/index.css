@@ -6294,6 +6294,133 @@ kbd.cmd__kbd {
   color: var(--text-faint);
 }
 
+/* ---- CSS audit utility additions ---- */
+.ml-auto { margin-left: auto; }
+.mr-8 { margin-right: 8px; }
+.mb-4 { margin-bottom: 4px; }
+.mb-6 { margin-bottom: 6px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mt-16 { margin-top: 16px; }
+
+.p-0 { padding: 0; }
+.p-40 { padding: 40px; }
+.px-4 { padding-left: 4px; padding-right: 4px; }
+.px-20 { padding-left: 20px; padding-right: 20px; }
+.py-6 { padding-top: 6px; padding-bottom: 6px; }
+.mb-0 { margin-bottom: 0; }
+.font-mono { font-family: var(--mono); }
+.py-10 { padding-top: 10px; padding-bottom: 10px; }
+.py-16 { padding-top: 16px; padding-bottom: 16px; }
+.py-24 { padding-top: 24px; padding-bottom: 24px; }
+.py-48 { padding-top: 48px; padding-bottom: 48px; }
+
+.pos-relative { position: relative; }
+.pos-absolute-dropdown { position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; }
+
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+
+.grid-2-col { display: grid; grid-template-columns: 1fr 1fr; }
+.grid-col-all { grid-column: 1 / -1; }
+
+.fs-12 { font-size: 12px; }
+.fs-13 { font-size: 13px; }
+.fs-16 { font-size: 16px; }
+
+.w-full { width: 100%; }
+.hidden { display: none; }
+
+.text-brand { color: var(--brand); }
+.text-red { color: var(--red); }
+.text-green { color: var(--green); }
+.text-ok { color: var(--green); }
+.text-fail { color: var(--red); }
+.fw-400 { font-weight: 400; }
+.fw-600 { font-weight: 600; }
+.text-nowrap { white-space: nowrap; }
+
+.cursor-pointer { cursor: pointer; }
+.overflow-hidden { overflow: hidden; }
+.overflow-x-auto { overflow-x: auto; }
+.text-ellipsis { text-overflow: ellipsis; }
+.text-right { text-align: right; }
+.ml-2 { margin-left: 2px; }
+.bg-none { background: none; }
+.border-0 { border: none; }
+
+.inline-flex { display: inline-flex; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-shrink-0 { flex-shrink: 0; }
+
+.gap-0 { gap: 0; }
+.gap-2 { gap: 2px; }
+.gap-4 { gap: 4px; }
+.gap-6 { gap: 6px; }
+.gap-8 { gap: 8px; }
+
+.minw-130 { min-width: 130px; }
+.minw-200 { min-width: 200px; }
+.minw-220 { min-width: 220px; }
+.minw-300 { min-width: 300px; }
+.maxw-300 { max-width: 300px; }
+.maxw-400 { max-width: 400px; }
+.w-180 { width: 180px; }
+
+.opacity-30 { opacity: 0.3; }
+.border-b { border-bottom: 1px solid var(--border); }
+.border-t { border-top: 1px solid var(--border); }
+
+/* ---- DMC Data Explorer preview grid ---- */
+.dmc-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  font-size: 13px;
+}
+
+/* ---- DMC Backup tab group ---- */
+.dmc-backup-tab-group {
+  background: var(--bg-subtle);
+  border-radius: 8px;
+  padding: 2px;
+  display: inline-flex;
+  gap: 4px;
+}
+.dmc-backup-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+.dmc-backup-tab--active {
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---- DMC Audit Activity tab button ---- */
+.dmc-audit-tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  background: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+.dmc-audit-tab--active {
+  color: var(--brand);
+  font-weight: 600;
+  border-bottom-color: var(--brand);
+}
+
 /* ---- LegalResearch additions ---- */
 .legal-research__folder-title {
   font-weight: 650;
@@ -15720,6 +15847,7 @@ kbd.cmd__kbd {
   padding: 11px 14px;
   box-shadow: var(--shadow-sm);
   min-width: 0;
+  margin-bottom: 12px;
 }
 
 .cv-search-wrap input {
@@ -15784,6 +15912,7 @@ kbd.cmd__kbd {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
 }
 
 .cv-seg__btn {
@@ -17390,6 +17519,10 @@ kbd.cmd__kbd {
   background: url('/images/Pages-hero-banner/mc-hero-12.png') center center / cover no-repeat;
 }
 
+.manage-cases__hero-action {
+  margin-left: auto;
+}
+
 .bench-types__hero-icon {
   width: 70px;
   height: 70px;
@@ -18049,6 +18182,7 @@ kbd.cmd__kbd {
 
   .manage-cases__hero {
     background: url('/images/Pages-hero-banner/mc-hero-21.png') center center / cover no-repeat;
+    margin: 0 0 20px;
   }
 
   .bench-types__hero::after {
@@ -18180,6 +18314,10 @@ kbd.cmd__kbd {
     gap: 10px;
     margin: 0 16px 18px;
     flex-wrap: nowrap;
+  }
+
+  .bench-types__stat-cards.manage-cases__stat-cards {
+    margin: 0 0 18px;
   }
 
   .bench-types__stat-card {

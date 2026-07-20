@@ -54,14 +54,14 @@ export default function DmcMaintenance() {
           {results.validate && <span className={`dmc-badge dmc-badge--${results.validate.ok ? 'green' : 'red'}`}>{results.validate.ok ? 'Pass' : 'Fail'}</span>}
         </div>
         <div className="dmc-db-section__body">
-          <div className="dmc-db-statcard" style={{ cursor: 'pointer', maxWidth: 400 }} onClick={() => run('validate')}>
+          <div className="dmc-db-statcard cursor-pointer maxw-400" onClick={() => run('validate')}>
             <div className="dmc-db-statcard__icon dmc-db-statcard__icon--indigo"><Icon name="server" size={18} /></div>
             <div className="dmc-db-statcard__body">
               <div className="dmc-db-statcard__label">Health Check</div>
               <div className="dmc-db-statcard__value">{running === 'validate' ? 'Running\u2026' : 'Run Health Check'}</div>
               <div className="dmc-db-statcard__sub">Validate schema integrity and connection status</div>
               {results.validate && (
-                <div style={{ marginTop: 4, fontSize: 12, color: results.validate.ok ? 'var(--green)' : 'var(--red)' }}>
+                <div className={`mt-4 fs-12 ${results.validate.ok ? 'text-ok' : 'text-fail'}`}>
                   {results.validate.message}
                 </div>
               )}
@@ -81,16 +81,16 @@ export default function DmcMaintenance() {
                 <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${VARIANTS[(i + 1) % 6]}`}><Icon name={t.icon} size={18} /></div>
                 <div className="dmc-db-statcard__body">
                   <div className="dmc-db-statcard__label">{t.label}</div>
-                  <div className="dmc-db-statcard__value" style={{ fontSize: 14 }}>{running === t.id ? 'Running\u2026' : 'Run Task'}</div>
+                  <div className="dmc-db-statcard__value fs-14">{running === t.id ? 'Running\u2026' : 'Run Task'}</div>
                   <div className="dmc-db-statcard__sub">{t.desc}</div>
                   {results[t.id] && (
-                    <div style={{ marginTop: 4, fontSize: 12, color: results[t.id].ok ? 'var(--green)' : 'var(--red)' }}>
+                    <div className={`mt-4 fs-12 ${results[t.id].ok ? 'text-ok' : 'text-fail'}`}>
                       {results[t.id].message}
                     </div>
                   )}
                 </div>
                 {results[t.id] && (
-                  <span className={`dmc-badge dmc-badge--${results[t.id].ok ? 'green' : 'red'}`} style={{ flexShrink: 0, marginLeft: 8 }}>
+                  <span className={`dmc-badge dmc-badge--${results[t.id].ok ? 'green' : 'red'} flex-shrink-0 ml-8`}>
                     {results[t.id].ok ? 'Done' : 'Error'}
                   </span>
                 )}
@@ -104,7 +104,7 @@ export default function DmcMaintenance() {
         <div className="dmc-db-section__head">
           <div className="dmc-db-section__title"><Icon name="info" size={18} /> Maintenance Log</div>
         </div>
-        <div className="dmc-db-section__body" style={{ textAlign: 'center' }}>
+        <div className="dmc-db-section__body text-center">
           <div className="dmc-empty__hint">Completed tasks appear above with status indicators. No persistent log stored.</div>
         </div>
       </div>

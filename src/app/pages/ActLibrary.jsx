@@ -522,7 +522,7 @@ export default function ActLibrary() {
                 </div>
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Badge Colour</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="flex-row items-center gap-10">
                     <span className="cmp-color-swatch-lg" style={{ '--swatch-color': newColor }} />
                     <ColorPicker value={newColor} onChange={setNewColor} />
                   </div>
@@ -542,7 +542,7 @@ export default function ActLibrary() {
                 </div>
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Badge Colour</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="flex-row items-center gap-10">
                     <span className="cmp-color-swatch-lg" style={{ '--swatch-color': newColor }} />
                     <ColorPicker value={newColor} onChange={setNewColor} />
                   </div>
@@ -602,7 +602,7 @@ export default function ActLibrary() {
                     </div>
                     <div className="bench-types__field bench-types__field--full">
                       <label className="bench-types__label">Badge Colour</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div className="flex-row items-center gap-10">
                         <span className="cmp-color-swatch-lg" style={{ '--swatch-color': editColor }} />
                         <ColorPicker value={editColor} onChange={setEditColor} />
                       </div>
@@ -675,15 +675,15 @@ export default function ActLibrary() {
       )}
 
       {/* ── Search & filter bar in one row ── */}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', margin: '0 0 16px', flexWrap: 'wrap' }}>
-        <div className="bench-types__search" style={{ flex: 1, minWidth: 220 }}>
+      <div className="flex-row items-center gap-12 mb-16 flex-wrap">
+        <div className="bench-types__search flex-1 minw-220">
           <Icon name="search" size={18} />
           <input value={search} placeholder="Search acts by title..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
         </div>
         <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenALFilter}>
           {filterType ? `Filter (1)` : 'Filter'}
         </Button>
-        <div style={{ width: 180 }}>
+        <div className="w-180">
           <Select value={sortBy} onChange={e => setSortBy(e.target.value)}>
             <option value="title">Sort: Title</option>
             <option value="type">Sort: Type</option>
@@ -852,7 +852,7 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__grid">
             {paged.length === 0 ? (
-              <div className="bench-types__empty" style={{ gridColumn: '1 / -1', padding: 40, textAlign: 'center' }}>No acts found.</div>
+              <div className="bench-types__empty grid-col-all p-40 text-center">No acts found.</div>
             ) : paged.map((item) => (
               <div key={item.id} className="bench-types__grid-card">
                 <div className="bench-types__grid-card-header">
@@ -920,7 +920,7 @@ export default function ActLibrary() {
           <div className="bench-types__mobile-pagination bench-types__mobile-only">
             <div className="bench-types__mobile-pag-info">Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length}</div>
             {totalPages > 1 && (
-              <div className="bench-types__pagination" style={{ justifyContent: 'center', marginTop: 12 }}>
+              <div className="bench-types__pagination justify-center mt-12">
                 <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                   const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
@@ -962,7 +962,7 @@ export default function ActLibrary() {
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Title</span>
             <span className="bench-types__detail-value">
-              <span className="cmp-color-swatch-lg" style={{ '--swatch-color': getTypeColor(viewItem?.act_type, viewItem), marginRight: 8 }} />
+              <span className="cmp-color-swatch-lg mr-8" style={{ '--swatch-color': getTypeColor(viewItem?.act_type, viewItem) }} />
               {viewItem?.title || '—'}
             </span>
           </div>
@@ -1050,7 +1050,7 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__field bench-types__field--full">
             <label className="bench-types__label">Badge Colour</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="flex-row items-center gap-10">
               <span className="cmp-color-swatch-lg" style={{ '--swatch-color': editColor }} />
               <ColorPicker value={editColor} onChange={setEditColor} />
             </div>
@@ -1107,7 +1107,7 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__field bench-types__field--full">
             <label className="bench-types__label">Badge Colour</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="flex-row items-center gap-10">
               <span className="cmp-color-swatch-lg" style={{ '--swatch-color': newColor }} />
               <ColorPicker value={newColor} onChange={setNewColor} />
             </div>

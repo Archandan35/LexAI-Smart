@@ -142,7 +142,7 @@ export default function Reminders() {
               <p>All hearing, filing, evidence & compliance deadlines.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={openAdd} style={{ marginLeft: 'auto' }}>Add Reminder</Button>
+            <Button icon="plus" onClick={openAdd} className="ml-auto">Add Reminder</Button>
             <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -199,7 +199,7 @@ export default function Reminders() {
         </>
       ) : (
         <>
-          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero mb-20">
             <div className="bench-types__hero-icon"><Icon name="bell" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Reminders</h2>
@@ -210,7 +210,7 @@ export default function Reminders() {
             <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
-          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+          <div className="bench-types__stat-cards bench-types__mobile-only mb-18">
             <div className="bench-types__stat-card bench-types__stat-card--total">
               <div className="bench-types__stat-card-row1">
                 <div className="bench-types__stat-card-icon"><Icon name="bell" size={18} /></div>
