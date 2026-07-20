@@ -9,7 +9,6 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     super();
     this.url = config.credentials.supabaseUrl;
     this.key = config.credentials.supabaseAnonKey;
-    this.serviceKey = config.credentials.supabaseServiceRoleKey;
     this._bootstrapped = false;
     this._execSqlChecked = false;
     if (!this.url || !this.key) {
@@ -31,107 +30,6 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     };
-  }
-
-  _serviceHeaders() {
-    if (!this.serviceKey) return null;
-    return {
-      apikey: this.serviceKey,
-      Authorization: `Bearer ${this.serviceKey}`,
-      'Content-Type': 'application/json',
-    };
-  }
-
-  _bootstrapSql() {
-    const lines = [];
-    lines.push('create or replace function exec_sql(sql text)');
-    lines.push('returns setof jsonb');
-    lines.push('language plpgsql');
-    lines.push('security definer');
-    lines.push('as $$');
-    lines.push('begin');
-    lines.push("  if exists (select 1 from pg_tables where tablename = 'migration_registry') then");
-    lines.push("    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)");
-    lines.push("    values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);");
-    lines.push('  end if;');
-    lines.push('  return query execute sql;');
-    lines.push('exception');
-    lines.push('  when others then');
-    lines.push('    execute sql;');
-    lines.push("    return query select '{\"ok\":true}'::jsonb;");
-    lines.push('end;');
-    lines.push('$$;');
-    lines.push('');
-    lines.push('create or replace function safe_ddl(sql text)');
-    lines.push('returns void');
-    lines.push('language plpgsql');
-    lines.push('security definer');
-    lines.push('as $$');
-    lines.push('declare');
-    lines.push('  v_upper text;');
-    lines.push('begin');
-    lines.push("  v_upper := upper(sql);");
-    lines.push("  if v_upper ~ '^\\s*DROP\\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then");
-    lines.push("    raise exception 'safe_ddl: DROP is not permitted';");
-    lines.push('  end if;');
-    lines.push("  if v_upper ~ '^\\s*TRUNCATE' then raise exception 'safe_ddl: TRUNCATE is not permitted'; end if;");
-    lines.push("  if v_upper ~ 'ALTER\\s+TABLE.*DROP\\s+(COLUMN|CONSTRAINT)' then");
-    lines.push("    raise exception 'safe_ddl: ALTER TABLE DROP is not permitted';");
-    lines.push('  end if;');
-    lines.push('  if not (');
-    lines.push("    v_upper ~ '^\\s*CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s' or");
-    lines.push("    v_upper ~ '^\\s*CREATE\\s+INDEX\\s+IF\\s+NOT\\s+EXISTS\\s' or");
-    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+COLUMN\\s+IF\\s+NOT\\s+EXISTS' or");
-    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+CONSTRAINT' or");
-    lines.push("    v_upper ~ '^\\s*CREATE\\s+OR\\s+REPLACE\\s+FUNCTION\\s' or");
-    lines.push("    v_upper ~ '^\\s*ALTER\\s+TABLE\\s+IF\\s+EXISTS\\s' or");
-    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or");
-    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*DISABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or");
-    lines.push("    v_upper ~ '^\\s*CREATE\\s+POLICY\\s' or");
-    lines.push("    v_upper ~ '^\\s*ALTER\\s+POLICY\\s' or");
-    lines.push("    v_upper ~ '^\\s*DROP\\s+POLICY\\s+IF\\s+EXISTS\\s' or");
-    lines.push("    v_upper ~ '^\\s*COMMENT\\s+ON\\s' or");
-    lines.push("    v_upper ~ '^\\s*DO\\s+\\$\\$' or");
-    lines.push("    v_upper ~ '^\\s*--'");
-    lines.push('  ) then');
-    lines.push("    raise exception 'safe_ddl: Statement does not match any allowed pattern: %', substr(sql, 1, 80);");
-    lines.push('  end if;');
-    lines.push('  execute sql;');
-    lines.push('end;');
-    lines.push('$$;');
-    lines.push('');
-    lines.push('grant execute on function exec_sql(text) to authenticated;');
-    lines.push('grant execute on function exec_sql(text) to anon;');
-    lines.push('grant execute on function exec_sql(text) to service_role;');
-    lines.push('grant execute on function safe_ddl(text) to authenticated;');
-    lines.push('grant execute on function safe_ddl(text) to anon;');
-    lines.push('grant execute on function safe_ddl(text) to service_role;');
-    lines.push('grant execute on function next_lx_id(text) to anon;');
-    return lines.join('\n');
-  }
-
-  async _tryBootstrapExecSql() {
-    const h = this._serviceHeaders();
-    if (!h) return false;
-    const sql = this._bootstrapSql();
-    try {
-      const res = await fetch(`${this.url}/pg/v1/sql`, {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ query: sql }),
-      });
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        console.warn('[Supabase] bootstrap via /pg/v1/sql failed:', res.status, body.slice(0, 300));
-        return false;
-      }
-      this._bootstrapped = true;
-      console.log('[Supabase] exec_sql function bootstrapped successfully');
-      return true;
-    } catch (e) {
-      console.warn('[Supabase] bootstrap error:', e.message);
-      return false;
-    }
   }
 
   _endpoint(collection) {
@@ -191,37 +89,16 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return rows[0];
   }
 
-  // Execute arbitrary SQL via the exec_sql RPC (requires custom function in Supabase).
-  // If the RPC is not available (405), tries to bootstrap the function using the
-  // service role key via /pg/v1/sql, then retries via RPC.
+  // Execute arbitrary SQL via the exec_sql RPC (requires the custom function to
+  // already exist in Supabase). The function must be created once via the
+  // supabase_migration.sql script in the Supabase SQL Editor, or installed
+  // through a backend proxy (VITE_BACKEND_URL) — see docs/CLIENT_SECRETS.md.
+  // The client no longer holds a service-role key, so it cannot bootstrap the
+  // function itself; it returns needsManual for the operator to act on.
   async execSql(sql) {
-    // Try RPC first
     const rpcResult = await this._execSqlViaRpc(sql);
     if (rpcResult.ok) return rpcResult;
-    // RPC failed — fall back to service-key SQL endpoint
-    const h = this._serviceHeaders();
-    if (!h) return rpcResult;
-    try {
-      const res = await fetch(`${this.url}/pg/v1/sql`, {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ query: sql }),
-      });
-      if (res.ok) {
-        const body = await res.text().catch(() => '');
-        if (!body) return { ok: true, raw: true };
-        try {
-          const data = JSON.parse(body);
-          return { ok: true, data: Array.isArray(data) ? data : [data], raw: true };
-        } catch {
-          return { ok: true, raw: true };
-        }
-      }
-      const body = await res.text().catch(() => '');
-      return { ok: false, error: body.slice(0, 300) };
-    } catch (e) {
-      return { ok: false, error: e.message };
-    }
+    return rpcResult;
   }
 
   async _execSqlViaRpc(sql) {
@@ -241,72 +118,21 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
           return { ok: true };
         }
       }
-      // 405 = function does not exist → try to bootstrap
-      if (res.status === 405 && !this._bootstrapped) {
-        const booted = await this._tryBootstrapExecSql();
-        if (booted) {
-          // Retry via RPC — function now exists but cache might be stale
-          const retry = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-            method: 'POST',
-            headers: { ...this._headers(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sql }),
-          });
-          if (retry.ok) {
-            const body = await retry.text().catch(() => '');
-            if (!body) return { ok: true };
-            try {
-              const data = JSON.parse(body);
-              return { ok: true, data: Array.isArray(data) ? data : [data] };
-            } catch {
-              return { ok: true };
-            }
-          }
-          // Bootstrap worked but RPC still fails — caller will fall back to /pg/v1/sql
-        }
-      }
-      // 401/403 = function exists but role lacks execute → try with service key directly
-      // (REST API has open CORS, unlike /pg/v1/sql)
-      if ((res.status === 401 || res.status === 403) && this.serviceKey) {
-        try {
-          const svcRes = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-            method: 'POST',
-            headers: { ...this._serviceHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sql }),
-          });
-          if (svcRes.ok) {
-            const body = await svcRes.text().catch(() => '');
-            // Auto-fix: grant exec_sql + next_lx_id to anon so future calls work directly
-            try {
-              await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-                method: 'POST',
-                headers: { ...this._serviceHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sql: 'grant execute on function exec_sql(text) to anon; grant execute on function next_lx_id(text) to anon;' }),
-              });
-            } catch (_) {}
-            if (!body) return { ok: true };
-            try {
-              const data = JSON.parse(body);
-              return { ok: true, data: Array.isArray(data) ? data : [data] };
-            } catch {
-              return { ok: true };
-            }
-          }
-        } catch (_) {}
-        // Both anon and service key failed — can't bootstrap from client
-      }
-      return { ok: false, needsManual: res.status === 405 ? !this.serviceKey : true, error: await res.text().catch(() => 'Unknown error') };
+      // 405 = function does not exist → operator must create it (see warning below).
+      // Any other error → surface needsManual so the installer can show SQL + link.
+      const error = await res.text().catch(() => 'Unknown error');
+      return { ok: false, needsManual: res.status === 405, error };
     } catch (e) {
       return { ok: false, error: e.message };
     }
   }
 
   async _ensureExecSqlBootstrapped() {
-    // Probe whether exec_sql responds. The first call through execSql will auto-bootstrap
-    // if the service key is available — this just checks the result.
+    // Probe whether exec_sql responds. The function must already exist.
     const probe = await this.execSql('select 1 as ok');
     if (!probe.ok) {
       console.warn('[Supabase] exec_sql RPC unavailable. Auto-provisioning will fall through.');
-      console.warn('[Supabase] Run supabase_migration.sql in your Supabase SQL Editor once, or set VITE_SUPABASE_SERVICE_ROLE_KEY in .env.');
+      console.warn('[Supabase] Run supabase_migration.sql in your Supabase SQL Editor once, or configure VITE_BACKEND_URL for backend-assisted install.');
     }
     return probe.ok;
   }
@@ -440,21 +266,10 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
   // schema cache") until the cache is reloaded. Notify PostgREST to refresh so
   // the very next request sees the new column. Best-effort only.
   async reloadSchema() {
-    // Try via exec_sql RPC first (works once cache is warm)
+    // Reload PostgREST's schema cache via the exec_sql RPC (best-effort).
+    // The client never holds a service-role key, so there is no raw SQL fallback.
     const viaRpc = await this.execSql("SELECT pg_notify('pgrst', 'reload schema');");
-    if (viaRpc.ok) return;
-    // Fallback: use the service-key SQL endpoint directly
-    const h = this._serviceHeaders();
-    if (!h) return;
-    try {
-      await fetch(`${this.url}/pg/v1/sql`, {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ query: "SELECT pg_notify('pgrst', 'reload schema');" }),
-      });
-    } catch (e) {
-      console.warn('[Supabase] schema cache reload failed:', e?.message);
-    }
+    if (!viaRpc.ok) console.warn('[Supabase] schema cache reload skipped (exec_sql RPC unavailable).');
   }
 
   async remove(collection, id) {

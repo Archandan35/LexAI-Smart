@@ -1,7 +1,12 @@
 // Central runtime configuration. The ONLY place env vars are read.
 // Provider factories consume this; nothing else touches import.meta.env.
 
+import { guardClientSecrets } from '@/security/clientSecretGuard.js';
+
 const env = import.meta.env ?? {};
+
+// Fail loud (not silently) if a privileged secret is about to ship to the browser.
+guardClientSecrets();
 
 export const config = {
   app: {
@@ -26,7 +31,10 @@ export const config = {
     ollamaBaseUrl: env.VITE_OLLAMA_BASE_URL || 'http://localhost:11434',
     supabaseUrl: env.VITE_SUPABASE_URL || '',
     supabaseAnonKey: env.VITE_SUPABASE_ANON_KEY || '',
-    supabaseServiceRoleKey: env.VITE_SUPABASE_SERVICE_ROLE_KEY || '',
+    // NOTE: the service-role key is intentionally NOT read here. It bypasses
+    // RLS and grants full DB admin, so it must never ship in the client
+    // bundle. Installation that needs it is routed to a backend via
+    // VITE_BACKEND_URL (see BackendGateway / docs/CLIENT_SECRETS.md).
     mongoDataApiUrl: env.VITE_MONGO_DATA_API_URL || '',
     mongoDataApiKey: env.VITE_MONGO_DATA_API_KEY || '',
     mongoDataSource: env.VITE_MONGO_DATA_SOURCE || '',
