@@ -13,6 +13,7 @@ import { caseLogic } from '@/logic/caseLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useFormat } from '@/utils/format.js';
+import { useFabAction } from '@/data-layer/FABContext.jsx';
 
 const EMPTY_FORM = { title: '', type: '', caseId: '', date: '' };
 
@@ -110,6 +111,7 @@ export default function Reminders() {
   }, [items, filter, search, caseMap]);
 
   const openAdd = () => { setForm(EMPTY_FORM); setOpen(true); };
+  useFabAction(openAdd);
 
   const save = async () => {
     if (!form.title?.trim()) { toast.error('Title is required.'); return; }

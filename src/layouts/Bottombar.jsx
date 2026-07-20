@@ -1,6 +1,8 @@
+import { useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
+import { FabActionContext } from '@/data-layer/FABContext.jsx';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', icon: 'home', to: '/dashboard' },
@@ -13,6 +15,7 @@ const NAV_ITEMS = [
 export default function Bottombar() {
   const nav = useNavigate();
   const { pathname } = useLocation();
+  const fabActionRef = useContext(FabActionContext);
 
   const bar = (
     <div className="bottombar-wrap">
@@ -33,7 +36,13 @@ export default function Bottombar() {
                 <button
                   key={item.key}
                   className="bottombar__item bottombar__item--fab"
-                  onClick={() => nav(item.to)}
+                  onClick={() => {
+                    if (fabActionRef?.current) {
+                      fabActionRef.current();
+                    } else {
+                      nav(item.to);
+                    }
+                  }}
                   aria-label={item.label}
                 >
                   <span className="bottombar__fab">

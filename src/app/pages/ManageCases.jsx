@@ -19,6 +19,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
+import { useFabAction } from '@/data-layer/FABContext.jsx';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { useFormat } from '@/utils/format.js';
@@ -73,6 +74,7 @@ export default function ManageCases() {
   };
 
   const [open, setOpen] = useState(false);
+  useFabAction(() => setOpen(true));
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState([]);

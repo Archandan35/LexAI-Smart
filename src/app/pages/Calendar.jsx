@@ -29,6 +29,7 @@ import CrudManager from '@/components/CrudManager.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useFabAction } from '@/data-layer/FABContext.jsx';
 import { useFormat } from '@/utils/format.js';
 import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
 import { remindersRepository } from '@/data-layer/repositories/remindersRepository.js';
@@ -93,7 +94,7 @@ export default function Calendar() {
       hearingsRepository.getAll().catch(() => []),
       remindersRepository.getAll().catch(() => []),
       taskLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-      casesRepository.getAll({ select: 'id,title,case_number_str,next_hearing,status' }).catch(() => []),
+      casesRepository.getAll({ select: 'id,title,case_number_str,case_display_number,next_hearing,status' }).catch(() => []),
       orCached('priorities', () => priorityLogic.list().catch(() => [])),
       orCached('categories', () => taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
       orCached('statuses', () => taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
@@ -183,6 +184,7 @@ export default function Calendar() {
   /* ---------- modal state for event view ---------- */
   const [viewEvent, setViewEvent] = useState(null);
   const [taskAddOpen, setTaskAddOpen] = useState(false);
+  useFabAction(() => { setTab('tasks'); setTaskAddOpen(true); });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {

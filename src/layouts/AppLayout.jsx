@@ -6,6 +6,7 @@ import Bottombar from './Bottombar.jsx';
 import { keepAliveService } from '@/services/keepAliveService.js';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
+import { FabActionProvider } from '@/data-layer/FABContext.jsx';
 
 
 // AppLayout — the shell. Holds sidebar collapse/mobile state and renders the
@@ -38,7 +39,7 @@ export default function AppLayout() {
   };
 
   return (
-    <>
+    <FabActionProvider>
       <div className="app-shell">
         <Sidebar collapsed={collapsed} mobileOpen={mobileOpen} />
         {mobileOpen && (
@@ -59,7 +60,7 @@ export default function AppLayout() {
         </div>
       </div>
       <Bottombar />
-    </>
+    </FabActionProvider>
   );
 }
 

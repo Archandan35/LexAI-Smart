@@ -22,6 +22,7 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useFabAction } from '@/data-layer/FABContext.jsx';
 import { stripHtml, useFormat } from '@/utils/format.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
@@ -177,6 +178,7 @@ export default function OrderSheet() {
     setSelectedTemplate('');
     setOpen(true);
   };
+  useFabAction(openNew);
   const toDateInput = (v) => {
     if (!v) return '';
     const d = new Date(v);
