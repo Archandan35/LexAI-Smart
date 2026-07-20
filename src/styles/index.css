@@ -26230,54 +26230,136 @@ kbd.cmd__kbd {
 }
 
 /* ── Filter Popup Responsive ── */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .fp-popup {
-    width: 100vw;
-    height: 100vh;
-    max-width: none;
-    border-radius: 0;
+    width: 95vw;
   }
 
-  .fp-left {
-    width: 160px;
+  .fp-header {
+    padding: 16px 20px;
   }
 
   .fp-right {
-    padding: 16px;
+    padding: 16px 20px;
+  }
+
+  .fp-opt {
+    gap: 10px;
+    padding: 8px 12px;
+  }
+
+  .fp-footer {
+    padding: 14px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .fp-popup {
+    max-width: 700px;
+  }
+
+  .fp-header {
+    padding: 14px 18px;
+  }
+
+  .fp-title {
+    font-size: 16px;
+  }
+
+  .fp-left {
+    width: 180px;
   }
 
   .fp-cat {
-    padding: 10px 12px;
+    padding: 10px 14px;
     font-size: 13px;
+  }
+
+  .fp-right {
+    padding: 14px 18px;
+  }
+
+  .fp-right-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .fp-opt {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .fp-opt-check {
+    width: 18px;
+    height: 18px;
+  }
+
+  .fp-opt-label {
+    font-size: 13px;
+  }
+
+  .fp-footer {
+    padding: 12px 18px;
   }
 }
 
 @media (max-width: 480px) {
-  .fp-body {
-    flex-direction: column;
+  .fp-overlay {
+    padding: 10px;
+  }
+
+  .fp-popup {
+    border-radius: 12px;
+  }
+
+  .fp-header {
+    padding: 12px 14px;
+  }
+
+  .fp-title {
+    font-size: 15px;
+  }
+
+  .fp-close-btn {
+    width: 32px;
+    height: 32px;
   }
 
   .fp-left {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 4px 0;
-    display: flex;
-    overflow-x: auto;
-    flex-shrink: 0;
+    width: 150px;
+    padding: 6px 0;
   }
 
   .fp-cat {
-    flex-shrink: 0;
-    white-space: nowrap;
-    padding: 10px 14px;
-    border-left: none;
-    border-bottom: 3px solid transparent;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 
-  .fp-cat--active {
-    border-left-color: transparent;
-    border-bottom-color: var(--brand);
+  .fp-right {
+    padding: 12px 14px;
+  }
+
+  .fp-right-title {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .fp-opt {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .fp-opt-check {
+    width: 16px;
+    height: 16px;
+  }
+
+  .fp-opt-label {
+    font-size: 12px;
+  }
+
+  .fp-footer {
+    padding: 10px 14px;
   }
 }
 
