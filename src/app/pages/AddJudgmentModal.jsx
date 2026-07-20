@@ -1078,7 +1078,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Court Name', required: true, placeholder: 'e.g. Supreme Court of India' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. SC-IND' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'level', label: 'Court Level', required: true, placeholder: 'e.g. 1 (Supreme), 2 (High Court)' },
       { key: 'parent_id', label: 'Parent Court', required: false, placeholder: 'Parent court ID (optional)' },
       { key: 'status', label: 'Status', required: true },
@@ -1091,7 +1090,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Bench Type Name', required: true, placeholder: 'e.g. Division Bench' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. DIV-BENCH' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1104,7 +1102,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. J-AKS' },
       { key: 'designation', label: 'Designation', required: true, placeholder: 'e.g. Chief Justice, Justice' },
       { key: 'court', label: 'Court', required: false, placeholder: 'Associated court' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1115,7 +1112,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Case Type Name', required: true, placeholder: 'e.g. Civil Appeal' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CA' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1126,7 +1122,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Jurisdiction Name', required: true, placeholder: 'e.g. Civil' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CIV' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1137,7 +1132,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Stage Name', required: true, placeholder: 'e.g. Pleading' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PL' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1148,10 +1142,10 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Status Name', required: true, placeholder: 'e.g. Pending' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PND' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
       { key: 'status', label: 'Status', required: true },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const priorityConfig = {
@@ -1159,7 +1153,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Priority Name', required: true, placeholder: 'e.g. High' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. HI' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1170,7 +1163,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Party Type Name', required: true, placeholder: 'e.g. Plaintiff' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PLT' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],
     defaults: { status: 'Active' },
@@ -1181,7 +1173,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Area of Law Name', required: true, placeholder: 'e.g. Civil Law' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'ARLA-<AREA-OF-LAW>', hint: 'Example: ARLA-CIVIL-LAW' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
       { key: 'color', label: 'Badge Color', type: 'color' },
     ],
@@ -1193,7 +1184,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Type of Proceeding Name', required: true, placeholder: 'e.g. Appeal' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'TOPR-<TYPE-OF-PROCEEDING>', hint: 'Example: TOPR-APPEAL' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
       { key: 'color', label: 'Badge Color', type: 'color' },
     ],
@@ -1205,7 +1195,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Nature of Dispute Name', required: true, placeholder: 'e.g. Contract Dispute' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'NADI-<NATURE-OF-DISPUTE>', hint: 'Example: NADI-PARTITION' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
       { key: 'color', label: 'Badge Color', type: 'color' },
     ],
@@ -1220,7 +1209,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'act_type', label: 'Act Type', placeholder: 'e.g. Central, State' },
       { key: 'jurisdiction', label: 'Jurisdiction', placeholder: 'e.g. India' },
       { key: 'year', label: 'Year', placeholder: 'e.g. 1860' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
       { key: 'color', label: 'Badge Color', type: 'color' },
     ],
