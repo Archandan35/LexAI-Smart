@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 import CommandBar from '@/components/CommandBar.jsx';
+import ThemeToggle from '@/components/ThemeToggle.jsx';
 import NotificationsBell from '@/components/NotificationsBell.jsx';
 import { ALL_NAV_ITEMS } from '@/routes/navigation.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -56,6 +57,7 @@ export default function Topbar({ onToggle }) {
         <kbd className="cmd__kbd">⌘K</kbd>
       </button>
 
+      <ThemeToggle />
       <NotificationsBell />
 
       <div className="usermenu" ref={menuRef}>
