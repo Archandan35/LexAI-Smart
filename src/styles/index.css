@@ -1,84 +1,13 @@
-﻿/* LexAI design system — premium light legal SaaS theme. */
-:root {
-  --navy-900: #0f1f3d;
-  --navy-800: #16294d;
-  --navy-700: #1e3a8a;
-  --navy-600: #2547a3;
-  --brand: #1e3a8a;
-  --brand-soft: #e8eefc;
-  --gold: #b8862b;
-  --gold-soft: #f7eed8;
-
-  --bg: #f4f6fb;
-  --surface: #ffffff;
-  --surface-2: #fafbfe;
-  --border: #e6e9f2;
-  --border-strong: #d4d9e8;
-
-  --text: #1a2236;
-  --text-soft: #5b6478;
-  --text-faint: #8a93a8;
-
-  --green: #1f9d6b;
-  --green-soft: #e3f6ee;
-  --red: #d8453c;
-  --red-soft: #fdeceb;
-  --amber: #c9871f;
-  --amber-soft: #fbf1dc;
-
-  --radius: 14px;
-  --radius-sm: 9px;
-  --shadow-sm: 0 1px 2px rgba(16, 31, 61, 0.06), 0 1px 3px rgba(16, 31, 61, 0.04);
-  --shadow: 0 4px 14px rgba(16, 31, 61, 0.08);
-  --shadow-lg: 0 12px 34px rgba(16, 31, 61, 0.14);
-  --shadow-brand: 0 8px 22px rgba(30, 58, 138, 0.22);
-
-  --sidebar-w: 264px;
-  --topbar-h: 64px;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Scrollbar design tokens (shared across the whole app) */
-  --scrollbar-size: 10px;
-  --scrollbar-size-thin: 6px;
-  --scrollbar-thumb: #cdd3e3;
-  --scrollbar-thumb-hover: var(--navy-600);
-  --scrollbar-track: transparent;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  font-size: 14.5px;
-  line-height: 1.55;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
-}
-
-input,
-textarea,
-select {
-  font-family: inherit;
-}
+﻿/* LexAI design system — premium light legal SaaS theme.
+   ============================================================
+   NOTE: Design tokens (CSS custom properties) have been extracted
+   to tokens.css. Reset/normalization lives in reset.css. Dark mode
+   overrides live in dark.css. This file will be split into per-component
+   CSS modules in Phase 3 of the enterprise migration plan.
+   ============================================================ */
+@import url('./tokens.css');
+@import url('./reset.css');
+@import url('./dark.css');
 
 /* ============================================================
    SHARED SCROLLBAR

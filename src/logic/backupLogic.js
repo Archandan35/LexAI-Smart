@@ -3,20 +3,24 @@ import { backupFileService } from '@/services/backupFileService.js';
 import { auditService } from '@/services/auditService.js';
 import { sha256Hex } from '@/utils/crypto.js';
 import { downloadFile } from '@/utils/exportData.js';
+import { encryptBackup, decryptBackup } from '@/utils/backupEncryption.js';
 import { config } from '@/config/config.js';
 import { ok, fail } from '@/utils/result.js';
 
+import { SCHEMA_VERSION as CURRENT_SCHEMA_VERSION } from '@/data-provider/schema/index.js';
+
 // Universal Database Backup format.
 export const UDB_VERSION = '1.0';
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = CURRENT_SCHEMA_VERSION;
 
 export const DEFAULT_SETTINGS = {
-  retention: 5,          // max stored backups (number) or 'unlimited'
+  retention: 5,
   autoCleanup: true,
-  frequency: 'daily',    // hourly | daily | weekly | monthly | manual
+  frequency: 'daily',
   time: '02:00',
-  compression: true,     // simulated flag (no real compression client-side)
-  encryption: true,      // simulated flag (demo only — see note)
+  compression: true,
+  encryption: true,
+  encryptionPassword: '',
   notifications: true,
   storageLimitMb: 100,
 };

@@ -5,7 +5,8 @@ import { documentsRepository } from '@/data-layer/repositories/documentsReposito
 import { notesRepository } from '@/data-layer/repositories/notesRepository.js';
 import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
 
-const CACHE_TTL = 60_000;
+const CACHE_TTL = 60000;
+const MAX_PER_SOURCE = 500;
 
 const SOURCES = [
   { repo: casesRepository, type: 'Case', icon: 'vault', module: 'manageCase',
@@ -30,7 +31,9 @@ let cacheTs = 0;
 
 async function getAllowedCollections(allowed) {
   if (cache && Date.now() - cacheTs < CACHE_TTL) return cache;
-  const collections = await Promise.all(allowed.map((s) => s.repo.getAll().catch(() => [])));
+  const collections = await Promise.all(
+    allowed.map((s) => s.repo.getAll({ limit: MAX_PER_SOURCE }).catch(() => []))
+  );
   cache = collections;
   cacheTs = Date.now();
   return cache;
@@ -54,7 +57,8 @@ export const searchLogic = {
     const collections = await getAllowedCollections(allowed);
     const hits = [];
     allowed.forEach((src, i) => {
-      collections[i].forEach((r) => {
+      const rows = collections[i] || [];
+      for (const r of rows) {
         const hay = (src.fields(r) || []).filter(Boolean).join(' ').toLowerCase();
         const sc = score(hay, terms);
         if (sc > 0) {
@@ -64,7 +68,7 @@ export const searchLogic = {
             route: src.route(r), score: sc,
           });
         }
-      });
+      }
     });
 
     if (!can || can('citations.view')) {

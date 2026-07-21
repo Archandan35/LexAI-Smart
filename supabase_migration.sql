@@ -57,10 +57,16 @@ begin
 end;
 $$;
 
+-- CRITICAL SECURITY: Only authenticated users may execute raw SQL.
+-- The anon role MUST NOT have exec_sql — that would let anyone with the
+-- anon key (visible in the JS bundle) run arbitrary SQL on the database.
 grant execute on function exec_sql(text) to authenticated;
-grant execute on function exec_sql(text) to anon;
+-- safe_ddl is restricted to CREATE TABLE IF NOT EXISTS and similar safe
+-- patterns only. Still, only authenticated users are trusted with it.
 grant execute on function safe_ddl(text) to authenticated;
-grant execute on function safe_ddl(text) to anon;
+-- anon and authenticated both get row-level access via the REST API —
+-- RLS policies on each table control what each role can see/do.
+-- NEVER grant exec_sql or safe_ddl to anon.
 
 -- Also add the missing judgment columns (these are in INITIAL_FORM but not in the DB)
 alter table if exists "judgments" add column if not exists "ratioDecidendi" text;

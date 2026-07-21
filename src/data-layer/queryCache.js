@@ -1,23 +1,58 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
-// queryCache — a tiny stale-while-revalidate cache shared across the whole app.
-//
-// Why: every page used to refetch its data from the remote database on mount,
-// so navigating between pages showed a spinner and hit the network every time.
-// This cache keeps the last result per key in memory, hands it back instantly on
-// the next visit (no spinner), and revalidates in the background. In-flight
-// requests are de-duplicated and all subscribers re-render when data changes, so
-// separate components/pages that read the same key stay in sync.
+const MAX_ENTRIES = 500;
+const GC_INTERVAL_MS = 60000;
+const MAX_ENTRY_AGE_MS = 3600000;
 
 const store = new Map();
+const accessOrder = [];
+
+function touch(key) {
+  const idx = accessOrder.indexOf(key);
+  if (idx !== -1) accessOrder.splice(idx, 1);
+  accessOrder.push(key);
+}
+
+function evictLRU() {
+  while (store.size > MAX_ENTRIES) {
+    const oldest = accessOrder.shift();
+    if (oldest !== undefined) {
+      const entry = store.get(oldest);
+      if (entry && entry.subs.size === 0) {
+        store.delete(oldest);
+      } else if (entry) {
+        accessOrder.push(oldest);
+      }
+    } else break;
+  }
+}
+
+let gcTimer = null;
+function startGC() {
+  if (gcTimer) return;
+  gcTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of store) {
+      if (entry.subs.size === 0 && entry.ts > 0 && now - entry.ts > MAX_ENTRY_AGE_MS) {
+        store.delete(key);
+        const idx = accessOrder.indexOf(key);
+        if (idx !== -1) accessOrder.splice(idx, 1);
+      }
+    }
+    evictLRU();
+  }, GC_INTERVAL_MS);
+  if (gcTimer.unref) gcTimer.unref();
+}
+startGC();
 
 function getEntry(key) {
   let entry = store.get(key);
   if (!entry) {
+    evictLRU();
     entry = {
       data: undefined,
       error: null,
-      status: 'idle', // idle | loading | refreshing | success | error
+      status: 'idle',
       promise: null,
       ts: 0,
       version: 0,
@@ -26,6 +61,7 @@ function getEntry(key) {
     };
     store.set(key, entry);
   }
+  touch(key);
   return entry;
 }
 
@@ -64,15 +100,12 @@ function runFetch(key, fetcher) {
   return entry.promise;
 }
 
-// Force a background refetch for a key (e.g. after a mutation). Returns the
-// pending promise so callers can await the refreshed data.
 export function invalidateQuery(key) {
   const entry = getEntry(key);
   entry.ts = 0;
   return runFetch(key, entry.fetcher);
 }
 
-// Overwrite a cache entry directly without a network round-trip (optimistic).
 export function setQueryData(key, data) {
   const entry = getEntry(key);
   entry.data = typeof data === 'function' ? data(entry.data) : data;
@@ -85,7 +118,6 @@ export function getQueryData(key) {
   return store.get(key)?.data;
 }
 
-// useQuery — subscribe to a cached key and (re)fetch when stale/missing.
 export function useQuery(key, fetcher, options = {}) {
   const { staleTime = 300000, enabled = true } = options;
 
@@ -119,6 +151,11 @@ export function useQuery(key, fetcher, options = {}) {
     refreshing: current.status === 'refreshing',
     refresh,
   };
+}
+
+export function clearCache() {
+  store.clear();
+  accessOrder.length = 0;
 }
 
 export default useQuery;

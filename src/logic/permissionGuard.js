@@ -1,48 +1,55 @@
-// permissionGuard — service-layer RBAC enforcement.
-//
-// The route guards, sidebar and PermissionGate components already protect the
-// UI. But because this is a client-only SPA (the browser talks directly to the
-// data provider), a determined user could call a service function directly and
-// bypass the button that was hidden. To make the permission system the *single
-// source of truth*, every sensitive service call goes through `requireCapability`
-// / `requireModuleView` which re-check the authenticated user's resolved
-// permissions before touching the provider.
-//
-// AuthContext pushes the current resolved `can` function here on every change,
-// so service code can validate without a React hook.
+import { logger } from '@/utils/logger.js';
 
-let activeCan = () => false;
+let activeCan = null;
 let activeIsSuperuser = false;
 let activeUser = null;
+let initialized = false;
 
 export function syncPermissionGuard({ can, isSuperuser, user }) {
   activeCan = typeof can === 'function' ? can : () => false;
   activeIsSuperuser = !!isSuperuser;
   activeUser = user || null;
+  initialized = true;
+}
+
+export function isInitialized() {
+  return initialized;
+}
+
+export function resetPermissionGuard() {
+  activeCan = null;
+  activeIsSuperuser = false;
+  activeUser = null;
+  initialized = false;
+}
+
+function ensureInitialized() {
+  if (!initialized) {
+    logger.warn('[permissionGuard] Called before syncPermissionGuard — permissions not yet loaded. Use with caution in bootstrap flows only.');
+  }
 }
 
 export function currentCan(perm) {
+  ensureInitialized();
+  if (!activeCan) return false;
   return activeCan(perm);
 }
 
 export function currentIsSuperuser() {
+  ensureInitialized();
   return activeIsSuperuser;
 }
 
 export function currentUser() {
+  ensureInitialized();
   return activeUser;
 }
 
-// Throws a uniform, permission-scoped error when the caller lacks `perm`.
-// Returns silently when allowed (or superuser).
-//
-// `onlyWhenAuthed` (default true): when no user is currently authenticated the
-// guard is a no-op. This keeps first-install bootstrap and the pre-login
-// session-restore window working, while still blocking every call made by an
-// authenticated session that lacks the capability.
 export function requireCapability(perm, { soft = false, onlyWhenAuthed = true } = {}) {
+  ensureInitialized();
   if (activeIsSuperuser) return true;
   if (onlyWhenAuthed && !activeUser) return true;
+  if (!activeCan) return false;
   const allowed = activeCan(perm);
   if (allowed) return true;
   if (soft) return false;
@@ -52,16 +59,15 @@ export function requireCapability(perm, { soft = false, onlyWhenAuthed = true } 
   throw err;
 }
 
-// Convenience: check a module.action pair.
 export function requireAction(module, action, opts) {
   return requireCapability(`${module}.${action}`, opts);
 }
 
-// View-level guard for module access (used by service entry points that fetch
-// data for an entire module, e.g. admin dashboards).
 export function requireModuleView(module, opts = {}) {
+  ensureInitialized();
   if (activeIsSuperuser) return true;
   if (opts.onlyWhenAuthed !== false && !activeUser) return true;
+  if (!activeCan) return false;
   const allowed = activeCan(`${module}.view`);
   if (allowed) return true;
   if (opts.soft) return false;
@@ -71,15 +77,17 @@ export function requireModuleView(module, opts = {}) {
   throw err;
 }
 
-// Soft variant — returns boolean instead of throwing. Useful for conditional
-// branching inside services.
 export function canPerform(perm) {
+  ensureInitialized();
   if (activeIsSuperuser) return true;
+  if (!activeCan) return false;
   return activeCan(perm);
 }
 
 export default {
   syncPermissionGuard,
+  resetPermissionGuard,
+  isInitialized,
   currentCan,
   currentIsSuperuser,
   currentUser,

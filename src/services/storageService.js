@@ -4,32 +4,83 @@ import { getOCRProvider } from '@/providers/ocr/index.js';
 import { fileSyncService } from './fileSyncService.js';
 import { nowISO } from '@/utils/id.js';
 
-// storageService — the SINGLE entry point the UI/logic use for case & draft
-// files. It persists the binary via the unified FileStorageProvider interface
-// (which handles primary + Google Drive dual-write automatically), creates a
-// metadata row via the DatabaseProvider, and triggers cloud sync.
-// UI code never imports a provider directly — everything goes through here.
-export const storageService = {
-  async upload(file, { caseId, folder = 'Miscellaneous', ocr = false } = {}) {
-    const stored = await getFileStorageProvider().upload(file);
-    let text = '';
-    if (ocr) {
-      try { ({ text } = await getOCRProvider().extract(file)); } catch { text = ''; }
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/webp', 'image/tiff',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain', 'text/csv',
+]);
+const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
+const IMAGE_MAX_DIMENSION = 3840;
+const IMAGE_QUALITY = 0.82;
+
+function validateFile(file) {
+  if (!file) throw new Error('No file provided');
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 100MB.`);
+  }
+  const mime = file.type?.toLowerCase() || '';
+  if (mime && !ALLOWED_MIME_TYPES.has(mime) && !mime.startsWith('image/')) {
+    throw new Error(`File type "${file.type}" is not supported. Allowed: PDF, DOC, DOCX, images, text.`);
+  }
+}
+
+async function compressImage(file) {
+  if (!file.type?.startsWith('image/')) return file;
+  if (file.size < 200 * 1024) return file;
+
+  try {
+    const img = await createImageBitmap(file);
+    let { width, height } = img;
+    if (width > IMAGE_MAX_DIMENSION || height > IMAGE_MAX_DIMENSION) {
+      const ratio = Math.min(IMAGE_MAX_DIMENSION / width, IMAGE_MAX_DIMENSION / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
     }
-    return { ...stored, text, caseId, folder };
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+    img.close();
+
+    const outputMime = file.type === 'image/png' ? 'image/png' : 'image/webp';
+    const blob = await new Promise((r) => canvas.toBlob(r, outputMime, IMAGE_QUALITY));
+    const compressed = new File([blob], file.name.replace(/\.[^.]+$/, outputMime === 'image/webp' ? '.webp' : '.png'), {
+      type: outputMime,
+      lastModified: Date.now(),
+    });
+    return compressed;
+  } catch {
+    return file;
+  }
+}
+
+export const storageService = {
+  async upload(file, { caseId, folder = 'Miscellaneous', ocr = false, compress = true, onProgress } = {}) {
+    validateFile(file);
+    const processed = compress ? await compressImage(file) : file;
+    const stored = await getFileStorageProvider().upload(processed, null, onProgress);
+    let text = '';
+    if (ocr && processed.type === 'image/jpeg' || ocr && processed.type === 'image/png') {
+      try { ({ text } = await getOCRProvider().extract(processed)); } catch { text = ''; }
+    }
+    return { ...stored, text, caseId, folder, compressed: processed !== file };
   },
 
-  // Upload + create the `documents` metadata row in one step (with OCR).
-  // folderId is the case_folders.id; folder name is resolved by the caller for display.
-  async uploadDocument(file, { caseId, folder = 'Miscellaneous', folderId = null, ocr = true } = {}) {
-    const fileRef = folderId ? `${folderId}/${file.name}` : `${folder}/${file.name}`;
-    const stored = await getFileStorageProvider().upload(file, fileRef);
+  async uploadDocument(file, { caseId, folder = 'Miscellaneous', folderId = null, ocr = true, compress = true, onProgress } = {}) {
+    validateFile(file);
+    const processed = compress ? await compressImage(file) : file;
+    const fileRef = folderId ? `${folderId}/${processed.name}` : `${folder}/${processed.name}`;
+    const stored = await getFileStorageProvider().upload(processed, fileRef, onProgress);
     let text = '';
     if (ocr) {
-      try { ({ text } = await getOCRProvider().extract(file)); } catch { text = ''; }
+      try { ({ text } = await getOCRProvider().extract(processed)); } catch { text = ''; }
     }
     return this.createDocumentRecord({
-      caseId: caseId || null, name: stored.name, folder, folder_id: folderId, mime: stored.mime, size: stored.size, ref: stored.ref, text,
+      caseId: caseId || null, name: stored.name, folder, folder_id: folderId,
+      mime: stored.mime, size: stored.size, ref: stored.ref, text, compressed: processed !== file,
     });
   },
 

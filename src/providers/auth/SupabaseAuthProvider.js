@@ -8,22 +8,31 @@ const STORAGE_KEY = 'lexai.auth.session';
 
 // SupabaseAuthProvider — talks directly to the GoTrue REST API on Supabase.
 // Handles session persistence, token refreshing, database user record linking.
-// Session is persisted to localStorage so it survives full page reloads.
+// Session is persisted to sessionStorage (not localStorage) so it is
+// automatically cleared when the user closes the browser tab, reducing the
+// window of exposure if the device is shared or compromised.
 export default class SupabaseAuthProvider extends AuthProvider {
   #session = null;
 
+  // 30-minute session expiry for access tokens without explicit expiry
+  #SESSION_MAX_AGE_MS = 30 * 60 * 1000;
+
   #persist(session) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch {}
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch {}
   }
 
   #clearPersisted() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
   }
 
   #loadPersisted() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      // Reject sessions without a valid token
+      if (!parsed?.token) return null;
+      return parsed;
     } catch { return null; }
   }
 
@@ -34,6 +43,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
     if (!this.url || !this.key) {
       console.warn('[LexAI] Auth provider not configured; will fail on use.');
     }
+    this._rateLimitMap = new Map();
   }
 
   #authBase() { return `${this.url}/auth/v1`; }
@@ -46,7 +56,25 @@ export default class SupabaseAuthProvider extends AuthProvider {
     };
   }
 
+  #checkRateLimit(key) {
+    const now = Date.now();
+    const windowMs = 60000;
+    const maxAttempts = 5;
+    const entry = this._rateLimitMap.get(key) || { count: 0, resetAt: now + windowMs };
+    if (now > entry.resetAt) {
+      entry.count = 1;
+      entry.resetAt = now + windowMs;
+    } else {
+      entry.count++;
+    }
+    this._rateLimitMap.set(key, entry);
+    if (entry.count > maxAttempts) {
+      throw new Error(`Too many attempts. Try again in ${Math.ceil((entry.resetAt - now) / 1000)} seconds.`);
+    }
+  }
+
   async signUp(email, password) {
+    this.#checkRateLimit(`signup:${email}`);
     const res = await fetch(`${this.#authBase()}/signup`, {
       method: 'POST',
       headers: this.#headers(),
@@ -77,6 +105,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
   }
 
   async signIn(identifier, password) {
+    this.#checkRateLimit(`signin:${identifier}`);
     const res = await fetch(`${this.#authBase()}/token?grant_type=password`, {
       method: 'POST', headers: this.#headers(), body: JSON.stringify({ email: identifier, password }),
     });
@@ -123,7 +152,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
       } catch { /* ignore — RLS may block anon UPDATE */ }
     }
 
-    this.#session = { token: data.access_token, refreshToken: data.refresh_token, userId };
+    this.#session = { token: data.access_token, refreshToken: data.refresh_token, userId, storedAt: Date.now() };
     this.#persist(this.#session);
 
     const mapped = FieldMapper.toLexAI('users', dbUser);
@@ -149,9 +178,14 @@ export default class SupabaseAuthProvider extends AuthProvider {
 
   async getSession() {
     if (!this.#session) {
-      // Try restoring from localStorage after page reload
+      // Try restoring from sessionStorage
       const persisted = this.#loadPersisted();
       if (persisted?.token && persisted?.refreshToken && persisted?.userId) {
+        // Enforce session expiry: if stored_at is set and exceeds max age, reject
+        if (persisted.storedAt && Date.now() - persisted.storedAt > this.#SESSION_MAX_AGE_MS) {
+          this.#clearPersisted();
+          return null;
+        }
         this.#session = persisted;
       } else {
         return null;
@@ -217,6 +251,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
   }
 
   async requestPasswordReset(identifier) {
+    this.#checkRateLimit(`reset:${identifier}`);
     const res = await fetch(`${this.#authBase()}/recover`, {
       method: 'POST', headers: this.#headers(), body: JSON.stringify({ email: identifier }),
     });

@@ -132,6 +132,26 @@ async function ensureRecordColumns(db, collection, record) {
   await refreshSchemaAfterProvision(db, added);
 }
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 500;
+
+async function delay(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function withRetry(fn, retries = MAX_RETRIES) {
+  let lastErr;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries - 1) await delay(RETRY_DELAY_MS * (attempt + 1));
+    }
+  }
+  throw lastErr;
+}
+
 async function withProvisioning(provider, collection, fn) {
   try {
     return await fn();
@@ -139,6 +159,10 @@ async function withProvisioning(provider, collection, fn) {
     await ensureCollectionExists(provider, collection);
     return fn();
   }
+}
+
+async function withProvisioningAndRetry(provider, collection, fn) {
+  return withRetry(() => withProvisioning(provider, collection, fn));
 }
 
 async function grantCollectionAccess(db, collection) {
@@ -189,22 +213,22 @@ export function createRepository(collection) {
     collection: entityName,
 
     // ---- reads (LexAI field names in, provider translated out) ----
-    getAll: (query = {}) => withProvisioning(p(), entityName,
+    getAll: (query = {}) => withProvisioningAndRetry(p(), entityName,
       async () => {
         const rows = await p().list(providerName(), FieldMapper.filterToProvider(entityName, query));
         return (rows || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
       }),
-    getById: (id) => withProvisioning(p(), entityName,
+    getById: (id) => withProvisioningAndRetry(p(), entityName,
       async () => {
         const row = await p().get(providerName(), id);
         return row ? normalizeArrays(entityName, FieldMapper.toLexAI(entityName, row)) : null;
       }),
-    query: (query = {}) => withProvisioning(p(), entityName,
+    query: (query = {}) => withProvisioningAndRetry(p(), entityName,
       async () => {
         const rows = await p().list(providerName(), FieldMapper.filterToProvider(entityName, query));
         return (rows || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
       }),
-    count: (query = {}) => withProvisioning(p(), entityName,
+    count: (query = {}) => withProvisioningAndRetry(p(), entityName,
       () => p().count(providerName(), FieldMapper.filterToProvider(entityName, query))),
 
     // ---- writes with auto‑provisioning ----

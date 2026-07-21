@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import App from './app/App.jsx';
 import { recoverFromChunkError } from './utils/lazyWithRetry.js';
+import { reportWebVitals } from './utils/webVitals.js';
 import './styles/index.css';
 
 function preconnectBackend(origin) {
@@ -43,6 +44,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+// Register service worker for offline support
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+// Start Web Vitals tracking after boot
+setTimeout(() => reportWebVitals(), 2000);
 
 // Signal a successful boot so the index.html watchdog stands down, and strip the
 // cache-bust marker from the URL once we're running the fresh build.

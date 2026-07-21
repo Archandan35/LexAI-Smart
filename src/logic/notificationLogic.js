@@ -1,13 +1,13 @@
 import { caseService } from '@/services/caseService.js';
 import { reminderService } from '@/services/reminderService.js';
 import { preferencesService } from '@/services/preferencesService.js';
+import { userService } from '@/services/userService.js';
+import { currentUser } from '@/logic/permissionGuard.js';
 
-// notificationLogic — derives notifications from app data (chiefly upcoming and
-// overdue hearings). Computed on read; dismissals are tracked via the
-// preferences provider so the bell badge behaves
-// naturally without a backend.
 const DISMISS_KEY = 'lexai.notifs.dismissed.v1';
-const CACHE_TTL = 60_000;
+const CACHE_TTL = 60000;
+const MAX_HEARINGS = 200;
+const MAX_REMINDERS = 100;
 let cache = null;
 let cacheTs = 0;
 
@@ -31,10 +31,16 @@ export const notificationLogic = {
   async list({ windowDays = 7 } = {}) {
     if (cache && Date.now() - cacheTs < CACHE_TTL) return cache;
     const dismissed = readDismissed();
+    const user = currentUser();
+
     let hearings = [];
     let reminders = [];
-    try { hearings = await caseService.listHearings(); } catch { hearings = []; }
-    try { reminders = await reminderService.list(); } catch { reminders = []; }
+    try {
+      hearings = await caseService.listHearings({ userId: user?.id, limit: MAX_HEARINGS });
+    } catch { hearings = []; }
+    try {
+      reminders = await reminderService.list({ userId: user?.id, limit: MAX_REMINDERS });
+    } catch { reminders = []; }
 
     const notifs = [];
     reminders.forEach((r) => {
@@ -83,11 +89,11 @@ export const notificationLogic = {
   },
 
   dismiss(id) {
-    invalidateCache();
+    this.invalidateCache();
     const d = readDismissed(); d.add(id); writeDismissed(d);
   },
   dismissAll(ids) {
-    invalidateCache();
+    this.invalidateCache();
     const d = readDismissed(); ids.forEach((i) => d.add(i)); writeDismissed(d);
   },
 };

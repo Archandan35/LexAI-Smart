@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function SearchableSelect({ value, onChange, options = [], placeholder = 'Select...', style }) {
   const [open, setOpen] = useState(false);
@@ -42,6 +43,7 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
       position: 'fixed',
       left: rect.left + 'px',
       top: top + 'px',
+      minWidth: rect.width + 'px',
       zIndex: 9999,
     });
   }, [open, filtered.length]);
@@ -81,11 +83,13 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
         onKeyDown={handleKey}
         readOnly={!open}
       />
-      {open && (
-        <div ref={dropdownRef} className="searchable-select__dropdown" style={dropdownStyle}>
+      {open && createPortal(
+        <div ref={dropdownRef} role="listbox" className="searchable-select__dropdown" style={dropdownStyle}>
           {filtered.length > 0 ? filtered.map((opt, i) => (
             <div
               key={opt.value}
+              role="option"
+              aria-selected={opt.value === value}
               className={`searchable-select__option${i === focusedIdx ? ' searchable-select__option--focused' : ''}${opt.value === value ? ' searchable-select__option--selected' : ''}`}
               onMouseDown={() => select(opt)}
               onMouseEnter={() => setFocusedIdx(i)}
@@ -95,7 +99,8 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
           )) : (
             <div className="searchable-select__option searchable-select__option--empty">No results</div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

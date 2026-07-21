@@ -20,21 +20,15 @@ export const authLogic = {
       }
 
       // 1. Create Supabase Auth user (required for remote providers)
-      console.log('[Bootstrap] create auth user start');
-      console.log('[Bootstrap] signup email:', email);
-      console.log('[Bootstrap] signup password length:', password.length);
       let userId = 'user_admin';
       let emailConfirmed = false;
       try {
         const authUser = await authService.signUp(email.toLowerCase(), password);
-        console.log('[Bootstrap] signup success, authUser:', JSON.stringify(authUser));
         if (authUser && authUser.id) {
           userId = authUser.id;
           emailConfirmed = !!authUser.email_confirmed_at;
-          console.log('[Bootstrap] auth user id:', userId, 'email_confirmed_at:', authUser.email_confirmed_at);
         }
       } catch (authErr) {
-        console.warn('[Bootstrap] create auth user failed:', authErr.message);
         return fail(`Failed to create auth account: ${authErr.message}. Ensure Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
       }
 
@@ -43,7 +37,6 @@ export const authLogic = {
       const existingRoles = await roleService.list();
       let seedRoleCode = null;
       if (existingRoles.length === 0) {
-        console.log('[Bootstrap] no roles found — creating initial role');
         const seedRole = await roleService.create({ ...SEED_SUPER_ROLE, createdAt: DateEngine.now() });
         seedRoleCode = seedRole.code;
       } else {
@@ -53,7 +46,6 @@ export const authLogic = {
       // 3. Create application user record (Admin). Done BEFORE the email-
       // confirmation early-return so the admin role is preserved even when the
       // user must confirm their email before first sign-in.
-      console.log('[Bootstrap] create application user start');
       const { salt, hash } = await hashPassword(password);
       const userRecord = {
         id: userId,
@@ -74,7 +66,6 @@ export const authLogic = {
       try {
         user = await userService.create(userRecord);
       } catch (createErr) {
-        console.warn('[Bootstrap] userService.create failed, trying exec_sql fallback:', createErr.message);
         const db = getDatabaseProvider();
         if (typeof db.execSql === 'function') {
           const providerRecord = FieldMapper.toProvider('users', userRecord);
@@ -89,18 +80,15 @@ export const authLogic = {
           const result = await db.execSql(sql);
           if (result.ok && result.data && result.data[0]) {
             user = result.data[0];
-            console.log('[Bootstrap] application user created via exec_sql fallback:', user?.id);
           }
         }
         if (!user) throw createErr;
       }
-      console.log('[Bootstrap] application user created:', user?.id);
 
       // 3.5. If email confirmation is required, don't attempt auto-login.
       // The Admin DB user was already created above so the role is preserved;
       // the user simply confirms their email then signs in normally.
       if (!emailConfirmed) {
-        console.log('[Bootstrap] email confirmation required — skipping auto-login');
         return ok({
           user: { id: userId, email, name },
           emailConfirmationRequired: true,
@@ -109,19 +97,12 @@ export const authLogic = {
       }
 
       // 4. Auto-login to verify credentials
-      console.log('[Bootstrap] auto login start');
-      console.log('[Bootstrap] signin email:', email);
-      console.log('[Bootstrap] signin password length:', password.length);
       const signInResult = await this.login(email.toLowerCase(), password);
-      console.log('[Bootstrap] signin result ok:', signInResult?.ok);
       if (!signInResult.ok) {
-        console.warn('[Bootstrap] auto login failed:', signInResult.error);
         return fail(`Bootstrap succeeded, but sign in failed: ${signInResult.error}`);
       }
-      console.log('[Bootstrap] auto login succeeded');
       return ok({ session: signInResult.data.session, user: signInResult.data.user });
     } catch (e) {
-      console.error('[Bootstrap] bootstrapAdmin error:', e);
       return fail(e);
     }
   },
