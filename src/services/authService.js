@@ -11,6 +11,7 @@ export const authService = {
   getSession: () => auth().getSession(),
   requestPasswordReset: (identifier) => auth().requestPasswordReset(identifier),
   changePassword: (userId, newPassword) => auth().changePassword(userId, newPassword),
+  adminChangePassword: (userId, newPassword) => auth().adminChangePassword(userId, newPassword),
 };
 
 export default authService;

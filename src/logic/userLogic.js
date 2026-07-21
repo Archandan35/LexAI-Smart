@@ -149,7 +149,7 @@ export const userLogic = {
       if (!row) return fail('Update failed — the user could not be found or updated.');
       // Sync password with Supabase Auth so the new password works for login.
       if (newPassword) {
-        authService.changePassword(id, newPassword).catch(() => {});
+        authService.adminChangePassword(id, newPassword).catch(() => {});
       }
       await auditService.record({ action: 'user.update', module: 'users', user: actor, details: `Updated user ${id}` });
       return ok(stripSecrets(row));

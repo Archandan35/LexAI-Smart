@@ -266,4 +266,27 @@ export default class SupabaseAuthProvider extends AuthProvider {
     });
     return res.ok;
   }
+
+  async adminChangePassword(userId, newPassword) {
+    const env = import.meta.env ?? {};
+    const serviceRoleKey = env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+    if (!serviceRoleKey) {
+      console.warn('[LexAI] VITE_SUPABASE_SERVICE_ROLE_KEY not set — cannot update auth password via admin API.');
+      return false;
+    }
+    const res = await fetch(`${this.#authBase()}/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: newPassword }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.warn(`[LexAI] adminChangePassword failed (${res.status}): ${body.slice(0, 200)}`);
+    }
+    return res.ok;
+  }
 }
