@@ -161,7 +161,7 @@ const COMPLEX = {
     <>
       <path key="p1" d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       <rect key="r1" x="3" y="7" width="18" height="12" rx="2.5" fill="currentColor" fillOpacity="0.92" />
-      <circle key="c1" cx="12" cy="13" r="1.7" fill="var(--surface)" />
+      <circle key="c1" cx="12" cy="13" r="1.7" fill="var(--surface, #ffffff)" />
       <circle key="c2" cx="12" cy="13" r="0.6" fill="currentColor" />
     </>
   ),

@@ -53,7 +53,7 @@ function toSortKey(dateStr) {
   const m = dateStr.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
   if (m) {
     const yr = m[3].length === 2 ? `20${m[3]}` : m[3];
-    return new Date(`${yr}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`).getTime() || 0;
+    return new Date(`${yr}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}T00:00:00.000Z`).getTime() || 0;
   }
   return 0;
 }

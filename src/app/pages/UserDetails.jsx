@@ -13,6 +13,8 @@ import Spinner from '@/components/Spinner.jsx';
 import RoleSelector from '@/components/RoleSelector.jsx';
 import PermissionMatrix from '@/components/PermissionMatrix.jsx';
 import { Field, Input } from '@/components/Field.jsx';
+import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
+import PasswordInput from '@/components/PasswordInput.jsx';
 import { useFormat } from '@/utils/format.js';
 
 export default function UserDetails() {
@@ -40,7 +42,11 @@ export default function UserDetails() {
 
   const save = async () => {
     const patch = { name: edit.name, email: edit.email, username: edit.username };
-    if (edit.password) patch.password = edit.password;
+    if (edit.password) {
+      const minLen = getPasswordMinLength();
+      if (edit.password.length < minLen) { toast.push(`Password must be at least ${minLen} characters.`, 'error'); return; }
+      patch.password = edit.password;
+    }
     const res = await userLogic.update(id, patch, actor);
     if (res.ok) { toast.push('Saved.', 'success'); load(); } else toast.push(res.error, 'error');
   };
@@ -73,7 +79,7 @@ export default function UserDetails() {
             <Field label="Full name"><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} disabled={!can('users.edit')} /></Field>
             <Field label="Email"><Input value={edit.email} onChange={(e) => setEdit({ ...edit, email: e.target.value })} disabled={!can('users.edit')} /></Field>
             <Field label="Username"><Input value={edit.username} onChange={(e) => setEdit({ ...edit, username: e.target.value })} disabled={!can('users.edit')} /></Field>
-            {can('users.edit') && <Field label="Reset password" hint="Leave blank to keep current"><Input value={edit.password} onChange={(e) => setEdit({ ...edit, password: e.target.value })} placeholder="New password" /></Field>}
+            {can('users.edit') && <Field label="Reset password" hint="Leave blank to keep current"><PasswordInput value={edit.password} onChange={(e) => setEdit({ ...edit, password: e.target.value })} placeholder="New password" /></Field>}
             {can('users.edit') && <Button variant="primary" icon="save" className="btn--block" onClick={save}>Save</Button>}
           </Card>
 

@@ -43,6 +43,10 @@ export default function UserManagement() {
 
   const openCreate = () => setForm({ ...BLANK, roleCode: settings.defaultRole || '' });
   const submit = async () => {
+    if (!form?.password || form.password.length < 8) {
+      toast.push('Password must be at least 8 characters.', 'error');
+      return;
+    }
     setBusy(true);
     const res = await userLogic.create(form, actor);
     setBusy(false);

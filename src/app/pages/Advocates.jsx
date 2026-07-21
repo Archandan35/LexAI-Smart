@@ -99,18 +99,22 @@ export default function Advocates() {
   const openAdd = () => { setForm(EMPTY_FORM); setEditing(null); setShowForm(true); };
   const openEdit = (u) => { setForm({ ...EMPTY_FORM, ...u }); setEditing(u); setShowForm(true); };
 
+  const [showPassword, setShowPassword] = useState(null);
+
   const save = async () => {
     if (!form.name?.trim()) { toast.error('Name is required.'); return; }
     setSaving(true);
+    const generatedPw = crypto.randomUUID();
     const r = editing
       ? await userLogic.update(editing.id, { ...form, roleCode: 'advocate' })
-      : await userLogic.create({ ...form, roleCode: 'advocate', password: crypto.randomUUID() });
+      : await userLogic.create({ ...form, roleCode: 'advocate', password: generatedPw });
     if (r && !r.error) {
       toast.success(editing ? 'Advocate updated.' : 'Advocate added.');
       setShowForm(false);
       setEditing(null);
       setForm(EMPTY_FORM);
       load();
+      if (!editing) setShowPassword(generatedPw);
     } else {
       toast.error(r?.error || 'Operation failed.');
     }
@@ -328,6 +332,25 @@ export default function Advocates() {
           <PermissionGate module="advocates" action="edit">
             <Button variant="primary" icon="edit" onClick={() => { const u = viewing; setViewing(null); openEdit(u); }}>Edit Advocate</Button>
           </PermissionGate>
+        </div>
+      </Modal>
+
+      {/* Password created notification */}
+      <Modal open={!!showPassword} title="Advocate Created" onClose={() => setShowPassword(null)} size="sm">
+        <div className="confirm-dialog">
+          <span className="confirm-dialog__icon confirm-dialog__icon--success"><Icon name="check" size={20} /></span>
+          <div>
+            <div className="confirm-dialog__title">Share these credentials with the advocate</div>
+            <div className="confirm-dialog__text">The account was created with a system-generated password. Share it securely — the advocate should change it after first login.</div>
+            <div className="mt-16" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
+              <div className="kv"><span>Password</span><code style={{ fontSize: '1.1em', userSelect: 'all' }}>{showPassword}</code></div>
+            </div>
+            <div className="mt-16">
+              <Button variant="primary" className="btn--block" icon="copy" onClick={() => { navigator.clipboard.writeText(showPassword).then(() => toast.success('Password copied.')).catch(() => {}); }}>
+                Copy password
+              </Button>
+            </div>
+          </div>
         </div>
       </Modal>
 
