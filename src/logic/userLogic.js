@@ -134,6 +134,7 @@ export const userLogic = {
   async update(id, patch, actor) {
     try {
       const clean = { ...patch };
+      const newPassword = clean.password;
       if (clean.password) {
         const { salt, hash } = await hashPassword(clean.password);
         clean.salt = salt; clean.passwordHash = hash;
@@ -146,6 +147,10 @@ export const userLogic = {
       // rows (wrong id, RLS policy, race with a delete) — that is a failed
       // update, not a successful one with empty data.
       if (!row) return fail('Update failed — the user could not be found or updated.');
+      // Sync password with Supabase Auth so the new password works for login.
+      if (newPassword) {
+        authService.changePassword(id, newPassword).catch(() => {});
+      }
       await auditService.record({ action: 'user.update', module: 'users', user: actor, details: `Updated user ${id}` });
       return ok(stripSecrets(row));
     } catch (e) {

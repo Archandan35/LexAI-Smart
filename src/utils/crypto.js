@@ -28,14 +28,35 @@ function iteratedHash(input, salt, iterations) {
   return hash;
 }
 
+async function pbkdf2Derive(password, salt, iterations) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const buf = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  return hex(buf);
+}
+
 export async function hashPassword(password, salt) {
   const s = salt || randomHex(16);
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    const hash = await pbkdf2Derive(password, s, PBKDF2_ITERATIONS);
+    return { salt: s, hash, algorithm: 'pbkdf2-sha256' };
+  }
   const stretched = iteratedHash(password, s, PBKDF2_ITERATIONS);
   const digest = await sha256Hex(stretched);
   return { salt: s, hash: digest, algorithm: 'sha256x600k' };
 }
 
 export async function verifyPassword(password, salt, hash) {
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    try {
+      const candidate = await pbkdf2Derive(password, salt, PBKDF2_ITERATIONS);
+      if (candidate === hash) return true;
+    } catch { }
+  }
   const { hash: candidate } = await hashPassword(password, salt);
   return candidate === hash;
 }
