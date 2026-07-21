@@ -102,8 +102,8 @@ export default function AppRoutes() {
         <Route path="/access-denied" element={<AccessDenied />} />
 
         {/* ── Dashboard ── */}
-        <Route path="/dashboard" element={G('dashboard', <Dashboard />)} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={G('dashboard', <Dashboard />)} />
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
         {/* ── Case Management ── */}
         <Route path="/cases/create" element={G('manageCase', <CreateCase />)} />
