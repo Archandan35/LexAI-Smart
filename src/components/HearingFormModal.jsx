@@ -7,7 +7,7 @@ import FileDrop from './FileDrop.jsx';
 import { Field, Input, Select, Textarea } from './Field.jsx';
 import DocEditor from './DocEditor.jsx';
 import SmartOrderSheetBuilder from './SmartOrderSheetBuilder.jsx';
-import CrudManager from './CrudManager.jsx';
+import CrudManager from './CrudManager/index.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
 import { orderSheetLogic } from '@/logic/orderSheetLogic.js';

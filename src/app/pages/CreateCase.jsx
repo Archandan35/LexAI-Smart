@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Field, { Input, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
-import CrudManager from '@/components/CrudManager.jsx';
+import CrudManager from '@/components/CrudManager';
 import SearchableSelect from '@/components/SearchableSelect.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';

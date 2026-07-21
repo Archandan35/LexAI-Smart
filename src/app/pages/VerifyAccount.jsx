@@ -1,9 +1,10 @@
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 
 export default function VerifyAccount() {
+  const nav = useNavigate();
   const { settings } = useSettings();
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status') || 'pending';
@@ -26,7 +27,7 @@ export default function VerifyAccount() {
               <h1 className="auth-title">Email Verified</h1>
               <p className="auth-sub">Your account has been verified successfully.</p>
             </div>
-            <Button variant="primary" className="btn--block" onClick={() => window.location.href = '/login'}>
+            <Button variant="primary" className="btn--block" onClick={() => nav('/login', { replace: true })}>
               Sign in
             </Button>
           </>

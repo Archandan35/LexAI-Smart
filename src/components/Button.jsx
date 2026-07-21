@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import Icon from './Icon.jsx';
 
-export default function Button({
+const Button = memo(function Button({
   children, variant = 'primary', size, icon, loading, className = '', disabled, ...rest
 }) {
   return (
@@ -13,4 +14,6 @@ export default function Button({
       {children}
     </button>
   );
-}
+});
+
+export default Button;

@@ -2,7 +2,7 @@ const CACHE_NAME = 'lexai-v1';
 const ASSET_CACHE = 'lexai-assets-v1';
 const API_CACHE = 'lexai-api-v1';
 
-const PRECACHE_URLS = [];
+const PRECACHE_URLS = ['/'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -25,7 +25,9 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/'))
+      fetch(event.request).catch(() =>
+        caches.match('/').then((cached) => cached || caches.match('/index.html'))
+      )
     );
     return;
   }

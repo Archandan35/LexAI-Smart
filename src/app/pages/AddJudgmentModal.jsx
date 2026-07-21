@@ -4,7 +4,7 @@ import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
-import CrudManager from '@/components/CrudManager.jsx';
+import CrudManager from '@/components/CrudManager';
 import { judgmentLogic } from '@/logic/judgmentLogic.js';
 import { areaOfLawLogic } from '@/logic/areaOfLawLogic.js';
 import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';

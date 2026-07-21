@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
 import Icon from './Icon.jsx';
 
-export default function PasswordInput({ value, onChange, placeholder, label, required, autoFocus, id, name, className = '' }) {
+export default function PasswordInput({ value, onChange, placeholder, label, required, autoFocus, id, name, className = '', minLength }) {
   const [visible, setVisible] = useState(false);
 
   const toggle = () => setVisible((v) => !v);
@@ -20,6 +21,7 @@ export default function PasswordInput({ value, onChange, placeholder, label, req
           required={required}
           autoFocus={autoFocus}
           className={`input ${className}`}
+          minLength={minLength ?? getPasswordMinLength()}
         />
         <button
           type="button"

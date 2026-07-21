@@ -17,6 +17,34 @@ import { EntityRegistry, FieldMapper, IDEngine, DateEngine } from '@/core/index.
 
 const ARRAY_TYPES = new Set(['array', 'json', 'jsonb']);
 
+/* ------------------------------------------------------------------ */
+/* Idempotency store — deduplicate repeat create/update calls           */
+/* ------------------------------------------------------------------ */
+const idempotencyStore = new Map();
+
+function getIdempotencyKey(record) {
+  return record?.idempotencyKey || record?._idempotencyKey || null;
+}
+
+function checkIdempotency(key) {
+  if (!key) return null;
+  return idempotencyStore.get(key) || null;
+}
+
+function setIdempotency(key, result) {
+  if (!key) return;
+  idempotencyStore.set(key, result);
+}
+
+function cleanIdempotency() {
+  const now = Date.now();
+  for (const [key, entry] of idempotencyStore) {
+    if (now - entry.ts > 300_000) idempotencyStore.delete(key);
+  }
+}
+setInterval(cleanIdempotency, 120_000);
+/* ------------------------------------------------------------------ */
+
 function normalizeArrays(entityName, record) {
   if (!record) return record;
   const schema = getSchema(entityName);
@@ -233,8 +261,16 @@ export function createRepository(collection) {
 
     // ---- writes with auto‑provisioning ----
     async create(record = {}) {
+      const ik = getIdempotencyKey(record);
+      if (ik) {
+        const cached = checkIdempotency(ik);
+        if (cached) return cached.result;
+      }
+      const cleanRecord = { ...record };
+      delete cleanRecord.idempotencyKey;
+      delete cleanRecord._idempotencyKey;
       const provider = p();
-      const enriched = applyDefaults(entityName, record);
+      const enriched = applyDefaults(entityName, cleanRecord);
       // Generate LexAI business ID if not provided
       if (!enriched.id) {
         enriched.id = await IDEngine.generate(entityName);
@@ -242,10 +278,12 @@ export function createRepository(collection) {
       const denormalized = denormalizeArrays(entityName, enriched);
       const coerced = coerceNumericFields(entityName, denormalized);
       const providerRecord = FieldMapper.toProvider(entityName, coerced);
-      const wasAutoId = !record.id;
+      const wasAutoId = !cleanRecord.id;
       try {
         const result = await provider.create(providerName(), providerRecord);
-        return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+        const out = normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+        if (ik) setIdempotency(ik, { result: out, ts: Date.now() });
+        return out;
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerRecord);
@@ -255,20 +293,32 @@ export function createRepository(collection) {
         }
         const retryRecord = FieldMapper.toProvider(entityName, coerceNumericFields(entityName, denormalizeArrays(entityName, enriched)));
         const result = await provider.create(providerName(), retryRecord);
-        return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+        const out = normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+        if (ik) setIdempotency(ik, { result: out, ts: Date.now() });
+        return out;
       }
     },
 
     async update(id, patch = {}) {
+      const ik = getIdempotencyKey(patch);
+      if (ik) {
+        const cached = checkIdempotency(ik);
+        if (cached) return cached.result;
+      }
+      const cleanPatch = { ...patch };
+      delete cleanPatch.idempotencyKey;
+      delete cleanPatch._idempotencyKey;
       const provider = p();
-      const stamped = { ...patch, updatedAt: DateEngine.now() };
+      const stamped = { ...cleanPatch, updatedAt: DateEngine.now() };
       const denormalized = denormalizeArrays(entityName, stamped);
       const stripped = stripUnknownFields(entityName, denormalized);
       const coerced = coerceNumericFields(entityName, stripped);
       const providerPatch = FieldMapper.toProvider(entityName, coerced);
       try {
         const result = await provider.update(providerName(), id, providerPatch);
-        return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+        const out = normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+        if (ik) setIdempotency(ik, { result: out, ts: Date.now() });
+        return out;
       } catch (err) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerPatch);
@@ -279,7 +329,9 @@ export function createRepository(collection) {
         for (let attempt = 0; attempt < 3; attempt += 1) {
           try {
             const result = await provider.update(providerName(), id, providerPatch);
-            return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+            const out = normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
+            if (ik) setIdempotency(ik, { result: out, ts: Date.now() });
+            return out;
           } catch (e) {
             lastErr = e;
             if (typeof provider.reloadSchema === 'function') {

@@ -1,5 +1,7 @@
 
-export default function Card({ title, sub, actions, children, hover = false, noPad = false, className = '', bodyClass = '' }) {
+import { memo } from 'react';
+
+const Card = memo(function Card({ title, sub, actions, children, hover = false, noPad = false, className = '', bodyClass = '' }) {
   return (
     <section className={`card ${hover ? 'card--hover' : ''} ${noPad ? 'card--no-pad' : ''} ${className}`}>
       {(title || actions) && (
@@ -15,4 +17,6 @@ export default function Card({ title, sub, actions, children, hover = false, noP
       <div className={`card__body ${noPad ? 'card__body--no-pad' : ''} ${bodyClass}`}>{children}</div>
     </section>
   );
-}
+});
+
+export default Card;

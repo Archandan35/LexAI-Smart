@@ -7,7 +7,7 @@ import Modal from './Modal.jsx';
 import EmptyState from './EmptyState.jsx';
 import PermissionGate from './PermissionGate.jsx';
 import SearchableSelect from './SearchableSelect.jsx';
-import CrudManager from './CrudManager.jsx';
+import CrudManager from './CrudManager/index.jsx';
 import { Field, Input } from './Field.jsx';
 import { reminderLogic } from '@/logic/reminderLogic.js';
 import { reminderTypesLogic } from '@/logic/reminderTypesLogic.js';

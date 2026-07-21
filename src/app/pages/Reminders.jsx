@@ -6,7 +6,7 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import Badge from '@/components/Badge.jsx';
 import SearchableSelect from '@/components/SearchableSelect.jsx';
-import CrudManager from '@/components/CrudManager.jsx';
+import CrudManager from '@/components/CrudManager';
 import { Field, Input } from '@/components/Field.jsx';
 import { reminderLogic } from '@/logic/reminderLogic.js';
 import { reminderTypesLogic } from '@/logic/reminderTypesLogic.js';

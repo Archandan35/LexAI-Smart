@@ -176,7 +176,7 @@ const ILLUSTRATIONS = {
       <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
       <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor" />
       <circle cx="50" cy="0" r="6" fill="currentColor" />
-      <circle cx="50" cy="0" r="3" fill="#fff" />
+      <circle cx="50" cy="0" r="3" fill="currentColor" opacity="0.3" />
       <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
       <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor" />
       <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7" />

@@ -1,11 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import Icon from './Icon.jsx';
 import EmptyState from './EmptyState.jsx';
 
-// DataTable — reusable table with search, sort, pagination and optional row
-// selection (checkboxes for bulk actions). Reuses the design-system `.table`.
-// columns: [{ key, label, render?(row), sortable?, width?, className? }]
-export default function DataTable({
+const DataTable = memo(function DataTable({
   columns, rows, rowKey = (r) => r.id,
   searchable = true, searchKeys, searchPlaceholder = 'Search…',
   pageSize = 10, selectable = false, selected = [], onSelectedChange,
@@ -75,7 +72,7 @@ export default function DataTable({
         </div>
       )}
 
-      <div className="table-scroll">
+      <div className="table-scroll" style={{ contentVisibility: 'auto' }}>
         <table className="table">
           <thead>
             <tr>
@@ -132,5 +129,7 @@ export default function DataTable({
       )}
     </div>
   );
-}
+});
+
+export default DataTable;
 

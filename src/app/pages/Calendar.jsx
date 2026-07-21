@@ -26,7 +26,7 @@ import { Input, Textarea, Select } from '@/components/Field.jsx';
 import DateInput from '@/components/DateInput.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
-import CrudManager from '@/components/CrudManager.jsx';
+import CrudManager from '@/components/CrudManager';
 import FilterPopup from '@/components/FilterPopup.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';

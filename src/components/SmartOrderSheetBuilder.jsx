@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Icon from './Icon.jsx';
-import CrudManager from './CrudManager.jsx';
+import CrudManager from './CrudManager/index.jsx';
 import { DateInput } from '@/components/DateInput.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';

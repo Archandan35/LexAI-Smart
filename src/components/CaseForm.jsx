@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Icon from './Icon.jsx';
-import CrudManager from './CrudManager.jsx';
+import CrudManager from './CrudManager/index.jsx';
 import SearchableSelect from './SearchableSelect.jsx';
 import Field, { Input, Textarea } from './Field.jsx';
 import Button from './Button.jsx';

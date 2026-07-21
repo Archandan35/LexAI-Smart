@@ -4,6 +4,7 @@ import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { authService } from '@/services/authService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
+import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field } from '@/components/Field.jsx';
 
@@ -24,7 +25,8 @@ export default function ResetPassword() {
     setError('');
 
     if (!password) return setError('New password is required.');
-    if (password.length < 6) return setError('Password must be at least 6 characters.');
+    const minLen = getPasswordMinLength();
+    if (password.length < minLen) return setError(`Password must be at least ${minLen} characters.`);
     if (password !== confirm) return setError('Passwords do not match.');
     if (!token) return setError('Invalid or missing reset link. Please request a new password reset.');
 
@@ -70,7 +72,7 @@ export default function ResetPassword() {
 
             <form onSubmit={submit}>
               <Field label="New Password">
-                <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" autoFocus />
+                <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" autoFocus />
               </Field>
               <Field label="Confirm Password">
                 <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter new password" />

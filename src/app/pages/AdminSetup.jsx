@@ -8,6 +8,7 @@ import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
+import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
 const TIMEOUT_MS = 10000;
@@ -106,6 +107,8 @@ export default function AdminSetup() {
     if (!name.trim()) return setError('Name is required.');
     if (!email.trim()) return setError('Email is required.');
     if (!password) return setError('Password is required.');
+    const minLen = getPasswordMinLength();
+    if (password.length < minLen) return setError(`Password must be at least ${minLen} characters.`);
     if (password !== confirmPassword) return setError('Passwords do not match.');
 
     setBusy(true);
@@ -130,9 +133,8 @@ export default function AdminSetup() {
         setError('');
         return;
       }
-      console.log('[Bootstrap] redirect login');
       await refreshUser();
-      window.location.href = '/';
+      nav('/', { replace: true });
     } else {
       setError(res.error || 'Failed to bootstrap super admin.');
     }
@@ -193,7 +195,7 @@ export default function AdminSetup() {
               Check <strong>{email}</strong> for a confirmation link from your auth provider.
             </p>
             <div className="dm-toolbar-mt">
-              <Button variant="primary" className="btn--block" onClick={() => { window.location.href = '/login'; }}>
+              <Button variant="primary" className="btn--block" onClick={() => { nav('/login', { replace: true }); }}>
                 Go to Login
               </Button>
             </div>

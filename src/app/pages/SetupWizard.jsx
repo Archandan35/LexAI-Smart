@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import ProgressTimeline from '@/components/setup/wizard/ProgressTimeline.jsx';
 import WelcomeStep from '@/components/setup/steps/WelcomeStep.jsx';
@@ -20,6 +21,7 @@ import { WizardLogger } from '@/services/setup/WizardLogger.js';
 
 export default function SetupWizard({ detectError: propDetectError }) {
   const toast = useToast();
+  const nav = useNavigate();
   const [step, setStep] = useState(1);
   const [method, setMethod] = useState(null);
   const [scanResult, setScanResult] = useState(null);
@@ -86,7 +88,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
   const handleLaunch = () => {
     WizardLogger.info('Setup complete - launching application');
-    window.location.href = '/bootstrap-admin';
+    nav('/bootstrap-admin', { replace: true });
   };
 
   const [verifying, setVerifying] = useState(false);

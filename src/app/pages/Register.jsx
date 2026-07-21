@@ -6,6 +6,7 @@ import { userLogic } from '@/logic/userLogic.js';
 import { roleService } from '@/services/roleService.js';
 import { roleLogic } from '@/logic/roleLogic.js';
 import { settingsCache } from '@/core/settingsCache.js';
+import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
@@ -111,7 +112,8 @@ export default function Register() {
     if (!name.trim()) return setError('Full name is required.');
     if (!email.trim()) return setError('Email is required.');
     if (!password) return setError('Password is required.');
-    if (password.length < 6) return setError('Password must be at least 6 characters.');
+    const minLen = getPasswordMinLength();
+    if (password.length < minLen) return setError(`Password must be at least ${minLen} characters.`);
     if (password !== confirm) return setError('Passwords do not match.');
 
     setBusy(true);
@@ -188,7 +190,7 @@ export default function Register() {
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +91 98765 43210" />
           </Field>
           <Field label="Password">
-            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required />
+            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required />
           </Field>
           <Field label="Confirm Password">
             <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" required />

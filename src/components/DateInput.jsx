@@ -17,7 +17,8 @@ function parseToISO(str) {
 
 export function DateInput({ value, onChange, placeholder, className, disabled, required, name, autoFocus }) {
   const [text, setText] = useState('');
-  const hiddenRef = useRef(null);
+  const [useFallback, setUseFallback] = useState(false);
+  const nativeRef = useRef(null);
 
   const toDisplay = (v) => v ? DateEngine.toDisplayDate(v) : '';
 
@@ -27,8 +28,20 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
 
   const openPicker = () => {
     if (disabled) return;
-    const el = hiddenRef.current;
-    if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
+    const el = nativeRef.current;
+    if (el && typeof el.showPicker === 'function' && !useFallback) {
+      try { el.showPicker(); return; } catch { }
+    }
+    setUseFallback(true);
+    setTimeout(() => {
+      const el = document.querySelector('.dateinput__native');
+      if (el) {
+        el.focus();
+        if (typeof el.showPicker === 'function') {
+          try { el.showPicker(); } catch { }
+        }
+      }
+    }, 0);
   };
 
   const handleChange = (e) => {
@@ -48,6 +61,7 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
     const v = e.target.value;
     onChange && onChange({ target: { value: v, name } });
     setText(toDisplay(v));
+    setUseFallback(false);
   };
 
   return (
@@ -78,9 +92,9 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
         <Icon name="calendar" size={14} />
       </button>
       <input
-        ref={hiddenRef}
+        ref={nativeRef}
         type="date"
-        className="dateinput__native"
+        className={`dateinput__native${useFallback ? ' dateinput__native--visible' : ''}`}
         value={DateEngine.toInputDate(value)}
         onChange={handleNativeChange}
         tabIndex={-1}

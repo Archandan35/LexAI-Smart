@@ -8,7 +8,7 @@ import CaseSelect from '@/components/CaseSelect.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
-import CrudManager from '@/components/CrudManager.jsx';
+import CrudManager from '@/components/CrudManager';
 import DataTable from '@/components/DataTable.jsx';
 import OrderSheetPreviewModal from '@/components/OrderSheetPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';

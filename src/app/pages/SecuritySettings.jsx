@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import settingsCache from '@/core/settingsCache.js';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -15,6 +17,7 @@ export default function SecuritySettings() {
   const { formatDate } = useFormat();
   const { user: actor } = useAuth();
   const toast = useToast();
+  const nav = useNavigate();
   const [hasSuperAdmin, setHasSuperAdmin] = useState(false);
   const [superAdminUser, setSuperAdminUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,6 +65,7 @@ export default function SecuritySettings() {
     try {
       const res = await settingsLogic.saveSettings({ passwordMinLength, sessionTimeout });
       if (res.ok) {
+        settingsCache.setAll({ ...settingsCache.getAll(), passwordMinLength, sessionTimeout });
         toast.push('Security settings updated.', 'success');
       } else {
         toast.push(res.error || 'Failed to save settings.', 'error');
@@ -102,7 +106,7 @@ export default function SecuritySettings() {
               <p className="auth-sub auth-sub--sm">
                 You must run the bootstrap wizard to create your first admin.
               </p>
-              <Button variant="primary" icon="shield" onClick={() => window.location.href = '/bootstrap-admin'}>Create Super Admin</Button>
+              <Button variant="primary" icon="shield" onClick={() => nav('/bootstrap-admin')}>Create Super Admin</Button>
             </div>
           )}
         </Card>

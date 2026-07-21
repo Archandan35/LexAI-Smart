@@ -37,7 +37,7 @@ export default function ForgotPassword() {
         {result ? (
           <div className="alert alert--info forgot-password__result">
             <div className="flex-row gap-8"><Icon name="check" size={16} />{result.message}</div>
-            {result.token && <div className="mt-8">Demo reset token: <code>{result.token}</code></div>}
+            {import.meta.env.DEV && result.token && <div className="mt-8">Demo reset token: <code>{result.token}</code></div>}
             <div className="forgot-password__hint">No email is sent in this client-side demo. A System Owner can reset passwords in User Management.</div>
           </div>
         ) : (
