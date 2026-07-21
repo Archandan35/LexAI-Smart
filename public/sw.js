@@ -48,6 +48,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.hostname !== location.hostname) {
+    if (event.request.method !== 'GET') return;
     event.respondWith(
       caches.open(API_CACHE).then((cache) =>
         fetch(event.request, { mode: 'cors' }).then((response) => {

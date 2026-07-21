@@ -457,7 +457,7 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 13px;
-  width: 260px;
+  width: 420px;
   color: var(--text-faint);
   transition: all 0.2s var(--ease);
 }
