@@ -25669,11 +25669,6 @@ kbd.cmd__kbd {
   opacity: 1;
   margin-top: 0.5rem;
 }
-  margin: 0;
-  padding: 0;
-  cursor: pointer;
-  pointer-events: none;
-}
 
 .ajm-save-error {
   margin-right: auto;

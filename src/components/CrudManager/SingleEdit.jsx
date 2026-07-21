@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from '@/components/Button.jsx';
 import { Select } from '@/components/Field.jsx';
-import { renderField, Feedback, useItems, tryOk, tryErr } from './utils.js';
+import { renderField, Feedback, useItems, tryOk, tryErr } from './utils.jsx';
 
 export default function SingleEdit({ config, entity }) {
   const { items, refresh } = useItems(config.logic);

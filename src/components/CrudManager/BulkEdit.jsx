@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Button from '@/components/Button.jsx';
-import { renderField, Feedback, ProgressBar, useItems, tryOk, tryErr } from './utils.js';
+import { renderField, Feedback, ProgressBar, useItems, tryOk, tryErr } from './utils.jsx';
 
 export default function BulkEdit({ config, entity }) {
   const { items } = useItems(config.logic);

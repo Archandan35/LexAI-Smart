@@ -9,7 +9,7 @@ import BulkAdd from './BulkAdd.jsx';
 import BulkEdit from './BulkEdit.jsx';
 import BulkDelete from './BulkDelete.jsx';
 import BulkImport from './BulkImport.jsx';
-import { TipBox } from './utils.js';
+import { TipBox } from './utils.jsx';
 import { TABS, TIPS, SUBTITLES } from './constants.js';
 
 export default function CrudManager({ open, onClose, entity, config }) {

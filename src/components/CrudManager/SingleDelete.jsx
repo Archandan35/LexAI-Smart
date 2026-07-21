@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from '@/components/Button.jsx';
 import { Select } from '@/components/Field.jsx';
-import { Feedback, useItems, tryOk, tryErr } from './utils.js';
+import { Feedback, useItems, tryOk, tryErr } from './utils.jsx';
 
 export default function SingleDelete({ config, entity }) {
   const { items } = useItems(config.logic);

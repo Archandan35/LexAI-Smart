@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Button from '@/components/Button.jsx';
-import { Feedback, ProgressBar, useItems, tryOk, tryErr } from './utils.js';
+import { Feedback, ProgressBar, useItems, tryOk, tryErr } from './utils.jsx';
 
 export default function BulkDelete({ config, entity }) {
   const { items, refresh } = useItems(config.logic);

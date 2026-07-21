@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import Button from '@/components/Button.jsx';
 import { Textarea } from '@/components/Field.jsx';
-import { Feedback, ProgressBar, tryOk, tryErr } from './utils.js';
+import { Feedback, ProgressBar, tryOk, tryErr } from './utils.jsx';
 import { BULK_SAMPLE_NAMES } from './constants.js';
 
 export default function BulkAdd({ config, entity }) {

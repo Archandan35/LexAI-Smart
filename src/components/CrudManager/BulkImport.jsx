@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
-import { Feedback, ProgressBar, tryOk, tryErr } from './utils.js';
+import { Feedback, ProgressBar, tryOk, tryErr } from './utils.jsx';
 
 export default function BulkImport({ config, entity }) {
   const [file, setFile] = useState(null);

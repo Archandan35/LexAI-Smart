@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Button from '@/components/Button.jsx';
-import { renderField, Feedback, tryOk, tryErr } from './utils.js';
+import { renderField, Feedback, tryOk, tryErr } from './utils.jsx';
 
 export default function SingleAdd({ config, entity }) {
   const [values, setValues] = useState(() => {
