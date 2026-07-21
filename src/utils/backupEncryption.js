@@ -53,4 +53,4 @@ export async function decryptBackup(encrypted, password) {
   }
 }
 
-export default { encryptBackup, decryptBackup };
+

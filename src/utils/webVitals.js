@@ -95,4 +95,4 @@ export function reportWebVitals(callback = vitalsCallback) {
   }
 }
 
-export default { reportWebVitals, onLCP, onFID, onCLS };
+
