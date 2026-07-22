@@ -1355,19 +1355,19 @@ export default function OrderSheet() {
 
           {/* 2. CASE HISTORY TAB */}
           {tab === 'history' && (
-            <div className="flex-col gap-16">
+            <div className="flex-col" style={{ height: '90vh', overflow: 'hidden' }}>
               {/* Case Select bar inline */}
-              <div className="flex align-center gap-12 mb-16">
+              <div className="flex align-center gap-12 mb-16" style={{ flexShrink: 0 }}>
                 <span className="text-bold text-sm text-soft text-nowrap">Select Case:</span>
                 <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
               </div>
 
               {!history ? (
-                <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
+                <Card style={{ flexShrink: 0 }}><EmptyState icon="history" title="Select a case to view its history." /></Card>
               ) : (
-                <>
+                <div className="flex-col" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                   {/* Case Info Header Card */}
-                  <div className="order-sheet__case-info-card">
+                  <div className="order-sheet__case-info-card" style={{ flexShrink: 0 }}>
                     <div className="order-sheet__case-info-header">
                       <div className="order-sheet__case-icon-box">
                         <Icon name="balance" size={24} />
@@ -1409,7 +1409,7 @@ export default function OrderSheet() {
                   </div>
 
                   {/* History Timeline panel */}
-                  <div className="hpm-historical-panel">
+                  <div className="hpm-historical-panel" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                     <div className="hpm-historical-toolbar">
                       <span className="hpm-historical-count">{history.hearings.length} hearing{history.hearings.length !== 1 ? 's' : ''}</span>
                       <select className="hpm-historical-sort" value={histSort} onChange={(e) => setHistSort(e.target.value)}>
@@ -1485,7 +1485,7 @@ export default function OrderSheet() {
                       </div>
                     )}
                   </div>
-                </>
+                </div>
               )}
             </div>
           )}
