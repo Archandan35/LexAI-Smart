@@ -121,9 +121,7 @@ end;
 $$;
 
 do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then grant execute on function exec_sql(text) to authenticated; end if; end $$;
-do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then grant execute on function exec_sql(text) to anon; end if; end $$;
 do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then grant execute on function safe_ddl(text) to authenticated; end if; end $$;
-do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then grant execute on function safe_ddl(text) to anon; end if; end $$;
 
 -- ============================================================
 -- 5. SAFE FOREIGN KEY HELPER (P4 — hardened ON DELETE validation)
@@ -2570,14 +2568,10 @@ end if; end $$;
 -- Function-level grants for system functions
 do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then
   grant execute on function exec_sql(text) to authenticated; end if; end $$;
-do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then
-  grant execute on function exec_sql(text) to anon; end if; end $$;
 do $$ begin if exists (select 1 from pg_roles where rolname = 'service_role') then
   grant execute on function exec_sql(text) to service_role; end if; end $$;
 do $$ begin if exists (select 1 from pg_roles where rolname = 'authenticated') then
   grant execute on function safe_ddl(text) to authenticated; end if; end $$;
-do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then
-  grant execute on function safe_ddl(text) to anon; end if; end $$;
 do $$ begin if exists (select 1 from pg_roles where rolname = 'service_role') then
   grant execute on function safe_ddl(text) to service_role; end if; end $$;
 do $$ begin if exists (select 1 from pg_roles where rolname = 'anon') then

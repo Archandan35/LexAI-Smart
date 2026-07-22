@@ -9,6 +9,7 @@
     --text: #e4e6f0;
     --text-soft: #9ca0b8;
     --text-faint: #6b7090;
+    --text-muted: #6b7090;
 
     --brand-soft: #1a2d5a;
     --gold-soft: #2a2510;
@@ -23,6 +24,30 @@
 
     --scrollbar-thumb: #3a3f58;
     --scrollbar-thumb-hover: #5a5f78;
+
+    --navy-900: #c8d0e0;
+    --navy-800: #b0b8cc;
+    --navy-700: #9ca0b8;
+    --navy-600: #8a93a8;
+    --navy-500: #6b7090;
+    --navy-400: #5a5f78;
+    --navy-200: #3a3f58;
+    --navy-100: #2a2e42;
+
+    --surface-1: #22263a;
+    --border-soft: #2a2e42;
+    --bg-card: #1a1d27;
+
+    --green-100: #0d2a1e;
+    --green-200: #0f3526;
+    --green-700: #4ade80;
+
+    --amber-100: #2a200e;
+    --amber-200: #332812;
+    --amber-700: #fbbf24;
+
+    --brand-600: #3b82f6;
+    --brand-700: #60a5fa;
   }
 }
 
@@ -36,6 +61,7 @@
   --text: #e4e6f0;
   --text-soft: #9ca0b8;
   --text-faint: #6b7090;
+  --text-muted: #6b7090;
 
   --brand-soft: #1a2d5a;
   --gold-soft: #2a2510;
@@ -50,6 +76,30 @@
 
   --scrollbar-thumb: #3a3f58;
   --scrollbar-thumb-hover: #5a5f78;
+
+  --navy-900: #c8d0e0;
+  --navy-800: #b0b8cc;
+  --navy-700: #9ca0b8;
+  --navy-600: #8a93a8;
+  --navy-500: #6b7090;
+  --navy-400: #5a5f78;
+  --navy-200: #3a3f58;
+  --navy-100: #2a2e42;
+
+  --surface-1: #22263a;
+  --border-soft: #2a2e42;
+  --bg-card: #1a1d27;
+
+  --green-100: #0d2a1e;
+  --green-200: #0f3526;
+  --green-700: #4ade80;
+
+  --amber-100: #2a200e;
+  --amber-200: #332812;
+  --amber-700: #fbbf24;
+
+  --brand-600: #3b82f6;
+  --brand-700: #60a5fa;
 }
 
 [data-theme="light"] {
@@ -62,6 +112,7 @@
   --text: #1a2236;
   --text-soft: #5b6478;
   --text-faint: #8a93a8;
+  --text-muted: #6b7280;
 
   --brand-soft: #e8eefc;
   --gold-soft: #f7eed8;
@@ -76,4 +127,28 @@
 
   --scrollbar-thumb: #cdd3e3;
   --scrollbar-thumb-hover: var(--navy-600);
+
+  --navy-100: #eef2ff;
+  --navy-200: #c7d2fe;
+  --navy-400: #818cf8;
+  --navy-500: #6366f1;
+  --navy-600: #2547a3;
+  --navy-700: #1e3a8a;
+  --navy-800: #16294d;
+  --navy-900: #0f1f3d;
+
+  --surface-1: #f0f2f8;
+  --border-soft: #eef0f6;
+  --bg-card: #ffffff;
+
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-700: #15803d;
+
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-700: #a16207;
+
+  --brand-600: #2563eb;
+  --brand-700: #1d4ed8;
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { getPasswordMinLength, validatePassword, getPasswordRequirements } from '@/utils/passwordPolicy.js';
+import { getPasswordMinLength, validatePassword, getPasswordRequirements, isCommonPassword } from '@/utils/passwordPolicy.js';
 import Icon from './Icon.jsx';
 
 export default function PasswordInput({ value, onChange, placeholder, label, required, autoFocus, id, name, className = '', minLength }) {
@@ -17,6 +17,7 @@ export default function PasswordInput({ value, onChange, placeholder, label, req
     if (reqs.requireLowercase) items.push({ label: 'At least one lowercase letter', pass: /[a-z]/.test(value) });
     if (reqs.requireNumber) items.push({ label: 'At least one number', pass: /[0-9]/.test(value) });
     if (reqs.requireSpecial) items.push({ label: 'At least one special character', pass: /[^A-Za-z0-9]/.test(value) });
+    if (value.length >= reqs.minLength) items.push({ label: 'Not a common password', pass: !isCommonPassword(value) });
     return items;
   }, [value, reqs]);
 

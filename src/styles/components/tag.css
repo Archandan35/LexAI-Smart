@@ -1,0 +1,36 @@
+/* Pill tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-soft);
+  margin: 0 6px 6px 0;
+}
+
+.tag--key {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  border-color: var(--border);
+}
+
+.tag--navy {
+  background: var(--navy-100, #eef2ff);
+  color: var(--navy-700, #3730a3);
+  border-color: var(--navy-200, #c7d2fe);
+}
+
+.tag--green {
+  background: var(--green-100, #dcfce7);
+  color: var(--green-700);
+  border-color: var(--green-200, #bbf7d0);
+}
+
+.tag--amber {
+  background: var(--amber-100, #fef3c7);
+  color: var(--amber-700);
+  border-color: var(--amber-200, #fde68a);
+}

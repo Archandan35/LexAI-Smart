@@ -1,0 +1,82 @@
+/* Modal — base overlay, dialog, and structural slots.
+   Extracted from index.css during Phase 3 CSS split. */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 31, 61, 0.5);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  z-index: 90;
+  animation: fade 0.2s var(--ease);
+  padding: 20px;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: pop 0.24s var(--ease);
+}
+
+.modal--lg {
+  max-width: 1400px;
+  width: 90vw;
+}
+
+.modal--sixty {
+  max-width: 60vw;
+}
+
+.modal__head {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  z-index: 11;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.modal__title {
+  font-weight: 750;
+  font-size: 16px;
+  color: var(--navy-900);
+}
+
+.modal__close {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--surface-2);
+  cursor: pointer;
+  color: var(--text-soft);
+  transition: all 0.15s;
+}
+
+.modal__close:hover {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.modal__body {
+  padding: 22px;
+  overflow-y: auto;
+}
+
+.modal__foot {
+  padding: 15px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}

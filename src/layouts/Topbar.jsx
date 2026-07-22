@@ -61,7 +61,7 @@ export default function Topbar({ onToggle }) {
       <NotificationsBell />
 
       <div className="usermenu" ref={menuRef}>
-        <button className="topbar__avatar" onClick={() => setMenuOpen((o) => !o)} title={user?.name}>{initials}</button>
+        <button className="topbar__avatar" onClick={() => setMenuOpen((o) => !o)} title={user?.name} aria-label={`User menu: ${user?.name}`} aria-haspopup="true" aria-expanded={menuOpen}>{initials}</button>
         {menuOpen && (
           <div className="usermenu__panel">
             <div className="usermenu__head">

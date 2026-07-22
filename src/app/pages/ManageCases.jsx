@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import PageHero from '@/components/PageHero.jsx';
@@ -91,9 +91,9 @@ export default function ManageCases() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  const reload = async () => { await refresh(); await refreshCases(); };
+  const reload = useCallback(async () => { await refresh(); await refreshCases(); }, [refresh, refreshCases]);
 
-  const save = async (data) => {
+  const save = useCallback(async (data) => {
     if (!data.caseNumber || !data.title) { toast.push('Case number and title are required.', 'error'); return; }
     setBusy(true);
     try {
@@ -105,12 +105,12 @@ export default function ManageCases() {
       toast.push(e?.message || 'Failed to create case.', 'error');
     }
     setBusy(false);
-  };
+  }, [user, toast, reload]);
 
-  const act = async (fn, msg) => { try { const r = await fn(); if (r?.ok === false) { toast.push(r.error, 'error'); return; } if (msg) toast.push(msg, 'success'); } catch (e) { toast.push(e?.message || 'Action failed.', 'error'); } reload(); };
+  const act = useCallback(async (fn, msg) => { try { const r = await fn(); if (r?.ok === false) { toast.push(r.error, 'error'); return; } if (msg) toast.push(msg, 'success'); } catch (e) { toast.push(e?.message || 'Action failed.', 'error'); } reload(); }, [toast, reload]);
 
-  const remove = (c) => { if (confirm(`Delete case ${c.caseNumber}?`)) act(() => caseLogic.remove(c.id, user), 'Case deleted.'); };
-  const bulkRemove = () => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } };
+  const remove = useCallback((c) => { if (confirm(`Delete case ${c.caseNumber}?`)) act(() => caseLogic.remove(c.id, user), 'Case deleted.'); }, [act, user]);
+  const bulkRemove = useCallback(() => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } }, [selected, act, user]);
 
   const uniqueCourtNames = useMemo(() => Array.from(new Set(cases.map(c => c.court || c.court || '').filter(Boolean))), [cases]);
   const uniqueCourtLocations = useMemo(() => Array.from(new Set(cases.map(c => extractJurisdiction(c)).filter(Boolean))), [cases]);
@@ -129,7 +129,7 @@ export default function ManageCases() {
     status: statuses.map((s) => ({ value: s, label: s })),
   }), [uniqueCourtNames, uniqueCourtLocations, stageNames, statuses]);
 
-  const handleOpenCaseFilter = () => {
+  const handleOpenCaseFilter = useCallback(() => {
     setTempFilters({
       court: filters.court.length ? [...filters.court] : [],
       courtLocation: filters.courtLocation.length ? [...filters.courtLocation] : [],
@@ -137,20 +137,20 @@ export default function ManageCases() {
       status: filters.status.length ? [...filters.status] : [],
     });
     setShowFilterPopup(true);
-  };
+  }, [filters]);
 
-  const handleTempCaseFilterChange = (key, values) => {
+  const handleTempCaseFilterChange = useCallback((key, values) => {
     setTempFilters((prev) => ({ ...prev, [key]: values }));
-  };
+  }, []);
 
-  const handleApplyCaseFilters = () => {
+  const handleApplyCaseFilters = useCallback(() => {
     setFilters((prev) => ({ ...prev, ...tempFilters }));
     setShowFilterPopup(false);
-  };
+  }, [tempFilters]);
 
-  const handleClearCaseFilters = () => {
+  const handleClearCaseFilters = useCallback(() => {
     setTempFilters({ court: [], courtLocation: [], stage: [], status: [] });
-  };
+  }, []);
 
   const filtered = useMemo(() => {
     let rows = cases.filter((c) => (filters.view === 'archived' ? c.archived : !c.archived));
@@ -165,9 +165,9 @@ export default function ManageCases() {
     return [...rows].sort((a, b) => (b.watch ? 1 : 0) - (a.watch ? 1 : 0));
   }, [cases, filters, query]);
 
-  const allSelected = filtered.length > 0 && filtered.every((c) => selected.includes(c.id));
-  const toggleAll = () => setSelected(allSelected ? [] : filtered.map((c) => c.id));
-  const toggleOne = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const allSelected = useMemo(() => filtered.length > 0 && filtered.every((c) => selected.includes(c.id)), [filtered, selected]);
+  const toggleAll = useCallback(() => setSelected(allSelected ? [] : filtered.map((c) => c.id)), [allSelected, filtered]);
+  const toggleOne = useCallback((id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id])), []);
 
   return (
     <>

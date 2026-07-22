@@ -31,13 +31,20 @@ function SidebarItem({ item, collapsed }) {
 
 function SubmenuGroup({ item, collapsed, canViewModule }) {
   const [open, setOpen] = useState(true);
+  const subId = `sub-${item.label?.replace(/\s+/g, '-').toLowerCase()}`;
 
   const visible = item.children.filter((c) => !c.module || canViewModule(c.module));
   if (visible.length === 0) return null;
 
   return (
     <div className="nav-submenu">
-      <button className="nav-submenu__toggle" onClick={() => setOpen((o) => !o)} title={item.label}>
+      <button
+        className="nav-submenu__toggle"
+        onClick={() => setOpen((o) => !o)}
+        title={item.label}
+        aria-expanded={open}
+        aria-controls={subId}
+      >
         <span className="nav-item__icon"><Icon name={item.icon} size={18} /></span>
         <span className="nav-item__label">{item.label}</span>
         <span className={`nav-submenu__arrow ${open ? 'open' : ''}`}>
@@ -45,13 +52,14 @@ function SubmenuGroup({ item, collapsed, canViewModule }) {
         </span>
       </button>
       {open && (
-        <div className="nav-submenu__items">
+        <div className="nav-submenu__items" id={subId}>
           {visible.map((child) => (
             <NavLink
               key={child.to}
               to={child.to}
               end={child.end}
               className={({ isActive }) => `nav-item nav-item--sub ${isActive ? 'active' : ''}`}
+
               title={child.label}
             >
               <span className="nav-item__label">{child.label}</span>
@@ -88,7 +96,7 @@ export default function Sidebar({ collapsed, mobileOpen }) {
   const { settings } = useSettings();
 
   return (
-    <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+    <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`} aria-label="Main navigation">
       <div className="sidebar__brand">
         <div className="sidebar__logo">
           {settings.logoUrl ? (
@@ -103,7 +111,7 @@ export default function Sidebar({ collapsed, mobileOpen }) {
         </div>
       </div>
 
-      <nav className="sidebar__nav">
+      <nav className="sidebar__nav" aria-label="Sidebar menu">
         {buildSections().map((section, i) => {
           const { heading, group } = section;
           if (!group) return null;

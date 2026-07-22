@@ -1,6 +1,6 @@
 const enc = new TextEncoder();
 
-const PBKDF2_ITERATIONS = 600000;
+const PBKDF2_ITERATIONS = 1000000;
 
 if (import.meta.env.PROD) {
   console.warn(
@@ -47,7 +47,7 @@ export async function hashPassword(password, salt) {
   }
   const stretched = iteratedHash(password, s, PBKDF2_ITERATIONS);
   const digest = await sha256Hex(stretched);
-  return { salt: s, hash: digest, algorithm: 'sha256x600k' };
+  return { salt: s, hash: digest, algorithm: 'sha256x1M' };
 }
 
 export async function verifyPassword(password, salt, hash) {

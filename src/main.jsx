@@ -4,6 +4,7 @@ import { BrowserRouter, useLocation } from 'react-router-dom';
 import App from './app/App.jsx';
 import { recoverFromChunkError } from './utils/lazyWithRetry.js';
 import { reportWebVitals } from './utils/webVitals.js';
+import { monitoringService } from './services/monitoringService.js';
 import './styles/index.css';
 
 function preconnectBackend(origin) {
@@ -54,6 +55,15 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 
 // Start Web Vitals tracking after boot
 setTimeout(() => reportWebVitals(), 2000);
+
+// Initialize monitoring (errors, navigation, vitals) in production only
+if (import.meta.env.PROD) {
+  try {
+    monitoringService.init();
+  } catch (e) {
+    console.error('[Monitoring] init failed', e);
+  }
+}
 
 // Signal a successful boot so the index.html watchdog stands down, and strip the
 // cache-bust marker from the URL once we're running the fresh build.

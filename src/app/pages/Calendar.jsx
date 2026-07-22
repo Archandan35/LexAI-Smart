@@ -258,18 +258,22 @@ function CalendarView({ events, loading, onView, cases }) {
   const [showJump, setShowJump] = useState(false);
   const [jump, setJump] = useState('');
 
-  const today = startOfDay(new Date());
-  const goToday = () => setCursor(startOfDay(new Date()));
-  const goPrev = () => {
-    if (view === 'month') setCursor(addDays(cursor, -30));
-    else if (view === 'week') setCursor(addDays(cursor, -7));
-    else setCursor(addDays(cursor, -1));
-  };
-  const goNext = () => {
-    if (view === 'month') setCursor(addDays(cursor, 30));
-    else if (view === 'week') setCursor(addDays(cursor, 7));
-    else setCursor(addDays(cursor, 1));
-  };
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const goToday = useCallback(() => setCursor(startOfDay(new Date())), []);
+  const goPrev = useCallback(() => {
+    setCursor((c) => {
+      if (view === 'month') return addDays(c, -30);
+      if (view === 'week') return addDays(c, -7);
+      return addDays(c, -1);
+    });
+  }, [view]);
+  const goNext = useCallback(() => {
+    setCursor((c) => {
+      if (view === 'month') return addDays(c, 30);
+      if (view === 'week') return addDays(c, 7);
+      return addDays(c, 1);
+    });
+  }, [view]);
 
   const eventsByDay = useMemo(() => {
     const map = {};
@@ -482,16 +486,16 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
   const [confirm, setConfirm] = useState(null);
   const [crud, setCrud] = useState(null); // 'category' | 'status'
 
-  const caseLabelFor = (c) => {
+  const caseLabelFor = useCallback((c) => {
     const num = c.case_display_number || c.caseNumber || '';
     const title = c.title || '';
     if (num && title && title !== num) return `${num} — ${title}`;
     return num || title || c.id;
-  };
-  const categoryOptions = categories.map((c) => ({ value: c.name, label: c.name }));
-  const statusOptions = statuses.map((s) => ({ value: s.name, label: s.name }));
-  const priorityOptions = priorities.map((p) => ({ value: p.name, label: p.name }));
-  const caseOptions = cases.map((c) => ({ value: c.id, label: caseLabelFor(c) }));
+  }, []);
+  const categoryOptions = useMemo(() => categories.map((c) => ({ value: c.name, label: c.name })), [categories]);
+  const statusOptions = useMemo(() => statuses.map((s) => ({ value: s.name, label: s.name })), [statuses]);
+  const priorityOptions = useMemo(() => priorities.map((p) => ({ value: p.name, label: p.name })), [priorities]);
+  const caseOptions = useMemo(() => cases.map((c) => ({ value: c.id, label: caseLabelFor(c) })), [cases, caseLabelFor]);
 
   const caseDisplayMap = useMemo(() => {
     const map = {};
@@ -520,7 +524,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
     caseId: caseOptions,
   }), [categoryOptions, priorityOptions, statusOptions, caseOptions]);
 
-  const handleOpenTaskFilter = () => {
+  const handleOpenTaskFilter = useCallback(() => {
     setTempFilters({
       category: filters.category.length ? [...filters.category] : [],
       priority: filters.priority.length ? [...filters.priority] : [],
@@ -529,26 +533,26 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       caseId: filters.caseId.length ? [...filters.caseId] : [],
     });
     setShowFilterPopup(true);
-  };
+  }, [filters]);
 
-  const handleTempTaskFilterChange = (key, values) => {
+  const handleTempTaskFilterChange = useCallback((key, values) => {
     setTempFilters((prev) => ({ ...prev, [key]: values }));
-  };
+  }, []);
 
-  const handleApplyTaskFilters = () => {
+  const handleApplyTaskFilters = useCallback(() => {
     setFilters((prev) => ({ ...prev, ...tempFilters }));
     setShowFilterPopup(false);
-  };
+  }, [tempFilters]);
 
-  const handleClearTaskFilters = () => {
+  const handleClearTaskFilters = useCallback(() => {
     setTempFilters({ category: [], priority: [], status: [], active: [], caseId: [] });
-  };
+  }, []);
 
-  const openCrudFor = (type) => {
+  const openCrudFor = useCallback((type) => {
     if (type === 'category') setCrud('category');
     else if (type === 'status') setCrud('status');
     else if (type === 'priority') setCrud('priority');
-  };
+  }, []);
 
   const filtered = useMemo(() => {
     let list = tasks.filter((t) => (showArchived ? true : !t.archived));
@@ -591,21 +595,24 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
     };
   }, [tasks]);
 
-  const allSelected = paged.length > 0 && paged.every((t) => selected.includes(t.id));
-  const toggleAll = () => setSelected(allSelected ? selected.filter((id) => !paged.find((t) => t.id === id)) : [...new Set([...selected, ...paged.map((t) => t.id)])]);
-  const toggleOne = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+  const allSelected = useMemo(() => paged.length > 0 && paged.every((t) => selected.includes(t.id)), [paged, selected]);
+  const toggleAll = useCallback(() => setSelected((s) => {
+    const allIds = paged.map((t) => t.id);
+    return allIds.every((id) => s.includes(id)) ? s.filter((id) => !allIds.includes(id)) : [...new Set([...s, ...allIds])];
+  }), [paged]);
+  const toggleOne = useCallback((id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]), []);
 
   useEffect(() => { if (taskAddOpen) { openAdd(); setTaskAddOpen(false); } }, [taskAddOpen]);
 
-  const openAdd = () => { setEditing(null); setModal('add'); };
-  const openEdit = (t) => { setEditing(t); setModal('edit'); };
-  const openView = (t) => setViewing(t);
+  const openAdd = useCallback(() => { setEditing(null); setModal('add'); }, []);
+  const openEdit = useCallback((t) => { setEditing(t); setModal('edit'); }, []);
+  const openView = useCallback((t) => setViewing(t), []);
 
-  const doAction = async (fn) => {
+  const doAction = useCallback(async (fn) => {
     const r = await fn;
     if (r && r.ok) { onChanged(); toast.push('Task updated.', 'success'); }
     else if (r) toast.push(r.error || 'Operation failed.', 'error');
-  };
+  }, [onChanged, toast]);
 
   const exportCsv = () => {
     const headers = ['Title', 'Category', 'Priority', 'Status', 'Active', 'Due Date', 'Due Time', 'Case', 'Created', 'Updated'];

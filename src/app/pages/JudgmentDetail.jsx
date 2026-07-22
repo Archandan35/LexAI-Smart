@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
@@ -163,20 +163,20 @@ export default function JudgmentDetail() {
   const [sliderAtStart, setSliderAtStart] = useState(true);
   const [sliderAtEnd, setSliderAtEnd] = useState(false);
 
-  const updateSliderButtons = () => {
+  const updateSliderButtons = useCallback(() => {
     const el = relatedSliderRef.current;
     if (!el) return;
     setSliderAtStart(el.scrollLeft <= 1);
     setSliderAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 1);
-  };
+  }, []);
 
-  const scrollRelated = (dir) => {
+  const scrollRelated = useCallback((dir) => {
     const el = relatedSliderRef.current;
     if (!el) return;
     const card = el.querySelector('.jd-rel-card');
     const amount = card ? card.offsetWidth + 20 : 320;
     el.scrollBy({ left: dir * amount, behavior: 'smooth' });
-  };
+  }, []);
 
   useLayoutEffect(() => {
     updateSliderButtons();
@@ -332,7 +332,7 @@ export default function JudgmentDetail() {
   const stageLabel = (val) => resolve(nameMap.stage, val);
   const partyTypeLabel = (val) => resolve(nameMap.partyType, val);
 
-  const handleDuplicate = () => {
+  const handleDuplicate = useCallback(() => {
     if (!judgment) return;
     const { id: _id, createdAt, updatedAt, ...rest } = judgment;
     judgmentLogic.create({
@@ -341,25 +341,25 @@ export default function JudgmentDetail() {
       citation: rest.citation ? `${rest.citation} (Copy)` : rest.citation,
       status: 'Draft',
     }).then(() => navigate('/judgment-library')).catch(() => {});
-  };
+  }, [judgment, navigate]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     const url = window.location.href;
     if (navigator.share) {
       navigator.share({ title: judgment?.title || 'Judgment', url }).catch(() => {});
     } else if (navigator.clipboard) {
       navigator.clipboard.writeText(url).catch(() => {});
     }
-  };
+  }, [judgment]);
 
-  const handlePin = () => {
+  const handlePin = useCallback(() => {
     if (!judgment) return;
     const next = !pinned;
     setPinned(next);
     judgmentLogic.update(judgment.id, { pinned: next }).catch(() => { setPinned(!next); });
-  };
+  }, [judgment, pinned]);
 
-  const handleCopyCitation = () => {
+  const handleCopyCitation = useCallback(() => {
     if (!judgment) return;
     const pA = judgment.appellant || judgment.petitioner || judgment.plaintiff || '';
     const pB = judgment.respondent || judgment.respondentName || judgment.defendant || '';
@@ -382,19 +382,19 @@ export default function JudgmentDetail() {
     } else {
       done();
     }
-  };
+  }, [judgment]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (!judgment) return;
     setConfirmDelete(true);
-  };
+  }, []);
 
-  const confirmDeleteJudgment = () => {
+  const confirmDeleteJudgment = useCallback(() => {
     if (!judgment) return;
     const delId = judgment.id;
     setConfirmDelete(false);
     judgmentLogic.remove(delId).then(() => navigate('/judgment-library')).catch(() => {});
-  };
+  }, [judgment, navigate]);
 
   const classification = useMemo(() => {
     if (!judgment) return [];
@@ -480,22 +480,22 @@ export default function JudgmentDetail() {
     source, sourceUrl,
   } = judgment;
 
-  const benchText = benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
-  const judgeText = judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
+  const benchText = useMemo(() => benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges), [judgment, nameMap]);
+  const judgeText = useMemo(() => judgeLabel(judgment.judge) || judgeLabel(judgment.judges), [judgment, nameMap]);
   const caseYear = date ? new Date(date).getFullYear() : '';
-  const formattedCaseNumber = caseType && caseNumber
+  const formattedCaseNumber = useMemo(() => caseType && caseNumber
     ? `${caseTypeLabel(caseType)} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
-    : caseNumber;
+    : caseNumber, [caseType, caseNumber, caseYear, nameMap]);
 
-  const partyA = appellant || petitioner || plaintiff || '';
-  const partyB = respondent || respondentName || defendant || '';
-  const partyAType = appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '';
-  const partyBType = respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '';
+  const partyA = useMemo(() => appellant || petitioner || plaintiff || '', [appellant, petitioner, plaintiff]);
+  const partyB = useMemo(() => respondent || respondentName || defendant || '', [respondent, respondentName, defendant]);
+  const partyAType = useMemo(() => appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '', [appellant, petitioner, plaintiff, plaintiffType]);
+  const partyBType = useMemo(() => respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '', [respondent, defendant, defendantType]);
 
-  const citationList = [citation, neutralCitation, reporterCitation]
+  const citationList = useMemo(() => [citation, neutralCitation, reporterCitation]
     .filter(Boolean)
     .flatMap(c => String(c).split(/[,;]/).map(s => s.trim()))
-    .filter(Boolean);
+    .filter(Boolean), [citation, neutralCitation, reporterCitation]);
 
   return (
     <div className="jd-page">

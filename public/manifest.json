@@ -1,0 +1,13 @@
+{
+  "name": "LexAI — Legal Intelligence Platform",
+  "short_name": "LexAI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6fb",
+  "theme_color": "#1c2f72",
+  "description": "AI-powered Indian Litigation Assistant",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,19 +1,25 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, useCallback, useRef, useLayoutEffect, memo } from 'react';
 import Icon from './Icon.jsx';
 import EmptyState from './EmptyState.jsx';
+
+const ROW_HEIGHT = 48;
+const OVERSCAN = 10;
 
 const DataTable = memo(function DataTable({
   columns, rows, rowKey = (r) => r.id,
   searchable = true, searchKeys, searchPlaceholder = 'Search…',
   pageSize = 10, selectable = false, selected = [], onSelectedChange,
   toolbar, emptyTitle = 'Nothing here yet.', emptyIcon = 'file',
-  initialSort,
+  initialSort, maxRows = 200, virtualized = false,
 }) {
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState(initialSort || null); // { key, dir }
+  const [sort, setSort] = useState(initialSort || null);
   const [page, setPage] = useState(1);
+  const scrollRef = useRef(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(600);
 
-  const keys = searchKeys || columns.map((c) => c.key);
+  const keys = useMemo(() => searchKeys || columns.map((c) => c.key), [searchKeys, columns]);
 
   const filtered = useMemo(() => {
     let out = rows;
@@ -34,24 +40,71 @@ const DataTable = memo(function DataTable({
     return out;
   }, [rows, query, sort, keys]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const safePage = Math.min(page, totalPages);
-  const pageRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const limited = virtualized ? filtered.slice(0, maxRows) : filtered;
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(limited.length / pageSize)), [limited.length, pageSize]);
+  const safePage = useMemo(() => Math.min(page, totalPages), [page, totalPages]);
 
-  const toggleSort = (key) => {
+  const pageRows = useMemo(() => {
+    if (virtualized) {
+      if (!scrollRef.current) {
+        return limited.slice(0, pageSize === 0 ? limited.length : pageSize);
+      }
+      const startIdx = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+      const endIdx = Math.min(limited.length, Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN);
+      return limited.slice(startIdx, endIdx);
+    }
+    return limited.slice((safePage - 1) * pageSize, safePage * pageSize);
+  }, [limited, safePage, pageSize, virtualized, scrollTop, viewportHeight]);
+
+  const virtualOffset = useMemo(() => {
+    if (!virtualized) return 0;
+    return Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN) * ROW_HEIGHT;
+  }, [virtualized, scrollTop]);
+
+  const virtualPaddingTop = useMemo(() => {
+    if (!virtualized) return 0;
+    return Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN) * ROW_HEIGHT;
+  }, [virtualized, scrollTop]);
+
+  const virtualPaddingBottom = useMemo(() => {
+    if (!virtualized) return 0;
+    const totalHeight = limited.length * ROW_HEIGHT;
+    const renderedHeight = pageRows.length * ROW_HEIGHT;
+    return Math.max(0, totalHeight - virtualOffset - renderedHeight);
+  }, [virtualized, limited.length, pageRows.length, virtualOffset]);
+
+  const toggleSort = useCallback((key) => {
     setSort((s) => (s?.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
-  };
+  }, []);
 
-  const allOnPageSelected = pageRows.length > 0 && pageRows.every((r) => selected.includes(rowKey(r)));
-  const toggleAllOnPage = () => {
+  const allOnPageSelected = useMemo(
+    () => pageRows.length > 0 && pageRows.every((r) => selected.includes(rowKey(r))),
+    [pageRows, selected, rowKey]
+  );
+
+  const toggleAllOnPage = useCallback(() => {
     if (!onSelectedChange) return;
     const ids = pageRows.map(rowKey);
     onSelectedChange(allOnPageSelected ? selected.filter((id) => !ids.includes(id)) : [...new Set([...selected, ...ids])]);
-  };
-  const toggleRow = (id) => {
+  }, [onSelectedChange, pageRows, rowKey, allOnPageSelected, selected]);
+
+  const toggleRow = useCallback((id) => {
     if (!onSelectedChange) return;
     onSelectedChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
-  };
+  }, [onSelectedChange, selected]);
+
+  useLayoutEffect(() => {
+    if (!virtualized || !scrollRef.current) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setViewportHeight(entry.contentRect.height);
+    });
+    ro.observe(scrollRef.current);
+    return () => ro.disconnect();
+  }, [virtualized]);
+
+  const handleScroll = useCallback((e) => {
+    setScrollTop(e.target.scrollTop);
+  }, []);
 
   return (
     <div className="datatable">
@@ -72,7 +125,12 @@ const DataTable = memo(function DataTable({
         </div>
       )}
 
-      <div className="table-scroll" style={{ contentVisibility: 'auto' }}>
+      <div
+        className="table-scroll"
+        ref={scrollRef}
+        onScroll={virtualized ? handleScroll : undefined}
+        style={virtualized ? { overflowY: 'auto', maxHeight: '70vh', position: 'relative' } : { contentVisibility: 'auto' }}
+      >
         <table className="table">
           <thead>
             <tr>
@@ -97,6 +155,9 @@ const DataTable = memo(function DataTable({
             </tr>
           </thead>
           <tbody>
+            {virtualized && virtualPaddingTop > 0 && (
+              <tr style={{ height: virtualPaddingTop, pointerEvents: 'none' }} aria-hidden="true" />
+            )}
             {pageRows.map((r) => {
               const id = rowKey(r);
               return (
@@ -110,15 +171,18 @@ const DataTable = memo(function DataTable({
                 </tr>
               );
             })}
+            {virtualized && virtualPaddingBottom > 0 && (
+              <tr style={{ height: virtualPaddingBottom, pointerEvents: 'none' }} aria-hidden="true" />
+            )}
           </tbody>
         </table>
         {pageRows.length === 0 && <EmptyState icon={emptyIcon} title={emptyTitle} />}
       </div>
 
-      {filtered.length > pageSize && (
+      {limited.length > pageSize && (
         <div className="pagination">
           <span className="pagination__info">
-            {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filtered.length)} of {filtered.length}
+            {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, limited.length)} of {limited.length}
           </span>
           <div className="pagination__controls">
             <button className="btn btn--ghost btn--sm" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>Prev</button>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -36,18 +36,18 @@ export default function CaseDetails() {
   const toast = useToast();
   const { user } = useAuth();
   const { priorities } = usePriorities();
-  const priorityTone = Object.fromEntries((priorities || []).map((p) => [p.name, p.color || 'grey']));
+  const priorityTone = useMemo(() => Object.fromEntries((priorities || []).map((p) => [p.name, p.color || 'grey'])), [priorities]);
   const { caseTypes } = useCaseTypes();
   const resolveCaseType = useCallback((ct) => {
     if (!ct) return '';
     const match = caseTypes.find((t) => t.name?.toLowerCase() === ct.toLowerCase() || t.short_code?.toLowerCase() === ct.toLowerCase());
     return match ? match.name : ct;
   }, [caseTypes]);
-  const caseTypeTone = Object.fromEntries((caseTypes || []).map((t) => [t.name, t.color || 'grey']));
+  const caseTypeTone = useMemo(() => Object.fromEntries((caseTypes || []).map((t) => [t.name, t.color || 'grey'])), [caseTypes]);
   const { stages } = useCaseStages();
-  const stageTone = Object.fromEntries((stages || []).map((s) => [s.name, s.color || 'navy']));
+  const stageTone = useMemo(() => Object.fromEntries((stages || []).map((s) => [s.name, s.color || 'navy'])), [stages]);
   const { items: statusItems } = useCaseStatuses();
-  const statusTone = Object.fromEntries((statusItems || []).map((s) => [s.name, s.color || 'grey']));
+  const statusTone = useMemo(() => Object.fromEntries((statusItems || []).map((s) => [s.name, s.color || 'grey'])), [statusItems]);
   const hexToStyle = (hex) => {
     if (!hex || !/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) hex = '#868e96';
     const full = hex.length === 4 ? `#${hex.slice(1).split('').map((ch) => ch + ch).join('')}` : hex;
@@ -92,7 +92,7 @@ export default function CaseDetails() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   // Merged view: vault (always-loaded case) + lazy-loaded tab data
-  const data = { ...(vault || {}), ...tabData };
+  const data = useMemo(() => ({ ...(vault || {}), ...tabData }), [vault, tabData]);
   const c = data.case;
   const documents = data.documents || [];
   const hearings = data.hearings || [];
@@ -179,7 +179,7 @@ export default function CaseDetails() {
   useEffect(() => { setLoading(true); load(); }, [load]);
   useEffect(() => { if (params.get('edit')) { setEditing(true); } }, [params]);
 
-  const saveEdit = async (data) => {
+  const saveEdit = useCallback(async (data) => {
     setBusy(true);
     try {
       await caseLogic.update(id, data, user);
@@ -192,16 +192,23 @@ export default function CaseDetails() {
     } finally {
       setBusy(false);
     }
-  };
+  }, [id, user, params, setParams, toast, load]);
 
-  const duplicate = async () => {
+  const duplicate = useCallback(async () => {
     const r = await caseLogic.duplicate(id, user);
     if (r.ok) { toast.push('Case duplicated.', 'success'); nav(`/cases/${r.data.id}`); }
     else toast.push(r.error, 'error');
-  };
-  const exportCase = async () => exportJson(`case_${c?.caseNumber}`, await caseLogic.exportBundle(id));
-  const archive = async () => { try { await caseLogic.setArchived(id, !c?.archived, user); toast.push(c?.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } };
-  const remove = async (deleteFolders) => {
+  }, [id, user, toast, nav]);
+
+  const exportCase = useCallback(async () => {
+    const caseNum = c?.caseNumber;
+    const bundle = await caseLogic.exportBundle(id);
+    exportJson(`case_${caseNum}`, bundle);
+  }, [id, c]);
+
+  const archive = useCallback(async () => { try { await caseLogic.setArchived(id, !c?.archived, user); toast.push(c?.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } }, [id, c, user, toast, load]);
+
+  const remove = useCallback(async (deleteFolders) => {
     try {
       await caseLogic.remove(id, user, deleteFolders);
       toast.push('Case deleted.', 'info');
@@ -209,21 +216,24 @@ export default function CaseDetails() {
     } catch (e) {
       toast.push(e?.message || 'Failed to delete case.', 'error');
     }
-  };
+  }, [id, user, toast, nav]);
 
   if (loading) return <Spinner label="Loading case…" />;
   if (!c) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Manage Cases</Button>} />;
 
   const lastHearing = data.lastHearing;
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const upcomingHearing = [...(hearings)]
-    .filter((h) => (h.date || '').slice(0, 10) >= todayStr)
-    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0]
-    || (c.nextHearing && (c.nextHearing || '').slice(0, 10) >= todayStr
-      ? { date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }
-      : null);
+  const upcomingHearing = useMemo(() => {
+    const ts = new Date().toISOString().slice(0, 10);
+    const fromHearings = [...(hearings)]
+      .filter((h) => (h.date || '').slice(0, 10) >= ts)
+      .sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
+    return fromHearings
+      || (c.nextHearing && (c.nextHearing || '').slice(0, 10) >= ts
+        ? { date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }
+        : null);
+  }, [hearings, c]);
 
-  const sortedHearings = [...hearings].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedHearings = useMemo(() => [...hearings].sort((a, b) => new Date(b.date) - new Date(a.date)), [hearings]);
 
   return (
     <>

@@ -1,3 +1,5 @@
+import { monitoringService } from '../services/monitoringService.js';
+
 function sendToAnalytics(metric) {
   const body = {
     name: metric.name,
@@ -9,6 +11,9 @@ function sendToAnalytics(metric) {
   };
   try {
     sessionStorage.setItem('lexai:vitals', JSON.stringify(body));
+  } catch {}
+  try {
+    monitoringService.metrics.push({ name: metric.name, value: metric.value, rating: metric.rating, timestamp: performance.now() });
   } catch {}
   if (import.meta.env.DEV) {
     console.debug(`[WebVital] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`);

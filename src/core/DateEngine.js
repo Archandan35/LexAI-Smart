@@ -35,7 +35,7 @@ function ordinal(n) {
 
 function formatByPattern(date, format, timezone) {
   const d = toDateObj(date, timezone);
-  if (!d) return '—';
+  if (!d) return '';
   const y = d.getFullYear();
   const m = d.getMonth();
   const day = d.getDate();
@@ -94,7 +94,7 @@ function formatByPattern(date, format, timezone) {
 
 function formatTimeByPattern(date, format, timezone) {
   const d = toDateObj(date, timezone);
-  if (!d) return '—';
+  if (!d) return '';
   const h = d.getHours();
   const min = d.getMinutes();
   const hour12 = h % 12 || 12;
@@ -145,15 +145,14 @@ export const DateEngine = {
   // Format a date for display (DD/MM/YYYY).
   toDisplayDate(date) {
     const iso = this.toISO(date);
-    if (!iso) return '—';
+    if (!iso) return '';
     const d = new Date(iso);
     return `${pad2(d.getUTCDate())}/${pad2(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
   },
 
-  // Format a date for display with time.
   toDisplayDateTime(date) {
     const iso = this.toISO(date);
-    if (!iso) return '—';
+    if (!iso) return '';
     const d = new Date(iso);
     return `${pad2(d.getUTCDate())}/${pad2(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
   },

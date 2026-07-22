@@ -1,0 +1,54 @@
+/* ---- DataTable ---- */
+.datatable__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.datatable__spacer {
+  flex: 1;
+}
+
+.datatable__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 220px;
+  color: var(--text-faint);
+}
+
+.datatable__search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.datatable__search:focus-within {
+  border-color: var(--navy-600);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  background: var(--surface);
+}
+
+/* ---- DataTable / Search ---- */
+@media (max-width: 991px) {
+  .datatable__bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .datatable__search {
+    width: 100%;
+    min-width: 0;
+  }
+}
