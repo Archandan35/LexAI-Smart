@@ -11,6 +11,17 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.googleapis.com https://firestore.googleapis.com https://*.mongodb.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com http://localhost:*; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; report-uri /api/csp-report;" />
     <title>LexAI — Indian Litigation Assistant</title>
+    <script>
+      (function() {
+        var theme = localStorage.getItem('themeMode');
+        if (theme !== 'dark' && theme !== 'light') {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.setProperty('--bg', theme === 'dark' ? '#0f1117' : '#f4f6fb');
+        document.documentElement.style.setProperty('--text', theme === 'dark' ? '#e4e6ed' : '#1a2236');
+      })();
+    </script>
     <style>
       /* Critical inline shell: paints instantly before the JS bundle parses.
          React replaces #root on mount, removing this automatically. */
@@ -20,13 +31,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f7f8fc;
+        background: var(--bg, #f7f8fc);
       }
       #app-splash .spin {
         width: 38px;
         height: 38px;
-        border: 3px solid #d7ddf0;
-        border-top-color: #1c2f72;
+        border: 3px solid var(--border, #d7ddf0);
+        border-top-color: var(--brand-600, #1c2f72);
         border-radius: 50%;
         animation: app-splash-spin 0.7s linear infinite;
       }

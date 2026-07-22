@@ -8552,12 +8552,9 @@
 
 /* ── Hearing Preview Modal ── */
 .order-sheet-preview-modal {
-  max-width: 730px;
   border-radius: 22px;
   overflow: hidden;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
+  height: 90vh;
 }
 
 .order-sheet-preview-modal .modal__body {
@@ -8571,6 +8568,12 @@
 .order-sheet-preview-modal .hpm {
   flex: 1;
   min-height: 0;
+}
+
+.order-sheet-preview-modal .hpm-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .hpm {
