@@ -18437,6 +18437,14 @@
 .notif__dot--dyn,
 .sync__dot--dyn { background: var(--dot-bg, currentColor); }
 
+/* Order Sheet History tab layout */
+.order-sheet__history-outer { height: 90vh; overflow: hidden; }
+.order-sheet__history-select-bar { flex-shrink: 0; }
+.order-sheet__history-empty-card { flex-shrink: 0; }
+.order-sheet__history-inner { flex: 1; min-height: 0; overflow: hidden; }
+.order-sheet__history-case-info { flex-shrink: 0; }
+.order-sheet__history-panel { flex: 1; min-height: 0; overflow-y: auto; }
+
 /* Status dot active state */
 .crud-status-dot {
   position: absolute;
