@@ -21,6 +21,8 @@ export default function PasswordInput({ value, onChange, placeholder, label, req
     return items;
   }, [value, reqs]);
 
+  const hintId = id ? `${id}-hints` : undefined;
+
   return (
     <div className="password-field">
       {label && <label className="field__label" htmlFor={id}>{label}</label>}
@@ -36,6 +38,8 @@ export default function PasswordInput({ value, onChange, placeholder, label, req
           autoFocus={autoFocus}
           className={`input ${className}`}
           minLength={minLength ?? getPasswordMinLength()}
+          aria-required={required || undefined}
+          aria-describedby={checks.length > 0 ? hintId : undefined}
         />
         <button
           type="button"
@@ -48,9 +52,9 @@ export default function PasswordInput({ value, onChange, placeholder, label, req
         </button>
       </div>
       {checks.length > 0 && (
-        <div className="password-hints">
+        <div className="password-hints" id={hintId} role="list">
           {checks.map((c, i) => (
-            <span key={i} className={`password-hint${c.pass ? ' password-hint--pass' : ''}`}>
+            <span key={i} className={`password-hint${c.pass ? ' password-hint--pass' : ''}`} role="listitem">
               <Icon name={c.pass ? 'check' : 'circle'} size={12} />
               {c.label}
             </span>

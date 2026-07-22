@@ -71,6 +71,8 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
     else if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
   }, [filtered, focusedIdx, select]);
 
+  const listId = useMemo(() => `ss-list-${Math.random().toString(36).slice(2, 9)}`, []);
+
   return (
     <div ref={wrapperRef} style={style} className="searchable-select">
       <input
@@ -82,12 +84,18 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
         onChange={(e) => { setQuery(e.target.value); setOpen(true); setFocusedIdx(-1); }}
         onKeyDown={handleKey}
         readOnly={!open}
+        role="combobox"
+        aria-expanded={open}
+        aria-autocomplete="list"
+        aria-controls={listId}
+        aria-activedescendant={focusedIdx >= 0 ? `${listId}-opt-${focusedIdx}` : undefined}
       />
       {open && createPortal(
-        <div ref={dropdownRef} role="listbox" className="searchable-select__dropdown" style={dropdownStyle}>
+        <div ref={dropdownRef} id={listId} role="listbox" className="searchable-select__dropdown" style={dropdownStyle}>
           {filtered.length > 0 ? filtered.map((opt, i) => (
             <div
               key={opt.value}
+              id={`${listId}-opt-${i}`}
               role="option"
               aria-selected={opt.value === value}
               className={`searchable-select__option${i === focusedIdx ? ' searchable-select__option--focused' : ''}${opt.value === value ? ' searchable-select__option--selected' : ''}`}

@@ -5,6 +5,7 @@ import App from './app/App.jsx';
 import { recoverFromChunkError } from './utils/lazyWithRetry.js';
 import { reportWebVitals } from './utils/webVitals.js';
 import { monitoringService } from './services/monitoringService.js';
+import MonitoringDashboard from './components/MonitoringDashboard.jsx';
 import './styles/index.css';
 
 function preconnectBackend(origin) {
@@ -37,11 +38,21 @@ function ScrollToTop() {
   return null;
 }
 
+function DashboardGate() {
+  const [monitorOpen, setMonitorOpen] = React.useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('monitor') === 'true') setMonitorOpen(true);
+  }, []);
+  return <MonitoringDashboard open={monitorOpen} onClose={() => setMonitorOpen(false)} />;
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <ScrollToTop />
       <App />
+      <DashboardGate />
     </BrowserRouter>
   </React.StrictMode>
 );
@@ -56,13 +67,11 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 // Start Web Vitals tracking after boot
 setTimeout(() => reportWebVitals(), 2000);
 
-// Initialize monitoring (errors, navigation, vitals) in production only
-if (import.meta.env.PROD) {
-  try {
-    monitoringService.init();
-  } catch (e) {
-    console.error('[Monitoring] init failed', e);
-  }
+// Initialize monitoring in all environments (errors, navigation, vitals, long tasks, memory, etc.)
+try {
+  monitoringService.init();
+} catch (e) {
+  console.error('[Monitoring] init failed', e);
 }
 
 // Signal a successful boot so the index.html watchdog stands down, and strip the

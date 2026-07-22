@@ -21,6 +21,7 @@ function SidebarItem({ item, collapsed }) {
       to={item.to}
       end={item.end}
       className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+      aria-current={({ isActive }) => isActive ? 'page' : undefined}
       title={item.label}
     >
       <span className="nav-item__icon"><Icon name={item.icon} size={18} /></span>
@@ -58,7 +59,8 @@ function SubmenuGroup({ item, collapsed, canViewModule }) {
               key={child.to}
               to={child.to}
               end={child.end}
-              className={({ isActive }) => `nav-item nav-item--sub ${isActive ? 'active' : ''}`}
+               className={({ isActive }) => `nav-item nav-item--sub ${isActive ? 'active' : ''}`}
+               aria-current={({ isActive }) => isActive ? 'page' : undefined}
 
               title={child.label}
             >

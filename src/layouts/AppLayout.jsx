@@ -7,6 +7,7 @@ import { keepAliveService } from '@/services/keepAliveService.js';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { FabActionProvider } from '@/data-layer/FABContext.jsx';
+import MonitoringDashboard from '@/components/MonitoringDashboard.jsx';
 
 
 // AppLayout — the shell. Holds sidebar collapse/mobile state and renders the
@@ -14,6 +15,7 @@ import { FabActionProvider } from '@/data-layer/FABContext.jsx';
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [monitorOpen, setMonitorOpen] = useState(false);
   const { debugMode } = useDebug();
   const { settings } = useSettings();
   const location = useLocation();
@@ -56,7 +58,16 @@ export default function AppLayout() {
           <footer className="app-footer">
             {settings.adminEmail && <span>{settings.adminEmail}</span>}
             {settings.mainUrl && <span> · <a href={settings.mainUrl} target="_blank" rel="noopener noreferrer" className="app-footer__link">{settings.mainUrl}</a></span>}
+            {(debugMode || new URLSearchParams(window.location.search).get('monitor') === 'true') && (
+              <>
+                <span> · </span>
+                <button className="monitor-toggle-btn" onClick={() => setMonitorOpen((o) => !o)}>
+                  {monitorOpen ? 'Close' : 'Performance'}
+                </button>
+              </>
+            )}
           </footer>
+          <MonitoringDashboard open={monitorOpen} onClose={() => setMonitorOpen(false)} />
         </div>
       </div>
       <Bottombar />

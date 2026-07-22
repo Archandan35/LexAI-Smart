@@ -25,6 +25,7 @@ import ColorPicker from '@/components/ColorPicker.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import DateInput from '@/components/DateInput.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
+import DataTable from '@/components/DataTable.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import CrudManager from '@/components/CrudManager';
 import FilterPopup from '@/components/FilterPopup.jsx';
@@ -470,15 +471,11 @@ function EventViewModal({ event, onClose, cases }) {
 /*  TASKS VIEW                                                         */
 /* ================================================================== */
 function TasksView({ tasks, loading, onChanged, priorities, categories, statuses, cases, onReloadMaster, toast, user, formatDate, formatDateTime, taskAddOpen, setTaskAddOpen }) {
-  const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ category: [], priority: [], status: [], active: [], caseId: [], date: '' });
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState({ category: [], priority: [], status: [], active: [], caseId: [] });
-  const [sort, setSort] = useState('due_asc');
   const [showArchived, setShowArchived] = useState(false);
   const [selected, setSelected] = useState([]);
-  const [page, setPage] = useState(1);
-  const perPage = 10;
 
   const [modal, setModal] = useState(null); // 'add' | 'edit' | 'view' | null
   const [editing, setEditing] = useState(null);
@@ -556,11 +553,6 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
   const filtered = useMemo(() => {
     let list = tasks.filter((t) => (showArchived ? true : !t.archived));
-    const q = search.trim().toLowerCase();
-    if (q) list = list.filter((t) =>
-      (t.title || '').toLowerCase().includes(q) ||
-      (t.description || '').toLowerCase().includes(q) ||
-      (t.tags || '').toLowerCase().includes(q));
     if (filters.category.length) list = list.filter((t) => filters.category.includes(t.category));
     if (filters.priority.length) list = list.filter((t) => filters.priority.includes(t.priority));
     if (filters.status.length) list = list.filter((t) => filters.status.includes(t.status));
@@ -570,19 +562,8 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       const fk = dayKey(new Date(filters.date));
       list = list.filter((t) => { const d = t.due_date || t.start_date; return d && dayKey(new Date(d)) === fk; });
     }
-    const sorters = {
-      due_asc: (a, b) => new Date(a.due_date || a.start_date || 0) - new Date(b.due_date || b.start_date || 0),
-      due_desc: (a, b) => new Date(b.due_date || b.start_date || 0) - new Date(a.due_date || a.start_date || 0),
-      title_asc: (a, b) => (a.title || '').localeCompare(b.title || ''),
-      created_desc: (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
-      priority_asc: (a, b) => priorityRank(a.priority) - priorityRank(b.priority),
-    };
-    return list.slice().sort(sorters[sort] || sorters.due_asc);
-  }, [tasks, search, filters, sort, showArchived]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+    return list;
+  }, [tasks, filters, showArchived]);
 
   const stats = useMemo(() => {
     const active = tasks.filter((t) => !t.archived && t.active);
@@ -594,13 +575,6 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       archived: tasks.filter((t) => t.archived).length,
     };
   }, [tasks]);
-
-  const allSelected = useMemo(() => paged.length > 0 && paged.every((t) => selected.includes(t.id)), [paged, selected]);
-  const toggleAll = useCallback(() => setSelected((s) => {
-    const allIds = paged.map((t) => t.id);
-    return allIds.every((id) => s.includes(id)) ? s.filter((id) => !allIds.includes(id)) : [...new Set([...s, ...allIds])];
-  }), [paged]);
-  const toggleOne = useCallback((id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]), []);
 
   useEffect(() => { if (taskAddOpen) { openAdd(); setTaskAddOpen(false); } }, [taskAddOpen]);
 
@@ -677,7 +651,6 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
         <div className="tasks-search-row">
           <div className="tasks-search-inner">
             <Icon name="search" size={18} />
-            <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
             <button className="tasks-search-filter-inner-btn" onClick={handleOpenTaskFilter} title="Filter">
               <Icon name="filter" size={18} />
               {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) && (
@@ -689,17 +662,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
             {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
           </Button>
           <Input type="date" className="input tasks-filter-date" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
-          <Select className="tasks-filter-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="due_asc">Sort: Due (earliest)</option>
-            <option value="due_desc">Sort: Due (latest)</option>
-            <option value="title_asc">Sort: Title (A-Z)</option>
-            <option value="created_desc">Sort: Created (newest)</option>
-            <option value="priority_asc">Sort: Priority</option>
-          </Select>
           <button className={`tasks-arch-toggle${showArchived ? ' active' : ''}`} onClick={() => setShowArchived((s) => !s)}>
             <Icon name="history" size={15} /> {showArchived ? 'Hide Archived' : 'Show Archived'}
           </button>
-          <button className="btn btn--ghost tasks-clear-btn" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); setSearch(''); }}>Clear</button>
+          <button className="btn btn--ghost tasks-clear-btn" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); }}>Clear</button>
         </div>
       </Card>
 
@@ -712,77 +678,92 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       )}
 
       <Card noPad className="tasks-table-card">
-        {paged.length === 0 ? (
+        {filtered.length === 0 ? (
           <EmptyState icon="check" title="No tasks found." hint="Create a task or adjust your filters." />
         ) : (
           <>
-            <div className="table-scroll">
-              <table className="table tasks-table">
-                <thead>
-                  <tr>
-                    <th className="w40"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                    <th>Case</th>
-                    <th>Task Title</th>
-                    <th>Category</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Due</th>
-                    <th>State</th>
-                    <th className="w160">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paged.map((t) => {
+            <DataTable
+              columns={[
+                {
+                  key: 'title',
+                  label: 'Task',
+                  sortable: true,
+                  width: 260,
+                  render: (t) => {
                     const cat = categories.find((c) => c.name === t.category);
                     const color = t.color || cat?.color || '#6b7280';
                     return (
-                      <tr key={t.id} className={t.archived ? 'task-row--archived' : ''}>
-                        <td><input type="checkbox" checked={selected.includes(t.id)} onChange={() => toggleOne(t.id)} /></td>
-                        <td>{(t.case_id || t.caseId) ? (
-                          <div className="task-case-cell">
-                            <div className="task-case-cell__num">{caseDisplayMap[t.case_id || t.caseId] || 'Linked'}</div>
-                            {caseTitleMap[t.case_id || t.caseId] && <div className="task-case-cell__party">{caseTitleMap[t.case_id || t.caseId]}</div>}
-                          </div>
-                        ) : '—'}</td>
-                        <td>
-                          <div className="task-title-cell">
-                            <span className="cal-event-dot" style={{ '--dot': color }} />
-                            <button className="link-btn" onClick={() => openView(t)}>{t.title}</button>
-                            {t.reminder && <Icon name="bell" size={13} className="task-reminder-ico" />}
-                          </div>
-                          {t.tags && <div className="task-tags">{t.tags.split(',').slice(0, 3).map((tg) => <span key={tg} className="task-tag">{tg.trim()}</span>)}</div>}
-                        </td>
-                        <td>{t.category ? <Badge tone="grey">{t.category}</Badge> : '—'}</td>
-                        <td>{t.priority ? <Badge tone={priorityTone(t.priority)}>{t.priority}</Badge> : '—'}</td>
-                        <td>{t.status ? <Badge tone={statusTone(t.status)}>{t.status}</Badge> : '—'}</td>
-                        <td>{t.due_date ? formatDate(t.due_date) : '—'}{t.due_time && <div className="task-due-time">{fmtTime(t.due_time)}</div>}</td>
-                        <td>{t.active ? <Badge tone="green">Active</Badge> : <Badge tone="red">Inactive</Badge>}{t.archived && <Badge tone="grey">Archived</Badge>}</td>
-                        <td>
-                          <div className="cmp-actions">
-                            <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => openView(t)}><Icon name="eye" size={15} /></button>
-                            <PermissionGate module="calendar" action="edit"><button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => openEdit(t)}><Icon name="edit" size={15} /></button></PermissionGate>
-                            <PermissionGate module="calendar" action="duplicate"><button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => doAction(taskLogic.duplicate(t.id).then((r) => { onChanged(); return r; }))}><Icon name="copy" size={15} /></button></PermissionGate>
-                            <PermissionGate module="calendar" action="edit">{t.status !== 'Completed' ? (
-                              <button className="cmp-act-btn cmp-act-btn--toggle-on" title="Mark Complete" onClick={() => doAction(taskLogic.markComplete(t.id))}><Icon name="check-circle" size={15} /></button>
-                            ) : (
-                              <button className="cmp-act-btn cmp-act-btn--toggle-off" title="Mark Pending" onClick={() => doAction(taskLogic.markPending(t.id))}><Icon name="refresh" size={15} /></button>
-                            )}</PermissionGate>
-                            <PermissionGate module="calendar" action="archive">{!t.archived ? (
-                              <button className="cmp-act-btn" title="Archive" onClick={() => doAction(taskLogic.archive(t.id))}><Icon name="archive" size={15} /></button>
-                            ) : (
-                              <button className="cmp-act-btn" title="Restore" onClick={() => doAction(taskLogic.restore(t.id))}><Icon name="refresh" size={15} /></button>
-                            )}</PermissionGate>
-                            <PermissionGate module="calendar" action="delete"><button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })}><Icon name="trash" size={15} /></button></PermissionGate>
-                          </div>
-                        </td>
-                      </tr>
+                      <>
+                        <div className="task-title-cell">
+                          <span className="cal-event-dot" style={{ '--dot': color }} />
+                          <button className="link-btn" onClick={() => openView(t)}>{t.title}</button>
+                          {t.reminder && <Icon name="bell" size={13} className="task-reminder-ico" />}
+                        </div>
+                        {t.tags && <div className="task-tags">{t.tags.split(',').slice(0, 3).map((tg) => <span key={tg} className="task-tag">{tg.trim()}</span>)}</div>}
+                      </>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  },
+                },
+                { key: 'caseInfo', label: 'Case', sortable: true, render: (t) => {
+                  const cid = t.case_id || t.caseId;
+                  return cid ? (
+                    <div className="task-case-cell">
+                      <div className="task-case-cell__num">{caseDisplayMap[cid] || 'Linked'}</div>
+                      {caseTitleMap[cid] && <div className="task-case-cell__party">{caseTitleMap[cid]}</div>}
+                    </div>
+                  ) : '—';
+                }},
+                { key: 'category', label: 'Category', sortable: true, render: (t) => t.category ? <Badge tone="grey">{t.category}</Badge> : '—' },
+                { key: 'priority', label: 'Priority', sortable: true, render: (t) => t.priority ? <Badge tone={priorityTone(t.priority)}>{t.priority}</Badge> : '—' },
+                { key: 'status', label: 'Status', sortable: true, render: (t) => t.status ? <Badge tone={statusTone(t.status)}>{t.status}</Badge> : '—' },
+                {
+                  key: 'due',
+                  label: 'Due',
+                  sortable: true,
+                  width: 120,
+                  render: (t) => (
+                    <>{t.due_date ? formatDate(t.due_date) : '—'}{t.due_time && <div className="task-due-time">{fmtTime(t.due_time)}</div>}</>
+                  ),
+                },
+                { key: 'active', label: 'State', width: 100, render: (t) => (
+                  <>{t.active ? <Badge tone="green">Active</Badge> : <Badge tone="red">Inactive</Badge>}{t.archived && <Badge tone="grey">Archived</Badge>}</>
+                )},
+                {
+                  key: 'actions',
+                  label: '',
+                  width: 160,
+                  render: (t) => (
+                    <div className="cmp-actions">
+                      <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => openView(t)}><Icon name="eye" size={15} /></button>
+                      <PermissionGate module="calendar" action="edit"><button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => openEdit(t)}><Icon name="edit" size={15} /></button></PermissionGate>
+                      <PermissionGate module="calendar" action="duplicate"><button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => doAction(taskLogic.duplicate(t.id).then((r) => { onChanged(); return r; }))}><Icon name="copy" size={15} /></button></PermissionGate>
+                      <PermissionGate module="calendar" action="edit">{t.status !== 'Completed' ? (
+                        <button className="cmp-act-btn cmp-act-btn--toggle-on" title="Mark Complete" onClick={() => doAction(taskLogic.markComplete(t.id))}><Icon name="check-circle" size={15} /></button>
+                      ) : (
+                        <button className="cmp-act-btn cmp-act-btn--toggle-off" title="Mark Pending" onClick={() => doAction(taskLogic.markPending(t.id))}><Icon name="refresh" size={15} /></button>
+                      )}</PermissionGate>
+                      <PermissionGate module="calendar" action="archive">{!t.archived ? (
+                        <button className="cmp-act-btn" title="Archive" onClick={() => doAction(taskLogic.archive(t.id))}><Icon name="archive" size={15} /></button>
+                      ) : (
+                        <button className="cmp-act-btn" title="Restore" onClick={() => doAction(taskLogic.restore(t.id))}><Icon name="refresh" size={15} /></button>
+                      )}</PermissionGate>
+                      <PermissionGate module="calendar" action="delete"><button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })}><Icon name="trash" size={15} /></button></PermissionGate>
+                    </div>
+                  ),
+                },
+              ]}
+              rows={filtered}
+              rowKey={(t) => t.id}
+              searchKeys={['title', 'description', 'tags']}
+              searchPlaceholder="Search tasks by title, description, or tag…"
+              selectable
+              selected={selected}
+              onSelectedChange={setSelected}
+              emptyIcon="check"
+              emptyTitle="No tasks found."
+            />
             <div className="tasks-cards">
-              {paged.map((t) => {
+              {filtered.map((t) => {
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
                 const cid = t.case_id || t.caseId || '';
@@ -877,20 +858,6 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                   </article>
                 );
               })}
-            </div>
-            <div className="cmp-table-footer">
-              <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} tasks</div>
-              {totalPages > 1 && (
-                <div className="cmp-pagination">
-                  <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
-                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                    const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
-                    const p = start + i; if (p > totalPages) return null;
-                    return <button key={p} className={`cmp-page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>;
-                  })}
-                  <button className="cmp-page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
-                </div>
-              )}
             </div>
           </>
         )}

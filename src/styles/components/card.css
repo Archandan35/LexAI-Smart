@@ -1,0 +1,106 @@
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.25s var(--ease), transform 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.card--hover:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+}
+
+.card__head {
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card__title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy-900);
+}
+
+.card__sub {
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+
+.card__body {
+  padding: 20px;
+}
+
+.card--no-pad .card__head { padding-left: 16px; padding-right: 16px; }
+.card__body--no-pad { padding: 0; }
+
+.card__spacer {
+  flex: 1;
+}
+
+/* Stat cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  margin-bottom: 14px;
+}
+
+.stat-card__value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--navy-900);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.stat-card__label {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-top: 6px;
+  font-weight: 550;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--brand-soft) 0%, transparent 70%);
+  opacity: 0.6;
+}

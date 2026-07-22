@@ -8,9 +8,9 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="toast-stack" aria-live="polite" role="status">
+      <div className="toast-stack" aria-live="polite" role="status" aria-relevant="additions" aria-atomic="false">
         {toast.toasts.map((t) => (
-          <div key={t.id} className={`toast toast--${t.type}`} role="alert" onClick={() => toast.remove(t.id)}>
+          <div key={t.id} className={`toast toast--${t.type}`} role="alert" aria-atomic="true" onClick={() => toast.remove(t.id)}>
             {t.message}
           </div>
         ))}

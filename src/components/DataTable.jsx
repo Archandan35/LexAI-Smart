@@ -2,6 +2,16 @@ import { useState, useMemo, useCallback, useRef, useLayoutEffect, memo } from 'r
 import Icon from './Icon.jsx';
 import EmptyState from './EmptyState.jsx';
 
+function useTableKeyboardNav(rowCount, onRowActivate) {
+  const [focusIdx, setFocusIdx] = useState(-1);
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setFocusIdx((i) => Math.min(i + 1, rowCount - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setFocusIdx((i) => Math.max(i - 1, 0)); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (focusIdx >= 0) onRowActivate?.(focusIdx); }
+  }, [rowCount, focusIdx, onRowActivate]);
+  return { focusIdx, setFocusIdx, handleKeyDown };
+}
+
 const ROW_HEIGHT = 48;
 const OVERSCAN = 10;
 
@@ -106,6 +116,14 @@ const DataTable = memo(function DataTable({
     setScrollTop(e.target.scrollTop);
   }, []);
 
+  const { focusIdx, setFocusIdx, handleKeyDown } = useTableKeyboardNav(
+    pageRows.length,
+    useCallback((i) => {
+      const r = pageRows[i];
+      if (r?.onClick) r.onClick(r);
+    }, [pageRows])
+  );
+
   return (
     <div className="datatable">
       {(searchable || toolbar) && (
@@ -131,9 +149,9 @@ const DataTable = memo(function DataTable({
         onScroll={virtualized ? handleScroll : undefined}
         style={virtualized ? { overflowY: 'auto', maxHeight: '70vh', position: 'relative' } : { contentVisibility: 'auto' }}
       >
-        <table className="table">
+        <table className="table" role="grid" onKeyDown={handleKeyDown}>
           <thead>
-            <tr>
+            <tr role="row">
               {selectable && (
 <th className="th-checkbox">
                   <input type="checkbox" checked={allOnPageSelected} onChange={toggleAllOnPage} aria-label="Select page" />
@@ -145,11 +163,17 @@ const DataTable = memo(function DataTable({
                   style={c.width ? { width: c.width } : undefined}
                   className={c.sortable ? 'th--sortable' : ''}
                   onClick={c.sortable ? () => toggleSort(c.key) : undefined}
+                  scope="col"
+                  aria-sort={c.sortable && sort?.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
-                  {c.label}
-                  {c.sortable && sort?.key === c.key && (
-                    <span className="th__sort">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>
-                  )}
+                  {c.sortable ? (
+                    <button className="th__sort-btn" onClick={() => toggleSort(c.key)} aria-label={`Sort by ${c.label}`}>
+                      {c.label}
+                      {sort?.key === c.key && (
+                        <span className="th__sort">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>
+                      )}
+                    </button>
+                  ) : c.label}
                 </th>
               ))}
             </tr>
@@ -158,15 +182,24 @@ const DataTable = memo(function DataTable({
             {virtualized && virtualPaddingTop > 0 && (
               <tr style={{ height: virtualPaddingTop, pointerEvents: 'none' }} aria-hidden="true" />
             )}
-            {pageRows.map((r) => {
+            {pageRows.map((r, ri) => {
               const id = rowKey(r);
               return (
-                <tr key={id} className={selected.includes(id) ? 'row--selected' : ''}>
+                <tr
+                  key={id}
+                  role="row"
+                  tabIndex={0}
+                  className={selected.includes(id) ? 'row--selected' : ''}
+                  onClick={() => r.onClick?.(r)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); r.onClick?.(r); } }}
+                  onFocus={() => setFocusIdx(ri)}
+                  aria-selected={selected.includes(id) || undefined}
+                >
                   {selectable && (
-                    <td><input type="checkbox" checked={selected.includes(id)} onChange={() => toggleRow(id)} aria-label="Select row" /></td>
+                    <td role="gridcell"><input type="checkbox" checked={selected.includes(id)} onChange={() => toggleRow(id)} aria-label="Select row" /></td>
                   )}
                   {columns.map((c) => (
-                    <td key={c.key} className={c.className}>{c.render ? c.render(r) : (r[c.key] ?? '—')}</td>
+                    <td key={c.key} role="gridcell" className={c.className}>{c.render ? c.render(r) : (r[c.key] ?? '—')}</td>
                   ))}
                 </tr>
               );

@@ -1,0 +1,87 @@
+/* ---------- Forms ---------- */
+.field {
+  margin-bottom: 15px;
+}
+
+.field__label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+
+.input,
+.textarea,
+.input,
+.select {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--navy-600);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.55;
+}
+
+.input-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.input-row>* {
+  flex: 1 1 160px;
+  min-width: min(160px, 100%);
+}
+
+/* Password field with visibility toggle */
+.password-field {
+  margin-bottom: 4px;
+}
+
+.password-field__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field__wrapper .input {
+  padding-right: 42px;
+}
+
+.password-field__toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-faint);
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  transition: color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.password-field__toggle:hover {
+  color: var(--text-soft);
+  background: var(--surface-2);
+}

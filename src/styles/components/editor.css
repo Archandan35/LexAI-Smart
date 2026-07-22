@@ -1,0 +1,47 @@
+/* Editor */
+.editor-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: var(--surface-2);
+  flex-wrap: wrap;
+}
+
+.editor-toolbar button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--text-soft);
+  font-weight: 700;
+  transition: all 0.15s;
+}
+
+.editor-toolbar button:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+}
+
+.editor-surface {
+  min-height: 420px;
+  border: 1px solid var(--border);
+  border-radius: 0 0 10px 10px;
+  padding: 22px 26px;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  white-space: pre-wrap;
+  font-family: 'Georgia', serif;
+}
+
+.editor-surface:focus {
+  border-color: var(--navy-600);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}

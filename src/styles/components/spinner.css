@@ -1,0 +1,33 @@
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid var(--brand-soft);
+  border-top-color: var(--navy-700);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  color: var(--text-soft);
+}
+
+.dash-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface, #ffffff);
+}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { caseLogic } from '@/logic/caseLogic.js';
 
 const AppDataContext = createContext(null);
@@ -11,6 +11,7 @@ export function AppDataProvider({ children }) {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [initialised, setInitialised] = useState(false);
 
   const loadCases = useCallback(async (pageNum = 0, append = false) => {
     setLoading(true);
@@ -26,6 +27,13 @@ export function AppDataProvider({ children }) {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!initialised) {
+      setInitialised(true);
+      loadCases(0, false);
+    }
+  }, [initialised, loadCases]);
 
   const loadMore = useCallback(() => {
     if (!loading && hasMore) loadCases(page + 1, true);
