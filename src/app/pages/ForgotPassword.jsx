@@ -45,7 +45,7 @@ export default function ForgotPassword() {
             <Field label="Email or username">
               <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="you@lexai.local" autoFocus />
             </Field>
-            <Button type="submit" variant="primary" className="btn--block" loading={busy} icon="shield">Generate reset token</Button>
+            <Button type="submit" variant="primary" className="btn--block" loading={busy} icon="shield">Forget your Password</Button>
           </form>
         )}
 

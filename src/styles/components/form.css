@@ -85,3 +85,28 @@
   color: var(--text-soft);
   background: var(--surface-2);
 }
+
+/* Password hints - live validation criteria */
+.password-hints {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.password-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-faint);
+  transition: color 0.2s var(--ease);
+}
+
+.password-hint .icon {
+  flex-shrink: 0;
+}
+
+.password-hint--pass {
+  color: var(--green);
+}

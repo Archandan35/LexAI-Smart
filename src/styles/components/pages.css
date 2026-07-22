@@ -305,6 +305,7 @@
   border-radius: 18px;
   box-shadow: var(--shadow-lg);
   padding: 32px 30px;
+  position: relative;
 }
 
 .auth-card__logo {
@@ -331,6 +332,27 @@
   justify-content: center;
   font-size: 26px;
   font-weight: 700;
+}
+
+.auth-theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.auth-theme-toggle:hover {
+  background: var(--border);
+  color: var(--text);
 }
 
 .auth-title {

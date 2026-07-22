@@ -7,7 +7,23 @@ import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
+
+function getInitialTheme() {
+  const saved = localStorage.getItem('themeMode');
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export default function Login() {
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('themeMode', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
   const { login, isAuthenticated } = useAuth();
   const { settings } = useSettings();
   const nav = useNavigate();
@@ -66,6 +82,9 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-card fade-in">
+        <button className="auth-theme-toggle" onClick={toggleTheme} aria-label="Toggle theme" title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
+        </button>
         <div className="auth-card__logo">
           {settings.logoUrl ? (
             <img src={settings.logoUrl} alt={settings.siteTitle} className="auth-card__logo-img" />
