@@ -1276,7 +1276,6 @@ export default function OrderSheet() {
                 <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
               ) : (
                 <>
-                  {/* Case Info Header Card */}
                   <div className="order-sheet__case-info-card">
                     <div className="order-sheet__case-info-header">
                       <div className="order-sheet__case-icon-box">
@@ -1293,81 +1292,7 @@ export default function OrderSheet() {
                         <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                       </div>
                     </div>
-
-                    <div className="order-sheet__details-grid">
-                      <div className="order-sheet__details-item">
-                        <span className="order-sheet__details-label">Case Type</span>
-                        <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
-                      </div>
-                      <div className="order-sheet__details-item">
-                        <span className="order-sheet__details-label">Filing Date</span>
-                        <span className="order-sheet__details-value">{formatDate(history.case?.filingDate) || '—'}</span>
-                      </div>
-                      <div className="order-sheet__details-item">
-                        <span className="order-sheet__details-label">Current Stage</span>
-                        <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
-                      </div>
-                      <div className="order-sheet__details-item">
-                        <span className="order-sheet__details-label">Next Hearing</span>
-                        <span className="order-sheet__details-value">{formatDate(history.case?.nextHearing) || '—'}</span>
-                      </div>
-                      <div className="order-sheet__details-item">
-                        <span className="order-sheet__details-label">Judge</span>
-                        <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
-                      </div>
-                    </div>
                   </div>
-
-                  {/* History Timeline card */}
-                  <Card
-                    title="History Timeline"
-                    sub="Chronological proceedings logs and order sheets"
-                    actions={history.hearings.length > 0 && (
-                      <div className="hh-wire__sort">
-                        <span className="hh-wire__sort-label">Sort:</span>
-                        <div className="hh-wire__sort-select">
-                          <select value={histSort} onChange={(e) => setHistSort(e.target.value)}>
-                            <option value="desc">Recent</option>
-                            <option value="asc">Oldest</option>
-                          </select>
-                          <Icon name="chevronDown" size={13} />
-                        </div>
-                      </div>
-                    )}
-                  >
-                    {history.hearings.length === 0 ? (
-                      <EmptyState icon="history" title="No history logs recorded." />
-                    ) : (
-                      <div className="order-sheet__timeline-v-container">
-                        <div className="order-sheet__timeline-v-line-path" />
-                        {historyHearings.map((h, i) => {
-                          const markerClass = h.status?.toLowerCase() || 'default';
-                          return (
-                            <div className="order-sheet__timeline-v-row" key={h.id || i}>
-                              <div className="order-sheet__timeline-v-node-col">
-                                <div className={`order-sheet__timeline-v-circle order-sheet__timeline-v-circle--${markerClass}`}>
-                                  {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
-                                </div>
-                              </div>
-                              <div className="order-sheet__timeline-v-connector" />
-                              <div className="order-sheet__timeline-v-title-col">
-                                <h4 className="order-sheet__timeline-v-event-title">{h.purpose || 'Hearing'}</h4>
-                                <span className="order-sheet__timeline-v-event-date">{formatDate(h.date)}</span>
-                              </div>
-                              <div className="order-sheet__timeline-v-desc-col">
-                                <div className="order-sheet__timeline-v-desc">{stripHtml(h.notes || '—')}</div>
-                              </div>
-                              <div className="order-sheet__timeline-v-action-col">
-                                <button className="order-sheet__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
-                                  View Details
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </Card>
                 </>
               )}
             </div>

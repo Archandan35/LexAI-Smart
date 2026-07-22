@@ -15,26 +15,24 @@ async function lookupUserByIdentifier(db, identifier) {
 
 // SupabaseAuthProvider — talks directly to the GoTrue REST API on Supabase.
 // Handles session persistence, token refreshing, database user record linking.
-// Session is persisted to sessionStorage (not localStorage) so it is
-// automatically cleared when the user closes the browser tab, reducing the
-// window of exposure if the device is shared or compromised.
+// Session is persisted to localStorage so it survives tab close / browser restart.
 export default class SupabaseAuthProvider extends AuthProvider {
   #session = null;
 
-  // 30-minute session expiry for access tokens without explicit expiry
-  #SESSION_MAX_AGE_MS = 30 * 60 * 1000;
+  // 24-hour session expiry
+  #SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
   #persist(session) {
-    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch {}
   }
 
   #clearPersisted() {
-    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
   }
 
   #loadPersisted() {
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       if (!parsed?.token) return null;
