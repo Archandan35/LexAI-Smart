@@ -8,6 +8,7 @@ import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
 import { caseService } from '@/services/caseService.js';
 import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { DateEngine } from '@/core/DateEngine.js';
+import { safeHtml } from '@/utils/sanitize.js';
 
 function fmtCaseNumber(c) {
   if (!c) return '—';
@@ -438,7 +439,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                   </div>
                 ) : data.notes ? (
                   <div className="hpm-proceedings">
-                    <div className="hpm-proceedings__text" dangerouslySetInnerHTML={{ __html: data.notes }} />
+                    <div className="hpm-proceedings__text" dangerouslySetInnerHTML={safeHtml(data.notes)} />
                   </div>
                 ) : (
                   <div className="hpm-proceedings hpm-proceedings--empty">
@@ -499,7 +500,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                             <div
                               ref={(el) => { notesRefs.current[h.id] = el; }}
                               className={`hpm-historical-card__notes${expandedNotes[h.id] ? ' is-expanded' : ''}`}
-                              dangerouslySetInnerHTML={{ __html: h.notes }}
+                              dangerouslySetInnerHTML={safeHtml(h.notes)}
                             />
                             {(overflowingNotes[h.id] || expandedNotes[h.id]) && (
                               <button

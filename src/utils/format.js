@@ -43,6 +43,8 @@ export function bytes(n) {
   return `${(n / 1024 ** i).toFixed(1)} ${units[i]}`;
 }
 
+import { sanitizeHtml } from '@/utils/sanitize.js';
+
 export function stripHtml(str) {
   if (!str) return '';
   // Add spacing after block closing tags to prevent text concatenation
@@ -58,7 +60,7 @@ export function stripHtml(str) {
     .replace(/<[^>]*>/g, '');
   // Decode HTML entities via textarea (handles &amp; &lt; &gt; &quot; &nbsp; &#39; etc.)
   const el = document.createElement('textarea');
-  el.innerHTML = text;
+  el.innerHTML = sanitizeHtml(text);
   text = el.value;
   return text;
 }

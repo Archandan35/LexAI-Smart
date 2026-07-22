@@ -36,18 +36,12 @@ export const fileLogic = {
     return ok(true);
   },
   async bulkDelete(docs, user) {
-    for (const d of docs) {
-      // eslint-disable-next-line no-await-in-loop
-      await storageService.deleteDocument(d.id, d.ref);
-    }
+    await Promise.all(docs.map((d) => storageService.deleteDocument(d.id, d.ref)));
     if (docs[0]) await caseActivityService.record(docs[0].caseId, 'document.delete', `Deleted ${docs.length} document(s)`, user);
     return ok({ count: docs.length });
   },
   async bulkMove(docs, folder, folderId, user) {
-    for (const d of docs) {
-      // eslint-disable-next-line no-await-in-loop
-      await storageService.moveDocument(d.id, folder, folderId);
-    }
+    await Promise.all(docs.map((d) => storageService.moveDocument(d.id, folder, folderId)));
     if (docs[0]) await caseActivityService.record(docs[0].caseId, 'document.move', `Moved ${docs.length} document(s) → ${folder}`, user);
     return ok({ count: docs.length });
   },

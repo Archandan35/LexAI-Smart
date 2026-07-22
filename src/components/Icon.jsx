@@ -1,3 +1,4 @@
+import { memo } from 'react';
 
 // Minimal inline SVG icon set (no icon-library dependency). Stroke-based.
 const PATHS = {
@@ -198,7 +199,7 @@ const ILLUSTRATIONS = {
   ),
 };
 
-export default function Icon({ name, size = 18, className = '', strokeWidth = 1.9, fill = false }) {
+export default memo(function Icon({ name, size = 18, className = '', strokeWidth = 1.9, fill = false }) {
   if (ILLUSTRATIONS[name]) {
     return (
       <svg viewBox="0 0 100 100" className={className} aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -225,4 +226,4 @@ export default function Icon({ name, size = 18, className = '', strokeWidth = 1.
       <path d={d} />
     </svg>
   );
-}
+});

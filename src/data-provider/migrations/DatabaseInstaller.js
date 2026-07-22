@@ -45,11 +45,9 @@ export const databaseInstaller = {
           }
           state = 'blocked';
         }
-        console.log(`[detect] ${s.collection} => state=${state}`);
         return { collection: s.collection, core: s.core, state };
       })
     );
-    console.log(`[detect] results: present=${present.length} missing=${missing.length} blocked=${blocked.length} authError=${authError}`);
 
     if (onProgress) onProgress({ step: 1, total: 1, label: 'Done', status: 'done' });
 

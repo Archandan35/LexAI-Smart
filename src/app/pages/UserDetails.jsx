@@ -13,7 +13,7 @@ import Spinner from '@/components/Spinner.jsx';
 import RoleSelector from '@/components/RoleSelector.jsx';
 import PermissionMatrix from '@/components/PermissionMatrix.jsx';
 import { Field, Input } from '@/components/Field.jsx';
-import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
+import { validatePassword } from '@/utils/passwordPolicy.js';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { useFormat } from '@/utils/format.js';
 
@@ -43,8 +43,8 @@ export default function UserDetails() {
   const save = async () => {
     const patch = { name: edit.name, email: edit.email, username: edit.username };
     if (edit.password) {
-      const minLen = getPasswordMinLength();
-      if (edit.password.length < minLen) { toast.push(`Password must be at least ${minLen} characters.`, 'error'); return; }
+      const result = validatePassword(edit.password);
+      if (!result.valid) { toast.push(result.errors[0], 'error'); return; }
       patch.password = edit.password;
     }
     const res = await userLogic.update(id, patch, actor);

@@ -147,10 +147,6 @@ export const userLogic = {
       // rows (wrong id, RLS policy, race with a delete) — that is a failed
       // update, not a successful one with empty data.
       if (!row) return fail('Update failed — the user could not be found or updated.');
-      // Sync password with Supabase Auth so the new password works for login.
-      if (newPassword) {
-        authService.adminChangePassword(id, newPassword).catch(() => {});
-      }
       await auditService.record({ action: 'user.update', module: 'users', user: actor, details: `Updated user ${id}` });
       return ok(stripSecrets(row));
     } catch (e) {
@@ -200,18 +196,24 @@ export const userLogic = {
     try {
       const all = await userService.list();
       const byId = Object.fromEntries(all.map((u) => [u.id, u]));
+      const results = await Promise.allSettled(ids.map(async (id) => {
+        const u = byId[id];
+        if (!u) return 'failed';
+        if (isProtectedUser(u)) return 'skippedProtected';
+        if (actor && id === actor.id) return 'skippedSelf';
+        const okRem = await userService.remove(id);
+        return okRem ? 'deleted' : 'failed';
+      }));
       let deleted = 0;
       let skippedProtected = 0;
       let skippedSelf = 0;
       let failed = 0;
-      for (const id of ids) {
-        const u = byId[id];
-        if (!u) { failed += 1; continue; }
-        if (isProtectedUser(u)) { skippedProtected += 1; continue; }
-        if (actor && id === actor.id) { skippedSelf += 1; continue; }
-        // eslint-disable-next-line no-await-in-loop
-        const okRem = await userService.remove(id);
-        if (okRem) deleted += 1; else failed += 1;
+      for (const r of results) {
+        if (r.status === 'rejected') { failed += 1; continue; }
+        if (r.value === 'deleted') deleted += 1;
+        else if (r.value === 'skippedProtected') skippedProtected += 1;
+        else if (r.value === 'skippedSelf') skippedSelf += 1;
+        else failed += 1;
       }
       await auditService.record({ action: 'user.bulkDelete', module: 'users', user: actor, details: `Deleted ${deleted} user(s); skipped ${skippedProtected + skippedSelf}; failed ${failed}` });
       return ok({ deleted, skippedProtected, skippedSelf, failed });

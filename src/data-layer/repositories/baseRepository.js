@@ -216,7 +216,7 @@ async function grantCollectionAccess(db, collection) {
     console.warn('[grantAccess] failed:', res.error);
     return false;
   }
-  console.log('[grantAccess] RLS policies applied for', table);
+  console.info('[grantAccess] RLS policies applied for', table);
   // Fix incorrect FK constraint fk_case_folders_parent_id that earlier versions
   // of SchemaCompiler generated with 'case_id' instead of 'parent_id' as the
   // source column. This causes "Key is not present in table case_folders" when
@@ -344,7 +344,14 @@ export function createRepository(collection) {
       }
     },
 
-    delete: (id) => p().remove(providerName(), id),
+    async delete(id) {
+      try {
+        return await p().remove(providerName(), id);
+      } catch (err) {
+        console.error(`[baseRepository] delete ${entityName}:${id} failed`, err);
+        return null;
+      }
+    },
 
     // ---- bulk ----
     async bulkCreate(records = []) {

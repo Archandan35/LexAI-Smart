@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import Icon from './Icon.jsx';
 
-export default function PageHeader({ icon, title, subtitle, actions }) {
+export default memo(function PageHeader({ icon, title, subtitle, actions }) {
   return (
     <div className="page-header">
       {icon && (
@@ -15,4 +16,4 @@ export default function PageHeader({ icon, title, subtitle, actions }) {
       {actions && <div className="page-header__actions">{actions}</div>}
     </div>
   );
-}
+});

@@ -8,7 +8,7 @@ import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
-import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
+import { validatePassword } from '@/utils/passwordPolicy.js';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
 const TIMEOUT_MS = 10000;
@@ -35,7 +35,6 @@ export default function AdminSetup() {
   }, []);
 
   const initialize = useCallback(async () => {
-    console.log('[AdminSetup] mount');
     setStatus('Loading...');
     setTimedOut(false);
     setLoading(true);
@@ -49,14 +48,9 @@ export default function AdminSetup() {
     }, TIMEOUT_MS);
 
     try {
-      console.log('[AdminSetup] initialize start');
-
-      console.log('[AdminSetup] loading users');
       const users = await userService.list() || [];
-      console.log('[AdminSetup] users count:', users.length);
 
       if (users.length > 0) {
-        console.log('[AdminSetup] users exist — redirecting');
         clearTimeout(timer);
         if (mountedRef.current) setLoading(false);
         const session = await authLogic.restore();
@@ -64,9 +58,7 @@ export default function AdminSetup() {
         return;
       }
 
-      console.log('[AdminSetup] loading roles');
       const roles = await roleService.list();
-      console.log('[AdminSetup] roles count:', roles.length);
 
       if (!roles || roles.length === 0) {
         console.warn('[AdminSetup] NO ROLES FOUND');
@@ -76,9 +68,7 @@ export default function AdminSetup() {
         return;
       }
 
-      console.log('[AdminSetup] checking Admin role');
       const hasSuperAdmin = roles.some((r) => r.all === true);
-      console.log('[AdminSetup] Admin role found:', hasSuperAdmin);
 
       if (!hasSuperAdmin) {
         console.warn('[AdminSetup] Admin role missing');
@@ -88,7 +78,7 @@ export default function AdminSetup() {
         return;
       }
 
-      console.log('[AdminSetup] rendering form');
+
     } catch (e) {
       console.error('[AdminSetup] initialize error:', e);
       if (!timedOutRef.current) setError(e.message || 'Failed to initialize.');
@@ -107,8 +97,8 @@ export default function AdminSetup() {
     if (!name.trim()) return setError('Name is required.');
     if (!email.trim()) return setError('Email is required.');
     if (!password) return setError('Password is required.');
-    const minLen = getPasswordMinLength();
-    if (password.length < minLen) return setError(`Password must be at least ${minLen} characters.`);
+    const pwResult = validatePassword(password);
+    if (!pwResult.valid) return setError(pwResult.errors[0]);
     if (password !== confirmPassword) return setError('Passwords do not match.');
 
     setBusy(true);
@@ -128,7 +118,6 @@ export default function AdminSetup() {
 
     if (res.ok) {
       if (res.data?.emailConfirmationRequired) {
-        console.log('[Bootstrap] email confirmation required');
         setSetupComplete(true);
         setError('');
         return;

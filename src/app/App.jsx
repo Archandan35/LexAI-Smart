@@ -31,6 +31,7 @@ function DocumentTitle() {
 export default function App() {
   return (
     <ErrorBoundary>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <ToastProvider>
         <SetupGate>
           <SettingsProvider>

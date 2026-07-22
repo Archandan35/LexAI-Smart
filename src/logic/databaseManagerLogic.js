@@ -72,21 +72,15 @@ export const databaseManagerLogic = {
   // ---- install (Setup Wizard "Install Database") ----
   async install(user, onProgress) {
     try {
-      console.log('[LexAI install] INSTALL STEP 1/5 — CREATE TABLES');
       const struct = await databaseAdminService.installSchemaStructures(onProgress);
-      console.log('[LexAI install] installSchemaStructures result:', JSON.stringify(struct));
 
       if (!struct || struct.needsManual) {
-        console.log('[LexAI install] needsManual=true — returning SQL to user');
         return ok({ installed: false, needsManual: true, sql: struct?.sql, reason: struct?.reason });
       }
       if (!struct.success) {
-        console.log('[LexAI install] structural install failed');
         return ok({ installed: false, needsManual: false, error: struct.error || 'Install failed', failedStep: struct.failedStep, completedSteps: struct.completedSteps });
       }
 
-      console.log('[LexAI install] INSTALL STEP 2/5 — INSERT SCHEMA_META (via stamp in seed)');
-      console.log('[LexAI install] INSTALL STEP 4/5 — INSERT SETTINGS (stamp)');
       await databaseAdminService.stampInstalled();
 
       // Final verification
@@ -94,7 +88,6 @@ export const databaseManagerLogic = {
         const version = await databaseAdminService.getVersion();
         const snapshot = await databaseAdminService.snapshot(['roles']);
         const roleCount = snapshot?.roles?.length ?? -1;
-        console.log('[LexAI install] VERIFY — schema_meta version:', version, 'roles:', roleCount);
         if (version === 0) throw new Error('Schema stamp failed — schema_meta version is 0');
       } catch (verifyErr) {
         console.error('[LexAI install] Verification failed:', verifyErr.message);
@@ -102,7 +95,6 @@ export const databaseManagerLogic = {
       }
 
       await audit('db.install', user, `provider=${databaseAdminService.providerName()}`);
-      console.log('[LexAI install] INSTALL COMPLETE');
       return ok({ installed: true, struct });
     } catch (e) {
       console.error('[LexAI install] Install failed:', e);

@@ -19,6 +19,7 @@ import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
 import { actLogic } from '@/logic/actLogic.js';
 import { provisionsLogic } from '@/logic/provisionsLogic.js';
 import { useFormat } from '@/utils/format.js';
+import { safeHtml } from '@/utils/sanitize.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import RelatedJudgmentCard from '@/components/RelatedJudgmentCard.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
@@ -590,7 +591,7 @@ export default function JudgmentDetail() {
                   <h3 className="jd-panel-title"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Headnotes</h3>
                   {judgment.headnotes ? (
                     <div className="jd-prose jd-prose--readonly jd-judgment-reader">
-                      <span dangerouslySetInnerHTML={{ __html: judgment.headnotes }} />
+                      <span dangerouslySetInnerHTML={safeHtml(judgment.headnotes)} />
                     </div>
                   ) : (
                     <div className="jd-judgment-empty">
@@ -662,8 +663,8 @@ export default function JudgmentDetail() {
                   <div className="jd-prose-card">
                     <div className="jd-prose jd-prose--readonly jd-judgment-reader">
                       {judgment.summary
-                        ? <span dangerouslySetInnerHTML={{ __html: judgment.summary }} />
-                        : <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />}
+                        ? <span dangerouslySetInnerHTML={safeHtml(judgment.summary)} />
+                        : <span dangerouslySetInnerHTML={safeHtml(judgment.fullText)} />}
                     </div>
                   </div>
                 ) : (
@@ -680,7 +681,7 @@ export default function JudgmentDetail() {
                     <h3 className="jd-panel-title jd-panel-title--mt"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Full Judgment Text</h3>
                     <div className="jd-prose-card">
                       <div className="jd-prose jd-prose--readonly jd-judgment-reader">
-                        <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
+                        <span dangerouslySetInnerHTML={safeHtml(judgment.fullText)} />
                       </div>
                     </div>
                   </>
@@ -708,7 +709,7 @@ export default function JudgmentDetail() {
                 <div className="jd-prose-card">
                   <div className="jd-prose jd-prose--readonly">
                     {judgment.legalPrinciple
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.legalPrinciple }} />
+                      ? <span dangerouslySetInnerHTML={safeHtml(judgment.legalPrinciple)} />
                       : 'No legal principle recorded for this judgment.'}
                   </div>
                 </div>
@@ -718,7 +719,7 @@ export default function JudgmentDetail() {
                 <div className="jd-prose-card">
                   <div className="jd-prose jd-prose--readonly">
                     {judgment.usageNotes
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.usageNotes }} />
+                      ? <span dangerouslySetInnerHTML={safeHtml(judgment.usageNotes)} />
                       : 'No usage notes recorded for this judgment.'}
                   </div>
                 </div>
@@ -802,7 +803,7 @@ export default function JudgmentDetail() {
                 <div className="jd-prose-card">
                   <div className="jd-prose jd-prose--readonly">
                     {judgment.ratioDecidendi
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.ratioDecidendi }} />
+                      ? <span dangerouslySetInnerHTML={safeHtml(judgment.ratioDecidendi)} />
                       : 'No ratio decidendi recorded for this judgment.'}
                   </div>
                 </div>
@@ -812,7 +813,7 @@ export default function JudgmentDetail() {
                 <div className="jd-prose-card">
                   <div className="jd-prose jd-prose--readonly">
                     {judgment.obiterDicta
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.obiterDicta }} />
+                      ? <span dangerouslySetInnerHTML={safeHtml(judgment.obiterDicta)} />
                       : 'No obiter dicta recorded for this judgment.'}
                   </div>
                 </div>
@@ -822,7 +823,7 @@ export default function JudgmentDetail() {
                 <div className="jd-prose-card">
                   <div className="jd-prose jd-prose--readonly">
                     {judgment.keyFindings
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.keyFindings }} />
+                      ? <span dangerouslySetInnerHTML={safeHtml(judgment.keyFindings)} />
                       : 'No key legal findings recorded for this judgment.'}
                   </div>
                 </div>

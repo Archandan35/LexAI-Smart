@@ -81,25 +81,18 @@ export const caseLogic = {
   async remove(id, user, deleteFolders) {
     if (deleteFolders) {
       const folders = await caseFolderService.list(id);
-      for (const f of folders) {
-        // eslint-disable-next-line no-await-in-loop
-        await caseFolderLogic.remove(f, {}, user);
-      }
+      await Promise.all(folders.map((f) => caseFolderLogic.remove(f, {}, user)));
     }
     await caseActivityService.record(id, 'case.delete', 'Case deleted', user);
     return caseService.deleteCase(id);
   },
 
   async bulkRemove(ids, user) {
-    for (const id of ids) {
-      // eslint-disable-next-line no-await-in-loop
+    await Promise.all(ids.map(async (id) => {
       const folders = await caseFolderService.list(id);
-      for (const f of folders) {
-        // eslint-disable-next-line no-await-in-loop
-        await caseFolderLogic.remove(f, {}, user);
-      }
+      await Promise.all(folders.map((f) => caseFolderLogic.remove(f, {}, user)));
       await caseService.deleteCase(id);
-    }
+    }));
     return ok({ count: ids.length });
   },
 

@@ -2,9 +2,16 @@ import AuthProvider from './AuthProvider.js';
 import { config } from '@/config/config.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { EntityRegistry, FieldMapper } from '@/core/index.js';
+import { verifyPassword } from '@/utils/crypto.js';
 
 const USERS_TABLE = () => EntityRegistry.providerTable('users');
 const STORAGE_KEY = 'lexai.auth.session';
+const LOCAL_SESSION_TOKEN = '__local_session__';
+
+async function lookupUserByIdentifier(db, identifier) {
+  const users = await db.list(USERS_TABLE());
+  return users.find((u) => u.email === identifier || u.username === identifier) || null;
+}
 
 // SupabaseAuthProvider — talks directly to the GoTrue REST API on Supabase.
 // Handles session persistence, token refreshing, database user record linking.
@@ -30,7 +37,6 @@ export default class SupabaseAuthProvider extends AuthProvider {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      // Reject sessions without a valid token
       if (!parsed?.token) return null;
       return parsed;
     } catch { return null; }
@@ -106,23 +112,40 @@ export default class SupabaseAuthProvider extends AuthProvider {
 
   async signIn(identifier, password) {
     this.#checkRateLimit(`signin:${identifier}`);
+    const db = getDatabaseProvider();
+
+    let supabaseSessionData = null;
+    let userId = null;
+    let isLocalAuth = false;
+
+    // Try Supabase Auth first
     const res = await fetch(`${this.#authBase()}/token?grant_type=password`, {
       method: 'POST', headers: this.#headers(), body: JSON.stringify({ email: identifier, password }),
     });
     const contentType = res.headers.get('content-type') || '';
-    if (!res.ok) {
-      if (!contentType.includes('application/json')) {
-        throw new Error(`Auth sign-in failed (${res.status}). The Supabase Auth endpoint returned a non-JSON response — check that VITE_SUPABASE_URL is correct and CORS allows this origin in Supabase Dashboard → API → CORS.`);
-      }
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error_description || err?.error || 'Invalid credentials.');
-    }
-    const data = contentType.includes('application/json') ? await res.json() : {};
-    const userId = data.user?.id;
-    if (!userId) throw new Error('No user ID returned from auth provider.');
 
-    // Verify / load database user record
-    const db = getDatabaseProvider();
+    if (res.ok) {
+      supabaseSessionData = contentType.includes('application/json') ? await res.json() : {};
+      userId = supabaseSessionData?.user?.id;
+    }
+
+    // If Supabase Auth failed, try local password verification
+    if (!userId) {
+      const localUser = await lookupUserByIdentifier(db, identifier.toLowerCase());
+      if (localUser && localUser.passwordHash && localUser.salt) {
+        const match = await verifyPassword(password, localUser.salt, localUser.passwordHash);
+        if (match) {
+          userId = localUser.id;
+          isLocalAuth = true;
+        }
+      }
+    }
+
+    if (!userId) {
+      throw new Error('Invalid credentials.');
+    }
+
+    // Load DB user record
     let dbUser = await db.get(USERS_TABLE(), userId);
 
     if (!dbUser) {
@@ -131,9 +154,9 @@ export default class SupabaseAuthProvider extends AuthProvider {
 
       dbUser = {
         id: userId,
-        name: data.user.email.split('@')[0],
-        email: data.user.email,
-        username: data.user.email.split('@')[0],
+        name: (supabaseSessionData?.user?.email || identifier).split('@')[0],
+        email: supabaseSessionData?.user?.email || identifier,
+        username: (supabaseSessionData?.user?.email || identifier).split('@')[0],
         roleCode: '',
         status: 'Active',
         extraRoles: [],
@@ -146,13 +169,18 @@ export default class SupabaseAuthProvider extends AuthProvider {
       if (dbUser.status && dbUser.status !== 'Active') {
         throw new Error('This account is disabled. Contact a System Owner.');
       }
-      // Update last login (best-effort — non-critical for login to succeed)
       try {
         await db.update(USERS_TABLE(), userId, FieldMapper.toProvider('users', { lastLoginAt: new Date().toISOString() }));
-      } catch { /* ignore — RLS may block anon UPDATE */ }
+      } catch { /* ignore */ }
     }
 
-    this.#session = { token: data.access_token, refreshToken: data.refresh_token, userId, storedAt: Date.now() };
+    this.#session = {
+      token: supabaseSessionData?.access_token || LOCAL_SESSION_TOKEN,
+      refreshToken: supabaseSessionData?.refresh_token || LOCAL_SESSION_TOKEN,
+      userId,
+      storedAt: Date.now(),
+      local: isLocalAuth,
+    };
     this.#persist(this.#session);
 
     const mapped = FieldMapper.toLexAI('users', dbUser);
@@ -176,12 +204,23 @@ export default class SupabaseAuthProvider extends AuthProvider {
     return true;
   }
 
+  async #loadDbUser(userId) {
+    try {
+      const db = getDatabaseProvider();
+      const dbUser = await db.get(USERS_TABLE(), userId);
+      if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) return null;
+      const mapped = FieldMapper.toLexAI('users', dbUser);
+      const { passwordHash, salt, ...safeUser } = mapped;
+      return safeUser;
+    } catch {
+      return null;
+    }
+  }
+
   async getSession() {
     if (!this.#session) {
-      // Try restoring from sessionStorage
       const persisted = this.#loadPersisted();
-      if (persisted?.token && persisted?.refreshToken && persisted?.userId) {
-        // Enforce session expiry: if stored_at is set and exceeds max age, reject
+      if (persisted?.token && persisted?.userId) {
         if (persisted.storedAt && Date.now() - persisted.storedAt > this.#SESSION_MAX_AGE_MS) {
           this.#clearPersisted();
           return null;
@@ -192,28 +231,34 @@ export default class SupabaseAuthProvider extends AuthProvider {
       }
     }
 
+    // Local sessions skip Supabase token verification
+    if (this.#session.local) {
+      const user = await this.#loadDbUser(this.#session.userId);
+      if (!user) {
+        this.#session = null;
+        this.#clearPersisted();
+        return null;
+      }
+      return { session: this.#session, user };
+    }
+
     try {
-      // Verify token is active
       const res = await fetch(`${this.#authBase()}/user`, {
         method: 'GET',
         headers: this.#headers(this.#session.token),
       });
 
       if (res.ok) {
-        const db = getDatabaseProvider();
-        const dbUser = await db.get(USERS_TABLE(), this.#session.userId);
-        if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
+        const user = await this.#loadDbUser(this.#session.userId);
+        if (!user) {
           this.#session = null;
           this.#clearPersisted();
           return null;
         }
-        const mapped = FieldMapper.toLexAI('users', dbUser);
-        const { passwordHash, salt, ...safeUser } = mapped;
-        return { session: this.#session, user: safeUser };
+        return { session: this.#session, user };
       }
 
-      // Try refreshing if token has expired
-      if (this.#session.refreshToken) {
+      if (this.#session.refreshToken && this.#session.refreshToken !== LOCAL_SESSION_TOKEN) {
         const refreshRes = await fetch(`${this.#authBase()}/token?grant_type=refresh_token`, {
           method: 'POST',
           headers: this.#headers(),
@@ -226,19 +271,18 @@ export default class SupabaseAuthProvider extends AuthProvider {
             token: refreshData.access_token,
             refreshToken: refreshData.refresh_token,
             userId: refreshData.user?.id || this.#session.userId,
+            storedAt: Date.now(),
+            local: false,
           };
           this.#persist(this.#session);
 
-          const db = getDatabaseProvider();
-          const dbUser = await db.get(USERS_TABLE(), this.#session.userId);
-          if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
+          const user = await this.#loadDbUser(this.#session.userId);
+          if (!user) {
             this.#session = null;
             this.#clearPersisted();
             return null;
           }
-          const mapped2 = FieldMapper.toLexAI('users', dbUser);
-          const { passwordHash: pw2, salt: s2, ...safeUser2 } = mapped2;
-          return { session: this.#session, user: safeUser2 };
+          return { session: this.#session, user };
         }
       }
     } catch (e) {
@@ -264,29 +308,6 @@ export default class SupabaseAuthProvider extends AuthProvider {
     const res = await fetch(`${this.#authBase()}/user`, {
       method: 'PUT', headers: this.#headers(this.#session.token), body: JSON.stringify({ password: newPassword }),
     });
-    return res.ok;
-  }
-
-  async adminChangePassword(userId, newPassword) {
-    const env = import.meta.env ?? {};
-    const serviceRoleKey = env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
-    if (!serviceRoleKey) {
-      console.warn('[LexAI] VITE_SUPABASE_SERVICE_ROLE_KEY not set — cannot update auth password via admin API.');
-      return false;
-    }
-    const res = await fetch(`${this.#authBase()}/admin/users/${userId}`, {
-      method: 'PUT',
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ password: newPassword }),
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      console.warn(`[LexAI] adminChangePassword failed (${res.status}): ${body.slice(0, 200)}`);
-    }
     return res.ok;
   }
 }

@@ -5,7 +5,7 @@ export const WizardLogger = {
     const entry = { level, message, details, timestamp: new Date().toISOString() };
     logs.push(entry);
     if (level === 'error') console.error(`[Setup] ${message}`, details);
-    else console.log(`[Setup] ${message}`);
+    else console.info(`[Setup] ${message}`);
   },
   info(message, details) { this.log('info', message, details); },
   warn(message, details) { this.log('warn', message, details); },

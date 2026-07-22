@@ -6,7 +6,7 @@ import { userLogic } from '@/logic/userLogic.js';
 import { roleService } from '@/services/roleService.js';
 import { roleLogic } from '@/logic/roleLogic.js';
 import { settingsCache } from '@/core/settingsCache.js';
-import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
+import { validatePassword } from '@/utils/passwordPolicy.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
@@ -112,8 +112,8 @@ export default function Register() {
     if (!name.trim()) return setError('Full name is required.');
     if (!email.trim()) return setError('Email is required.');
     if (!password) return setError('Password is required.');
-    const minLen = getPasswordMinLength();
-    if (password.length < minLen) return setError(`Password must be at least ${minLen} characters.`);
+    const pwResult = validatePassword(password);
+    if (!pwResult.valid) return setError(pwResult.errors[0]);
     if (password !== confirm) return setError('Passwords do not match.');
 
     setBusy(true);

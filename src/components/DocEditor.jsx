@@ -13,6 +13,7 @@ const SIZES = [
 const HILITES = ['#fff59d', '#a5d6a7', '#90caf9', '#f48fb1', '#ffcc80', 'transparent'];
 const TEXT_COLOURS = ['#000000', '#dc2626', '#2563eb', '#16a34a', '#ca8a04', '#9333ea', '#ea580c', '#0891b2', '#78716c', '#ffffff'];
 
+import { sanitizeHtml } from '@/utils/sanitize.js';
 const looksLikeHtml = (s) => typeof s === 'string' && /<[a-z][\s\S]*>/i.test(s);
 const escapeHtml = (s) => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
 
@@ -33,7 +34,7 @@ export default function DocEditor({
   useEffect(() => {
     if (!ref.current) return;
     const html = looksLikeHtml(value) ? value : escapeHtml(value);
-    if (ref.current.innerHTML !== html) ref.current.innerHTML = html || '';
+    if (ref.current.innerHTML !== html) ref.current.innerHTML = sanitizeHtml(html) || '';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 

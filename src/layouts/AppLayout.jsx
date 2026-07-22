@@ -50,7 +50,7 @@ export default function AppLayout() {
         )}
         <div className={`app-main ${collapsed ? 'collapsed' : ''}`}>
           <Topbar onToggle={toggle} />
-          <main className="page-area">
+          <main id="main-content" className="page-area">
             <Outlet />
           </main>
           <footer className="app-footer">

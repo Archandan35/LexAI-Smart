@@ -9,6 +9,25 @@
 @import url('./reset.css');
 @import url('./dark.css');
 
+/* Skip-to-content link for keyboard users */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--navy-700);
+  color: #fff;
+  border-radius: 0 0 8px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s var(--ease);
+}
+.skip-link:focus {
+  top: 0;
+}
+
 /* ============================================================
    SHARED SCROLLBAR
    One consistent scrollbar everywhere. Colors come from the

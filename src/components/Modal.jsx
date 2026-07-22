@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 
-export default function Modal({ open, title, subtitle, onClose, children, footer, size, className = '', disableBackdrop, disableEscape }) {
+export default memo(function Modal({ open, title, subtitle, onClose, children, footer, size, className = '', disableBackdrop, disableEscape }) {
   useEffect(() => {
     if (!open) return undefined;
     if (disableEscape) return undefined;
@@ -30,4 +30,4 @@ export default function Modal({ open, title, subtitle, onClose, children, footer
     </div>
   );
   return createPortal(el, document.body);
-}
+});

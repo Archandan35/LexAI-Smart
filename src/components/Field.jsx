@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { DateInput } from '@/components/DateInput.jsx';
 
-export function Field({ label, children, hint }) {
+export const Field = memo(function Field({ label, children, hint }) {
   return (
     <div className="field">
       {label && <label className="field__label">{label}</label>}
@@ -8,12 +9,13 @@ export function Field({ label, children, hint }) {
       {hint && <div className="field__hint">{hint}</div>}
     </div>
   );
-}
+});
 
-export function Input({ className, ...props }) {
+export const Input = memo(function Input({ className, ...props }) {
   if (props.type === "date") return <DateInput className={className} {...props} />;
   return <input className={["input", className].filter(Boolean).join(" ")} {...props} />;
-}
+});
+
 export function Textarea({ className, ...props }) { return <textarea className={["textarea", className].filter(Boolean).join(" ")} {...props} />; }
 export function Select({ children, className, options, ...props }) {
   return (

@@ -32,6 +32,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useFabAction } from '@/data-layer/FABContext.jsx';
 import { useFormat } from '@/utils/format.js';
+import { escapeHtml } from '@/utils/sanitize.js';
 import { calendarLogic } from '@/logic/calendarLogic.js';
 import { taskLogic } from '@/logic/taskLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
@@ -623,7 +624,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
   const printTasks = () => {
     const w = window.open('', '_blank');
     if (!w) return;
-    const body = filtered.map((t) => `<tr><td>${t.title}</td><td>${t.category || ''}</td><td>${t.priority}</td><td>${t.status}</td><td>${t.due_date ? formatDate(t.due_date) : ''}</td></tr>`).join('');
+    const body = filtered.map((t) => `<tr><td>${escapeHtml(t.title)}</td><td>${escapeHtml(t.category || '')}</td><td>${escapeHtml(t.priority)}</td><td>${escapeHtml(t.status)}</td><td>${escapeHtml(t.due_date ? formatDate(t.due_date) : '')}</td></tr>`).join('');
     w.document.write(`<html><head><title>Tasks</title><style>body{font-family:sans-serif}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ccc;padding:6px;text-align:left}th{background:#f0f0f0}</style></head><body><h2>Tasks</h2><table><thead><tr><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Due</th></tr></thead><tbody>${body}</tbody></table></body></html>`);
     w.document.close(); w.print();
   };

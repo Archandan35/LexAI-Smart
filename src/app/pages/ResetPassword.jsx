@@ -4,7 +4,7 @@ import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { authService } from '@/services/authService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
-import { getPasswordMinLength } from '@/utils/passwordPolicy.js';
+import { validatePassword } from '@/utils/passwordPolicy.js';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field } from '@/components/Field.jsx';
 
@@ -25,8 +25,8 @@ export default function ResetPassword() {
     setError('');
 
     if (!password) return setError('New password is required.');
-    const minLen = getPasswordMinLength();
-    if (password.length < minLen) return setError(`Password must be at least ${minLen} characters.`);
+    const pwResult = validatePassword(password);
+    if (!pwResult.valid) return setError(pwResult.errors[0]);
     if (password !== confirm) return setError('Passwords do not match.');
     if (!token) return setError('Invalid or missing reset link. Please request a new password reset.');
 

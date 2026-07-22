@@ -16,7 +16,7 @@ export const schemaVersionManager = {
   async getMeta() {
     try {
       const rows = await getDatabaseProvider().list(META, {});
-      console.log('[LexAI schemaVersion] getMeta rows:', rows?.length);
+      console.info('[LexAI schemaVersion] getMeta rows:', rows?.length);
       return (Array.isArray(rows) && rows[0]) || null;
     } catch (e) {
       console.warn('[LexAI schemaVersion] getMeta failed:', e.message);
@@ -24,25 +24,20 @@ export const schemaVersionManager = {
     }
   },
 
-  // Installed version, or 0 if the backend has no schema yet. Self-heals a
-  // pre-versioning install (collections already populated, no schema_meta row)
-  // by stamping the current version — so existing local users never see a wizard.
   async getVersion() {
     const meta = await this.getMeta();
     if (meta) {
-      console.log('[LexAI schemaVersion] found meta, version:', meta.version);
+      console.info('[LexAI schemaVersion] found meta, version:', meta.version);
       return meta.version || 0;
     }
-    // No schema_meta row — check if any core collection has data (pre-versioning install)
     try {
       const provider = getDatabaseProvider();
       for (const c of coreCollections) {
         if (c === META) continue;
         // eslint-disable-next-line no-await-in-loop
         const n = await provider.count(c).catch(() => 0);
-        console.log('[LexAI schemaVersion] count', c, ':', n);
         if (n > 0) {
-          console.log('[LexAI schemaVersion] found data in', c, '— self-healing stamp');
+          console.info('[LexAI schemaVersion] found data in', c, '— self-healing stamp');
           await this.stamp(SCHEMA_VERSION, 'install');
           return SCHEMA_VERSION;
         }
@@ -50,7 +45,7 @@ export const schemaVersionManager = {
     } catch (e) {
       console.warn('[LexAI schemaVersion] getVersion catch:', e.message);
     }
-    console.log('[LexAI schemaVersion] no data found — returning 0');
+    console.info('[LexAI schemaVersion] no data found — returning 0');
     return 0;
   },
 

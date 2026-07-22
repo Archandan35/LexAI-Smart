@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Icon from '@/components/Icon.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { Input, Select } from '@/components/Field.jsx';
+import PasswordInput from '@/components/PasswordInput.jsx';
 
 export function tryOk(r) {
   if (!r) return false;
@@ -113,10 +114,7 @@ export function renderField(f, values, setValues) {
           />
         </div>
       ) : f.type === 'password' ? (
-        <div className="crud-input-icon">
-          <span className="crud-input-icon__ico"><Icon name="lock" size={15} /></span>
-          <Input type="password" minLength={f.minLength || 8} value={val} placeholder={f.placeholder || f.label} onChange={(e) => set(e.target.value)} />
-        </div>
+        <PasswordInput value={val} placeholder={f.placeholder || f.label} onChange={(e) => set(e.target.value)} />
       ) : (
         <div className="crud-input-icon">
           <span className="crud-input-icon__ico">

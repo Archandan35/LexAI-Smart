@@ -10,6 +10,4 @@ export default class AuthProvider {
   async requestPasswordReset(identifier) { throw new Error('not implemented'); }
   // eslint-disable-next-line no-unused-vars
   async changePassword(userId, newPassword) { throw new Error('not implemented'); }
-  // eslint-disable-next-line no-unused-vars
-  async adminChangePassword(userId, newPassword) { throw new Error('not implemented'); }
 }
