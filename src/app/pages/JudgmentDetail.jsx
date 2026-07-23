@@ -18,6 +18,7 @@ import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';
 import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
 import { actLogic } from '@/logic/actLogic.js';
 import { provisionsLogic } from '@/logic/provisionsLogic.js';
+import { clientLogic } from '@/logic/clientLogic.js';
 import { useFormat } from '@/utils/format.js';
 import { safeHtml } from '@/utils/sanitize.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
@@ -153,6 +154,7 @@ export default function JudgmentDetail() {
   const [allActs, setAllActs] = useState([]);
   const [allProvisions, setAllProvisions] = useState([]);
   const [provisionDetailsMap, setProvisionDetailsMap] = useState({});
+  const [clients, setClients] = useState([]);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -209,6 +211,7 @@ export default function JudgmentDetail() {
     natureOfDisputeLogic.list().then((r) => setNatureOfDisputes(Array.isArray(r) ? r : [])).catch(() => {});
     actLogic.list().then((data) => { if (!cancelled) setAllActs(Array.isArray(data) ? data : []); }).catch(() => {});
     provisionsLogic.list().then((data) => { if (!cancelled) setAllProvisions(Array.isArray(data) ? data : []); }).catch(() => {});
+    clientLogic.list().then((data) => { if (!cancelled) setClients(Array.isArray(data) ? data : []); }).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -295,6 +298,18 @@ export default function JudgmentDetail() {
     });
     return m;
   }, [allProvisions, provisionDetailsMap]);
+
+  const clientNameMap = useMemo(() => {
+    const m = {};
+    (clients || []).forEach((c) => { m[c.id] = c.name || c.id; });
+    return m;
+  }, [clients]);
+
+  const resolvePartyName = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string' && looksLikeId(val)) return clientNameMap[val] || '';
+    return val;
+  };
 
   const resolve = (map, val) => (val ? (map[val] || val) : '');
   const toArr = (v) => {
@@ -464,8 +479,8 @@ export default function JudgmentDetail() {
     ? `${caseTypeLabel(caseType)} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
     : caseNumber, [caseType, caseNumber, caseYear, nameMap]);
 
-  const partyA = useMemo(() => appellant || petitioner || plaintiff || '', [appellant, petitioner, plaintiff]);
-  const partyB = useMemo(() => respondent || respondentName || defendant || '', [respondent, respondentName, defendant]);
+  const partyA = useMemo(() => resolvePartyName(appellant || petitioner || plaintiff), [appellant, petitioner, plaintiff, clientNameMap]);
+  const partyB = useMemo(() => resolvePartyName(respondent || respondentName || defendant), [respondent, respondentName, defendant, clientNameMap]);
   const partyAType = useMemo(() => appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '', [appellant, petitioner, plaintiff, plaintiffType]);
   const partyBType = useMemo(() => respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '', [respondent, defendant, defendantType]);
 
