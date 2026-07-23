@@ -54,6 +54,7 @@ const SetupWizard = lazy(() => import('@/app/pages/SetupWizard.jsx'));
 const AdminSetup = lazy(() => import('@/app/pages/AdminSetup.jsx'));
 const SecuritySettings = lazy(() => import('@/app/pages/SecuritySettings.jsx'));
 const SystemSettings = lazy(() => import('@/app/pages/SystemSettings.jsx'));
+const Changelog = lazy(() => import('@/app/pages/Changelog.jsx'));
 const CaseTypes = lazy(() => import('@/app/pages/CaseTypes.jsx'));
 const AiAssistant = lazy(() => import('@/app/pages/AiAssistant.jsx'));
 const PromptLibrary = lazy(() => import('@/app/pages/PromptLibrary.jsx'));
@@ -203,6 +204,9 @@ export default function AppRoutes() {
         <Route path="/tools/reports/ai-usage" element={G('reports', <AiUsage />)} />
         <Route path="/tools/reports/performance" element={G('reports', <PerformanceAnalytics />)} />
         <Route path="/tools/reports/custom" element={G('reports', <CustomReports />)} />
+
+        {/* ── Changelog ── */}
+        <Route path="/admin/changelog" element={G('changelog', <Changelog />)} />
 
         {/* ── System Settings ── */}
         <Route path="/settings" element={G('settings', <SystemSettings />)} />

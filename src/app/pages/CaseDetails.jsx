@@ -218,9 +218,6 @@ export default function CaseDetails() {
     }
   }, [id, user, toast, nav]);
 
-  if (loading) return <Spinner label="Loading case…" />;
-  if (!c) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Manage Cases</Button>} />;
-
   const lastHearing = data.lastHearing;
   const upcomingHearing = useMemo(() => {
     const ts = new Date().toISOString().slice(0, 10);
@@ -228,12 +225,15 @@ export default function CaseDetails() {
       .filter((h) => (h.date || '').slice(0, 10) >= ts)
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
     return fromHearings
-      || (c.nextHearing && (c.nextHearing || '').slice(0, 10) >= ts
+      || ((c?.nextHearing) && (c.nextHearing || '').slice(0, 10) >= ts
         ? { date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }
         : null);
   }, [hearings, c]);
 
   const sortedHearings = useMemo(() => [...hearings].sort((a, b) => new Date(b.date) - new Date(a.date)), [hearings]);
+
+  if (loading) return <Spinner label="Loading case…" />;
+  if (!c) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Manage Cases</Button>} />;
 
   return (
     <>

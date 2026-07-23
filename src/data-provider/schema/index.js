@@ -62,6 +62,8 @@ import { PrecedentsSchema } from './precedents.schema.js';
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
 import './infrastructure.schema.js';
+import { ChangelogReleasesSchema } from './changelog_releases.schema.js';
+import { ChangelogEntriesSchema } from './changelog_entries.schema.js';
 
 // Order matters for installation: parents (referenced collections) first so that
 // relations are satisfiable on backends that enforce them.
@@ -115,11 +117,13 @@ export const schemas = {
   tasks: TasksSchema,
   task_categories: TaskCategoriesSchema,
   task_statuses: TaskStatusesSchema,
+  changelog_releases: ChangelogReleasesSchema,
+  changelog_entries: ChangelogEntriesSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 34;
+export const SCHEMA_VERSION = 35;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

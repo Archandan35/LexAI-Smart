@@ -83,6 +83,7 @@ export const MODULES = [
   { key: 'schema', label: 'Schema Manager', icon: 'database', route: '/admin/database-center/data-explorer' },
   { key: 'databaseCenter', label: 'Database Center', icon: 'database', route: '/admin/database-center' },
   { key: 'setupWizard', label: 'Setup Wizard', icon: 'wrench', route: '/admin/setup-wizard' },
+  { key: 'changelog', label: 'Changelog', icon: 'history', route: '/admin/changelog' },
 ];
 
 export const MODULE_KEYS = MODULES.map((m) => m.key);

@@ -135,6 +135,7 @@ export const NAV_GROUPS = [
   {
     label: '',
     items: [
+      { to: '/admin/changelog', label: 'Changelog', icon: 'history', module: 'changelog' },
       { to: '/test-design', label: 'Test Design Page', icon: 'grid', module: 'testDesign' },
     ],
   },

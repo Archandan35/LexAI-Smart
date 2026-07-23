@@ -23,8 +23,12 @@ import { configHistoryRepository } from './configHistoryRepository.js';
 import { schemaMetaRepository } from './schemaMetaRepository.js';
 import { caseTypesRepository } from './caseTypesRepository.js';
 import { courtsRepository } from './courtsRepository.js';
+import { changelogReleasesRepository } from './changelogReleasesRepository.js';
+import { changelogEntriesRepository } from './changelogEntriesRepository.js';
 
 export const repositories = {
+  changelog_releases: changelogReleasesRepository,
+  changelog_entries: changelogEntriesRepository,
   schema_meta: schemaMetaRepository,
   users: usersRepository,
   roles: rolesRepository,
@@ -61,6 +65,7 @@ export {
   hearingsRepository, notesRepository, judgmentsRepository, orderSheetTemplatesRepository,
   caseFoldersRepository, caseHistoryRepository, caseActivityRepository, caseStagesRepository,
   remindersRepository, envVarsRepository, configHistoryRepository, schemaMetaRepository, caseTypesRepository, courtsRepository,
+  changelogReleasesRepository, changelogEntriesRepository,
 };
 
 export default repositories;

@@ -28,6 +28,7 @@
 @import url('./components/editor.css');
 @import url('./components/animation.css');
 @import url('./components/pages.css');
+@import url('./components/changelog.css');
 
 /* Skip-to-content link for keyboard users */
 .skip-link {
@@ -18765,7 +18766,7 @@
 }
 .tasks-arch-toggle.active { background: var(--navy-700); color: #fff; border-color: var(--navy-700); }
 .tasks-bulkbar { display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: var(--navy-50, #eef2fb); border-radius: 10px; font-weight: 600; }
-.tasks-table-card { padding: 0; background: transparent; border: none; border-radius: 0; box-shadow: none; }
+.tasks-table-card { overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .tasks-table { margin: 0; }
 .w40 { width: 40px; }
 .task-title-cell { display: flex; align-items: center; gap: 7px; }

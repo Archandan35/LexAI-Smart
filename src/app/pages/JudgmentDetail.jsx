@@ -449,6 +449,31 @@ export default function JudgmentDetail() {
     };
   }, [loading]);
 
+  const {
+    title, citation, neutralCitation, reporterCitation, court, date, caseNumber, caseType, status,
+    appellant, respondent, petitioner, respondentName,
+    plaintiff, defendant, plaintiffType, defendantType,
+    summary, paragraphs, acts, documents,
+    source, sourceUrl,
+  } = judgment || {};
+
+  const benchText = useMemo(() => benchLabel(judgment?.bench) || judgeLabel(judgment?.judge) || judgeLabel(judgment?.judges), [judgment, nameMap]);
+  const judgeText = useMemo(() => judgeLabel(judgment?.judge) || judgeLabel(judgment?.judges), [judgment, nameMap]);
+  const caseYear = date ? new Date(date).getFullYear() : '';
+  const formattedCaseNumber = useMemo(() => caseType && caseNumber
+    ? `${caseTypeLabel(caseType)} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
+    : caseNumber, [caseType, caseNumber, caseYear, nameMap]);
+
+  const partyA = useMemo(() => appellant || petitioner || plaintiff || '', [appellant, petitioner, plaintiff]);
+  const partyB = useMemo(() => respondent || respondentName || defendant || '', [respondent, respondentName, defendant]);
+  const partyAType = useMemo(() => appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '', [appellant, petitioner, plaintiff, plaintiffType]);
+  const partyBType = useMemo(() => respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '', [respondent, defendant, defendantType]);
+
+  const citationList = useMemo(() => [citation, neutralCitation, reporterCitation]
+    .filter(Boolean)
+    .flatMap(c => String(c).split(/[,;]/).map(s => s.trim()))
+    .filter(Boolean), [citation, neutralCitation, reporterCitation]);
+
   if (loading) {
     return (
       <div className="jd-page">
@@ -471,31 +496,6 @@ export default function JudgmentDetail() {
       </div>
     );
   }
-
-  const {
-    title, citation, neutralCitation, reporterCitation, court, date, caseNumber, caseType, status,
-    appellant, respondent, petitioner, respondentName,
-    plaintiff, defendant, plaintiffType, defendantType,
-    summary, paragraphs, acts, documents,
-    source, sourceUrl,
-  } = judgment;
-
-  const benchText = useMemo(() => benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges), [judgment, nameMap]);
-  const judgeText = useMemo(() => judgeLabel(judgment.judge) || judgeLabel(judgment.judges), [judgment, nameMap]);
-  const caseYear = date ? new Date(date).getFullYear() : '';
-  const formattedCaseNumber = useMemo(() => caseType && caseNumber
-    ? `${caseTypeLabel(caseType)} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
-    : caseNumber, [caseType, caseNumber, caseYear, nameMap]);
-
-  const partyA = useMemo(() => appellant || petitioner || plaintiff || '', [appellant, petitioner, plaintiff]);
-  const partyB = useMemo(() => respondent || respondentName || defendant || '', [respondent, respondentName, defendant]);
-  const partyAType = useMemo(() => appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '', [appellant, petitioner, plaintiff, plaintiffType]);
-  const partyBType = useMemo(() => respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '', [respondent, defendant, defendantType]);
-
-  const citationList = useMemo(() => [citation, neutralCitation, reporterCitation]
-    .filter(Boolean)
-    .flatMap(c => String(c).split(/[,;]/).map(s => s.trim()))
-    .filter(Boolean), [citation, neutralCitation, reporterCitation]);
 
   return (
     <div className="jd-page">
