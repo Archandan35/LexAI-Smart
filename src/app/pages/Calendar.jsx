@@ -472,6 +472,7 @@ function EventViewModal({ event, onClose, cases }) {
 /* ================================================================== */
 function TasksView({ tasks, loading, onChanged, priorities, categories, statuses, cases, onReloadMaster, toast, user, formatDate, formatDateTime, taskAddOpen, setTaskAddOpen }) {
   const [filters, setFilters] = useState({ category: [], priority: [], status: [], active: [], caseId: [], date: '' });
+  const [searchQuery, setSearchQuery] = useState('');
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState({ category: [], priority: [], status: [], active: [], caseId: [] });
   const [showArchived, setShowArchived] = useState(false);
@@ -562,8 +563,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       const fk = dayKey(new Date(filters.date));
       list = list.filter((t) => { const d = t.due_date || t.start_date; return d && dayKey(new Date(d)) === fk; });
     }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((t) => (t.title || '').toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q) || (t.tags || '').toLowerCase().includes(q));
+    }
     return list;
-  }, [tasks, filters, showArchived]);
+  }, [tasks, filters, showArchived, searchQuery]);
 
   const stats = useMemo(() => {
     const active = tasks.filter((t) => !t.archived && t.active);
@@ -649,6 +654,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
         </div>
 
         <div className="tasks-search-row">
+          <div className="tasks-search-inner">
+            <Icon name="search" size={14} />
+            <input type="text" placeholder="Search tasks by title, description, or tag…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          </div>
           <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
             {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
           </Button>
