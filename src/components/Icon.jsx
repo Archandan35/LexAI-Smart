@@ -49,6 +49,8 @@ const PATHS = {
   chevron: 'M9 18l6-6-6-6',
   chevronLeft: 'M15 18l-6-6 6-6',
   chevronDown: 'M6 9l6 6 6-6',
+  chevronUp: 'M9 6l6 6-6 6',
+  caretRight: 'M6 3l14 9-14 9V3z',
   refresh: 'M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15',
   cloud: 'M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z',
   plug: 'M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0zM12 17v5',
@@ -147,6 +149,9 @@ const COMPLEX = {
       <path key="p" d="M9 11 C9 16 19 14 22 17.5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
       <line key="l" x1="9" y1="11" x2="9" y2="17.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="2 2" />
     </>
+  ),
+  'hexagon3d': (
+    <path key="h" d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   ),
   'globe': (
     <>

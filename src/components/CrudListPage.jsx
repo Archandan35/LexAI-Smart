@@ -94,11 +94,11 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
       )}
 
       <Card bodyClass="card__body--flush">
-        <div className="toolbar-row" style={{ padding: '14px 18px 0' }}>
+        <div className="toolbar-row crud-toolbar">
           <Input className="search-row__input" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <PermissionGate module={module} action={actionCreate}><Button onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : addLabel}</Button></PermissionGate>
         </div>
-        {showForm && <div style={{ padding: '0 18px 14px' }}>{renderForm({ load, setShowForm })}</div>}
+        {showForm && <div className="crud-form-wrap">{renderForm({ load, setShowForm })}</div>}
         {loading ? <div className="loading-block"><span className="spinner" /></div> : filtered.length === 0 ? (
           <div className="empty-state"><Icon name={icon} /><p>{emptyText}</p></div>
         ) : (

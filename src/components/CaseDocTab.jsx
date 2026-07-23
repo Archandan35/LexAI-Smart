@@ -400,13 +400,13 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
         <div className="cdoc__sidebar-head">
           <span className="cdoc__sidebar-title">FOLDERS</span>
           <div className="cdoc__sidebar-head-actions">
-            <button className="cdoc__sidebar-btn" title="Expand all" onClick={() => { const all = {}; const walk = (list) => { list.forEach((f) => { all[f.id] = true; walk(getChildren(f.id)); }); }; walk(rootFolders); setExpanded(all); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg></button>
-            <button className="cdoc__sidebar-btn" title="Collapse all" onClick={() => setExpanded({})}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15" /></svg></button>
+            <button className="cdoc__sidebar-btn" title="Expand all" onClick={() => { const all = {}; const walk = (list) => { list.forEach((f) => { all[f.id] = true; walk(getChildren(f.id)); }); }; walk(rootFolders); setExpanded(all); }}><Icon name="chevronDown" size={14} /></button>
+            <button className="cdoc__sidebar-btn" title="Collapse all" onClick={() => setExpanded({})}><Icon name="chevronUp" size={14} /></button>
           </div>
         </div>
 
         <div className="cdoc__sidebar-search">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cdoc__sidebar-search-icon"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <Icon name="search" size={13} className="cdoc__sidebar-search-icon" />
           <input type="text" placeholder="Search folders…" value={folderSearch} onChange={(e) => setFolderSearch(e.target.value)} className="cdoc__sidebar-search-input" />
         </div>
 
@@ -431,16 +431,12 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                   >
                     {children.length > 0 && (
                       <span className="cdoc__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className={`cdoc__tree-caret${open ? ' is-open' : ''}`}>
-                          <polygon points="6 3 20 12 6 21 6 3" />
-                        </svg>
+                        <Icon name="caretRight" size={10} className={`cdoc__tree-caret${open ? ' is-open' : ''}`} />
                       </span>
                     )}
                     {children.length === 0 && <span className="cdoc__tree-spacer" />}
                     {selectMode && <input type="checkbox" checked={folderSelected.has(f.id)} onChange={() => toggleFolderSelect(f.id)} onClick={(e) => e.stopPropagation()} className="cdoc__tree-checkbox" />}
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="cdoc__tree-icon">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
+                    <Icon name="folder" size={15} className="cdoc__tree-icon" />
                     {editingId === f.id ? (
                       <input className="cdoc__rename-input" value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }} onBlur={saveRename} autoFocus onClick={(e) => e.stopPropagation()} />
                     ) : (
@@ -449,10 +445,10 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                     <span className="cdoc__tree-count">{docCounts[f.id] || docCounts[f.name] || 0}</span>
                     {hoveredId === f.id && editingId !== f.id && !selectMode && (
                       <span className="cdoc__tree-actions" onClick={(e) => e.stopPropagation()}>
-                        <button className="cdoc__tree-act" title="Rename" onClick={() => startRename(f)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></button>
-                        <button className="cdoc__tree-act" title="Cut" onClick={() => cutFolder(f)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" /></svg></button>
-                        <button className="cdoc__tree-act" title="Copy" onClick={() => copyFolder(f)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg></button>
-                        <button className="cdoc__tree-act cdoc__tree-act--danger" title="Delete" onClick={() => deleteFolder(f)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>
+                        <button className="cdoc__tree-act" title="Rename" onClick={() => startRename(f)}><Icon name="edit" size={12} /></button>
+                        <button className="cdoc__tree-act" title="Cut" onClick={() => cutFolder(f)}><Icon name="scissors" size={12} /></button>
+                        <button className="cdoc__tree-act" title="Copy" onClick={() => copyFolder(f)}><Icon name="copy" size={12} /></button>
+                        <button className="cdoc__tree-act cdoc__tree-act--danger" title="Delete" onClick={() => deleteFolder(f)}><Icon name="trash" size={12} /></button>
                       </span>
                     )}
                     {clipboard && clipboard.folderId !== f.id && hoveredId !== f.id && (
@@ -471,17 +467,17 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
             <span className="cdoc__clipboard-text">
               {clipboard.type === 'cut' ? 'Move:' : 'Copy:'} {clipboard.folder.name}
             </span>
-            <button className="cdoc__clipboard-close" onClick={cancelClipboard}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
+            <button className="cdoc__clipboard-close" onClick={cancelClipboard}><Icon name="close" size={12} /></button>
           </div>
         )}
 
         <div className="cdoc__sidebar-actions">
           <button className="cdoc__sidebar-btn cdoc__sidebar-btn--block" onClick={() => { setCreating(!creating); setBulkAdding(false); }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            <Icon name="plus" size={14} />
             Add Folder
           </button>
           <button className="cdoc__sidebar-btn cdoc__sidebar-btn--block" onClick={() => setSelectMode(!selectMode)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+            <Icon name="checkSquare" size={14} />
             {selectMode ? 'Done' : 'Select'}
           </button>
         </div>
@@ -521,12 +517,12 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
         <div className="cdoc__toolbar">
           <div className="cdoc__breadcrumb">
             <button className={`cdoc__bc-btn${!activeFolder ? ' active' : ''}`} onClick={() => { setActiveFolder(null); setDocSelected([]); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z" /></svg>
+              <Icon name="hexagon3d" size={14} />
               {rootFolder?.name || 'Documents'}
             </button>
             {breadcrumbPath.map((f) => (
               <React.Fragment key={f.id}>
-                <span className="cdoc__bc-sep"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6" /></svg></span>
+                <span className="cdoc__bc-sep"><Icon name="chevron" size={12} className="cdoc__bc-sep" /></span>
                 <button className="cdoc__bc-btn" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>{f.name}</button>
               </React.Fragment>
             ))}
@@ -536,12 +532,12 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
             {isFileView && (
               <>
                 <div className="cdoc__search-wrap">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cdoc__search-icon"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                  <Icon name="search" size={14} className="cdoc__search-icon" />
                   <input type="text" placeholder="Search documents…" value={search} onChange={(e) => setSearch(e.target.value)} className="cdoc__search-input" />
                 </div>
                 <div className="cdoc__filter-wrap">
                   <button className={`cdoc__toolbtn${fileExtFilter.length > 0 ? ' cdoc__toolbtn--active' : ''}`} onClick={() => setShowFilter(!showFilter)}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+                    <Icon name="filter" size={15} />
                     Filters{fileExtFilter.length > 0 && ` (${fileExtFilter.length})`}
                   </button>
                   {showFilter && (
@@ -572,17 +568,17 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
               </select>
             </div>
             <button className="cdoc__toolbtn" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              <Icon name="upload" size={15} />
               {uploading ? 'Uploading…' : 'Upload'}
             </button>
             <button className="cdoc__toolbtn" onClick={() => { setCreating(true); setBulkAdding(false); }}>+ Add Folder</button>
             <input ref={fileInputRef} type="file" hidden onChange={handleUpload} accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg,.txt" />
             <div className="cdoc__seg">
               <button className={`cdoc__seg-btn${viewMode === 'grid' ? ' active' : ''}`} title="Grid" onClick={() => setViewMode('grid')}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                <Icon name="grid" size={15} />
               </button>
               <button className={`cdoc__seg-btn${viewMode === 'list' ? ' active' : ''}`} title="List" onClick={() => setViewMode('list')}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                <Icon name="list" size={15} />
               </button>
             </div>
           </div>
@@ -597,7 +593,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
               return (
                 <div key={f.id} className="docmgr__folder-card" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }} onContextMenu={(e) => { e.preventDefault(); setCtxMenu({ id: f.id, x: e.clientX, y: e.clientY }); }}>
                   <div className="cdoc__folder-card-icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                    <Icon name="folder" size={32} />
                   </div>
                   <span className="docmgr__folder-card-name">{f.name}</span>
                   <span className="docmgr__folder-card-meta">
@@ -620,7 +616,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
               <p className="muted cdoc__empty-docs-text">No documents in this folder.</p>
               <div className="cdoc__empty-docs-actions">
                 <button className="btn btn--ghost btn--sm" onClick={() => fileInputRef.current?.click()}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="cdoc__upload-btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  <Icon name="upload" size={14} className="cdoc__upload-btn-icon" />
                   Upload Document
                 </button>
               </div>
@@ -656,7 +652,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                         <td className="cdoc__td cdoc__td--actions">
                           <div className="cdoc__action-more-wrap">
                             <button className="cdoc__doc-menu-btn" onClick={(e) => { e.stopPropagation(); setDocMenuId(docMenuId === d.id ? null : d.id); }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                              <Icon name="more-vertical" size={16} />
                             </button>
                             {docMenuId === d.id && (
                               <div className="cdoc__doc-menu" onClick={(e) => e.stopPropagation()}>
@@ -700,9 +696,9 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                       <span>{bytes(d.size)}</span>
                     </div>
                     <div className="doccard__actions">
-                      <button className="cdoc__doc-action" title="Preview" onClick={() => setPreview(d)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg></button>
-                      <button className="cdoc__doc-action" title="Download" onClick={async () => { const url = await storageService.getUrl(d.ref); if (url) window.open(url, '_blank'); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg></button>
-                      <button className="cdoc__doc-action cdoc__doc-action--danger" title="Delete" onClick={() => deleteDocument(d)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>
+                      <button className="cdoc__doc-action" title="Preview" onClick={() => setPreview(d)}><Icon name="eye" size={14} /></button>
+                      <button className="cdoc__doc-action" title="Download" onClick={async () => { const url = await storageService.getUrl(d.ref); if (url) window.open(url, '_blank'); }}><Icon name="download" size={14} /></button>
+                      <button className="cdoc__doc-action cdoc__doc-action--danger" title="Delete" onClick={() => deleteDocument(d)}><Icon name="trash" size={14} /></button>
                     </div>
                   </div>
                 );
@@ -718,7 +714,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
           <div className="modal modal--lg">
             <header className="modal__head">
               <span className="modal__title">{preview.name}</span>
-              <button className="modal__close" onClick={() => setPreview(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
+              <button className="modal__close" onClick={() => setPreview(null)}><Icon name="close" size={16} /></button>
             </header>
             <div className="modal__body">
               {preview.text ? (
@@ -737,7 +733,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
           <div className="modal">
             <header className="modal__head">
               <span className="modal__title">Folder Properties</span>
-              <button className="modal__close" onClick={() => setFolderProps(null)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
+              <button className="modal__close" onClick={() => setFolderProps(null)}><Icon name="close" size={16} /></button>
             </header>
             <div className="modal__body">
               <div className="cdoc__props-grid">

@@ -342,8 +342,8 @@ export default function Advocates() {
           <div>
             <div className="confirm-dialog__title">Share these credentials with the advocate</div>
             <div className="confirm-dialog__text">The account was created with a system-generated password. Share it securely — the advocate should change it after first login.</div>
-            <div className="mt-16" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
-              <div className="kv"><span>Password</span><code style={{ fontSize: '1.1em', userSelect: 'all' }}>{showPassword}</code></div>
+            <div className="mt-16 advocate-credentials-box">
+              <div className="kv"><span>Password</span><code>{showPassword}</code></div>
             </div>
             <div className="mt-16">
               <Button variant="primary" className="btn--block" icon="copy" onClick={() => { navigator.clipboard.writeText(showPassword).then(() => toast.success('Password copied.')).catch(() => {}); }}>

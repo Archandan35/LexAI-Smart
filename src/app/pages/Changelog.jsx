@@ -296,18 +296,18 @@ function CompareView({ releases, onCompare }) {
             <StatCard icon="alert" value={result.breaking?.length || 0} label="Breaking" />
           </div>
 
-          <div className="grid-2" style={{ marginTop: 16 }}>
+          <div className="grid-2 mt-16">
             <Card title={`Added (${result.added?.length || 0})`}>
               {(!result.added || result.added.length === 0) ? <p className="muted">No additions</p> : (
-                <ul style={{ paddingLeft: 20, margin: 0 }}>
-                  {result.added.map((e, i) => <li key={i} style={{ marginBottom: 6 }}><strong>{e.title}</strong>{e.description && <p className="muted" style={{ margin: '2px 0 0' }}>{e.description}</p>}</li>)}
+                <ul className="cl-result-list">
+                  {result.added.map((e, i) => <li key={i}><strong>{e.title}</strong>{e.description && <p className="muted cl-result-desc">{e.description}</p>}</li>)}
                 </ul>
               )}
             </Card>
             <Card title={`Removed (${result.removed?.length || 0})`}>
               {(!result.removed || result.removed.length === 0) ? <p className="muted">No removals</p> : (
-                <ul style={{ paddingLeft: 20, margin: 0 }}>
-                  {result.removed.map((e, i) => <li key={i} style={{ marginBottom: 6 }}><strong>{e.title}</strong>{e.description && <p className="muted" style={{ margin: '2px 0 0' }}>{e.description}</p>}</li>)}
+                <ul className="cl-result-list">
+                  {result.removed.map((e, i) => <li key={i}><strong>{e.title}</strong>{e.description && <p className="muted cl-result-desc">{e.description}</p>}</li>)}
                 </ul>
               )}
             </Card>
@@ -315,8 +315,8 @@ function CompareView({ releases, onCompare }) {
 
           {result.breaking && result.breaking.length > 0 && (
             <Card title={`Breaking Changes (${result.breaking.length})`} className="mt-16">
-              <ul style={{ paddingLeft: 20, margin: 0 }}>
-                {result.breaking.map((e, i) => <li key={i} style={{ marginBottom: 6 }}><strong>{e.title}</strong>{e.description && <p className="muted" style={{ margin: '2px 0 0' }}>{e.description}</p>}</li>)}
+              <ul className="cl-result-list">
+                {result.breaking.map((e, i) => <li key={i}><strong>{e.title}</strong>{e.description && <p className="muted cl-result-desc">{e.description}</p>}</li>)}
               </ul>
             </Card>
           )}
@@ -387,7 +387,7 @@ function ReleaseForm({ open, release, onClose, onSave }) {
 
   return (
     <Modal open={open} title={release ? 'Edit Release' : 'New Release'} onClose={onClose} size="lg"
-      footer={<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={handleSave} loading={saving}>{release ? 'Update' : 'Create'}</Button></div>}
+      footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={handleSave} loading={saving}>{release ? 'Update' : 'Create'}</Button></>}
     >
       <div className="input-row">
         <div className="field" style={{ flex: '0 0 180px' }}>
@@ -519,13 +519,13 @@ function EntryForm({ open, release, entry, onClose, onSave }) {
 
   return (
     <Modal open={open} title={entry ? 'Edit Change Entry' : `Add Change Entry — ${release?.version || ''}`} onClose={onClose} size="lg"
-      footer={<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}><Button variant="ghost" onClick={onClose}>Done</Button><Button onClick={handleSave} loading={saving}>{entry ? 'Update' : 'Add Entry'}</Button></div>}
+      footer={<><Button variant="ghost" onClick={onClose}>Done</Button><Button onClick={handleSave} loading={saving}>{entry ? 'Update' : 'Add Entry'}</Button></>}
     >
       {!entry && (
-        <div className="cl-entry-list" style={{ marginBottom: 16 }}>
+        <div className="cl-entry-list mb-16">
           <label className="field__label">Existing Entries ({entries.length})</label>
           {entries.length === 0 ? <p className="muted">No entries yet.</p> : (
-            <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--border)', borderRadius: 10, padding: 8 }}>
+            <div className="changelog-entry-scroll">
               {entries.map((e) => (
                 <div key={e.id} className="list-row" style={{ cursor: 'default' }} onClick={() => {}}>
                   <div style={{ flex: 1 }}>
@@ -679,7 +679,7 @@ export default function Changelog() {
       <PageHeader icon="history" title="Changelog"
         subtitle={latestVersion ? `Current version: ${latestVersion} — ${releases.length} release${releases.length !== 1 ? 's' : ''} total` : 'Release history'}
         actions={
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="cl-actions-bar">
             <div className="seg">
               <button className={`seg__btn ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}><Icon name="list" size={14} /> List</button>
               <button className={`seg__btn ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}><Icon name="clock" size={14} /> Timeline</button>
