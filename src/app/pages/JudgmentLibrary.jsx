@@ -177,7 +177,7 @@ export default function JudgmentLibrary() {
     };
   }, [courts, benchTypes, judges, acts, caseTypes, caseStages, areaOfLaws, typeOfProceedings, natureOfDisputes, provisions]);
 
-  const resolveName = (map, val) => (val ? (map[val] || val) : 'â€”');
+  const resolveName = (map, val) => (val ? (map[val] || val) : '—');
 
   const toArr = (v) => {
     if (!v) return [];
@@ -439,7 +439,7 @@ export default function JudgmentLibrary() {
   if (loading) {
     return (
       <div className="fade-in">
-        <div className="loading-block"><span className="spinner" /> Loading judgmentsâ€¦</div>
+        <div className="loading-block"><span className="spinner" /> Loading judgments…</div>
       </div>
     );
   }
@@ -631,7 +631,7 @@ export default function JudgmentLibrary() {
                             if (yearSrc) {
                               try { year = new Date(yearSrc).getFullYear(); } catch { year = ''; }
                             }
-                            if (!num && !typeLabel && !year) return 'â€”';
+                            if (!num && !typeLabel && !year) return '—';
                             const parts = [];
                             if (typeLabel) parts.push(typeLabel);
                             if (num) parts.push(typeLabel ? `No. ${num}` : num);
@@ -647,7 +647,7 @@ export default function JudgmentLibrary() {
                         <td data-label="Citation" className="jl-cell-citations">
                           {(() => {
                             const cites = [j.citation, j.neutralCitation, j.reporterCitation].filter(Boolean);
-                            if (!cites.length) return <span className="jl-cell-muted">â€”</span>;
+                            if (!cites.length) return <span className="jl-cell-muted">—</span>;
                             return (
                               <div className="jl-cit-stack">
                                 {cites.map((c, i) => (
@@ -681,8 +681,8 @@ export default function JudgmentLibrary() {
                             );
                           })()}
                         </td>
-                        <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : 'â€”'}</td>
-                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : 'â€”'}</td>
+                        <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
+                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
                         <td data-label="Actions">
                           <div className="jl-actions">
                             <button title="View" onClick={() => navigate(`/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
