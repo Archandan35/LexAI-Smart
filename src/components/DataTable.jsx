@@ -166,14 +166,7 @@ const DataTable = memo(function DataTable({
                   scope="col"
                   aria-sort={c.sortable && sort?.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
-                  {c.sortable ? (
-                    <button className="th__sort-btn" onClick={() => toggleSort(c.key)} aria-label={`Sort by ${c.label}`}>
-                      {c.label}
-                      {sort?.key === c.key && (
-                        <span className="th__sort">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>
-                      )}
-                    </button>
-                  ) : c.label}
+                  {c.sortable ? c.label : c.label}
                 </th>
               ))}
             </tr>
